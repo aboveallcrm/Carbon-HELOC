@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin | Above All Carbon</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary-bg: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #c5a059;
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--primary-bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-family: 'DM Sans', sans-serif;
+            color: var(--accent);
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .header-actions a, .logout-btn {
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            color: var(--text-muted);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .role-super_admin { background: rgba(239,68,68,0.2); color: #f87171; }
+        .role-admin { background: rgba(197, 160, 89, 0.2); color: var(--accent); }
+        .role-user { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+
+        .tier-carbon { background: #334155; color: white; }
+        .tier-titanium { background: rgba(148,163,184,0.2); color: #cbd5e1; }
+        .tier-platinum { background: rgba(59,130,246,0.2); color: #93c5fd; }
+        .tier-obsidian { background: rgba(139,92,246,0.2); color: #c4b5fd; }
+        .tier-diamond { background: rgba(197,160,89,0.2); color: var(--accent); }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            border: none;
+            margin-right: 5px;
+        }
+
+        .btn-edit { background: #3b82f6; color: white; }
+        .btn-impersonate { background: var(--accent); color: black; font-weight: bold; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            width: 500px;
+            max-width: 90%;
+            border: 1px solid var(--accent);
+        }
+
+        .form-group { margin-bottom: 15px; }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Super Admin Dashboard</h1>
+            <div class="header-actions">
+                <a href="AboveAllCarbon_HELOC_v12_FIXED.html">Back to Tool</a>
+                <button class="logout-btn" onclick="window.logout()">Logout</button>
+            </div>
+        </header>
+
+        <div class="card">
+            <h3>User Management</h3>
+            <table id="users-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Tier</th>
+                        <th>Status</th>
+                        <th>Quotes</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="7">Loading users...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-top:0">Edit User</h2>
+            <input type="hidden" id="edit-user-id">
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="text" id="edit-email" disabled style="opacity: 0.5;">
+            </div>
+
+            <div class="form-group">
+                <label>Role</label>
+                <select id="edit-role">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                    <option value="super_admin">Super Admin</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Tier</label>
+                <select id="edit-tier">
+                    <option value="carbon">Carbon</option>
+                    <option value="titanium">Titanium</option>
+                    <option value="platinum">Platinum</option>
+                    <option value="obsidian">Obsidian</option>
+                    <option value="diamond">Diamond</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Subscription Status</label>
+                <select id="edit-status">
+                    <option value="trialing">Trialing</option>
+                    <option value="active">Active</option>
+                    <option value="past_due">Past Due</option>
+                    <option value="canceled">Canceled</option>
+                </select>
+            </div>
+
+            <hr style="border-color:rgba(255,255,255,0.1); margin: 20px 0;">
+            <p style="color:var(--accent)">Integration Keys (from user_integrations)</p>
+
+            <div class="form-group">
+                <label>GHL API Key</label>
+                <input type="text" id="edit-ghl-key" placeholder="GoHighLevel Key">
+            </div>
+            <div class="form-group">
+                <label>GHL Location ID</label>
+                <input type="text" id="edit-ghl-loc" placeholder="Location ID">
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-sm" style="background:#ef4444; color:white; padding:10px 20px;"
+                    onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn-sm"
+                    style="background:var(--accent); color:black; font-weight:bold; padding:10px 20px;"
+                    onclick="saveUser()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification container -->
+    <div id="admin-notify" style="position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;"></div>
+
+    <script type="module">
+        import { supabase, getCurrentUser } from './js/supabase-client.js';
+        import { checkSession, logout, impersonateUser } from './js/auth.js';
+
+        window.logout = logout;
+
+        let currentUser = null;
+        let allUsers = [];
+        let quoteCounts = {};
+
+        // --- Utilities ---
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+        }
+
+        function showNotify(message, type = 'info') {
+            const container = document.getElementById('admin-notify');
+            const el = document.createElement('div');
+            const colors = { success: '#22c55e', error: '#ef4444', info: '#3b82f6', warning: '#f59e0b' };
+            el.style.cssText = `background:${colors[type] || colors.info};color:white;padding:12px 20px;border-radius:6px;font-size:14px;font-family:'Inter',sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.3);animation:fadeInUp 0.3s ease-out;max-width:360px;`;
+            el.textContent = message;
+            container.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 3500);
+        }
+
+        async function init() {
+            currentUser = await checkSession();
+            if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'super_admin')) {
+                document.querySelector('.container').innerHTML = '<p style="color:#ef4444;text-align:center;margin-top:80px;font-size:18px;">Access Denied. Admin or Super Admin only. <a href="login.html" style="color:var(--accent);">Go to Login</a></p>';
+                return;
+            }
+
+            await loadUsers();
+        }
+
+        async function loadUsers() {
+            try {
+                // Load profiles
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*');
+
+                if (error) throw error;
+
+                allUsers = data;
+
+                // Load quote counts per user
+                try {
+                    const { data: quotes } = await supabase
+                        .from('quotes')
+                        .select('user_id');
+                    if (quotes) {
+                        quoteCounts = {};
+                        quotes.forEach(q => {
+                            quoteCounts[q.user_id] = (quoteCounts[q.user_id] || 0) + 1;
+                        });
+                    }
+                } catch (e) {
+                    console.log('Could not load quote counts:', e.message);
+                }
+
+                renderTable(data);
+            } catch (e) {
+                console.error(e);
+                document.querySelector('tbody').innerHTML = `<tr><td colspan="7" style="color:red">Error loading users: ${escapeHtml(e.message)}</td></tr>`;
+            }
+        }
+
+        function renderTable(users) {
+            const tbody = document.querySelector('tbody');
+            tbody.innerHTML = '';
+
+            if (!users || users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7">No users found</td></tr>';
+                return;
+            }
+
+            users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            users.forEach(u => {
+                const tier = u.current_tier || 'carbon';
+                const role = u.role || 'user';
+                const status = u.subscription_status || 'trialing';
+                const quotes = quoteCounts[u.id] || 0;
+                const safeEmail = escapeHtml(u.email || '');
+                const safeId = escapeHtml(u.id || '');
+                const safeStatus = escapeHtml(status);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${safeEmail}</td>
+                    <td><span class="badge role-${escapeHtml(role)}">${escapeHtml(role)}</span></td>
+                    <td><span class="badge tier-${escapeHtml(tier)}">${escapeHtml(tier)}</span></td>
+                    <td>${safeStatus}</td>
+                    <td>${quotes}</td>
+                    <td>${new Date(u.created_at).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn-sm btn-edit" onclick="window.openEdit('${safeId}')">Edit</button>
+                        ${u.id !== currentUser.id ?
+                        `<button class="btn-sm btn-impersonate" onclick="window.impersonate('${safeId}')">Login As</button>`
+                        : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- Modal & Actions ---
+
+        window.openEdit = async (userId) => {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+
+            document.getElementById('edit-user-id').value = userId;
+            document.getElementById('edit-email').value = user.email || '';
+            document.getElementById('edit-role').value = user.role || 'user';
+            document.getElementById('edit-tier').value = user.current_tier || 'carbon';
+            document.getElementById('edit-status').value = user.subscription_status || 'trialing';
+
+            // Load integration keys from user_integrations table
+            document.getElementById('edit-ghl-key').value = '';
+            document.getElementById('edit-ghl-loc').value = '';
+            try {
+                const { data: integration } = await supabase
+                    .from('user_integrations')
+                    .select('metadata')
+                    .eq('user_id', userId)
+                    .eq('provider', 'heloc_settings')
+                    .single();
+
+                if (integration && integration.metadata && integration.metadata.ghl) {
+                    document.getElementById('edit-ghl-key').value = integration.metadata.ghl.apiKey || '';
+                    document.getElementById('edit-ghl-loc').value = integration.metadata.ghl.locationId || '';
+                }
+            } catch (e) {
+                console.log('No integration settings for user');
+            }
+
+            document.getElementById('edit-modal').style.display = 'flex';
+        };
+
+        window.closeModal = () => {
+            document.getElementById('edit-modal').style.display = 'none';
+        };
+
+        window.saveUser = async () => {
+            const userId = document.getElementById('edit-user-id').value;
+            const role = document.getElementById('edit-role').value;
+            const tier = document.getElementById('edit-tier').value;
+            const status = document.getElementById('edit-status').value;
+            const ghlKey = document.getElementById('edit-ghl-key').value;
+            const ghlLoc = document.getElementById('edit-ghl-loc').value;
+
+            const btn = document.querySelector('.modal-actions button:last-child');
+            const originalText = btn.innerText;
+            btn.innerText = "Saving...";
+            btn.disabled = true;
+
+            try {
+                // Update profile
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({
+                        role: role,
+                        current_tier: tier,
+                        subscription_status: status
+                    })
+                    .eq('id', userId);
+
+                if (error) throw error;
+
+                // Update integration keys in user_integrations table
+                if (ghlKey || ghlLoc) {
+                    const { data: existing } = await supabase
+                        .from('user_integrations')
+                        .select('id, metadata')
+                        .eq('user_id', userId)
+                        .eq('provider', 'heloc_settings')
+                        .single();
+
+                    const metadata = existing?.metadata || {};
+                    if (!metadata.ghl) metadata.ghl = {};
+                    metadata.ghl.apiKey = ghlKey;
+                    metadata.ghl.locationId = ghlLoc;
+
+                    if (existing) {
+                        await supabase.from('user_integrations')
+                            .update({ metadata })
+                            .eq('id', existing.id);
+                    } else {
+                        await supabase.from('user_integrations')
+                            .insert({ user_id: userId, provider: 'heloc_settings', metadata });
+                    }
+                }
+
+                showNotify("User updated successfully!", "success");
+                window.closeModal();
+                await loadUsers();
+            } catch (e) {
+                showNotify("Error updating user: " + e.message, "error");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        window.impersonate = async (userId) => {
+            if (!confirm("Are you sure you want to log in as this user?")) return;
+            await impersonateUser(userId);
+        };
+
+        init();
+    </script>
+
+</html>

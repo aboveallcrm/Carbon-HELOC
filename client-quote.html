@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your HELOC Quote</title>
+<style>
+:root { --gold: #c5a059; --dark: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8; --green: #10b981; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--dark); color: var(--text); min-height: 100vh; }
+.loading { display: flex; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; gap: 16px; }
+.loading .spinner { width: 48px; height: 48px; border: 4px solid rgba(197,160,89,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.error-page { text-align: center; padding: 60px 20px; }
+.error-page h1 { color: var(--gold); font-size: 24px; margin-bottom: 12px; }
+.error-page p { color: var(--muted); font-size: 14px; }
+
+/* Main Layout */
+.quote-page { max-width: 700px; margin: 0 auto; padding: 20px; }
+.header { text-align: center; padding: 30px 20px; border-bottom: 3px solid var(--gold); margin-bottom: 24px; }
+.header h1 { font-size: 22px; color: var(--gold); margin-bottom: 6px; font-weight: 700; }
+.header .subtitle { font-size: 13px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+.header .lo-info { margin-top: 12px; font-size: 12px; color: var(--muted); }
+
+/* Sections */
+.section { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.06); }
+.section-title { font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--gold); font-weight: 700; margin-bottom: 14px; }
+.client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.client-grid .item { }
+.client-grid .label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 2px; }
+.client-grid .value { font-size: 15px; font-weight: 600; color: white; }
+.client-grid .value.gold { color: var(--gold); }
+
+/* Valuation Blocks */
+.val-blocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+.val-block { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; text-align: center; }
+.val-block .val-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px; }
+.val-block .val-value { font-size: 18px; font-weight: 700; color: white; }
+.val-block.highlight { background: rgba(197,160,89,0.15); border: 1px solid rgba(197,160,89,0.3); }
+.val-block.highlight .val-value { color: var(--gold); }
+
+/* Rate Matrix */
+.tier { margin-bottom: 12px; }
+.tier-header { font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 8px; padding: 6px 10px; background: rgba(197,160,89,0.1); border-radius: 6px; display: flex; justify-content: space-between; }
+.rate-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.rate-table th { text-align: left; padding: 6px 10px; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+.rate-table td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.rate-table tr.recommended { background: rgba(16,185,129,0.1); }
+.rate-table tr.recommended td { color: var(--green); font-weight: 600; }
+.rec-badge { display: inline-block; background: var(--green); color: white; font-size: 8px; padding: 2px 6px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+
+/* Recommendation */
+.recommendation { background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05)); border: 1px solid rgba(16,185,129,0.2); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 16px; }
+.recommendation h3 { color: var(--green); font-size: 14px; margin-bottom: 10px; }
+.rec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.rec-item .rec-label { font-size: 9px; text-transform: uppercase; color: var(--muted); }
+.rec-item .rec-value { font-size: 20px; font-weight: 700; color: white; }
+
+/* CTA */
+.cta-section { text-align: center; padding: 30px 20px; }
+.cta-section h3 { color: white; font-size: 16px; margin-bottom: 16px; }
+.cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.cta-btn { display: inline-block; padding: 12px 28px; border-radius: 25px; font-weight: 700; font-size: 13px; text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border: none; }
+.cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+.cta-btn.primary { background: linear-gradient(135deg, var(--gold), #a68543); color: #0f172a; }
+.cta-btn.secondary { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+
+/* Footer */
+.footer { text-align: center; padding: 20px; font-size: 10px; color: var(--muted); border-top: 1px solid rgba(255,255,255,0.06); margin-top: 20px; }
+.footer .disclaimer { max-width: 600px; margin: 0 auto; line-height: 1.6; }
+
+/* Mobile */
+@media (max-width: 600px) {
+    .quote-page { padding: 12px; }
+    .client-grid { grid-template-columns: 1fr; }
+    .val-blocks { grid-template-columns: 1fr 1fr; }
+    .rec-grid { grid-template-columns: 1fr 1fr; }
+    .rec-item .rec-value { font-size: 16px; }
+    .header h1 { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<div id="loading" class="loading">
+    <div class="spinner"></div>
+    <div style="color: var(--muted); font-size: 13px;">Loading your quote...</div>
+</div>
+
+<div id="error" class="error-page" style="display:none;">
+    <h1>Quote Not Found</h1>
+    <p>This quote link may have expired or is invalid.<br>Please contact your loan officer for a new quote.</p>
+</div>
+
+<div id="content" class="quote-page" style="display:none;">
+    <!-- Header -->
+    <div class="header" id="sec-header">
+        <h1 id="q-title">Your HELOC Proposal</h1>
+        <div class="subtitle">Personalized Home Equity Line of Credit</div>
+        <div class="lo-info" id="q-lo-info"></div>
+    </div>
+
+    <!-- Client Info -->
+    <div class="section" id="sec-client">
+        <div class="section-title">Client Details</div>
+        <div class="client-grid" id="q-client-grid"></div>
+    </div>
+
+    <!-- Valuation -->
+    <div class="section" id="sec-valuation">
+        <div class="section-title">Valuation & Liquidity Summary</div>
+        <div class="val-blocks" id="q-val-blocks"></div>
+    </div>
+
+    <!-- Recommendation -->
+    <div class="recommendation" id="sec-recommendation">
+        <h3>Recommended Option</h3>
+        <div class="rec-grid" id="q-rec-grid"></div>
+    </div>
+
+    <!-- Rate Matrix -->
+    <div class="section" id="sec-rates">
+        <div class="section-title">Rate Options</div>
+        <div id="q-tiers"></div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-section" id="sec-cta">
+        <h3>Ready to Move Forward?</h3>
+        <div class="cta-buttons" id="q-cta-buttons"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer" id="sec-footer">
+        <div class="disclaimer">
+            This is not a commitment to lend. All rates and terms are subject to change without notice.
+            Loan approval is subject to credit and property approval. This quote is for informational purposes only.
+            NMLS# <span id="q-nmls"></span>
+        </div>
+        <div style="margin-top: 10px; color: rgba(255,255,255,0.2);">Powered by Above All Carbon</div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function() {
+    var SUPABASE_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co';
+    var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6emFidmZ6dXhocGRjb3dndmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzMjk3NTcsImV4cCI6MjA2NDkwNTc1N30.dFg0TWjKi6wX8VFfPxEPJmQTwWmJUaVsp3sXbqJEz7g';
+    var TRACK_URL = SUPABASE_URL + '/functions/v1/track-quote-view';
+
+    var params = new URLSearchParams(window.location.search);
+    var code = params.get('id') || params.get('code');
+
+    if (!code) {
+        showError();
+        return;
+    }
+
+    var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Fetch quote data by code
+    sb.from('quote_links').select('*').eq('code', code).maybeSingle().then(function(res) {
+        if (res.error || !res.data) {
+            showError();
+            return;
+        }
+        var link = res.data;
+
+        // Check expiry
+        if (link.expires_at && new Date(link.expires_at) < new Date()) {
+            showError();
+            return;
+        }
+
+        // Increment view count (fire and forget)
+        sb.from('quote_links').update({ view_count: (link.view_count || 0) + 1 }).eq('id', link.id).then(function(){});
+
+        // Track quote opened
+        trackEvent('quote_opened', { code: code });
+
+        // Render the quote
+        renderQuote(link.quote_data, link.lo_info || {}, link.user_id, link.lead_id);
+
+        // Track time on page
+        var startTime = Date.now();
+        window.addEventListener('beforeunload', function() {
+            var duration = Math.round((Date.now() - startTime) / 1000);
+            trackEvent('time_on_page', { duration_sec: duration, code: code });
+        });
+
+        // Track section views via Intersection Observer
+        if (window.IntersectionObserver) {
+            var sections = document.querySelectorAll('[id^="sec-"]');
+            var viewedSections = {};
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting && !viewedSections[entry.target.id]) {
+                        viewedSections[entry.target.id] = true;
+                        trackEvent('section_viewed', { section: entry.target.id, code: code });
+                    }
+                });
+            }, { threshold: 0.5 });
+            sections.forEach(function(sec) { observer.observe(sec); });
+        }
+    });
+
+    // -- Tracking --
+    var _userId = null;
+    var _leadId = null;
+
+    function trackEvent(eventType, eventData) {
+        if (!_userId) return;
+        var url = TRACK_URL + '?lead_id=' + (_leadId || 'none') + '&user_id=' + _userId + '&event=' + eventType;
+        // Use sendBeacon for reliability on page unload
+        if (eventType === 'time_on_page' && navigator.sendBeacon) {
+            navigator.sendBeacon(url + '&duration=' + (eventData.duration_sec || 0));
+        } else {
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(eventData)
+            }).catch(function(){});
+        }
+    }
+
+    // -- Rendering --
+    function renderQuote(data, lo, userId, leadId) {
+        _userId = userId;
+        _leadId = leadId;
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+
+        // Title
+        var title = lo.company ? lo.company + ' HELOC Proposal' : 'Your HELOC Proposal';
+        document.getElementById('q-title').textContent = title;
+        document.title = title + ' - ' + (data.clientName || 'Client');
+
+        // LO Info
+        var loHtml = '';
+        if (lo.name) loHtml += '<div>Prepared by: <strong>' + esc(lo.name) + '</strong></div>';
+        if (lo.nmls) loHtml += '<div>NMLS# ' + esc(lo.nmls) + '</div>';
+        if (lo.phone) loHtml += '<div>' + esc(lo.phone) + '</div>';
+        document.getElementById('q-lo-info').innerHTML = loHtml;
+        if (lo.nmls) document.getElementById('q-nmls').textContent = lo.nmls;
+
+        // Client Grid
+        var clientItems = [];
+        if (data.clientName) clientItems.push({ label: 'Prepared For', value: data.clientName, cls: '' });
+        if (data.creditScore) clientItems.push({ label: 'Credit Score', value: data.creditScore, cls: '' });
+        if (data.date) clientItems.push({ label: 'Date', value: data.date, cls: '' });
+        if (data.propertyAddress) clientItems.push({ label: 'Property', value: data.propertyAddress, cls: '' });
+        if (data.propertyType) clientItems.push({ label: 'Occupancy', value: data.propertyType, cls: '' });
+        document.getElementById('q-client-grid').innerHTML = clientItems.map(function(i) {
+            return '<div class="item"><div class="label">' + esc(i.label) + '</div><div class="value">' + esc(i.value) + '</div></div>';
+        }).join('');
+
+        // Valuation Blocks
+        var valBlocks = [];
+        if (data.homeValue) valBlocks.push({ label: 'Home Value', value: '$' + num(data.homeValue) });
+        if (data.mortgageBalance !== undefined) valBlocks.push({ label: 'Current Mortgage', value: '$' + num(data.mortgageBalance) });
+        if (data.helocPayoff && parseFloat(data.helocPayoff) > 0) valBlocks.push({ label: 'HELOC Payoff', value: '$' + num(data.helocPayoff) });
+        if (data.cashBack) valBlocks.push({ label: 'Cash Back', value: '$' + num(data.cashBack), highlight: true });
+        if (data.cltv) valBlocks.push({ label: 'CLTV', value: data.cltv });
+        document.getElementById('q-val-blocks').innerHTML = valBlocks.map(function(b) {
+            return '<div class="val-block' + (b.highlight ? ' highlight' : '') + '"><div class="val-label">' + esc(b.label) + '</div><div class="val-value">' + esc(b.value) + '</div></div>';
+        }).join('');
+
+        // Recommendation
+        var recItems = [];
+        if (data.totalLoan) recItems.push({ label: 'Total Loan', value: data.totalLoan });
+        if (data.rate) recItems.push({ label: 'Rate', value: data.rate + '%' });
+        if (data.term) recItems.push({ label: 'Term', value: data.term + ' yr' });
+        if (data.payment) recItems.push({ label: 'Payment', value: data.payment });
+        document.getElementById('q-rec-grid').innerHTML = recItems.map(function(r) {
+            return '<div class="rec-item"><div class="rec-label">' + esc(r.label) + '</div><div class="rec-value">' + esc(r.value) + '</div></div>';
+        }).join('');
+
+        // Rate Tiers
+        var tiersHtml = '';
+        if (data.tiers && data.tiers.length > 0) {
+            data.tiers.forEach(function(tier) {
+                tiersHtml += '<div class="tier"><div class="tier-header"><span>Tier ' + tier.tier + '</span><span>' + esc(tier.origPts) + '% Points</span></div>';
+                tiersHtml += '<table class="rate-table"><thead><tr><th>Term</th><th>Rate</th><th>Payment</th></tr></thead><tbody>';
+                Object.entries(tier.rates).forEach(function(e) {
+                    var isRec = data.rate && e[1].rate && e[1].rate.replace('%','') === data.rate;
+                    tiersHtml += '<tr' + (isRec ? ' class="recommended"' : '') + '><td>' + esc(e[0]) + '</td><td>' + esc(e[1].rate) + (isRec ? '<span class="rec-badge">REC</span>' : '') + '</td><td>' + esc(e[1].payment) + '</td></tr>';
+                });
+                tiersHtml += '</tbody></table></div>';
+            });
+        }
+        document.getElementById('q-tiers').innerHTML = tiersHtml;
+
+        // CTA Buttons
+        var ctaHtml = '';
+        if (lo.applyLink) {
+            ctaHtml += '<a href="' + esc(lo.applyLink) + '" class="cta-btn primary" onclick="trackCTA(\'apply\')" target="_blank">Start Application</a>';
+        }
+        if (lo.calendarLink) {
+            ctaHtml += '<a href="' + esc(lo.calendarLink) + '" class="cta-btn secondary" onclick="trackCTA(\'schedule\')" target="_blank">Schedule a Call</a>';
+        }
+        if (lo.phone) {
+            ctaHtml += '<a href="tel:' + esc(lo.phone) + '" class="cta-btn secondary" onclick="trackCTA(\'call\')">Call Now</a>';
+        }
+        if (lo.email) {
+            ctaHtml += '<a href="mailto:' + esc(lo.email) + '" class="cta-btn secondary" onclick="trackCTA(\'email\')">Email</a>';
+        }
+        if (!ctaHtml) ctaHtml = '<div style="color:var(--muted);font-size:13px;">Contact your loan officer for next steps.</div>';
+        document.getElementById('q-cta-buttons').innerHTML = ctaHtml;
+    }
+
+    function showError() {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+    }
+
+    // CTA click tracking
+    window.trackCTA = function(buttonName) {
+        trackEvent('button_clicked', { button_name: buttonName, code: code });
+    };
+
+    function esc(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
+    function num(v) { return Number(v).toLocaleString(); }
+})();
+</script>
+</body>
+</html>
