@@ -5529,18 +5529,190 @@ function updateQuote() {
 
 // ===== AI STRATEGY =====
 function generateAIStrategy() {
-    const clientName = document.getElementById('in-client-name').value || "Client";
-    const newRate = document.getElementById('snap-rate').innerText;
-    const netSavingsVal = parseFloat(document.getElementById('out-net-savings').innerText.replace(/[^0-9.-]/g, '')) || 0;
-    let script = '"' + clientName + ', ';
-    if (netSavingsVal > 200) {
-        script += "I've analyzed your situation. By consolidating into our HELOC at " + newRate + "%, you'll free up " + document.getElementById('out-net-savings').innerText + ' in monthly cash flow immediately."';
-    } else {
-        script += "this structure gives you access to " + document.getElementById('out-net-cash').innerText + " in cash while keeping your payment at " + document.getElementById('snap-payment').innerText + '. Clean and efficient."';
-    }
-    document.getElementById('ai-output-text').innerText = script;
-    // Use Edge Function proxy — AI key never leaves server
+    var ctx = _gatherFullQuoteContext();
+    var kbStrategy = _generateKBStrategy(ctx);
+    var outputEl = document.getElementById('ai-output-text');
+    outputEl.innerText = kbStrategy;
+    // Store KB response, then enhance with AI proxy in background
+    window._lastKBStrategy = kbStrategy;
     generateCustomAIStrategy();
+}
+
+// ===== BUILT-IN KNOWLEDGE BASE STRATEGY GENERATOR =====
+function _generateKBStrategy(ctx) {
+    var name = (ctx.clientName || 'Client').split(' ')[0];
+    var credit = parseInt(ctx.creditScore) || 0;
+    var rate = ctx.recommendedRate || '?';
+    var term = ctx.recommendedTerm || '?';
+    var payment = ctx.monthlyPayment || '$0';
+    var totalLoan = ctx.totalLoanAmount || '$0';
+    var origPct = ctx.origination || '0';
+    var cltv = parseFloat((ctx.cltv || '0').replace('%','')) || 0;
+    var savings = ctx.netMonthlySavings || '';
+    var savingsNum = parseFloat((savings || '0').replace(/[^0-9.-]/g,'')) || 0;
+    var cashBack = ctx.cashBack || 0;
+    var helocPayoff = ctx.helocPayoff || 0;
+    var homeVal = ctx.homeValue || 0;
+    var mortBal = ctx.mortgageBalance || 0;
+    var loName = ctx.loName || 'your loan officer';
+    var loCompany = ctx.loCompany || '';
+    var sections = [];
+
+    // ── 1. OPENING HOOK ──
+    var hook = '📞 OPENING HOOK\n';
+    if (ctx.debtConsolidation && ctx.debtConsolidation.savings) {
+        hook += '"' + name + ', I put together a consolidation strategy that saves you ' + ctx.debtConsolidation.savings + ' every single month. I want to walk you through exactly how it works — do you have a quick minute?"';
+    } else if (helocPayoff > 0) {
+        hook += '"' + name + ', I found a way to refinance your existing HELOC into a better structure at ' + rate + '%. Your new payment comes in at ' + payment + '/mo — let me show you how the numbers break down."';
+    } else if (savingsNum > 200) {
+        hook += '"' + name + ', I\'ve put together a HELOC quote that frees up ' + savings + ' in monthly cash flow while giving you access to your equity. Can I walk you through the numbers?"';
+    } else if (cashBack > 50000) {
+        hook += '"' + name + ', I\'ve structured a way to pull $' + cashBack.toLocaleString() + ' out of your equity at ' + rate + '% with a ' + payment + '/mo payment. Let me show you how this works."';
+    } else if (ctx.isInvestment) {
+        hook += '"' + name + ', I put together an investment property HELOC at ' + rate + '% — this gives you $' + cashBack.toLocaleString() + ' in working capital for your next deal. Want to see the full breakdown?"';
+    } else {
+        hook += '"' + name + ', I\'ve analyzed your property and put together a HELOC at ' + rate + '% — ' + payment + '/mo. This is one of the cleanest structures I\'ve seen at your equity level. Let me walk you through it."';
+    }
+    sections.push(hook);
+
+    // ── 2. KEY NUMBERS ──
+    var nums = '📊 KEY NUMBERS TO PRESENT\n';
+    nums += '• Total Loan: ' + totalLoan + '\n';
+    nums += '• Rate: ' + rate + '% ' + (ctx.isInterestOnly ? '(Interest Only)' : '(Fixed)') + '  |  Term: ' + term + ' years\n';
+    nums += '• Monthly Payment: ' + payment + '\n';
+    if (origPct && origPct !== '0') nums += '• Origination: ' + origPct + '%\n';
+    nums += '• Combined LTV: ' + ctx.cltv + '\n';
+    if (savingsNum > 0) nums += '• Net Monthly Savings: ' + savings + ' (' + (savingsNum * 12).toLocaleString('en-US', {style:'currency',currency:'USD',maximumFractionDigits:0}) + '/yr)\n';
+    if (ctx.breakEvenMonths) nums += '• Break-Even: ' + ctx.breakEvenMonths + ' months\n';
+    if (helocPayoff > 0) nums += '• Paying off existing HELOC: $' + helocPayoff.toLocaleString() + '\n';
+    if (cashBack > 0) nums += '• Cash back to borrower: $' + cashBack.toLocaleString() + '\n';
+    sections.push(nums);
+
+    // ── 3. WHY THIS STRUCTURE ──
+    var why = '💡 WHY THIS STRUCTURE WORKS\n';
+    if (ctx.debtConsolidation && ctx.debtConsolidation.savings) {
+        why += '→ Consolidating high-interest debt into a single HELOC payment saves ' + ctx.debtConsolidation.savings + '/mo\n';
+        why += '→ One payment vs. multiple creditors — simpler, cheaper, faster payoff\n';
+    }
+    if (helocPayoff > 0) {
+        why += '→ Rolling the existing HELOC balance into a fixed-rate product eliminates variable rate risk\n';
+    }
+    if (savingsNum > 200) {
+        why += '→ ' + savings + '/mo savings = ' + (savingsNum * 12).toLocaleString('en-US', {style:'currency',currency:'USD',maximumFractionDigits:0}) + '/yr back in the client\'s pocket\n';
+    }
+    if (cashBack > 0 && !helocPayoff) {
+        why += '→ Accessing $' + cashBack.toLocaleString() + ' in equity without touching the first mortgage rate\n';
+    }
+    if (cltv <= 80) {
+        why += '→ CLTV at ' + ctx.cltv + ' — well within guidelines, strong equity position\n';
+    } else if (cltv <= 90) {
+        why += '→ CLTV at ' + ctx.cltv + ' — within range, still solid equity cushion\n';
+    }
+    if (ctx.isInterestOnly) {
+        why += '→ Interest-only structure keeps the payment minimal during the draw period\n';
+    }
+    if (credit >= 740) {
+        why += '→ Strong credit profile qualifies for best-tier pricing\n';
+    } else if (credit >= 680) {
+        why += '→ Good credit positions the client well — rate reflects solid risk profile\n';
+    }
+    sections.push(why);
+
+    // ── 4. OBJECTION HANDLERS ──
+    var objections = '🛡️ OBJECTION HANDLERS\n';
+    var objCount = 0;
+
+    // Always include rate vs first mortgage
+    if (mortBal > 0) {
+        objections += '\n"Why is this rate higher than my first mortgage?"\n';
+        objections += '→ "Your first mortgage was a 30-year amortized loan locked when rates were historically low. HELOCs are second-lien products with shorter terms — ' + rate + '% is highly competitive for a ' + term + '-year fixed second. Plus, you\'re not touching that low first mortgage rate."\n';
+        objCount++;
+    }
+
+    // Rate seems high
+    if (parseFloat(rate) > 8.5) {
+        objections += '\n"Can I get a better rate?"\n';
+        objections += '→ "At ' + ctx.cltv + ' CLTV' + (credit ? ' and a ' + credit + ' score' : '') + ', ' + rate + '% is at the top of the market for a fixed second lien. The alternative — a cash-out refi — would reset your entire first mortgage to today\'s rates, which are likely higher than what you have."\n';
+        objCount++;
+    }
+
+    // Low credit
+    if (credit > 0 && credit < 700) {
+        objections += '\n"My credit isn\'t where I want it to be."\n';
+        objections += '→ "I hear you. At ' + credit + ', we\'re still able to get you approved at ' + rate + '%. And here\'s the thing — if you use part of the HELOC to pay down revolving debt, your score could jump 30-50 points in 60-90 days. Then we can look at a rate improvement."\n';
+        objCount++;
+    }
+
+    // High origination
+    if (parseFloat(origPct) > 2) {
+        objections += '\n"That origination fee seems high."\n';
+        objections += '→ "The ' + origPct + '% origination buys down your rate significantly. Without it, you\'d be looking at a higher rate that costs more over the life of the loan. ' + (ctx.breakEvenMonths ? 'You break even in just ' + ctx.breakEvenMonths + ' months.' : 'The math works in your favor within the first year.') + '"\n';
+        objCount++;
+    }
+
+    // High CLTV
+    if (cltv > 80) {
+        objections += '\n"Is my CLTV too high?"\n';
+        objections += '→ "At ' + ctx.cltv + ', we\'re within program guidelines. The lender is comfortable because your property supports the value, and the fixed rate means predictable payments for the full term."\n';
+        objCount++;
+    }
+
+    // Cash-out refi comparison
+    if (mortBal > 0 && cashBack > 0) {
+        objections += '\n"Why not just do a cash-out refinance?"\n';
+        objections += '→ "A cash-out refi would replace your entire first mortgage at today\'s rates — probably 7%+. You\'d pay more on the full $' + mortBal.toLocaleString() + ' balance. With a HELOC, you only pay ' + rate + '% on the $' + (totalLoan ? totalLoan.replace(/[^0-9]/g,'') : cashBack).toLocaleString() + ' you need. Your low first mortgage rate stays untouched."\n';
+        objCount++;
+    }
+
+    // Investment property
+    if (ctx.isInvestment) {
+        objections += '\n"Investment property rates are higher."\n';
+        objections += '→ "True — but at ' + rate + '%, this is highly competitive for a non-owner-occupied second lien. The interest may also be deductible as a business expense — worth checking with your CPA. And the cash you access can generate returns well above the carrying cost."\n';
+        objCount++;
+    }
+
+    // Interest only
+    if (ctx.isInterestOnly) {
+        objections += '\n"What happens after the interest-only period?"\n';
+        objections += '→ "After the draw period, the loan converts to a fully amortized repayment schedule. But many clients refinance or pay down the balance before that kicks in. The IO period gives you maximum cash flow flexibility right now."\n';
+        objCount++;
+    }
+
+    // Tax deduction (always useful if we have room)
+    if (objCount < 5) {
+        objections += '\n"Is the interest tax deductible?"\n';
+        objections += '→ "If the HELOC funds are used to buy, build, or substantially improve your home, the interest may be deductible up to $750K total mortgage debt. For debt consolidation or cash-out, check with your tax advisor — but the monthly savings alone make this worthwhile."\n';
+    }
+
+    sections.push(objections);
+
+    // ── 5. TIER COMPARISON ──
+    if (ctx.tiers.length > 1) {
+        var tierComp = '📋 TIER OPTIONS TO PRESENT\n';
+        ctx.tiers.forEach(function(t) {
+            tierComp += 'Tier ' + t.tier + ' (' + t.origPts + '% origination): ';
+            tierComp += Object.entries(t.rates).map(function(e) {
+                return e[0] + ' @ ' + e[1].rate + ' = ' + e[1].payment;
+            }).join('  |  ');
+            tierComp += '\n';
+        });
+        tierComp += '\n→ TIP: Present the recommended tier first, then offer alternatives: "I can also show you a lower origination option if you prefer less upfront cost."';
+        sections.push(tierComp);
+    }
+
+    // ── 6. CLOSING SCRIPT ──
+    var close = '🎯 CLOSING SCRIPT\n';
+    close += '"' + name + ', based on everything we\'ve looked at, this ' + rate + '% fixed HELOC at ' + payment + '/mo is the strongest structure for your situation. ';
+    if (savingsNum > 0) {
+        close += 'You\'re saving ' + savings + ' every month starting day one. ';
+    }
+    if (ctx.debtConsolidation) {
+        close += 'Plus you\'re eliminating multiple payments and simplifying everything into one. ';
+    }
+    close += 'Rates can move, so I\'d recommend we lock this in. I can send you the application right now — does that work?"';
+    sections.push(close);
+
+    return sections.join('\n\n');
 }
 
 // Gather ALL live quote data for the AI context
@@ -5686,9 +5858,17 @@ ${ctx.isInvestment ? 'NOTE: Investment property — use investor-specific talkin
 
 Generate the sales strategy and phone script now.`;
 
-    try {
-        document.getElementById('ai-output-text').innerText = '🤖 Analyzing quote data and generating personalized strategy...';
+    var outputEl = document.getElementById('ai-output-text');
+    var kbText = window._lastKBStrategy || '';
 
+    // Show loading indicator below KB response
+    if (kbText) {
+        outputEl.innerText = kbText + '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🤖 Generating AI-enhanced strategy...';
+    } else {
+        outputEl.innerText = '🤖 Analyzing quote data and generating personalized strategy...';
+    }
+
+    try {
         const response = await fetch(SUPABASE_FUNCTIONS_URL + '/ai-proxy', {
             method: 'POST',
             headers: {
@@ -5700,22 +5880,32 @@ Generate the sales strategy and phone script now.`;
         const data = await response.json();
 
         if (data.success && data.text) {
-            // 3C: Auto-shorten any URLs in AI response before displaying
             var aiText = data.text;
+            var finalText = kbText + '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🤖 AI-ENHANCED STRATEGY (' + (data.provider || 'AI') + ')\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' + aiText;
             if (typeof autoShortenUrls === 'function') {
-                autoShortenUrls(aiText).then(function(shortened) {
-                    document.getElementById('ai-output-text').innerText = shortened;
+                autoShortenUrls(finalText).then(function(shortened) {
+                    outputEl.innerText = shortened;
                 }).catch(function() {
-                    document.getElementById('ai-output-text').innerText = aiText;
+                    outputEl.innerText = finalText;
                 });
             } else {
-                document.getElementById('ai-output-text').innerText = aiText;
+                outputEl.innerText = finalText;
             }
         } else {
-            document.getElementById('ai-output-text').innerText = '⚠️ ' + (data.error || 'No response from AI provider.');
+            // AI failed — keep KB response as-is (don't show error over useful content)
+            if (kbText) {
+                outputEl.innerText = kbText;
+            } else {
+                outputEl.innerText = '⚠️ ' + (data.error || 'No response from AI provider.');
+            }
         }
     } catch (e) {
-        document.getElementById('ai-output-text').innerText = '⚠️ AI proxy error: ' + e.message;
+        // AI proxy unavailable — KB response stays
+        if (kbText) {
+            outputEl.innerText = kbText;
+        } else {
+            outputEl.innerText = '⚠️ AI proxy error: ' + e.message;
+        }
     }
 }
 
