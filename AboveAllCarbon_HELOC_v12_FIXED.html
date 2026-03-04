@@ -7795,7 +7795,7 @@ function _gatherIntegrationData() {
     };
 }
 
-function _setVal(id, v) { var el = document.getElementById(id); if (el && v) el.value = v; }
+function _setVal(id, v) { var el = document.getElementById(id); if (el && v != null) el.value = v; }
 function _applyIntegrationData(data) {
     if (data.ghl) {
         _setVal('ghl-webhook-url', data.ghl.webhookUrl);
@@ -7880,8 +7880,8 @@ async function saveIntegrations() {
     } else {
         // Non-super_admin: only save Bonzo data (merge into existing metadata)
         var bonzoData = {
-            apiKey: document.getElementById('bonzo-api-key').value,
-            teamId: document.getElementById('bonzo-team-id').value
+            apiKey: _val('bonzo-api-key'),
+            teamId: _val('bonzo-team-id')
         };
         if (sb && userId) {
             try {
@@ -7939,7 +7939,7 @@ async function _loadIntegrationsFromSupabase() {
             .select('metadata')
             .eq('user_id', userId)
             .eq('provider', 'heloc_settings')
-            .single();
+            .maybeSingle();
 
         if (data && data.metadata) {
             _applyIntegrationData(data.metadata);

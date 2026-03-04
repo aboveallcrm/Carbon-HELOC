@@ -16,7 +16,8 @@ create table if not exists public.profiles (
   id uuid references auth.users not null primary key,
   email text,
   role text check (role in ('super_admin', 'admin', 'user')) default 'user',
-  tier text check (tier in ('carbon', 'platinum', 'obsidian', 'titanium', 'diamond')) default 'carbon',
+  current_tier text check (current_tier in ('carbon', 'titanium', 'platinum', 'obsidian', 'diamond')) default 'carbon',
+  subscription_status text check (subscription_status in ('active', 'trialing', 'canceled', 'past_due', 'suspended')) default 'trialing',
 
   -- Loan Officer Profile Fields
   display_name text,
