@@ -400,18 +400,6 @@
             text-decoration: underline;
         }
 
-        .reset-cache {
-            display: block;
-            margin-top: 12px;
-            font-size: 11px;
-            color: var(--text-muted);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .reset-cache:hover {
-            color: var(--text-secondary);
-        }
 
         /* ── Responsive ── */
         @media (max-width: 520px) {
@@ -533,10 +521,6 @@
             <!-- Footer -->
             <div class="card-footer">
                 <p>Don't have an account? <a href="register.html">Create one</a></p>
-                <a href="#" class="reset-cache"
-                   onclick="if(confirm('This will clear locally cached settings. Your cloud data (quotes, integrations) will not be affected. Continue?')){localStorage.clear();window.location.reload();}">
-                    Reset Local Cache
-                </a>
             </div>
         </div>
     </div>
