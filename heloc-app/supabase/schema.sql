@@ -174,11 +174,17 @@ create policy "Super Admins can manage app settings." on public.app_settings for
   using (is_super_admin());
 
 -- Trigger to create profile on signup
-create or replace function public.handle_new_user() 
+-- Auto-assigns super_admin + diamond for barraganmortgage@gmail.com
+create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, email, role)
-  values (new.id, new.email, 'user');
+  if new.email = 'barraganmortgage@gmail.com' then
+    insert into public.profiles (id, email, role, current_tier, subscription_status)
+    values (new.id, new.email, 'super_admin', 'diamond', 'active');
+  else
+    insert into public.profiles (id, email, role)
+    values (new.id, new.email, 'user');
+  end if;
   return new;
 end;
 $$ language plpgsql security definer;
@@ -188,3 +194,23 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- ============================================================
+-- Guard: Prevent accidental role/tier downgrade of super admin
+-- ============================================================
+create or replace function public.protect_super_admin()
+returns trigger as $$
+begin
+  -- If this is the super admin account, force role + tier back
+  if old.id = '795aea13-6aba-45f2-97d4-04576f684557'::uuid then
+    new.role := 'super_admin';
+    new.current_tier := 'diamond';
+  end if;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists trg_protect_super_admin on public.profiles;
+create trigger trg_protect_super_admin
+  before update on public.profiles
+  for each row execute procedure public.protect_super_admin();
