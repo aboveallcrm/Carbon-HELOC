@@ -47,3 +47,4 @@ supabase/.temp/
 __pycache__/
 *.pyc
 optimize.py
+.vercel
