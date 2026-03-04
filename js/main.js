@@ -20,6 +20,11 @@ try {
     // Check for impersonation (super_admin viewing as another user)
     const effectiveUser = await getEffectiveUser(user);
 
+    console.log('User from getCurrentUser:', user);
+    console.log('User role from getCurrentUser:', user?.role);
+    console.log('Effective user:', effectiveUser);
+    console.log('Effective user role:', effectiveUser?.role);
+
     // Expose user info globally for role-based access
     window.currentUserRole = effectiveUser.role || 'user';
     window.currentUserId = effectiveUser.id || null;

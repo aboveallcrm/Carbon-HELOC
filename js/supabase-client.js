@@ -20,13 +20,25 @@ export async function getCurrentUser() {
     if (!user) return null;
 
     // Fetch profile for role/tier
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-    _cachedUser = { ...user, ...profile };
+    if (profileError) {
+        console.warn('Profile fetch error:', profileError.message);
+    }
+
+    console.log('Auth user role:', user.role);
+    console.log('Profile role:', profile?.role);
+    console.log('Profile data:', profile);
+
+    // Merge profile over user, with profile taking precedence
+    _cachedUser = { ...user, ...(profile || {}) };
+    
+    console.log('Merged role:', _cachedUser.role);
+    
     return _cachedUser;
 }
 
