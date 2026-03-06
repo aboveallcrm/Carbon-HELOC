@@ -57,16 +57,42 @@ serve(async (req: Request) => {
       });
     }
 
-    const aiKey = integration?.metadata?.ai_api_key;
+    // Try per-user key first, then fall back to Edge Function env secrets
+    let aiKey = integration?.metadata?.ai_api_key;
+    let keySource = "user";
+
+    // Also check for per-user AI config overrides
+    const aiProvider = integration?.metadata?.ai_provider || provider || "openai";
+
+    // If no per-user key, fall back to platform-level env secrets
     if (!aiKey) {
-      return new Response(JSON.stringify({ error: "No AI key configured. Contact your Super Admin." }), {
+      const envKeyMap: Record<string, string> = {
+        gemini: "GEMINI_API_KEY",
+        openai: "OPENAI_API_KEY",
+        anthropic: "ANTHROPIC_API_KEY",
+        deepseek: "DEEPSEEK_API_KEY",
+        groq: "GROQ_API_KEY",
+        grok: "GROK_API_KEY",
+        perplexity: "PERPLEXITY_API_KEY",
+      };
+      const envName = envKeyMap[aiProvider];
+      if (envName) aiKey = Deno.env.get(envName) || "";
+      // Also try numbered variants (GEMINI_API_KEY_1, etc.)
+      if (!aiKey && envName) {
+        for (let i = 1; i <= 5; i++) {
+          aiKey = Deno.env.get(envName.replace("_KEY", `_KEY_${i}`)) || "";
+          if (aiKey) break;
+        }
+      }
+      if (aiKey) keySource = "platform";
+    }
+
+    if (!aiKey) {
+      return new Response(JSON.stringify({ error: "No AI key configured for " + aiProvider + ". Contact your Super Admin." }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    // Also check for per-user AI config overrides
-    const aiProvider = integration?.metadata?.ai_provider || provider || "openai";
     // Default model depends on provider
     const defaultModels: Record<string, string> = {
       openai: "gpt-4o",
@@ -88,6 +114,7 @@ serve(async (req: Request) => {
         configured: true,
         provider: aiProvider,
         model: aiModel,
+        keySource,
       }), {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
