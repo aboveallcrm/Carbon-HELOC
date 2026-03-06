@@ -1003,10 +1003,12 @@ RESPONSE RULES
         // Pick up tier from app globals
         if (window.currentUserTier) EzraState.userTier = window.currentUserTier;
 
-        // Diamond-only feature gate
-        const tier = (EzraState.userTier || '').toLowerCase();
-        if (tier !== 'diamond' && window.currentUserRole !== 'super_admin') {
-            console.log('Ezra: Requires Diamond tier — widget hidden');
+        // Tier gate: Ezra available Titanium+ (level >= 1)
+        const tier = (EzraState.userTier || 'carbon').toLowerCase();
+        const tierLevels = { carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 };
+        const userLevel = tierLevels[tier] || 0;
+        if (userLevel < 1 && window.currentUserRole !== 'super_admin') {
+            console.log('Ezra: Requires Titanium+ tier — widget hidden');
             return;
         }
 
@@ -1015,6 +1017,28 @@ RESPONSE RULES
 
         // Setup event listeners
         setupEventListeners();
+
+        // Mark Platinum-only buttons for lower-tier users
+        if (userLevel < 2 && window.currentUserRole !== 'super_admin') {
+            const pasteBtn = document.getElementById('ezra-paste-rates');
+            const voiceBtn = document.getElementById('ezra-voice');
+            if (pasteBtn) {
+                pasteBtn.title = 'Paste Rates — Platinum feature (click to learn more)';
+                pasteBtn.style.position = 'relative';
+                const lock = document.createElement('span');
+                lock.style.cssText = 'position:absolute;top:-4px;right:-4px;font-size:8px;background:rgba(167,139,250,0.9);color:white;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;';
+                lock.textContent = '\uD83D\uDD12';
+                pasteBtn.appendChild(lock);
+            }
+            if (voiceBtn) {
+                voiceBtn.title = 'Voice Input — Platinum feature (click to learn more)';
+                voiceBtn.style.position = 'relative';
+                const lock = document.createElement('span');
+                lock.style.cssText = 'position:absolute;top:-4px;right:-4px;font-size:8px;background:rgba(167,139,250,0.9);color:white;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;';
+                lock.textContent = '\uD83D\uDD12';
+                voiceBtn.appendChild(lock);
+            }
+        }
 
         // Check auth state (async — loads conversation)
         checkAuthState();
@@ -2291,9 +2315,32 @@ RESPONSE RULES
     }
 
     // ============================================
+    // TIER GATING FOR PLATINUM+ FEATURES
+    // ============================================
+    function requirePlatinum(featureName) {
+        const tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
+        const tier = window.currentUserTier || 'carbon';
+        const level = tiers.indexOf(tier);
+        // super_admin always has access
+        if (window.currentUserRole === 'super_admin') return true;
+        if (level >= 2) return true; // platinum+
+
+        // Show upgrade prompt
+        const hooks = {
+            'Paste Rates': 'Import Figure pricing in 10 seconds — stop typing rates manually for 15 minutes.',
+            'Voice Input': 'Talk to Ezra hands-free between client calls. Describe the deal, get the quote.',
+        };
+        const msg = hooks[featureName] || 'This feature is available on Platinum and above.';
+        addMessage('assistant', '**' + featureName + ' requires Platinum**\n\n' + msg + '\n\n*Upgrade to Platinum to unlock this and save 2+ hours every day.*');
+        if (typeof showUpgradeModal === 'function') showUpgradeModal();
+        return false;
+    }
+
+    // ============================================
     // PASTE RATES MODAL
     // ============================================
     function openPasteModal() {
+        if (!requirePlatinum('Paste Rates')) return;
         const modal = document.getElementById('ezra-paste-modal');
         const area = document.getElementById('ezra-paste-area');
         if (modal) {
@@ -2329,6 +2376,8 @@ RESPONSE RULES
             stopVoiceInput();
             return;
         }
+
+        if (!requirePlatinum('Voice Input')) return;
 
         // Check browser support
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;

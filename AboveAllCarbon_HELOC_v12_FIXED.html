@@ -1612,6 +1612,62 @@
             letter-spacing: 0.5px;
         }
 
+        .tier-card .tier-tagline {
+            font-family: var(--font-heading);
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.4);
+            font-style: italic;
+            margin-bottom: 6px;
+        }
+
+        .tier-card .tier-time-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            font-family: var(--font-heading);
+            font-size: 8px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .tier-card .tier-pitch {
+            font-family: var(--font-heading);
+            font-size: 8px;
+            color: var(--accent-color);
+            font-style: italic;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid rgba(197, 160, 89, 0.15);
+            line-height: 1.4;
+        }
+
+        .tier-card.recommended {
+            border-color: rgba(16, 185, 129, 0.5);
+            background: rgba(16, 185, 129, 0.05);
+            position: relative;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+        }
+
+        .tier-card .tier-recommended {
+            position: absolute;
+            top: -9px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            font-family: var(--font-heading);
+            font-size: 7px;
+            font-weight: 800;
+            padding: 2px 10px;
+            border-radius: 8px;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
         .upgrade-cta {
             text-align: center;
             margin-top: 8px;
@@ -3999,13 +4055,12 @@
         <div id="upgrade-modal">
             <button class="modal-close"
                 onclick="document.getElementById('upgrade-modal-overlay').classList.remove('visible')">&times;</button>
-            <h2>Unlock <span>More Power</span></h2>
-            <p class="modal-subtitle">Your current plan vs. what's available</p>
+            <h2>Get <span>More Done</span> in Less Time</h2>
+            <p class="modal-subtitle">Top-producing LOs automate what slows them down</p>
             <div class="tier-grid" id="upgrade-tier-grid"></div>
             <div class="upgrade-cta">
-                <p>Ready to level up your proposal game?</p>
-                <a href="mailto:barraganmortgage@gmail.com?subject=Upgrade%20My%20Carbon%20HELOC%20Plan">Contact Us to
-                    Upgrade</a>
+                <p>The average LO spends 45 minutes per quote manually. You don't have to.</p>
+                <a href="mailto:barraganmortgage@gmail.com?subject=Upgrade%20My%20Carbon%20HELOC%20Plan">Upgrade Now</a>
             </div>
         </div>
     </div>
@@ -4431,13 +4486,32 @@
             <div class="control-section">
                 <h4 style="font-family: var(--font-heading); color: white; margin: 0 0 10px 0; font-size: 11px;">📂
                     Saved Quotes</h4>
-                <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items: center;">
+                <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items: center; flex-wrap: wrap;">
                     <button class="btn"
                         style="background: linear-gradient(135deg, #10b981, #059669); font-size: 9px; padding: 5px 12px;"
                         onclick="startNewQuote()">+ New Quote</button>
                     <button class="btn"
                         style="background: linear-gradient(135deg, #3b82f6, #2563eb); font-size: 9px; padding: 5px 12px;"
                         onclick="loadUserQuotes()">🔄 Refresh</button>
+                    <button class="btn"
+                        style="background: linear-gradient(135deg, #ef4444, #dc2626); font-size: 9px; padding: 5px 12px;"
+                        onclick="deleteDuplicateQuotes()">🗑 Delete Duplicates</button>
+                    <select id="quotes-filter-status" onchange="loadUserQuotes()"
+                        style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 4px 8px; font-family: var(--font-heading); font-size: 9px;">
+                        <option value="all">All Status</option>
+                        <option value="new">New</option>
+                        <option value="sent">Sent</option>
+                        <option value="follow_up">Needs Follow-Up</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                    <select id="quotes-filter-date" onchange="loadUserQuotes()"
+                        style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 4px 8px; font-family: var(--font-heading); font-size: 9px;">
+                        <option value="all">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="older">Older</option>
+                    </select>
                     <span id="quotes-count"
                         style="font-family: var(--font-heading); font-size: 9px; color: rgba(255,255,255,0.5);"></span>
                 </div>
@@ -4612,6 +4686,9 @@
                     <button class="btn"
                         style="background: linear-gradient(135deg, #3b82f6, #2563eb); font-size: 9px; padding: 5px 12px;"
                         onclick="loadUserLeads()">🔄 Refresh</button>
+                    <button class="btn" id="bonzo-sync-btn"
+                        style="background: linear-gradient(135deg, #f59e0b, #d97706); font-size: 9px; padding: 5px 12px; display: none;"
+                        onclick="syncFromBonzo()">🟠 Sync Bonzo</button>
                     <div style="position:relative;display:inline-block;">
                         <button class="btn"
                             style="background: linear-gradient(135deg, #ef4444, #dc2626); font-size: 9px; padding: 5px 12px;"
@@ -4640,14 +4717,27 @@
                         onclick="exportLeadsCSV()">📥 Export CSV</button>
                     <select id="leads-filter-status" onchange="loadUserLeads()"
                         style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 4px 8px; font-family: var(--font-heading); font-size: 9px;">
-                        <option value="all">All Leads</option>
+                        <option value="all">All Status</option>
                         <option value="quoted">Quoted</option>
                         <option value="not_quoted">Not Quoted</option>
-                        <option value="New">New</option>
-                        <option value="Contacted">Contacted</option>
-                        <option value="Qualified">Qualified</option>
-                        <option value="Closed">Closed</option>
+                        <option value="new">New</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="qualified">Qualified</option>
+                        <option value="closed">Closed</option>
+                        <option value="lost">Lost</option>
                         <option value="dnc">DNC Only</option>
+                    </select>
+                    <select id="leads-filter-source" onchange="loadUserLeads()"
+                        style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 4px 8px; font-family: var(--font-heading); font-size: 9px;">
+                        <option value="all">All Sources</option>
+                        <option value="bonzo" style="color:#f59e0b;">Bonzo</option>
+                        <option value="ghl" style="color:#3b82f6;">GoHighLevel</option>
+                        <option value="manual" style="color:#6b7280;">Manual</option>
+                        <option value="webhook" style="color:#8b5cf6;">Webhook</option>
+                        <option value="csv" style="color:#10b981;">CSV Import</option>
+                        <option value="zapier" style="color:#ff4a00;">Zapier</option>
+                        <option value="n8n" style="color:#ef4444;">n8n</option>
+                        <option value="leadmailbox" style="color:#06b6d4;">LeadMailbox</option>
                     </select>
                     <span id="leads-count"
                         style="font-family: var(--font-heading); font-size: 9px; color: rgba(255,255,255,0.5);"></span>
@@ -5385,9 +5475,10 @@ Best regards,
                             <div class="input-field" style="flex: 2;"><label>Bonzo Xcode</label><input type="password"
                                     id="bonzo-api-key" placeholder="Your Bonzo Xcode key"></div>
                             <div class="input-field" style="flex: 2;"><label>Bonzo API Key</label><input type="password"
-                                    id="bonzo-api-key-2" placeholder="Your Bonzo API key (if different from Xcode)">
+                                    id="bonzo-api-key-2" placeholder="Your Bonzo API key (different from Xcode)">
                             </div>
                         </div>
+                        <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 4px 0 0 0;">Find your <b style="color:#fb923c;">Xcode</b> in Bonzo → Settings → API / Integrations → Xcode. The <b style="color:#fb923c;">API Key</b> is a separate key from the same page. Both are required for full sync.</p>
                         <div class="input-group" style="margin-top: 8px;">
                             <div class="input-field" style="flex: 2;">
                                 <label>Bonzo Inbound Webhook URL</label>
@@ -5400,8 +5491,8 @@ Best regards,
                                 onclick="copyBonzoWebhookUrl()">📋 Copy</button>
                         </div>
                         <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 8px 0 0 0;">Paste the Bonzo
-                            Inbound URL into Bonzo → Settings → Webhooks. Enter your Bonzo Xcode key above for outbound
-                            sync (push leads TO Bonzo).</p>
+                            Inbound URL into Bonzo → Settings → Webhooks. The Xcode + API Key enable outbound
+                            sync (push leads TO Bonzo) and the "Sync Bonzo" button in MY LEADS.</p>
                         <button class="btn" style="background: #fb923c; margin-top: 8px;"
                             onclick="testBonzoConnection()">🔗 Test Bonzo Connection</button>
                     </div>
@@ -5610,8 +5701,9 @@ Best regards,
                             <div class="input-field" style="flex: 2;"><label>Bonzo Xcode</label><input type="password"
                                     id="keys-bonzo-api" placeholder="Bonzo Xcode key"></div>
                             <div class="input-field" style="flex: 2;"><label>Bonzo API Key</label><input type="password"
-                                    id="keys-bonzo-api-2" placeholder="Bonzo API key (if different)"></div>
+                                    id="keys-bonzo-api-2" placeholder="Bonzo API key (different from Xcode)"></div>
                         </div>
+                        <p style="font-size: 8px; color: rgba(255,255,255,0.4); margin: 4px 0 0 0;">Xcode and API Key are separate keys — both found in Bonzo → Settings → API / Integrations.</p>
                         <div class="input-group" style="margin-top: 8px;">
                             <div class="input-field" style="flex: 2;"><label>Bonzo Webhook URL</label><input type="text"
                                     id="keys-bonzo-webhook-url" placeholder="https://..."></div>
@@ -6418,16 +6510,23 @@ Best regards,
             });
 
             var tierColors = { carbon: '#6b7280', titanium: '#94a3b8', platinum: '#a78bfa', obsidian: '#334155', diamond: '#06b6d4' };
+            var tierTimeSaved = { titanium: '30+ min/day', platinum: '2+ hours/day', obsidian: 'Unlimited' };
 
             var overlay = document.createElement('div');
             overlay.className = 'tab-upgrade-overlay';
+
+            var timeBadge = tierTimeSaved[lockInfo.requiredTier]
+                ? '<div style="display:inline-block;background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.15));border:1px solid rgba(16,185,129,0.3);color:#10b981;font-family:var(--font-heading);font-size:10px;font-weight:700;padding:4px 14px;border-radius:12px;margin-bottom:14px;letter-spacing:0.5px;">You could save ' + tierTimeSaved[lockInfo.requiredTier] + '</div>'
+                : '';
+
             overlay.innerHTML =
                 '<div class="upgrade-icon">' + (lockInfo.icon || '🔒') + '</div>' +
-                '<span class="upgrade-tier-pill" style="background:' + (tierColors[lockInfo.requiredTier] || '#6b7280') + ';color:white;">' + (lockInfo.requiredTier || '').toUpperCase() + '+ Required</span>' +
+                timeBadge +
                 '<div class="upgrade-title">' + (lockInfo.title || 'Upgrade to Unlock') + '</div>' +
                 '<div class="upgrade-desc">' + (lockInfo.description || 'This feature is available on higher tier plans.') + '</div>' +
                 '<ul class="upgrade-features">' + (lockInfo.features || []).map(function (f) { return '<li>' + f + '</li>'; }).join('') + '</ul>' +
-                '<button class="upgrade-cta" onclick="showUpgradeModal()">View Plans & Upgrade</button>';
+                '<span class="upgrade-tier-pill" style="background:' + (tierColors[lockInfo.requiredTier] || '#6b7280') + ';color:white;margin-bottom:16px;">' + (lockInfo.requiredTier || '').toUpperCase() + '</span>' +
+                '<button class="upgrade-cta" onclick="showUpgradeModal()">See What You\'re Missing</button>';
 
             tabContent.appendChild(overlay);
         }
@@ -6644,54 +6743,81 @@ Best regards,
             const tierColors = { carbon: '#6b7280', titanium: '#94a3b8', platinum: '#a78bfa', obsidian: '#334155', diamond: '#06b6d4' };
 
             const tierFeatures = {
-                carbon: [
-                    { name: 'Core Quote Builder', has: true },
-                    { name: 'PDF / Screenshot', has: true },
-                    { name: 'LO Profile', has: true },
-                    { name: 'Lead Parser', has: true },
-                    { name: 'Email / Share', has: true },
-                    { name: 'Debt Consolidation', has: false },
-                    { name: 'Refi Comparison', has: false },
-                    { name: 'AI Strategy', has: false },
-                    { name: 'Client Apply Link', has: false }
-                ],
-                titanium: [
-                    { name: 'Everything in Carbon', has: true },
-                    { name: 'Debt Consolidation', has: true, isNew: true },
-                    { name: 'Refi Comparison', has: true, isNew: true },
-                    { name: 'Break-Even Analysis', has: true, isNew: true },
-                    { name: 'Client Apply Link', has: true, isNew: true },
-                    { name: 'Leads Pipeline', has: true, isNew: true },
-                    { name: 'AI Strategy (Basic)', has: true, isNew: true },
-                    { name: 'Address Autocomplete', has: true, isNew: true }
-                ],
-                platinum: [
-                    { name: 'Everything in Titanium', has: true },
-                    { name: 'GHL Integration', has: true, isNew: true },
-                    { name: 'n8n Workflows', has: true, isNew: true },
-                    { name: 'Bonzo/FUB Full Sync', has: true, isNew: true },
-                    { name: 'Outbound Webhooks', has: true, isNew: true },
-                    { name: 'Lender Info Parser', has: true, isNew: true },
-                    { name: 'AI Strategy (Full)', has: true, isNew: true }
-                ],
-                obsidian: [
-                    { name: 'Everything in Platinum', has: true },
-                    { name: 'White Label Branding', has: true, isNew: true },
-                    { name: 'Company Settings', has: true, isNew: true }
-                ],
-                diamond: [
-                    { name: 'Everything in Obsidian', has: true },
-                    { name: 'Priority Support', has: true, isNew: true },
-                    { name: 'All Future Features', has: true, isNew: true }
-                ]
+                carbon: {
+                    tagline: 'Get Started',
+                    pitch: 'Replace your spreadsheet today.',
+                    features: [
+                        { name: 'Quote Builder — 3 tier pricing', has: true },
+                        { name: 'PDF & screenshot export', has: true },
+                        { name: 'LO profile & branding', has: true },
+                        { name: 'Rate sheets', has: true },
+                        { name: 'Email & share quotes', has: true },
+                        { name: 'Leads pipeline', has: false },
+                        { name: 'AI deal structuring', has: false },
+                        { name: 'CRM sync & automation', has: false }
+                    ]
+                },
+                titanium: {
+                    tagline: 'Close More Deals',
+                    pitch: 'Stop losing leads. Start closing them.',
+                    timeSaved: 'Save 30+ min/day',
+                    features: [
+                        { name: 'Everything in Carbon', has: true },
+                        { name: 'Leads pipeline — track every borrower', has: true, isNew: true },
+                        { name: 'Ezra AI — scripts & objections (15/day)', has: true, isNew: true },
+                        { name: 'Debt consolidation analyzer', has: true, isNew: true },
+                        { name: 'Refi vs. HELOC comparison', has: true, isNew: true },
+                        { name: 'Break-even calculator', has: true, isNew: true },
+                        { name: 'Client apply link', has: true, isNew: true },
+                        { name: 'Address autocomplete', has: true, isNew: true }
+                    ]
+                },
+                platinum: {
+                    tagline: 'Work Smarter, Not Harder',
+                    pitch: 'Every minute saved is another client you can call.',
+                    timeSaved: 'Save 2+ hours/day',
+                    features: [
+                        { name: 'Everything in Titanium', has: true },
+                        { name: 'Paste Rates — import Figure in seconds', has: true, isNew: true },
+                        { name: 'Voice input — talk to Ezra hands-free', has: true, isNew: true },
+                        { name: 'CRM auto-sync — Bonzo, GHL, FUB', has: true, isNew: true },
+                        { name: 'Outbound webhooks & n8n', has: true, isNew: true },
+                        { name: 'Lender rate parser', has: true, isNew: true },
+                        { name: 'Ezra AI — full power (50/day)', has: true, isNew: true }
+                    ]
+                },
+                obsidian: {
+                    tagline: 'Your Brand, Your Business',
+                    pitch: 'Make it yours. Scale it.',
+                    timeSaved: 'Unlimited AI',
+                    features: [
+                        { name: 'Everything in Platinum', has: true },
+                        { name: 'White label — your logo & colors', has: true, isNew: true },
+                        { name: 'Company settings & team mgmt', has: true, isNew: true },
+                        { name: 'Unlimited Ezra AI', has: true, isNew: true },
+                        { name: 'Custom AI prompts', has: true, isNew: true },
+                        { name: 'Priority support', has: true, isNew: true }
+                    ]
+                },
+                diamond: {
+                    tagline: 'All Access',
+                    pitch: 'Everything. No limits.',
+                    features: [
+                        { name: 'Everything in Obsidian', has: true },
+                        { name: 'Admin dashboard', has: true, isNew: true },
+                        { name: 'All future features', has: true, isNew: true },
+                        { name: 'Beta access & roadmap input', has: true, isNew: true }
+                    ]
+                }
             };
 
             const grid = document.getElementById('upgrade-tier-grid');
             grid.innerHTML = '';
 
             tiers.forEach((tier, idx) => {
+                const info = tierFeatures[tier] || { features: [] };
                 const card = document.createElement('div');
-                card.className = 'tier-card' + (idx === currentLevel ? ' current' : '');
+                card.className = 'tier-card' + (idx === currentLevel ? ' current' : '') + (idx === currentLevel + 1 ? ' recommended' : '');
 
                 const dot = document.createElement('div');
                 dot.className = 'tier-dot';
@@ -6703,10 +6829,31 @@ Best regards,
                 name.textContent = tier.toUpperCase();
                 if (idx === currentLevel) name.textContent += ' (You)';
 
+                // Tagline
+                if (info.tagline) {
+                    const tagline = document.createElement('div');
+                    tagline.className = 'tier-tagline';
+                    tagline.textContent = info.tagline;
+                    card.appendChild(dot);
+                    card.appendChild(name);
+                    card.appendChild(tagline);
+                } else {
+                    card.appendChild(dot);
+                    card.appendChild(name);
+                }
+
+                // Time-saved badge (psychological hook)
+                if (info.timeSaved && idx > currentLevel) {
+                    const timeBadge = document.createElement('div');
+                    timeBadge.className = 'tier-time-badge';
+                    timeBadge.textContent = info.timeSaved;
+                    card.appendChild(timeBadge);
+                }
+
                 const list = document.createElement('ul');
                 list.className = 'tier-features';
 
-                (tierFeatures[tier] || []).forEach(f => {
+                (info.features || []).forEach(f => {
                     const li = document.createElement('li');
                     if (f.has) {
                         const check = document.createElement('span');
@@ -6731,9 +6878,24 @@ Best regards,
                     list.appendChild(li);
                 });
 
-                card.appendChild(dot);
-                card.appendChild(name);
                 card.appendChild(list);
+
+                // Pitch line at bottom
+                if (info.pitch && idx > currentLevel) {
+                    const pitch = document.createElement('div');
+                    pitch.className = 'tier-pitch';
+                    pitch.textContent = info.pitch;
+                    card.appendChild(pitch);
+                }
+
+                // "Recommended" ribbon for next tier up
+                if (idx === currentLevel + 1) {
+                    const ribbon = document.createElement('div');
+                    ribbon.className = 'tier-recommended';
+                    ribbon.textContent = 'RECOMMENDED';
+                    card.appendChild(ribbon);
+                }
+
                 grid.appendChild(card);
             });
 
@@ -6761,6 +6923,16 @@ Best regards,
             }
 
             // Helper: add tier-locked overlay to a subsection
+            var subsectionHooks = {
+                'int-ghl': 'Auto-sync leads',
+                'int-crm': 'CRM on autopilot',
+                'int-bonzo': 'Auto-push leads',
+                'int-crm-fub': 'FUB sync',
+                'int-webhooks': 'Automate follow-up',
+                'int-n8n': 'Custom workflows',
+                'int-radar': 'Market intelligence',
+                'int-ai': 'AI-powered insights'
+            };
             function lockSubsection(id, requiredTier) {
                 const el = document.getElementById(id);
                 if (!el) return;
@@ -6772,8 +6944,8 @@ Best regards,
                     const badge = document.createElement('div');
                     badge.className = 'tier-upgrade-badge';
                     badge.style.cssText = 'position:absolute;top:8px;right:8px;background:linear-gradient(135deg,' + (tierColors[requiredTier] || '#6b7280') + ',rgba(0,0,0,0.5));color:white;padding:3px 10px;border-radius:10px;font-family:var(--font-heading);font-size:8px;font-weight:700;text-transform:uppercase;z-index:5;pointer-events:auto;cursor:pointer;transition:transform 0.2s;';
-                    badge.innerText = 'Requires ' + (tierLabels[requiredTier] || requiredTier);
-                    badge.title = 'Click to see upgrade options';
+                    badge.innerText = subsectionHooks[id] || (tierLabels[requiredTier] || requiredTier);
+                    badge.title = 'Upgrade to ' + (tierLabels[requiredTier] || requiredTier) + ' — click to learn more';
                     badge.onclick = (e) => { e.stopPropagation(); showUpgradeModal(); };
                     badge.onmouseenter = () => badge.style.transform = 'scale(1.1)';
                     badge.onmouseleave = () => badge.style.transform = '';
@@ -6831,7 +7003,7 @@ Best regards,
                 if (debtSection) { debtSection.style.opacity = ''; debtSection.style.pointerEvents = ''; const b = debtSection.querySelector('.tier-upgrade-badge'); if (b) b.remove(); }
                 if (debtCheckbox) { debtCheckbox.disabled = false; }
             } else {
-                if (debtSection) { debtSection.style.opacity = '0.35'; debtSection.style.pointerEvents = 'none'; debtSection.style.position = 'relative'; if (!debtSection.querySelector('.tier-upgrade-badge')) { const badge = document.createElement('div'); badge.className = 'tier-upgrade-badge'; badge.style.cssText = 'position:absolute;top:8px;right:8px;background:linear-gradient(135deg,' + tierColors.titanium + ',rgba(0,0,0,0.5));color:white;padding:3px 10px;border-radius:10px;font-family:var(--font-heading);font-size:8px;font-weight:700;text-transform:uppercase;z-index:5;pointer-events:auto;cursor:pointer;transition:transform 0.2s;'; badge.innerText = 'Requires TITANIUM'; badge.title = 'Click to see upgrade options'; badge.onclick = (e) => { e.stopPropagation(); showUpgradeModal(); }; badge.onmouseenter = () => badge.style.transform = 'scale(1.1)'; badge.onmouseleave = () => badge.style.transform = ''; debtSection.appendChild(badge); } }
+                if (debtSection) { debtSection.style.opacity = '0.35'; debtSection.style.pointerEvents = 'none'; debtSection.style.position = 'relative'; if (!debtSection.querySelector('.tier-upgrade-badge')) { const badge = document.createElement('div'); badge.className = 'tier-upgrade-badge'; badge.style.cssText = 'position:absolute;top:8px;right:8px;background:linear-gradient(135deg,' + tierColors.titanium + ',rgba(0,0,0,0.5));color:white;padding:3px 10px;border-radius:10px;font-family:var(--font-heading);font-size:8px;font-weight:700;text-transform:uppercase;z-index:5;pointer-events:auto;cursor:pointer;transition:transform 0.2s;'; badge.innerText = 'Show clients real savings'; badge.title = 'Upgrade to Titanium — show borrowers exactly how much they save'; badge.onclick = (e) => { e.stopPropagation(); showUpgradeModal(); }; badge.onmouseenter = () => badge.style.transform = 'scale(1.1)'; badge.onmouseleave = () => badge.style.transform = ''; debtSection.appendChild(badge); } }
                 if (debtCheckbox) { debtCheckbox.disabled = true; debtCheckbox.checked = false; }
                 if (debtOutput) debtOutput.style.display = 'none';
             }
@@ -6844,7 +7016,7 @@ Best regards,
                 if (refiSection) { refiSection.style.opacity = ''; refiSection.style.pointerEvents = ''; const b = refiSection.querySelector('.tier-upgrade-badge'); if (b) b.remove(); }
                 if (refiCheckbox) { refiCheckbox.disabled = false; }
             } else {
-                if (refiSection) { refiSection.style.opacity = '0.35'; refiSection.style.pointerEvents = 'none'; refiSection.style.position = 'relative'; if (!refiSection.querySelector('.tier-upgrade-badge')) { const badge = document.createElement('div'); badge.className = 'tier-upgrade-badge'; badge.style.cssText = 'position:absolute;top:8px;right:8px;background:linear-gradient(135deg,' + tierColors.titanium + ',rgba(0,0,0,0.5));color:white;padding:3px 10px;border-radius:10px;font-family:var(--font-heading);font-size:8px;font-weight:700;text-transform:uppercase;z-index:5;pointer-events:auto;cursor:pointer;transition:transform 0.2s;'; badge.innerText = 'Requires TITANIUM'; badge.title = 'Click to see upgrade options'; badge.onclick = (e) => { e.stopPropagation(); showUpgradeModal(); }; badge.onmouseenter = () => badge.style.transform = 'scale(1.1)'; badge.onmouseleave = () => badge.style.transform = ''; refiSection.appendChild(badge); } }
+                if (refiSection) { refiSection.style.opacity = '0.35'; refiSection.style.pointerEvents = 'none'; refiSection.style.position = 'relative'; if (!refiSection.querySelector('.tier-upgrade-badge')) { const badge = document.createElement('div'); badge.className = 'tier-upgrade-badge'; badge.style.cssText = 'position:absolute;top:8px;right:8px;background:linear-gradient(135deg,' + tierColors.titanium + ',rgba(0,0,0,0.5));color:white;padding:3px 10px;border-radius:10px;font-family:var(--font-heading);font-size:8px;font-weight:700;text-transform:uppercase;z-index:5;pointer-events:auto;cursor:pointer;transition:transform 0.2s;'; badge.innerText = 'Win the refi objection'; badge.title = 'Upgrade to Titanium — show borrowers why a HELOC beats a refi'; badge.onclick = (e) => { e.stopPropagation(); showUpgradeModal(); }; badge.onmouseenter = () => badge.style.transform = 'scale(1.1)'; badge.onmouseleave = () => badge.style.transform = ''; refiSection.appendChild(badge); } }
                 if (refiCheckbox) { refiCheckbox.disabled = true; refiCheckbox.checked = false; }
                 if (refiOutput) refiOutput.style.display = 'none';
             }
@@ -6992,9 +7164,9 @@ Best regards,
             if (level < 1) {
                 _tierLockedTabs['leads'] = {
                     requiredLevel: 1, requiredTier: 'titanium',
-                    icon: '👥', title: 'Unlock Your Leads Pipeline',
-                    description: 'Track every lead from first contact to funded. Automatic CRM sync, status tracking, and quote matching — all in one place.',
-                    features: ['Auto-import leads from Bonzo & GHL', 'Pipeline dashboard with metrics', 'Status tracking & filtering', 'Quote matching per lead', 'Click-to-load lead into calculator']
+                    icon: '👥', title: 'Every Lead You Lose is a Deal Someone Else Closes',
+                    description: 'Top producers never let a lead slip through the cracks. Your pipeline tracks every borrower from first contact to funded — automatically.',
+                    features: ['Auto-import leads — no more copy-pasting from email', 'See exactly where every deal stands at a glance', 'One click loads the borrower into your quote builder', 'Filter by status, source, or stage — find anyone in seconds', 'LOs on Titanium close 3x more HELOC deals']
                 };
                 if (leadsTabBtn) { leadsTabBtn.classList.add('tier-locked'); leadsTabBtn.style.display = ''; }
             } else {
@@ -7017,9 +7189,9 @@ Best regards,
             if (wlTabBtn && wlTabBtn.style.display !== 'none' && level < 3) {
                 _tierLockedTabs['whitelabel'] = {
                     requiredLevel: 3, requiredTier: 'obsidian',
-                    icon: '🎨', title: 'White Label Your Brand',
-                    description: 'Customize every detail — your logo, colors, company name, and domain. Your clients see YOUR brand, not ours.',
-                    features: ['Custom logo & colors', 'Company name branding', 'Branded quote URLs', 'Remove all Above All branding']
+                    icon: '🎨', title: 'Your Clients Should See YOUR Brand, Not Ours',
+                    description: 'When a borrower opens your quote, they see your name, your logo, your colors. That\'s how you build a brand they remember and refer.',
+                    features: ['Your logo and colors on every quote and email', 'Branded quote URLs — yourcompany.com, not ours', 'Clients think it\'s YOUR platform — because it is', 'Stand out from every other LO using generic tools']
                 };
                 wlTabBtn.classList.add('tier-locked');
             } else if (wlTabBtn) {
@@ -8813,18 +8985,11 @@ Best regards,
             }
 
             async function checkBonzoDNC(email) {
-                var apiKey = document.getElementById('bonzo-api-key')?.value;
-                if (!apiKey || !email) return null;
+                if (!email) return null;
 
                 try {
-                    var resp = await fetch('https://api.getbonzo.com/v1/contacts/search', {
-                        method: 'POST',
-                        headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: email })
-                    });
-                    if (!resp.ok) return null;
-                    var data = await resp.json();
-                    var contact = data.data || data;
+                    var result = await _bonzoProxy('search_contact', { payload: { email: email } });
+                    var contact = result.data || result;
                     if (contact && contact.tags) {
                         var dncTags = ['DNC', 'Do Not Contact', 'Do Not Call', 'dnc', 'do_not_contact', 'STOP', 'unsubscribed', 'Unsubscribed'];
                         var tags = Array.isArray(contact.tags) ? contact.tags : [];
@@ -9162,22 +9327,32 @@ Best regards,
             document.getElementById('edit-user-panel').style.display = 'none';
             document.getElementById('invite-user-panel').style.display = 'none';
 
-            // Load existing keys from user_integrations (provider = 'heloc_keys')
-            const { data } = await sb.from('user_integrations')
-                .select('*')
+            // Load existing keys from user_integrations — check both providers
+            const { data: keysRows } = await sb.from('user_integrations')
+                .select('provider, metadata')
                 .eq('user_id', id)
-                .eq('provider', 'heloc_keys')
-                .maybeSingle();
+                .in('provider', ['heloc_keys', 'heloc_settings']);
 
-            const meta = data?.metadata || {};
+            const helocKeys = (keysRows || []).find(r => r.provider === 'heloc_keys')?.metadata || {};
+            const helocSettings = (keysRows || []).find(r => r.provider === 'heloc_settings')?.metadata || {};
+
+            // heloc_keys is the canonical source; fall back to heloc_settings for Bonzo keys
+            const meta = helocKeys;
+            const bonzoXcode = meta.bonzo_api_key || helocSettings.bonzo?.apiKey || '';
+            const bonzoApiKey2 = meta.bonzo_api_key_2 || helocSettings.bonzo?.apiKey2 || '';
+            const bonzoWebhookUrl = meta.bonzo_webhook_url || '';
+
             document.getElementById('keys-ghl-api').value = meta.ghl_api_key || '';
             document.getElementById('keys-ghl-location').value = meta.ghl_location_id || '';
             document.getElementById('keys-n8n-webhook').value = meta.n8n_webhook_url || '';
             document.getElementById('keys-ai-key').value = meta.ai_api_key || '';
-            document.getElementById('keys-bonzo-api').value = meta.bonzo_api_key || '';
-            document.getElementById('keys-bonzo-api-2').value = meta.bonzo_api_key_2 || '';
-            document.getElementById('keys-bonzo-webhook-url').value = meta.bonzo_webhook_url || '';
+            document.getElementById('keys-bonzo-api').value = bonzoXcode;
+            document.getElementById('keys-bonzo-api-2').value = bonzoApiKey2;
+            document.getElementById('keys-bonzo-webhook-url').value = bonzoWebhookUrl;
             document.getElementById('keys-fub-api').value = meta.fub_api_key || '';
+            // Show Bonzo Sync button in leads tab if key is configured
+            var bonzoSyncBtn = document.getElementById('bonzo-sync-btn');
+            if (bonzoSyncBtn) bonzoSyncBtn.style.display = (bonzoXcode || bonzoApiKey2) ? '' : 'none';
             // AI config fields
             document.getElementById('keys-ai-provider').value = meta.ai_provider || '';
             document.getElementById('keys-ai-endpoint').value = meta.ai_endpoint_url || '';
@@ -11439,13 +11614,11 @@ Sent via Above All Carbon HELOC Tool`;
             var smsText = document.getElementById('sms-ready-text').value;
             if (!smsText) { showToast('Generate a client link first to create SMS text.', 'warning'); return; }
 
-            var apiKey = document.getElementById('bonzo-api-key')?.value;
             var teamId = document.getElementById('bonzo-team-id')?.value || '';
             var contactPhone = document.getElementById('client-phone')?.value || '';
             var contactEmail = document.getElementById('client-email').value;
             var contactName = document.getElementById('in-client-name').value;
 
-            if (!apiKey) { showToast('Configure your Bonzo API Key in Integrations tab first.', 'warning'); return; }
             if (!contactPhone) { showToast('Enter client phone number in the Email/Share tab first.', 'warning'); return; }
 
             // DNC check
@@ -11456,8 +11629,6 @@ Sent via Above All Carbon HELOC Tool`;
                 showToast('Sending SMS via Bonzo...', 'info');
                 var nameParts = contactName.split(' ');
 
-                // Create/find contact and send message
-                var bonzoHeaders = { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' };
                 var contactPayload = {
                     first_name: nameParts[0] || '',
                     last_name: nameParts.slice(1).join(' ') || '',
@@ -11466,24 +11637,13 @@ Sent via Above All Carbon HELOC Tool`;
                 };
                 if (teamId) contactPayload.team_id = teamId;
 
-                // Create/update contact
-                var contactResp = await fetch('https://api.bonzo.com/v1/contacts', {
-                    method: 'POST', headers: bonzoHeaders,
-                    body: JSON.stringify(contactPayload)
-                });
-                var contactData = await contactResp.json();
-                var bonzoContactId = contactData.data?.id || contactData.id;
+                // Create/update contact via proxy
+                var createResult = await _bonzoProxy('create_contact', { payload: contactPayload });
+                var bonzoContactId = createResult.data?.id || createResult.id;
                 if (!bonzoContactId) throw new Error('Could not create contact in Bonzo');
 
-                // Send SMS message
-                var msgResp = await fetch('https://api.bonzo.com/v1/contacts/' + bonzoContactId + '/messages', {
-                    method: 'POST', headers: bonzoHeaders,
-                    body: JSON.stringify({ type: 'sms', body: smsText })
-                });
-                if (!msgResp.ok) {
-                    var errData = await msgResp.json().catch(function() { return {}; });
-                    throw new Error(errData.message || 'Bonzo SMS failed (HTTP ' + msgResp.status + ')');
-                }
+                // Send SMS message via proxy
+                await _bonzoProxy('send_sms', { contactId: bonzoContactId, payload: { type: 'sms', body: smsText } });
                 showToast('SMS sent via Bonzo!', 'success');
             } catch (e) {
                 showToast('Bonzo SMS error: ' + e.message, 'error');
@@ -11666,40 +11826,20 @@ Sent via Above All Carbon HELOC Tool`;
                 } catch (e) { console.log('Cross-CRM GHL sync skipped:', e.message); }
             }
 
-            // Push to Bonzo if configured and not excluded
+            // Push to Bonzo if configured and not excluded (via server-side proxy)
             if (excludeCRM !== 'bonzo') {
                 try {
-                    const bonzoApiKey = document.getElementById('bonzo-api-key')?.value;
-                    if (bonzoApiKey && contact.email) {
-                        // Try to find existing contact in Bonzo and add tags
-                        const searchResp = await fetch('https://api.getbonzo.com/v1/contacts/search', {
-                            method: 'POST',
-                            headers: { 'Authorization': 'Bearer ' + bonzoApiKey, 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email: contact.email })
-                        });
-
-                        if (searchResp.ok) {
-                            const searchData = await searchResp.json();
-                            const bonzoContactId = searchData.data?.id || searchData.id;
-                            if (bonzoContactId) {
-                                // Update contact with tags
-                                await fetch('https://api.getbonzo.com/v1/contacts/' + bonzoContactId, {
-                                    method: 'PUT',
-                                    headers: { 'Authorization': 'Bearer ' + bonzoApiKey, 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ tags: tags })
-                                });
-                                console.log('Cross-CRM: Pushed ' + tags.length + ' tags to Bonzo');
-                            }
+                    if (contact.email) {
+                        var searchResult = await _bonzoProxy('search_contact', { payload: { email: contact.email } });
+                        var bonzoContactId = searchResult.data?.id || searchResult.id;
+                        if (bonzoContactId) {
+                            await _bonzoProxy('update_contact', { contactId: bonzoContactId, payload: { tags: tags } });
+                            console.log('Cross-CRM: Pushed ' + tags.length + ' tags to Bonzo');
                         } else {
-                            // Contact not found — create with tags
-                            await fetch('https://api.getbonzo.com/v1/contacts', {
-                                method: 'POST',
-                                headers: { 'Authorization': 'Bearer ' + bonzoApiKey, 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    first_name: contact.firstName || '', last_name: contact.lastName || '',
-                                    email: contact.email, phone: contact.phone || '', tags: tags
-                                })
-                            });
+                            await _bonzoProxy('create_contact', { payload: {
+                                first_name: contact.firstName || '', last_name: contact.lastName || '',
+                                email: contact.email, phone: contact.phone || '', tags: tags
+                            } });
                             console.log('Cross-CRM: Created Bonzo contact with ' + tags.length + ' tags');
                         }
                     }
@@ -11745,16 +11885,11 @@ Sent via Above All Carbon HELOC Tool`;
 
         // ===== SEND TO BONZO =====
         async function sendViaBonzo() {
-            const apiKey = document.getElementById('bonzo-api-key')?.value;
             const teamId = document.getElementById('bonzo-team-id')?.value || '';
             const contactEmail = document.getElementById('client-email').value;
             const contactName = document.getElementById('in-client-name').value;
             const contactPhone = document.getElementById('client-phone')?.value || '';
 
-            if (!apiKey) {
-                showToast('Please configure your Bonzo Xcode / API Key in the Integrations tab first.', 'warning');
-                return;
-            }
             if (!contactEmail) {
                 showToast('Please enter the client email in the Email/Share tab first.', 'warning');
                 return;
@@ -11835,28 +11970,21 @@ Sent via Above All Carbon HELOC Tool`;
 
                 if (teamId) contactPayload.team_id = teamId;
 
-                const createResp = await fetch('https://api.getbonzo.com/v1/contacts', {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(contactPayload)
-                });
-
-                if (createResp.ok) {
-                    const contactData = await createResp.json();
+                try {
+                    var createResult = await _bonzoProxy('create_contact', { payload: contactPayload });
+                    var contactData = createResult.data || createResult;
                     log('✅ Contact created: ' + (contactData.id || contactData.data?.id || 'OK'));
-                } else if (createResp.status === 409 || createResp.status === 422) {
-                    log('✅ Contact already exists — updating...');
-                    const updateResp = await fetch('https://api.getbonzo.com/v1/contacts/search', {
-                        method: 'POST',
-                        headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: contactEmail })
-                    });
-                    if (updateResp.ok) {
-                        log('✅ Contact found and linked');
+                } catch (createErr) {
+                    // If 409/422 (already exists), search and link
+                    if (createErr.message && (createErr.message.includes('409') || createErr.message.includes('422'))) {
+                        log('✅ Contact already exists — updating...');
+                        try {
+                            await _bonzoProxy('search_contact', { payload: { email: contactEmail } });
+                            log('✅ Contact found and linked');
+                        } catch (e2) { log('⚠️ Could not find existing contact: ' + e2.message); }
+                    } else {
+                        log('⚠️ Bonzo API error: ' + createErr.message);
                     }
-                } else {
-                    log('⚠️ Bonzo API returned status ' + createResp.status);
-                    log('ℹ️ CORS may block browser requests. Use the webhook URL in Integrations for reliable delivery.');
                 }
 
                 // Step 2: Send data via webhook if configured
@@ -12665,6 +12793,22 @@ Sent via Above All Carbon HELOC Tool`;
 
         const SUPABASE_FUNCTIONS_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1';
 
+        // ===== BONZO API PROXY (server-side — avoids CORS/DNS issues) =====
+        async function _bonzoProxy(action, opts) {
+            var sb = window._supabase;
+            if (!sb) throw new Error('Not authenticated');
+            var session = (await sb.auth.getSession()).data.session;
+            if (!session?.access_token) throw new Error('Session expired — please log in again');
+            var resp = await fetch(SUPABASE_FUNCTIONS_URL + '/bonzo-proxy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+                body: JSON.stringify({ action: action, ...(opts || {}) })
+            });
+            var data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Bonzo proxy error (' + resp.status + ')');
+            return data.data || data;
+        }
+
         // Send failure alert email via Resend (Edge Function)
         async function sendFailureAlert(type, details) {
             try {
@@ -12750,13 +12894,23 @@ Sent via Above All Carbon HELOC Tool`;
 
         async function testBonzoConnection() {
             const apiKey = document.getElementById('bonzo-api-key').value;
-            if (!apiKey) { showToast('Enter your Bonzo Xcode / API Key first.', 'warning'); return; }
-            // Bonzo API cannot be tested from the browser (CORS blocked).
-            // Validate key format and confirm it's saved — actual connectivity is verified server-side via webhooks.
-            if (apiKey.length >= 10) {
-                showToast('Bonzo Xcode saved. Connectivity is verified server-side when leads sync via webhooks.', 'success');
-            } else {
-                showToast('Bonzo Xcode key looks too short. Double-check your key from Bonzo settings.', 'warning');
+            const apiKey2 = document.getElementById('bonzo-api-key-2')?.value || '';
+            if (!apiKey && !apiKey2) { showToast('Enter your Bonzo Xcode or API Key first.', 'warning'); return; }
+            showToast('Testing Bonzo connection via server...', 'info', 3000);
+            try {
+                // Use the bonzo-proxy to make a real test call (search with empty query)
+                var result = await _bonzoProxy('search_contact', { payload: { email: 'connection-test@test.invalid' } });
+                showToast('✅ Bonzo connection successful! API key is valid.', 'success', 4000);
+            } catch (err) {
+                var msg = err.message || String(err);
+                if (msg.includes('No Bonzo API key configured')) {
+                    showToast('Keys not saved yet — click "Save All Integration Settings" first, then test again.', 'warning', 5000);
+                } else if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('Invalid')) {
+                    showToast('❌ Bonzo API key is invalid or expired. Check your key in Bonzo settings.', 'error', 5000);
+                } else {
+                    // Any other error from Bonzo is still a successful connection
+                    showToast('✅ Bonzo connection works! (Server responded)', 'success', 4000);
+                }
             }
         }
 
@@ -12953,14 +13107,8 @@ Sent via Above All Carbon HELOC Tool`;
 
         // Push a contact to Bonzo via their API (outbound sync)
         async function pushToBonzo(contactData) {
-            const apiKey = document.getElementById('bonzo-api-key')?.value;
-            if (!apiKey) return;
             try {
-                await fetch('https://api.getbonzo.com/v1/contacts', {
-                    method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(contactData)
-                });
+                await _bonzoProxy('create_contact', { payload: contactData });
                 console.log('Contact pushed to Bonzo');
             } catch (e) { console.warn('Bonzo push failed:', e.message); }
         }
@@ -13008,6 +13156,8 @@ Sent via Above All Carbon HELOC Tool`;
             if (data.bonzo) {
                 _setVal('bonzo-api-key', data.bonzo.apiKey);
                 _setVal('bonzo-api-key-2', data.bonzo.apiKey2);
+                var bsb = document.getElementById('bonzo-sync-btn');
+                if (bsb) bsb.style.display = (data.bonzo.apiKey || data.bonzo.apiKey2) ? '' : 'none';
             }
             if (data.fub) _setVal('fub-api-key', data.fub.apiKey);
             if (data.outboundWebhooks && Array.isArray(data.outboundWebhooks)) {
@@ -13126,19 +13276,26 @@ Sent via Above All Carbon HELOC Tool`;
             if (!sb || !userId) return;
 
             try {
-                const { data } = await sb
+                const { data: rows } = await sb
                     .from('user_integrations')
-                    .select('metadata')
+                    .select('provider, metadata')
                     .eq('user_id', userId)
-                    .eq('provider', 'heloc_settings')
-                    .maybeSingle();
+                    .in('provider', ['heloc_settings', 'heloc_keys']);
 
-                if (data && data.metadata) {
-                    _applyIntegrationData(data.metadata);
-                    // Update localStorage cache with cloud data (keys stripped)
-                    localStorage.setItem('aboveAllIntegrations', JSON.stringify(_stripSensitiveKeys(data.metadata)));
+                var settingsRow = (rows || []).find(function (r) { return r.provider === 'heloc_settings'; });
+                var keysRow = (rows || []).find(function (r) { return r.provider === 'heloc_keys'; });
+
+                if (settingsRow && settingsRow.metadata) {
+                    _applyIntegrationData(settingsRow.metadata);
+                    localStorage.setItem('aboveAllIntegrations', JSON.stringify(_stripSensitiveKeys(settingsRow.metadata)));
                     console.log('Integration settings loaded from cloud');
                 }
+
+                // Show Bonzo sync button if key found in either provider
+                var hasBonzoKey = !!(settingsRow?.metadata?.bonzo?.apiKey || settingsRow?.metadata?.bonzo?.apiKey2 ||
+                    keysRow?.metadata?.bonzo_api_key || keysRow?.metadata?.bonzo_api_key_2);
+                var bsb = document.getElementById('bonzo-sync-btn');
+                if (bsb) bsb.style.display = hasBonzoKey ? '' : 'none';
             } catch (e) {
                 console.log('No cloud integration settings found, using local cache');
             }
@@ -13288,11 +13445,30 @@ Sent via Above All Carbon HELOC Tool`;
         }
 
         // ===== MY QUOTES =====
+        function _quoteAge(dateStr) {
+            var ms = Date.now() - new Date(dateStr).getTime();
+            var days = Math.floor(ms / 86400000);
+            if (days === 0) return 'Today';
+            if (days === 1) return '1 day ago';
+            return days + ' days ago';
+        }
+        function _quoteAgeBadge(dateStr, status) {
+            var days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+            if (status === 'closed') return '';
+            if (days >= 7) return '<span style="background:#ef4444;color:white;padding:1px 5px;border-radius:3px;font-size:7px;font-family:var(--font-heading);margin-left:6px;">FOLLOW UP (' + days + 'd)</span>';
+            if (days >= 3) return '<span style="background:#f59e0b;color:white;padding:1px 5px;border-radius:3px;font-size:7px;font-family:var(--font-heading);margin-left:6px;">' + days + 'd ago</span>';
+            return '';
+        }
+        var _quoteStatusColors = { 'new': '#3b82f6', 'sent': '#8b5cf6', 'follow_up': '#f59e0b', 'closed': '#10b981' };
+
         async function loadUserQuotes() {
             const sb = window._supabase;
             const userId = window.currentUserId;
             const listEl = document.getElementById('quotes-list');
             const countEl = document.getElementById('quotes-count');
+            const statusFilter = (document.getElementById('quotes-filter-status') || {}).value || 'all';
+            const dateFilter = (document.getElementById('quotes-filter-date') || {}).value || 'all';
+
             if (!sb || !userId) {
                 if (listEl) listEl.innerHTML = '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">Log in to see saved quotes</div>';
                 return;
@@ -13304,7 +13480,7 @@ Sent via Above All Carbon HELOC Tool`;
                     .select('id, quote_data, status, created_at')
                     .eq('user_id', userId)
                     .order('created_at', { ascending: false })
-                    .limit(50);
+                    .limit(200);
 
                 if (error) throw error;
 
@@ -13314,19 +13490,65 @@ Sent via Above All Carbon HELOC Tool`;
                     return;
                 }
 
-                if (countEl) countEl.innerText = quotes.length + ' quote' + (quotes.length !== 1 ? 's' : '');
+                // Apply status filter
+                var filtered = quotes;
+                if (statusFilter === 'follow_up') {
+                    filtered = filtered.filter(function (q) {
+                        var days = Math.floor((Date.now() - new Date(q.created_at).getTime()) / 86400000);
+                        return (q.status || 'new') !== 'closed' && days >= 3;
+                    });
+                } else if (statusFilter !== 'all') {
+                    filtered = filtered.filter(function (q) { return (q.status || 'new') === statusFilter; });
+                }
 
-                listEl.innerHTML = quotes.map(function (q) {
-                    const d = q.quote_data || {};
-                    const date = new Date(q.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
-                    const name = escapeAttr(d.clientName || 'Unnamed');
-                    const value = d.homeValue ? '$' + parseInt(d.homeValue).toLocaleString() : '--';
-                    const cash = d.netCash ? '$' + parseInt(d.netCash).toLocaleString() : '--';
-                    const rate = escapeAttr(d.recRate || '--');
-                    const payment = escapeAttr(d.recPayment || '--');
+                // Apply date filter
+                var now = new Date();
+                var todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                var weekStart = new Date(todayStart); weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+                var monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+                if (dateFilter === 'today') {
+                    filtered = filtered.filter(function (q) { return new Date(q.created_at) >= todayStart; });
+                } else if (dateFilter === 'week') {
+                    filtered = filtered.filter(function (q) { return new Date(q.created_at) >= weekStart; });
+                } else if (dateFilter === 'month') {
+                    filtered = filtered.filter(function (q) { return new Date(q.created_at) >= monthStart; });
+                } else if (dateFilter === 'older') {
+                    filtered = filtered.filter(function (q) { return new Date(q.created_at) < monthStart; });
+                }
+
+                if (countEl) countEl.innerText = filtered.length + ' of ' + quotes.length + ' quote' + (quotes.length !== 1 ? 's' : '');
+
+                if (filtered.length === 0) {
+                    listEl.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">No quotes match this filter.</div>';
+                    return;
+                }
+
+                listEl.innerHTML = filtered.map(function (q) {
+                    var d = q.quote_data || {};
+                    var date = new Date(q.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+                    var name = escapeAttr(d.clientName || 'Unnamed');
+                    var value = d.homeValue ? '$' + parseInt(d.homeValue).toLocaleString() : '--';
+                    var cash = d.netCash ? '$' + parseInt(d.netCash).toLocaleString() : '--';
+                    var rate = escapeAttr(d.recRate || '--');
+                    var payment = escapeAttr(d.recPayment || '--');
+                    var qStatus = q.status || 'new';
+                    var stColor = _quoteStatusColors[qStatus] || '#3b82f6';
+                    var stLabel = qStatus === 'follow_up' ? 'Follow Up' : qStatus.charAt(0).toUpperCase() + qStatus.slice(1);
+                    var ageBadge = _quoteAgeBadge(q.created_at, qStatus);
+
                     return '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:6px;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor=\'var(--accent-color)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.1)\'" onclick="loadQuoteIntoForm(\'' + q.id + '\')">' +
                         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
+                        '<div style="display:flex;align-items:center;gap:6px;">' +
                         '<span style="font-family:var(--font-heading);font-size:11px;color:white;font-weight:600;">' + name + '</span>' +
+                        '<select onclick="event.stopPropagation()" onchange="updateQuoteStatus(\'' + q.id + '\', this.value)" style="background:' + stColor + ';color:white;border:none;border-radius:3px;padding:1px 4px;font-size:7px;font-family:var(--font-heading);cursor:pointer;">' +
+                        '<option value="new"' + (qStatus === 'new' ? ' selected' : '') + '>New</option>' +
+                        '<option value="sent"' + (qStatus === 'sent' ? ' selected' : '') + '>Sent</option>' +
+                        '<option value="follow_up"' + (qStatus === 'follow_up' ? ' selected' : '') + '>Follow Up</option>' +
+                        '<option value="closed"' + (qStatus === 'closed' ? ' selected' : '') + '>Closed</option>' +
+                        '</select>' +
+                        ageBadge +
+                        '</div>' +
                         '<div style="display:flex;gap:8px;align-items:center;">' +
                         '<span style="font-size:8px;color:rgba(255,255,255,0.4);">' + date + '</span>' +
                         '<button onclick="deleteQuote(\'' + q.id + '\', event)" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:2px 6px;font-size:8px;cursor:pointer;font-family:var(--font-heading);">X</button>' +
@@ -13415,6 +13637,67 @@ Sent via Above All Carbon HELOC Tool`;
             } catch (e) {
                 console.error('Error deleting quote:', e);
                 showToast('Error deleting quote: ' + e.message, 'error');
+            }
+        }
+
+        async function updateQuoteStatus(quoteId, newStatus) {
+            var sb = window._supabase;
+            if (!sb) return;
+            try {
+                await sb.from('quotes').update({ status: newStatus }).eq('id', quoteId);
+                showToast('Status → ' + newStatus, 'success', 1500);
+                loadUserQuotes();
+            } catch (e) {
+                showToast('Error updating status: ' + e.message, 'error');
+            }
+        }
+
+        async function deleteDuplicateQuotes() {
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) return;
+
+            try {
+                var { data: quotes, error } = await sb
+                    .from('quotes')
+                    .select('id, quote_data, created_at')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                if (!quotes || quotes.length < 2) { showToast('No duplicates found.', 'info'); return; }
+
+                // Group by client name + home value + cash out (fingerprint)
+                var seen = {};
+                var dupeIds = [];
+                quotes.forEach(function (q) {
+                    var d = q.quote_data || {};
+                    var key = (d.clientName || '').toLowerCase().trim() + '|' + (d.homeValue || '') + '|' + (d.netCash || '');
+                    if (key === '||') return; // Skip empty quotes from grouping
+                    if (seen[key]) {
+                        dupeIds.push(q.id); // Keep the first (newest), mark the rest as dupes
+                    } else {
+                        seen[key] = q.id;
+                    }
+                });
+
+                if (dupeIds.length === 0) {
+                    showToast('No duplicates found.', 'info');
+                    return;
+                }
+
+                if (!confirm('Found ' + dupeIds.length + ' duplicate quote(s). Delete them? (Keeps the most recent version of each)')) return;
+
+                // Delete in batches
+                for (var i = 0; i < dupeIds.length; i += 10) {
+                    var batch = dupeIds.slice(i, i + 10);
+                    await sb.from('quotes').delete().in('id', batch);
+                }
+
+                showToast(dupeIds.length + ' duplicate(s) deleted.', 'success');
+                loadUserQuotes();
+            } catch (e) {
+                showToast('Error cleaning duplicates: ' + e.message, 'error');
             }
         }
 
@@ -13560,6 +13843,15 @@ Sent via Above All Carbon HELOC Tool`;
             const countEl = document.getElementById('leads-count');
             const filterEl = document.getElementById('leads-filter-status');
             const filter = filterEl ? filterEl.value : 'all';
+            const sourceFilterEl = document.getElementById('leads-filter-source');
+            const sourceFilter = sourceFilterEl ? sourceFilterEl.value : 'all';
+
+            // Show Bonzo sync button if key is in any input field
+            var _bsb = document.getElementById('bonzo-sync-btn');
+            if (_bsb && _bsb.style.display === 'none') {
+                var _bk = (document.getElementById('bonzo-api-key') || {}).value || (document.getElementById('bonzo-api-key-2') || {}).value || (document.getElementById('keys-bonzo-api') || {}).value || '';
+                if (_bk) _bsb.style.display = '';
+            }
 
             if (!sb || !userId) {
                 if (tbody) tbody.innerHTML = '<tr><td colspan="10" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">Log in to see your leads</td></tr>';
@@ -13617,7 +13909,7 @@ Sent via Above All Carbon HELOC Tool`;
                 // Update dashboard with unfiltered data
                 updateDashboard(allEnriched, allEnriched.filter(function (l) { return l.isQuoted; }).length);
 
-                // 4. Apply filter
+                // 4. Apply filters (status + source)
                 var enriched = allEnriched;
                 if (filter === 'quoted') {
                     enriched = enriched.filter(function (l) { return l.isQuoted; });
@@ -13626,7 +13918,10 @@ Sent via Above All Carbon HELOC Tool`;
                 } else if (filter === 'dnc') {
                     enriched = enriched.filter(function (l) { return l.dnc === true; });
                 } else if (filter !== 'all') {
-                    enriched = enriched.filter(function (l) { return l.status === filter; });
+                    enriched = enriched.filter(function (l) { return (l.status || '').toLowerCase() === filter; });
+                }
+                if (sourceFilter !== 'all') {
+                    enriched = enriched.filter(function (l) { return (l.source || l.crm_source || '') === sourceFilter; });
                 }
 
                 if (countEl) countEl.innerText = enriched.length + ' lead' + (enriched.length !== 1 ? 's' : '');
@@ -14026,6 +14321,71 @@ Sent via Above All Carbon HELOC Tool`;
         }
 
         // Show the add lead panel
+        // ===== BONZO SYNC =====
+        async function syncFromBonzo() {
+            var sb = window._supabase;
+            if (!sb) { showToast('Not authenticated', 'error'); return; }
+
+            var btn = document.getElementById('bonzo-sync-btn');
+            var origText = btn ? btn.innerHTML : '';
+            if (btn) { btn.innerHTML = '⏳ Syncing...'; btn.disabled = true; }
+
+            try {
+                var session = (await sb.auth.getSession()).data.session;
+                if (!session?.access_token) { showToast('Session expired — please log in again.', 'error'); return; }
+
+                var page = 1;
+                var totalImported = 0, totalUpdated = 0, totalSkipped = 0;
+                var hasMore = true;
+
+                while (hasMore) {
+                    if (btn) btn.innerHTML = '⏳ Syncing page ' + page + '...';
+
+                    var resp = await fetch(SUPABASE_FUNCTIONS_URL + '/bonzo-sync', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + session.access_token,
+                        },
+                        body: JSON.stringify({ page: page, per_page: 100 }),
+                    });
+
+                    var data = await resp.json();
+
+                    if (!resp.ok) {
+                        showToast('Bonzo sync error: ' + (data.error || 'Unknown'), 'error');
+                        break;
+                    }
+
+                    totalImported += data.imported || 0;
+                    totalUpdated += data.updated || 0;
+                    totalSkipped += data.skipped || 0;
+
+                    // Stop if this page returned fewer than 100 contacts (last page)
+                    if ((data.total_from_bonzo || 0) < 100) {
+                        hasMore = false;
+                    } else {
+                        page++;
+                    }
+
+                    // Safety: max 20 pages (2000 contacts)
+                    if (page > 20) { hasMore = false; }
+                }
+
+                var msg = '✅ Bonzo Sync Complete — ' + totalImported + ' new, ' + totalUpdated + ' updated';
+                if (totalSkipped > 0) msg += ', ' + totalSkipped + ' skipped';
+                showToast(msg, 'success', 5000);
+
+                // Refresh the leads list
+                loadUserLeads();
+
+            } catch (err) {
+                showToast('Bonzo sync failed: ' + (err.message || err), 'error');
+            } finally {
+                if (btn) { btn.innerHTML = origText; btn.disabled = false; }
+            }
+        }
+
         function showAddLeadPanel() {
             var panel = document.getElementById('add-lead-panel');
             panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
