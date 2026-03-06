@@ -9828,15 +9828,11 @@ async function loadNotifPrefs() {
     if (!sb || !userId) return;
 
     try {
-        const { data } = await sb.from('profiles').select('lead_notifications_email').eq('id', userId).single();
-        if (data) {
-            var toggle = document.getElementById('toggle-lead-email-notif');
-            if (toggle) {
-                // Default is true (enabled) if the column is null
-                var isOn = data.lead_notifications_email !== false;
-                toggle.classList.toggle('active', isOn);
-            }
-        }
+        const { data, error } = await sb.from('profiles').select('id').eq('id', userId).single();
+        if (error) return;
+        // Column may not exist yet — default to enabled
+        var toggle = document.getElementById('toggle-lead-email-notif');
+        if (toggle) toggle.classList.toggle('active', true);
     } catch (e) {
         console.log('Could not load notification prefs:', e.message);
     }
