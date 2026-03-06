@@ -2146,7 +2146,8 @@ function switchTab(tab) {
     var lockInfo = _tierLockedTabs[tab];
     if (lockInfo) {
         var tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
-        var effectiveTier = (window.currentUserRole === 'super_admin') ? 'diamond' : (window.currentUserTier || 'carbon');
+        var effectiveTier = _demoTierOverride ? _demoTierOverride :
+            (window.currentUserRole === 'super_admin') ? 'diamond' : (window.currentUserTier || 'carbon');
         var userLevel = tiers.indexOf(effectiveTier);
         if (userLevel < lockInfo.requiredLevel) {
             // Show upgrade overlay instead of real content
@@ -2503,10 +2504,13 @@ function showUpgradeModal() {
 }
 
 // ===== TIER-BASED FEATURE GATING =====
+var _demoTierOverride = null; // Set by demo tier selector (super_admin only)
+
 function applyTierAccess(tier) {
     const tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
-    // Super admin always gets full access regardless of tier
-    const effectiveTier = (window.currentUserRole === 'super_admin') ? 'diamond' : tier;
+    // If super_admin has a demo tier override active, use that; otherwise full access
+    const effectiveTier = _demoTierOverride ? _demoTierOverride :
+        (window.currentUserRole === 'super_admin') ? 'diamond' : tier;
     const level = tiers.indexOf(effectiveTier);
     if (level === -1) return; // unknown tier, skip
 
@@ -2709,9 +2713,40 @@ function applyTierAccess(tier) {
             else toolbar.appendChild(tierBadge);
         }
     }
-    tierBadge.style.background = tierColors[tier] || '#6b7280';
-    tierBadge.style.color = tier === 'obsidian' ? '#94a3b8' : 'white';
-    tierBadge.innerText = tierLabels[tier] || tier.toUpperCase();
+    tierBadge.style.background = tierColors[effectiveTier] || '#6b7280';
+    tierBadge.style.color = effectiveTier === 'obsidian' ? '#94a3b8' : 'white';
+    tierBadge.innerText = (_demoTierOverride ? '👁 ' : '') + (tierLabels[effectiveTier] || effectiveTier.toUpperCase());
+
+    // ---- DEMO TIER SELECTOR (super_admin only) ----
+    if (window.currentUserRole === 'super_admin') {
+        let demoSelect = document.getElementById('toolbar-demo-tier');
+        if (!demoSelect) {
+            demoSelect = document.createElement('select');
+            demoSelect.id = 'toolbar-demo-tier';
+            demoSelect.title = 'Preview as different tier';
+            demoSelect.style.cssText = 'font-family:var(--font-heading);font-size:9px;font-weight:700;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);border:1px solid rgba(255,255,255,0.25);border-radius:6px;padding:4px 6px;cursor:pointer;outline:none;text-transform:uppercase;letter-spacing:0.5px;';
+            demoSelect.innerHTML = '<option value="">Demo As...</option>' +
+                '<option value="carbon">Carbon</option>' +
+                '<option value="titanium">Titanium</option>' +
+                '<option value="platinum">Platinum</option>' +
+                '<option value="obsidian">Obsidian</option>' +
+                '<option value="diamond">Diamond (Full)</option>';
+            demoSelect.onchange = function() {
+                _demoTierOverride = this.value || null;
+                applyTierAccess(window.currentUserTier || 'diamond');
+                if (_demoTierOverride) {
+                    showToast('Previewing as ' + _demoTierOverride.toUpperCase() + ' tier', 'info', 2000);
+                } else {
+                    showToast('Restored full Diamond access', 'success', 2000);
+                }
+            };
+            var toolbar = document.getElementById('floating-toolbar');
+            if (toolbar) {
+                toolbar.insertBefore(demoSelect, tierBadge);
+            }
+        }
+        demoSelect.value = _demoTierOverride || '';
+    }
 
     // ---- TIER-LOCKED TABS: Register lockable tabs so switchTab() can show upgrade overlay ----
     _tierLockedTabs = {}; // Reset
@@ -9147,7 +9182,7 @@ async function loadUserLeads() {
         // 1. Fetch leads for this user
         const { data: leads, error } = await sb
             .from('leads')
-            .select('id, first_name, last_name, email, phone, source, crm_source, status, stage, metadata, created_at, dnc, dnc_reason')
+            .select('id, first_name, last_name, email, phone, source, status, stage, metadata, created_at, dnc, dnc_reason')
             .eq('user_id', userId)
             .order('created_at', { ascending: false })
             .limit(200);
@@ -9253,7 +9288,7 @@ async function loadUserLeads() {
             var name = escapeAttr(((fn || '') + ' ' + (ln || '')).trim() || 'Unknown');
             var email = escapeAttr(l.email || '—');
             var phone = escapeAttr(l.phone || '—');
-            var src = escapeAttr(l.crm_source || l.source || 'webhook');
+            var src = escapeAttr(l.source || 'webhook');
             var st = l.status || l.stage || 'New';
             var srcColor = sourceColors[src] || '#6b7280';
             var date = l.created_at ? new Date(l.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
@@ -9470,7 +9505,7 @@ function exportLeadsCSV() {
             name,
             l.email || '',
             l.phone || '',
-            l.crm_source || l.source || 'webhook',
+            l.source || 'webhook',
             l.status || l.stage || 'New',
             l.isQuoted ? 'Yes' : 'No',
             meta.credit_score || '',
@@ -9635,7 +9670,6 @@ async function saveNewLead() {
             email: email,
             phone: phone,
             source: 'manual',
-            crm_source: 'manual',
             status: 'New',
             stage: 'new',
             metadata: {
