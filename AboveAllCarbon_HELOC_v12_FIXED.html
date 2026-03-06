@@ -9191,7 +9191,7 @@ async function loadUserLeads() {
         // 1. Fetch leads for this user
         const { data: leads, error } = await sb
             .from('leads')
-            .select('id, first_name, last_name, email, phone, source, status, metadata, created_at, dnc, dnc_reason')
+            .select('*')
             .eq('user_id', userId)
             .order('created_at', { ascending: false })
             .limit(200);
@@ -9849,9 +9849,6 @@ async function loadNotifPrefs() {
 </script>
 <script type="module" src="./js/main.js"></script>
 <!-- Ezra AI Loan Structuring Assistant -->
-<script src="./js/ezra-real.js"></script>
-<script src="./js/ezra-complete.js"></script>
-<script src="./js/ezra-advanced.js"></script>
 <script src="./js/ezra-chat.js"></script>
 </body>
 </html>

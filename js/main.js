@@ -1,4 +1,4 @@
-import { initConvex, saveQuoteToConvex, resetQuoteId, setQuoteId } from './convex-db.js';
+import { initDB, saveQuote, resetQuoteId, setQuoteId } from './supabase-quotes.js';
 import { checkSession, logout, getEffectiveUser, stopImpersonation, impersonateUser, captureGoogleProviderToken } from './auth.js';
 import { supabase, clearUserCache } from './supabase-client.js';
 
@@ -65,7 +65,7 @@ try {
     }
 
     // Initialize Supabase DB adapter
-    initConvex();
+    initDB();
 
     // Monkey-patch the existing autoSave function to also save to Supabase
     // Cloud save is debounced to 5s after the last change to avoid hammering the DB
@@ -112,7 +112,7 @@ try {
                     timestamp: new Date().toISOString()
                 };
                 const indicator = document.getElementById('autosave-status');
-                const result = await saveQuoteToConvex(data);
+                const result = await saveQuote(data);
                 if (indicator) {
                     if (result && result.ok) {
                         indicator.innerText = '☁ Synced';

@@ -9,7 +9,7 @@ const STATIC_ASSETS = [
   './js/main.js',
   './js/auth.js',
   './js/supabase-client.js',
-  './js/convex-db.js',
+  './js/supabase-quotes.js',
   './js/link-shortener-universal.js'
 ];
 

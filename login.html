@@ -526,11 +526,11 @@
     </div>
 
     <script type="module">
-        import { initConvex } from './js/convex-db.js';
+        import { initDB } from './js/supabase-quotes.js';
         import { login, loginWithGoogle } from './js/auth.js';
         import { supabase } from './js/supabase-client.js';
 
-        initConvex();
+        initDB();
 
         // ── Google OAuth ──
         document.getElementById('google-login-btn').addEventListener('click', async () => {

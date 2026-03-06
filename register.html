@@ -428,10 +428,10 @@
     </div>
 
     <script type="module">
-        import { initConvex } from './js/convex-db.js';
+        import { initDB } from './js/supabase-quotes.js';
         import { register, loginWithGoogle } from './js/auth.js';
 
-        initConvex();
+        initDB();
 
         // ── Google OAuth ──
         document.getElementById('google-signup-btn').addEventListener('click', async () => {
