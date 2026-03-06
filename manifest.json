@@ -2,7 +2,7 @@
   "name": "Above All Carbon HELOC Quote Tool",
   "short_name": "AAC HELOC",
   "description": "Generate professional HELOC quotes instantly",
-  "start_url": "./AboveAllCarbon_HELOC_v12_OPTIMIZED.html",
+  "start_url": "./AboveAllCarbon_HELOC_v12_FIXED.html",
   "display": "standalone",
   "background_color": "#0f2b4c",
   "theme_color": "#0f2b4c",

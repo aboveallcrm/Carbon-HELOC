@@ -9832,10 +9832,15 @@ async function toggleNotifPref(el, field) {
         var update = {};
         update[field] = isOn;
         const { error } = await sb.from('profiles').update(update).eq('id', userId);
-        if (error) throw error;
+        if (error) {
+            // Column may not exist in production — save locally instead
+            console.log('Notification pref column not available, saved locally');
+            localStorage.setItem('notif_' + field, isOn ? '1' : '0');
+            showToast(isOn ? 'Notifications enabled' : 'Notifications disabled', 'success');
+            return;
+        }
         showToast(isOn ? 'Notifications enabled' : 'Notifications disabled', 'success');
     } catch (e) {
-        // Revert toggle on failure
         el.classList.toggle('active');
         showToast('Error saving preference: ' + e.message, 'error');
     }

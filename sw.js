@@ -3,9 +3,9 @@
  * Provides caching for offline functionality and faster subsequent loads
  */
 
-const CACHE_NAME = 'aac-heloc-v1';
+const CACHE_NAME = 'aac-heloc-v2';
 const STATIC_ASSETS = [
-  './AboveAllCarbon_HELOC_v12_OPTIMIZED.html',
+  './AboveAllCarbon_HELOC_v12_FIXED.html',
   './js/main.js',
   './js/auth.js',
   './js/supabase-client.js',
@@ -89,7 +89,7 @@ self.addEventListener('fetch', (event) => {
         .catch(() => {
           // Return offline fallback if available
           if (request.mode === 'navigate') {
-            return caches.match('./AboveAllCarbon_HELOC_v12_OPTIMIZED.html');
+            return caches.match('./AboveAllCarbon_HELOC_v12_FIXED.html');
           }
         });
     })

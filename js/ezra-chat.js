@@ -10,7 +10,7 @@
  * - Quick command buttons
  */
 
-(function() {
+(function () {
     'use strict';
 
     // ============================================
@@ -36,14 +36,14 @@
     // HELOC Product definitions — single source of truth
     const HELOC_PROGRAMS = {
         fixed: [
-            { name: '5 Year Fixed HELOC',  term: 5,  draw: 2, type: 'principal_and_interest' },
+            { name: '5 Year Fixed HELOC', term: 5, draw: 2, type: 'principal_and_interest' },
             { name: '10 Year Fixed HELOC', term: 10, draw: 3, type: 'principal_and_interest' },
             { name: '15 Year Fixed HELOC', term: 15, draw: 4, type: 'principal_and_interest' },
             { name: '30 Year Fixed HELOC', term: 30, draw: 5, type: 'principal_and_interest' }
         ],
         variable: [
             { name: '10 Year Variable HELOC', drawPeriod: 10, repayment: 20, type: 'interest_only_draw' },
-            { name: '5 Year Draw HELOC',      drawPeriod: 5,  repayment: 15, type: 'interest_only_draw' }
+            { name: '5 Year Draw HELOC', drawPeriod: 5, repayment: 15, type: 'interest_only_draw' }
         ]
     };
 
@@ -198,7 +198,7 @@
         }
 
         // Include rates if available
-        const rateEntries = Object.entries(ctx.rates).filter(([,v]) => v > 0);
+        const rateEntries = Object.entries(ctx.rates).filter(([, v]) => v > 0);
         if (rateEntries.length > 0) {
             summary += 'Available Rates (Tier 2): ';
             summary += rateEntries.map(([k, v]) => `${k}: ${v}%`).join(', ');
@@ -210,6 +210,59 @@
     }
 
     const EZRA_KNOWLEDGE = {
+        // Fallback local knowledge base (extracted from SQL)
+        localDocuments: [
+            { category: 'product_structures', title: 'Fixed HELOC Programs Overview', content: 'Fixed HELOC programs are fully amortizing loans. Monthly payments include principal and interest from day one. Borrowers typically draw the full approved amount upfront (minus fees) at closing. Additional draws may be available as principal is repaid. Unlike traditional HELOCs, these products do NOT have long interest-only draw periods.' },
+            { category: 'product_structures', title: 'Fixed HELOC Draw Windows', content: '5 Year Fixed HELOC: Draw period 2 years, Loan term 5 years. 10 Year Fixed HELOC: Draw period 3 years, Loan term 10 years. 15 Year Fixed HELOC: Draw period 4 years, Loan term 15 years. 30 Year Fixed HELOC: Draw period 5 years, Loan term 30 years. All fixed programs use fully amortized principal and interest payments. The draw window does not change the amortization schedule.' },
+            { category: 'product_structures', title: 'Variable HELOC Programs', content: 'Variable HELOC products include interest-only draw periods. Two structures: 1) 10 Year Variable HELOC — Draw 10 years (interest-only payments), Repayment 20 years amortization after draw. 2) 5 Year Draw HELOC — Draw 5 years (interest-only), Repayment begins after draw period ends.' },
+            { category: 'payment_rules', title: 'Fixed HELOC Payment Calculation', content: 'For fixed HELOC programs: Monthly payment = fully amortized principal and interest. Inputs: loan amount, interest rate, amortization period. Formula: P&I = Loan × [r(1+r)^n] / [(1+r)^n - 1] where r = monthly rate, n = total payments. Always clearly label as principal and interest payment.' },
+            { category: 'payment_rules', title: 'Variable HELOC Payment Calculation', content: 'For variable HELOC during draw period: Monthly payment = loan amount × interest rate ÷ 12. This is interest-only. After draw period: Remaining balance amortizes over the repayment term using standard P&I formula. Always clearly label which payment type is being displayed.' },
+            { category: 'approval_process', title: 'AI Underwriting Process', content: 'The HELOC platform uses AI-assisted underwriting. Process: 1) Borrower submits application. 2) Soft credit check determines eligibility — NO impact to credit score. 3) AI underwriting evaluates profile. 4) Income verified using secure bank-grade technology. 5) Borrower chooses preferred offer from multiple structures. 6) Final underwriting approval and closing. Borrowers remain in control. No hard credit pull required to view initial offers.' },
+            { category: 'approval_process', title: 'Approval Speed & Timeline', content: 'Automated underwriting and digital verification enable fast approvals. Some loans may fund in as little as 5 days depending on documentation and underwriting review. CRITICAL RULE: Always present timelines as possibilities, NEVER as guarantees. Say "as fast as 5 days" not "guaranteed in 5 days".' },
+            { category: 'approval_process', title: 'Income Verification', content: 'Income verification uses secure bank-grade technology. Borrowers connect accounts through a secure portal. Digital verification reduces paperwork and speeds up the process. All borrower financial data is protected with bank-level encryption and is never sold to third parties.' },
+            { category: 'data_privacy', title: 'Data Privacy & Security', content: 'Borrower information is handled with bank-grade security. Information is NEVER sold to third parties. Borrowers maintain control of their information and loan choices. All loan options shown transparently so borrowers can decide which structure best fits their goals.' },
+            { category: 'deal_architect', title: 'Deal Architect Mode', content: 'When a loan officer requests "structure this deal" or provides borrower info, Ezra performs: Step 1 — Identify borrower goal (consolidation, equity access, liquidity, payment reduction). Step 2 — Calculate CLTV: (first mortgage + HELOC amount) / property value. Step 3 — Evaluate program eligibility. Step 4 — Recommend best program with reasoning. Step 5 — Calculate payment (P&I for fixed, IO for variable draw). Step 6 — Return AUTO_FILL_FIELDS JSON for quote auto-population. Step 7 — Generate client explanation.' },
+            { category: 'deal_architect', title: 'Structuring Intelligence', content: 'Program recommendations by borrower goal: Debt consolidation → 15yr or 30yr fixed (longer amortization). Short-term liquidity → 5yr or 10yr fixed (shorter programs). Payment flexibility → variable HELOC (interest-only draw). Rapid payoff → shorter amortization. Home improvement → 10yr fixed (moderate term). Maximum cash flow → 30yr fixed (lowest monthly payment).' },
+            { category: 'sales_scripts', title: 'HELOC Client Introduction', content: 'Opening: "This program gives you access to your home equity with complete transparency. You can view your potential offers with just a soft credit check — no impact to your credit score. Our technology evaluates your eligibility quickly, verifies income securely, and presents you with multiple options. You pick the offer that works best for you. Some approvals can fund in as little as 5 days."' },
+            { category: 'sales_scripts', title: 'Fixed HELOC Explanation Script', content: 'How to explain: "This program works more like a traditional loan. Instead of interest-only payments, the balance starts paying down right away with principal and interest. That helps build equity faster and keeps the loan structured on a predictable schedule." Example: 15 Year Fixed HELOC with 4-year draw, fully amortized P&I.' },
+            { category: 'sales_scripts', title: 'Sales Coach Three-Section Format', content: 'When presenting a loan, provide: 1) Loan Structure — program name, term, draw window, payment type. 2) Strategy Explanation — why this structure fits the borrower goal. 3) Suggested Script — word-for-word client-facing explanation.' },
+            { category: 'objections', title: 'Rate Concern Response', content: '"I understand rate is important. The advantage is you can see your actual offers with just a soft credit check — no impact to your score. Compare multiple structures and pick what fits. Unlike credit cards at 22%+, a HELOC at 8-9% saves thousands while providing structured payoff."' },
+            { category: 'objections', title: 'Speed Concern Response', content: '"Our platform uses AI-assisted underwriting and bank-grade digital verification. The process is faster than traditional HELOCs — some approvals can fund in as little as 5 days depending on documentation."' },
+            { category: 'objections', title: 'Trust & Privacy Response', content: '"Your information is protected with bank-grade security — the same level used by major financial institutions. We never sell your data to third parties. You see all options transparently and choose what works best. No obligation."' },
+            { category: 'objections', title: 'Refinance vs HELOC Response', content: '"A refinance replaces your first mortgage — which means giving up your current rate. A HELOC lets you access equity without touching your first mortgage. If your current rate is below market, a HELOC preserves that advantage."' },
+            { category: 'objections', title: 'General Hesitation Response', content: '"That is completely fine. You can view your potential offers with just a soft credit check — no commitment, no impact to your credit. Think of it as understanding what is available. Many clients find it helpful to know their options before they need them."' },
+            { category: 'value_proposition', title: 'Core Value Proposition', content: 'Key advantages: Multiple loan structures to choose from. Soft credit check to view offers (no hard pull). AI-assisted underwriting for faster decisions. Secure bank-grade income verification. Borrower controls which offer to select. Potential funding as fast as 5 days. Fixed rate options for predictable payments.' },
+            { category: 'heloc_guidelines', title: 'CLTV Calculation', content: 'Combined Loan-to-Value (CLTV) = (First Mortgage Balance + HELOC Amount) / Property Value. Most programs allow up to 85% CLTV for primary residences. Some programs may go higher depending on credit score and other factors.' },
+            { category: 'heloc_guidelines', title: 'Knowledge Authority Order', content: 'When answering HELOC questions, follow this priority: 1) Internal HELOC knowledge base. 2) Product rules from system prompt. 3) Loan officer provided inputs. 4) General mortgage knowledge. Internal knowledge base overrides external assumptions. Never invent loan program structures not defined in the product rules.' }
+        ],
+
+        searchLocalKB(query) {
+            if (!query) return '';
+            const terms = query.toLowerCase().split(/\\s+/).filter(t => t.length > 2);
+            if (terms.length === 0) return '';
+
+            const matches = this.localDocuments.map(doc => {
+                const text = (doc.title + ' ' + doc.content).toLowerCase();
+                let score = 0;
+                terms.forEach(term => {
+                    if (text.includes(term)) score += 1;
+                });
+                return { ...doc, score };
+            }).filter(d => d.score > 0)
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 3); // top 3 matches
+
+            if (matches.length === 0) return '';
+
+            let context = '\\n\\n--- LOCAL KNOWLEDGE BASE CONTEXT (FALLBACK) ---\\n';
+            matches.forEach(m => {
+                context += `[${m.title}]: ${m.content}\\n`;
+            });
+            context += '--- END KNOWLEDGE BASE ---\\n';
+
+            return context;
+        },
+
         buildSystemPrompt() {
             return `You are Ezra, an internal AI loan structuring assistant inside a HELOC quote platform used by professional loan officers.
 Created by Eddie Barragan — Above All CRM.
@@ -1570,7 +1623,7 @@ RESPONSE RULES
     function toggleWidget() {
         const container = document.getElementById('ezra-container');
         EzraState.isOpen = !EzraState.isOpen;
-        
+
         if (EzraState.isOpen) {
             container.classList.add('open');
             document.getElementById('ezra-orb').style.display = 'none';
@@ -1613,7 +1666,7 @@ RESPONSE RULES
         const input = document.getElementById('ezra-input');
         input.style.height = 'auto';
         input.style.height = Math.min(input.scrollHeight, 120) + 'px';
-        
+
         const sendBtn = document.getElementById('ezra-send');
         sendBtn.disabled = input.value.trim().length === 0;
     }
@@ -1624,7 +1677,7 @@ RESPONSE RULES
     async function sendMessage() {
         const input = document.getElementById('ezra-input');
         const message = input.value.trim();
-        
+
         if (!message || EzraState.isTyping) return;
 
         // Clear input
@@ -1641,22 +1694,22 @@ RESPONSE RULES
         try {
             // Route to appropriate AI model
             const response = await routeToAI(message);
-            
+
             // Hide typing indicator
             hideTypingIndicator();
-            
+
             // Add assistant response
             addMessage('assistant', response.content, response.metadata);
-            
+
             // Handle auto-fill if present
             if (response.autoFillFields) {
                 showAutoFillBlock(response.autoFillFields);
             }
-            
+
             // Save to Supabase
             saveMessageToSupabase('user', message);
             saveMessageToSupabase('assistant', response.content, response.metadata);
-            
+
         } catch (error) {
             hideTypingIndicator();
             addMessage('assistant', 'I apologize, but I encountered an error. Please try again.');
@@ -1666,17 +1719,17 @@ RESPONSE RULES
 
     function addMessage(role, content, metadata = {}) {
         const messagesContainer = document.getElementById('ezra-messages');
-        
+
         // Remove welcome message if present
         const welcome = messagesContainer.querySelector('.ezra-welcome');
         if (welcome) welcome.remove();
 
         const messageDiv = document.createElement('div');
         messageDiv.className = `ezra-message ${role}`;
-        
+
         const avatar = role === 'assistant' ? '\u2726' : '\u2726';
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
+
         messageDiv.innerHTML = `
             <div class="ezra-message-avatar">${avatar}</div>
             <div>
@@ -1733,9 +1786,9 @@ RESPONSE RULES
             const name = ctx.clientName !== 'Borrower' ? ctx.clientName : '';
             const details = [];
             if (name) details.push(name);
-            if (ctx.homeValue > 0) details.push(`$${(ctx.homeValue/1000).toFixed(0)}K property`);
-            if (ctx.mortgageBalance > 0) details.push(`$${(ctx.mortgageBalance/1000).toFixed(0)}K mortgage`);
-            if (ctx.helocAmount > 0) details.push(`$${(ctx.helocAmount/1000).toFixed(0)}K HELOC`);
+            if (ctx.homeValue > 0) details.push(`$${(ctx.homeValue / 1000).toFixed(0)}K property`);
+            if (ctx.mortgageBalance > 0) details.push(`$${(ctx.mortgageBalance / 1000).toFixed(0)}K mortgage`);
+            if (ctx.helocAmount > 0) details.push(`$${(ctx.helocAmount / 1000).toFixed(0)}K HELOC`);
             if (details.length > 0) {
                 prompt += ' — ' + details.join(', ');
             }
@@ -1752,7 +1805,7 @@ RESPONSE RULES
     // ============================================
     async function showDealRadar() {
         EzraState.activeTab = 'deal-radar';
-        
+
         const messagesContainer = document.getElementById('ezra-messages');
         messagesContainer.innerHTML = `
             <div class="ezra-deal-radar">
@@ -1957,7 +2010,7 @@ RESPONSE RULES
             });
 
             const result = await response.json();
-            
+
             // Display dashboard in chat
             EzraState.activeTab = 'chat';
             const dashboardText = formatDashboardText(result.dashboard);
@@ -1980,9 +2033,9 @@ RESPONSE RULES
 ${Object.entries(dashboard.by_type || {}).map(([type, count]) => `• ${formatOpportunityType(type)}: ${count}`).join('\n')}
 
 **Top Opportunities**
-${(dashboard.top_opportunities || []).slice(0, 5).map((opp, i) => 
-    `${i + 1}. ${opp.type} - $${(opp.equity / 1000).toFixed(0)}k equity (${opp.confidence * 100}% confidence)`
-).join('\n')}
+${(dashboard.top_opportunities || []).slice(0, 5).map((opp, i) =>
+            `${i + 1}. ${opp.type} - $${(opp.equity / 1000).toFixed(0)}k equity (${opp.confidence * 100}% confidence)`
+        ).join('\n')}
 
 Use the **Deal Radar** tab to view all opportunities and create quotes.`;
     }
@@ -1998,13 +2051,13 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
                 showTypingIndicator();
                 const result = await window.EzraReal.processCommand(parsed.command, parsed.params);
                 hideTypingIndicator();
-                
+
                 if (result.success) {
                     // Store quote data for auto-fill
                     if (result.quote) {
                         EzraState.lastQuote = result.quote;
                     }
-                    
+
                     return {
                         content: result.message,
                         metadata: { model: 'ezra-real', intent: parsed.command },
@@ -2019,7 +2072,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
                 }
             }
         }
-        
+
         // Check for quote tool interaction commands (tier/term/field changes)
         const quoteCmd = parseQuoteCommand(message);
         if (quoteCmd) {
@@ -2048,7 +2101,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         }
 
         const response = await callAIService(message, model, intent);
-        
+
         return {
             content: response.content,
             metadata: { model, intent },
@@ -2249,7 +2302,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
                 setField(cmd.fieldId, cmd.value);
                 refreshQuote();
                 // Read updated snapshot after a brief delay
-                setTimeout(() => {}, 100);
+                setTimeout(() => { }, 100);
                 const snap = readSnapshot();
                 const displayVal = cmd.fieldId === 'in-client-credit' ? String(cmd.value) : fmt(cmd.value);
                 return `**Done — ${cmd.fieldLabel} updated to ${displayVal}**\n\nQuote recalculated:\n• Rate: ${snap.rate}% | Term: ${snap.term}yr | Payment: ${snap.payment}\n• Total Loan: ${snap.totalLoan}\n\nAnything else to adjust?`;
@@ -2350,7 +2403,13 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         const formCtx = getFormContext();
         // Merge form data with any inline numbers/names from the message
         const ctx = parseMessageContext(message, formCtx);
-        const contextSummary = buildContextSummary();
+        let contextSummary = buildContextSummary();
+
+        // --- Append Local Fallback Knowledge Base Search ---
+        const localKbContext = EZRA_KNOWLEDGE.searchLocalKB(message);
+        if (localKbContext) {
+            contextSummary += localKbContext;
+        }
 
         // ── Try real AI backend first ──
         try {
@@ -2487,25 +2546,25 @@ ${recReason}
 
 **Step 6 — Client Explanation**
 "${recProgram.includes('Variable')
-    ? 'During the draw period, you only pay interest on the amount you use. This keeps your payment lower while giving you access to your equity. After the draw period, the loan converts to a fully amortized repayment schedule.'
-    : 'This program works more like a traditional loan. Instead of interest-only payments, the balance starts paying down right away with principal and interest. That helps build equity faster and keeps the loan on a predictable payoff schedule.'}"${cltvWarning}
+                ? 'During the draw period, you only pay interest on the amount you use. This keeps your payment lower while giving you access to your equity. After the draw period, the loan converts to a fully amortized repayment schedule.'
+                : 'This program works more like a traditional loan. Instead of interest-only payments, the balance starts paying down right away with principal and interest. That helps build equity faster and keeps the loan on a predictable payoff schedule.'}"${cltvWarning}
 
 AUTO_FILL_FIELDS
 ${JSON.stringify({
-    borrower_name: ctx.clientName,
-    credit_score: ctx.creditScore !== 'Not provided' ? ctx.creditScore : undefined,
-    property_value: ctx.homeValue,
-    first_mortgage_balance: ctx.mortgageBalance,
-    heloc_amount: ctx.helocAmount,
-    combined_ltv: ctx.cltv,
-    program_selected: recProgram,
-    draw_period: recDraw,
-    loan_term: recTerm,
-    interest_rate: bestRate,
-    origination_fee: origFeeAmt,
-    payment_type: recProgram.includes('Variable') ? 'interest_only' : 'principal_and_interest',
-    monthly_payment_estimate: recPayment
-})}` : `**DEAL ARCHITECT**
+                    borrower_name: ctx.clientName,
+                    credit_score: ctx.creditScore !== 'Not provided' ? ctx.creditScore : undefined,
+                    property_value: ctx.homeValue,
+                    first_mortgage_balance: ctx.mortgageBalance,
+                    heloc_amount: ctx.helocAmount,
+                    combined_ltv: ctx.cltv,
+                    program_selected: recProgram,
+                    draw_period: recDraw,
+                    loan_term: recTerm,
+                    interest_rate: bestRate,
+                    origination_fee: origFeeAmt,
+                    payment_type: recProgram.includes('Variable') ? 'interest_only' : 'principal_and_interest',
+                    monthly_payment_estimate: recPayment
+                })}` : `**DEAL ARCHITECT**
 
 To structure a deal, I need data in the quote form. Please fill in:
 • **Home Value** — property value field
@@ -2540,20 +2599,20 @@ Click **Apply to Quote Tool** below to auto-fill these values.${cltvWarning}
 
 AUTO_FILL_FIELDS
 ${JSON.stringify({
-    borrower_name: ctx.clientName,
-    credit_score: ctx.creditScore !== 'Not provided' ? ctx.creditScore : undefined,
-    property_value: ctx.homeValue,
-    first_mortgage_balance: ctx.mortgageBalance,
-    heloc_amount: ctx.helocAmount,
-    combined_ltv: ctx.cltv,
-    program_selected: recProgram,
-    draw_period: recDraw,
-    loan_term: recTerm,
-    interest_rate: bestRate,
-    origination_fee: origFeeAmt,
-    payment_type: recProgram.includes('Variable') ? 'interest_only' : 'principal_and_interest',
-    monthly_payment_estimate: recPayment
-})}` : `I'll help you build a HELOC quote. Please enter the following in the quote form:
+            borrower_name: ctx.clientName,
+            credit_score: ctx.creditScore !== 'Not provided' ? ctx.creditScore : undefined,
+            property_value: ctx.homeValue,
+            first_mortgage_balance: ctx.mortgageBalance,
+            heloc_amount: ctx.helocAmount,
+            combined_ltv: ctx.cltv,
+            program_selected: recProgram,
+            draw_period: recDraw,
+            loan_term: recTerm,
+            interest_rate: bestRate,
+            origination_fee: origFeeAmt,
+            payment_type: recProgram.includes('Variable') ? 'interest_only' : 'principal_and_interest',
+            monthly_payment_estimate: recPayment
+        })}` : `I'll help you build a HELOC quote. Please enter the following in the quote form:
 
 • **Home Value** — property value
 • **1st Mortgage Balance** — current mortgage payoff
@@ -2689,8 +2748,8 @@ ${recReason}
 
 **Suggested Client Script**
 "${ctx.clientName.split(' ')[0] || 'Mr./Ms. Borrower'}, ${recProgram.includes('Variable')
-    ? `this program gives you maximum flexibility. During the ${recDraw} draw period, you only pay interest — that's ${fmt(ioPayment)} per month.`
-    : `this program works more like a traditional loan. Your payment of ${fmt(recPayment)} per month includes both principal and interest, so the balance pays down right away.`}"
+                ? `this program gives you maximum flexibility. During the ${recDraw} draw period, you only pay interest — that's ${fmt(ioPayment)} per month.`
+                : `this program works more like a traditional loan. Your payment of ${fmt(recPayment)} per month includes both principal and interest, so the balance pays down right away.`}"
 
 **Process Script**
 "You can view your offers with a soft credit check — no impact to your score. Our technology evaluates eligibility quickly, verifies income securely, and presents multiple options. Some approvals fund in as little as 5 days."
@@ -2776,17 +2835,17 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
     // ============================================
     function showAutoFillBlock(fields) {
         const messagesContainer = document.getElementById('ezra-messages');
-        
+
         const autoFillDiv = document.createElement('div');
         autoFillDiv.className = 'ezra-message assistant';
-        
+
         const fieldRows = Object.entries(fields).map(([key, value]) => `
             <div class="ezra-autofill-field">
                 <span class="ezra-autofill-label">${formatFieldLabel(key)}</span>
                 <span class="ezra-autofill-value">${formatFieldValue(key, value)}</span>
             </div>
         `).join('');
-        
+
         autoFillDiv.innerHTML = `
             <div class="ezra-message-avatar">\u2726</div>
             <div style="flex: 1;">
@@ -2809,7 +2868,7 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
                 </div>
             </div>
         `;
-        
+
         messagesContainer.appendChild(autoFillDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
@@ -2822,7 +2881,7 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
         if (typeof value === 'string' && isNaN(value)) return value;
         if (key === 'payment_type') return String(value).replace(/_/g, ' ');
         if (key.includes('payment_estimate') || key.includes('payment')) {
-            return '$' + Number(value).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2}) + '/mo';
+            return '$' + Number(value).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + '/mo';
         }
         if (key.includes('amount') || key.includes('value') || key.includes('balance') || key.includes('fee')) {
             return '$' + Number(value).toLocaleString();
@@ -2845,7 +2904,7 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
             }
             return;
         }
-        
+
         // Fallback to basic mapping
         const fieldMap = {
             borrower_name: 'in-client-name',
@@ -2902,9 +2961,14 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
 
     // ============================================
     // SUPABASE INTEGRATION
+    // Ezra tables (ezra_conversations, ezra_messages, ezra_user_preferences)
+    // are not yet deployed — skip all DB calls to avoid 400 console noise.
+    // Ezra works fully without persistence (in-memory session).
     // ============================================
+    const EZRA_TABLES_DEPLOYED = false;
+
     async function loadOrCreateConversation() {
-        if (!EzraState.user) return;
+        if (!EZRA_TABLES_DEPLOYED || !EzraState.user) return;
         try {
             const { data } = await EzraState.supabase
                 .from('ezra_conversations')
@@ -2921,12 +2985,11 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
             } else {
                 createNewConversation();
             }
-        } catch (e) {
-            // Tables may not exist yet — Ezra works fine without persistence
-        }
+        } catch (e) { }
     }
 
     async function createNewConversation() {
+        if (!EZRA_TABLES_DEPLOYED) return;
         try {
             const conversationId = 'ezra_' + Date.now();
             const { data } = await EzraState.supabase
@@ -2941,10 +3004,11 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
                 .single();
 
             if (data) EzraState.conversationId = data.id;
-        } catch (e) { /* table may not exist */ }
+        } catch (e) { }
     }
 
     async function loadConversationHistory(conversationId) {
+        if (!EZRA_TABLES_DEPLOYED) return;
         try {
             const { data } = await EzraState.supabase
                 .from('ezra_messages')
@@ -2958,11 +3022,11 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
                     addMessage(msg.role, msg.content, { model: msg.model_used });
                 });
             }
-        } catch (e) { /* table may not exist */ }
+        } catch (e) { }
     }
 
     async function saveMessageToSupabase(role, content, metadata = {}) {
-        if (!EzraState.conversationId) return;
+        if (!EZRA_TABLES_DEPLOYED || !EzraState.conversationId) return;
         try {
             await EzraState.supabase
                 .from('ezra_messages')
@@ -2973,26 +3037,11 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
                     model_used: metadata.model,
                     metadata
                 });
-        } catch (e) { /* table may not exist */ }
+        } catch (e) { }
     }
 
     async function loadUserPreferences() {
-        if (!EzraState.user) return;
-        try {
-            const { data } = await EzraState.supabase
-                .from('ezra_user_preferences')
-                .select('*')
-                .eq('loan_officer_id', EzraState.user.id)
-                .single();
-
-            if (data) {
-                EzraState.currentModel = data.preferred_model;
-                EzraState.autoFillEnabled = data.auto_fill_enabled;
-                EzraState.userTier = data.default_tier;
-                document.querySelector('.ezra-model-name').textContent =
-                    EZRA_CONFIG.models[data.preferred_model]?.name || 'Fast';
-            }
-        } catch (e) { /* table may not exist */ }
+        if (!EZRA_TABLES_DEPLOYED || !EzraState.user) return;
     }
 
     // ============================================
@@ -3003,7 +3052,7 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
         // 1. Generates embedding for the query
         // 2. Calls search_ezra_knowledge() in Supabase
         // 3. Returns relevant context
-        
+
         const { data, error } = await EzraState.supabase
             .rpc('search_ezra_knowledge', {
                 query_embedding: query, // Would be actual embedding vector

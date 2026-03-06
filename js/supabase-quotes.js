@@ -28,7 +28,12 @@ export async function saveQuote(quoteData) {
                 .eq('user_id', user.id);
 
             if (error) {
-                // Reset ID on any failure so next save does a fresh insert
+                // If it's a trigger/column error, keep the ID — don't create new rows
+                if (error.message?.includes('updated_at') || error.message?.includes('trigger')) {
+                    console.warn("Quote update trigger error (run missing columns migration):", error.message);
+                    return { ok: false, reason: error.message };
+                }
+                // For other errors (row deleted, RLS denied), reset and re-insert next time
                 console.warn("Quote update failed, will retry as insert:", error.message);
                 _currentQuoteId = null;
                 return { ok: false, reason: error.message };
