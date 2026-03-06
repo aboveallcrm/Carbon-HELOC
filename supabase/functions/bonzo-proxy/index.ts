@@ -49,13 +49,15 @@ serve(async (req: Request) => {
             .eq('user_id', userId)
             .in('provider', ['heloc_keys', 'heloc_settings'])
 
+        // Collect all possible Bonzo keys — prefer the JWT API key (apiKey2) over the Xcode (apiKey)
+        // The Xcode is a short hash used for event hook auth, NOT a Bearer token for the API
         let bonzoApiKey = ''
         for (const row of (integrations || [])) {
             if (row.provider === 'heloc_keys') {
-                bonzoApiKey = row.metadata?.bonzo_api_key || row.metadata?.bonzo_api_key_2 || bonzoApiKey
+                bonzoApiKey = row.metadata?.bonzo_api_key_2 || row.metadata?.bonzo_api_key || bonzoApiKey
             }
             if (row.provider === 'heloc_settings') {
-                bonzoApiKey = row.metadata?.bonzo?.apiKey || row.metadata?.bonzo?.apiKey2 || bonzoApiKey
+                bonzoApiKey = row.metadata?.bonzo?.apiKey2 || row.metadata?.bonzo?.apiKey || bonzoApiKey
             }
         }
 
@@ -92,14 +94,13 @@ serve(async (req: Request) => {
             }
 
             case 'search_contact': {
-                // v3 doesn't have a dedicated search endpoint.
-                // Use GET /v3/prospects with query params for filtering.
-                // The payload may contain { email: '...' } — pass as query string.
+                // v3 uses GET /v3/prospects?search=<term> for filtering by email/phone/name
+                // The `email` and `phone` params don't filter — only `search` does
                 const params = new URLSearchParams()
-                if (payload?.email) params.set('email', payload.email)
-                if (payload?.phone) params.set('phone', payload.phone)
+                const searchTerm = payload?.email || payload?.phone || payload?.search || ''
+                if (searchTerm) params.set('search', searchTerm)
                 if (payload?.page) params.set('page', String(payload.page))
-                if (payload?.per_page) params.set('per_page', String(payload.per_page))
+                params.set('per_page', String(payload?.per_page || 10))
                 bonzoUrl = `${BONZO_API}/prospects?${params.toString()}`
                 bonzoResp = await fetch(bonzoUrl, {
                     method: 'GET',

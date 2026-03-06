@@ -49,13 +49,14 @@ serve(async (req: Request) => {
             .eq('user_id', userId)
             .in('provider', ['heloc_keys', 'heloc_settings'])
 
+        // Prefer JWT API key (apiKey2) over Xcode hash (apiKey)
         let bonzoApiKey = ''
         for (const row of (integrations || [])) {
             if (row.provider === 'heloc_keys') {
-                bonzoApiKey = row.metadata?.bonzo_api_key || row.metadata?.bonzo_api_key_2 || bonzoApiKey
+                bonzoApiKey = row.metadata?.bonzo_api_key_2 || row.metadata?.bonzo_api_key || bonzoApiKey
             }
             if (row.provider === 'heloc_settings') {
-                bonzoApiKey = row.metadata?.bonzo?.apiKey || row.metadata?.bonzo?.apiKey2 || bonzoApiKey
+                bonzoApiKey = row.metadata?.bonzo?.apiKey2 || row.metadata?.bonzo?.apiKey || bonzoApiKey
             }
         }
 

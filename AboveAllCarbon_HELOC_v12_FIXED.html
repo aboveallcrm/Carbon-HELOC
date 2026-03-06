@@ -9107,14 +9107,20 @@ Best regards,
 
                 try {
                     var result = await _bonzoProxy('search_contact', { payload: { email: email } });
-                    var contact = result.data || result;
-                    if (contact && contact.tags) {
+                    // v3 returns paginated { data: [...] } — find the matching prospect
+                    var prospects = result.data || result;
+                    if (Array.isArray(prospects)) {
+                        var contact = prospects.find(function(p) { return p.email && p.email.toLowerCase() === email.toLowerCase(); });
+                        if (!contact) return null;
+                        // Check do_not_call flag (v3 field)
+                        if (contact.do_not_call) return { reason: 'DNC flag set on Bonzo prospect' };
+                        // Check tags
                         var dncTags = ['DNC', 'Do Not Contact', 'Do Not Call', 'dnc', 'do_not_contact', 'STOP', 'unsubscribed', 'Unsubscribed'];
-                        var tags = Array.isArray(contact.tags) ? contact.tags : [];
+                        var tags = Array.isArray(contact.tags) ? contact.tags.map(function(t) { return typeof t === 'object' ? t.name : t; }) : [];
                         var found = tags.find(function (t) {
-                            return dncTags.some(function (d) { return t.toLowerCase().trim() === d.toLowerCase(); });
+                            return dncTags.some(function (d) { return (t || '').toLowerCase().trim() === d.toLowerCase(); });
                         });
-                        if (found) return { reason: 'Tag "' + found + '" found on Bonzo contact' };
+                        if (found) return { reason: 'Tag "' + found + '" found on Bonzo prospect' };
                     }
                 } catch (e) {
                     console.log('Bonzo DNC check error:', e.message);
@@ -11863,7 +11869,7 @@ Sent via Above All Carbon HELOC Tool`;
                 if (!bonzoContactId) throw new Error('Could not create contact in Bonzo');
 
                 // Send SMS message via proxy
-                await _bonzoProxy('send_sms', { contactId: bonzoContactId, payload: { type: 'sms', body: smsText } });
+                await _bonzoProxy('send_sms', { contactId: bonzoContactId, payload: { message: smsText } });
                 showToast('SMS sent via Bonzo!', 'success');
             } catch (e) {
                 showToast('Bonzo SMS error: ' + e.message, 'error');
