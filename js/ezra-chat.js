@@ -1087,6 +1087,21 @@ RESPONSE RULES
                             placeholder="${EZRA_CONFIG.placeholderText}"
                             rows="1"
                         ></textarea>
+                        <button id="ezra-paste-rates" class="ezra-action-btn" title="Paste lender rates (Ctrl+A from Figure)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="8" y="2" width="8" height="4" rx="1"/>
+                                <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
+                                <path d="M9 14l2 2 4-4"/>
+                            </svg>
+                        </button>
+                        <button id="ezra-voice" class="ezra-action-btn" title="Voice input">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="1" width="6" height="11" rx="3"/>
+                                <path d="M5 10a7 7 0 0014 0"/>
+                                <line x1="12" y1="17" x2="12" y2="21"/>
+                                <line x1="8" y1="21" x2="16" y2="21"/>
+                            </svg>
+                        </button>
                         <button id="ezra-send" class="ezra-send-btn" disabled>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
@@ -1096,6 +1111,22 @@ RESPONSE RULES
                     <div class="ezra-input-footer">
                         <span class="ezra-tier-badge">${EzraState.userTier}</span>
                         <span class="ezra-powered-by">Powered by AI</span>
+                    </div>
+
+                    <!-- Paste Rates Modal -->
+                    <div id="ezra-paste-modal" class="ezra-paste-modal" style="display:none;">
+                        <div class="ezra-paste-modal-content">
+                            <div class="ezra-paste-modal-header">
+                                <span>Paste Lender Rates</span>
+                                <button class="ezra-paste-close" onclick="document.getElementById('ezra-paste-modal').style.display='none'">&times;</button>
+                            </div>
+                            <p class="ezra-paste-hint">Go to the lender portal (Figure), press <strong>Ctrl+A</strong> to select all, <strong>Ctrl+C</strong> to copy, then <strong>Ctrl+V</strong> below.</p>
+                            <textarea id="ezra-paste-area" class="ezra-paste-area" placeholder="Paste the full page here..." rows="8"></textarea>
+                            <div class="ezra-paste-actions">
+                                <button class="ezra-paste-submit" id="ezra-paste-submit">Import Rates</button>
+                                <button class="ezra-paste-cancel" onclick="document.getElementById('ezra-paste-modal').style.display='none'">Cancel</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1669,6 +1700,37 @@ RESPONSE RULES
                 opacity: 0.6;
             }
 
+            .ezra-action-btn {
+                width: 32px;
+                height: 32px;
+                background: transparent;
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 50%;
+                color: var(--ezra-text-muted);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+                flex-shrink: 0;
+            }
+            .ezra-action-btn:hover {
+                background: rgba(255,255,255,0.06);
+                color: var(--ezra-gold);
+                border-color: var(--ezra-gold-dim);
+            }
+            .ezra-action-btn svg { width: 15px; height: 15px; }
+            .ezra-action-btn.recording {
+                background: rgba(239,68,68,0.2);
+                border-color: #ef4444;
+                color: #ef4444;
+                animation: ezra-pulse-record 1.2s ease-in-out infinite;
+            }
+            @keyframes ezra-pulse-record {
+                0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); }
+                50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+            }
+
             .ezra-send-btn {
                 width: 36px;
                 height: 36px;
@@ -1698,6 +1760,88 @@ RESPONSE RULES
                 width: 16px;
                 height: 16px;
             }
+
+            /* Paste Rates Modal */
+            .ezra-paste-modal {
+                position: absolute;
+                bottom: 0; left: 0; right: 0; top: 0;
+                background: rgba(0,0,0,0.7);
+                backdrop-filter: blur(4px);
+                z-index: 100;
+                display: flex;
+                align-items: flex-end;
+                padding: 16px;
+            }
+            .ezra-paste-modal-content {
+                background: var(--ezra-dark-2);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 12px;
+                padding: 16px;
+                width: 100%;
+                max-height: 80%;
+                overflow: auto;
+            }
+            .ezra-paste-modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--ezra-gold);
+                margin-bottom: 8px;
+            }
+            .ezra-paste-close {
+                background: none; border: none; color: var(--ezra-text-muted); font-size: 20px; cursor: pointer; padding: 0 4px;
+            }
+            .ezra-paste-close:hover { color: white; }
+            .ezra-paste-hint {
+                font-size: 11px;
+                color: var(--ezra-text-muted);
+                margin-bottom: 10px;
+                line-height: 1.5;
+            }
+            .ezra-paste-hint strong { color: var(--ezra-text); }
+            .ezra-paste-area {
+                width: 100%;
+                background: rgba(0,0,0,0.3);
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 8px;
+                padding: 10px;
+                color: var(--ezra-text);
+                font-size: 11px;
+                font-family: monospace;
+                resize: vertical;
+                min-height: 100px;
+                max-height: 200px;
+                outline: none;
+            }
+            .ezra-paste-area:focus {
+                border-color: var(--ezra-gold-dim);
+            }
+            .ezra-paste-area::placeholder { color: var(--ezra-text-muted); opacity: 0.5; }
+            .ezra-paste-actions {
+                display: flex; gap: 8px; margin-top: 10px;
+            }
+            .ezra-paste-submit {
+                flex: 1;
+                padding: 8px 16px;
+                background: linear-gradient(135deg, var(--ezra-gold), var(--ezra-gold-bright));
+                border: none; border-radius: 8px;
+                color: var(--ezra-dark-1);
+                font-weight: 600; font-size: 12px;
+                cursor: pointer; transition: all 0.2s;
+            }
+            .ezra-paste-submit:hover { box-shadow: 0 0 12px rgba(212,175,55,0.4); }
+            .ezra-paste-cancel {
+                padding: 8px 16px;
+                background: transparent;
+                border: 1px solid rgba(255,255,255,0.15);
+                border-radius: 8px;
+                color: var(--ezra-text-muted);
+                font-size: 12px;
+                cursor: pointer;
+            }
+            .ezra-paste-cancel:hover { border-color: rgba(255,255,255,0.3); color: var(--ezra-text); }
 
             .ezra-input-footer {
                 display: flex;
@@ -2107,6 +2251,128 @@ RESPONSE RULES
                 hideModelModal();
             }
         });
+
+        // Paste Rates button
+        document.getElementById('ezra-paste-rates')?.addEventListener('click', openPasteModal);
+
+        // Paste modal submit
+        document.getElementById('ezra-paste-submit')?.addEventListener('click', submitPastedRates);
+
+        // Voice input button
+        document.getElementById('ezra-voice')?.addEventListener('click', toggleVoiceInput);
+    }
+
+    // ============================================
+    // PASTE RATES MODAL
+    // ============================================
+    function openPasteModal() {
+        const modal = document.getElementById('ezra-paste-modal');
+        const area = document.getElementById('ezra-paste-area');
+        if (modal) {
+            modal.style.display = 'flex';
+            if (area) { area.value = ''; area.focus(); }
+        }
+    }
+
+    function submitPastedRates() {
+        const area = document.getElementById('ezra-paste-area');
+        const modal = document.getElementById('ezra-paste-modal');
+        if (!area || !area.value.trim()) return;
+
+        const pastedText = area.value.trim();
+        modal.style.display = 'none';
+
+        // Feed the pasted text through Ezra as a message
+        const input = document.getElementById('ezra-input');
+        if (input) {
+            input.value = pastedText;
+            sendMessage();
+        }
+    }
+
+    // ============================================
+    // VOICE INPUT (Web Speech API)
+    // ============================================
+    let _voiceRecognition = null;
+    let _isRecording = false;
+
+    function toggleVoiceInput() {
+        if (_isRecording) {
+            stopVoiceInput();
+            return;
+        }
+
+        // Check browser support
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            if (typeof showToast === 'function') {
+                showToast('Voice input not supported in this browser. Try Chrome.', 'error');
+            }
+            return;
+        }
+
+        _voiceRecognition = new SpeechRecognition();
+        _voiceRecognition.continuous = true;
+        _voiceRecognition.interimResults = true;
+        _voiceRecognition.lang = 'en-US';
+
+        const voiceBtn = document.getElementById('ezra-voice');
+        const input = document.getElementById('ezra-input');
+        let finalTranscript = input.value || '';
+        let startLength = finalTranscript.length;
+
+        _voiceRecognition.onstart = () => {
+            _isRecording = true;
+            if (voiceBtn) voiceBtn.classList.add('recording');
+            if (input) input.placeholder = 'Listening...';
+        };
+
+        _voiceRecognition.onresult = (event) => {
+            let interim = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += (finalTranscript.length > startLength ? ' ' : '') + transcript;
+                } else {
+                    interim += transcript;
+                }
+            }
+            if (input) {
+                input.value = finalTranscript + (interim ? ' ' + interim : '');
+                autoResizeTextarea();
+            }
+        };
+
+        _voiceRecognition.onerror = (event) => {
+            console.warn('Voice input error:', event.error);
+            stopVoiceInput();
+            if (event.error === 'not-allowed') {
+                if (typeof showToast === 'function') showToast('Microphone access denied. Check browser permissions.', 'error');
+            }
+        };
+
+        _voiceRecognition.onend = () => {
+            stopVoiceInput();
+            // Auto-send if we got substantial text
+            if (input && input.value.trim().length > 10) {
+                const sendBtn = document.getElementById('ezra-send');
+                if (sendBtn) sendBtn.disabled = false;
+            }
+        };
+
+        _voiceRecognition.start();
+    }
+
+    function stopVoiceInput() {
+        _isRecording = false;
+        if (_voiceRecognition) {
+            try { _voiceRecognition.stop(); } catch (e) { }
+            _voiceRecognition = null;
+        }
+        const voiceBtn = document.getElementById('ezra-voice');
+        const input = document.getElementById('ezra-input');
+        if (voiceBtn) voiceBtn.classList.remove('recording');
+        if (input) input.placeholder = EZRA_CONFIG.placeholderText;
     }
 
     // ============================================
