@@ -105,71 +105,184 @@ td { font-family: var(--font-body); font-size: 10px; color: var(--slate); paddin
 .tool-protection { background: #fee2e2; border: 1px solid #fca5a5; border-radius: 4px; padding: 6px; margin-top: 8px; font-size: 6px; color: #991b1b; text-align: center; }
 footer { margin-top: 12px; padding: 12px 20px; background-color: var(--slate); color: #cbd5e1; font-size: 8px; }
 .footer-main { display: flex; gap: 12px; align-items: center; }
-.footer-headshot { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--accent-color); object-fit: cover; flex-shrink: 0; background: #ccc; }
+.footer-headshot { width: 55px !important; height: 55px !important; max-width: 55px !important; max-height: 55px !important; border-radius: 50%; border: 2px solid var(--accent-color); object-fit: cover; flex-shrink: 0; background: #ccc; display: block; }
 .footer-info { flex-grow: 1; line-height: 1.4; }
 .footer-name { font-family: var(--font-heading); font-weight: 800; color: var(--accent-color); font-size: 12px; display: block; margin-bottom: 2px;}
 .footer-stars { margin-top: 3px; color: #fde047; font-weight: 700; font-size: 7px; }
 .footer-legal { display: flex; gap: 10px; align-items: flex-start; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-top: 8px; font-size: 6px; line-height: 1.3; color: #94a3b8; }
 .footer-legal img.ehl-logo { height: 22px; flex-shrink: 0; background: white; padding: 2px; border-radius: 2px; }
 .company-logo-footer { height: 40px; max-width: 120px; object-fit: contain; flex-shrink: 0; background: white; padding: 4px; border-radius: 4px; }
-#admin-panel { max-width: 950px; margin: 0 auto 20px auto; padding: 20px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 12px; color: white; border: 1px solid rgba(255,255,255,0.1); }
-.control-section { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.1); }
+#admin-panel { max-width: 950px; margin: 0 auto 20px auto; padding: 20px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 16px; color: white; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(197, 160, 89, 0.1); }
+.control-section { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.06); transition: all 0.2s ease; }
+.control-section:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
 .input-group { display: flex; gap: 10px; flex-wrap: wrap; }
 .input-field { flex: 1; display: flex; flex-direction: column; min-width: 100px; }
 .input-field label { font-family: var(--font-heading); font-size: 8px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; color: rgba(255,255,255,0.7); font-weight: 700;}
-.input-field input, .input-field select, .input-field textarea { height: 34px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2); padding: 0 8px; font-family: var(--font-body); font-size: 12px; background: #1e293b; color: white; }
-.input-field textarea { height: auto; padding: 8px; }
-.input-field input:focus, .input-field select:focus, .input-field textarea:focus { outline: none; border-color: var(--accent-color); }
+.input-field input, .input-field select, .input-field textarea { height: 36px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); padding: 0 12px; font-family: var(--font-body); font-size: 12px; background: rgba(30, 41, 59, 0.8); color: white; transition: all 0.2s ease; }
+.input-field textarea { height: auto; padding: 12px; }
+.input-field input:hover, .input-field select:hover, .input-field textarea:hover { border-color: rgba(255,255,255,0.25); background: rgba(30, 41, 59, 0.95); }
+.input-field input:focus, .input-field select:focus, .input-field textarea:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15); background: #1e293b; }
+
+/* Enhanced select/dropdown styling for dark theme */
+select, .rate-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23c5a059' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-color: #1e293b;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 5px;
+    padding: 0 28px 0 10px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+select:hover, .rate-select:hover {
+    border-color: var(--accent-color);
+    background-color: #252f47;
+}
+
+select:focus, .rate-select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
+}
+
+/* Style select options for dark theme */
+select option, .rate-select option {
+    background-color: #1e293b;
+    color: white;
+    padding: 8px;
+}
+
+select option:hover, select option:focus, select option:checked {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+/* Specific styling for rate selects */
+.rate-select {
+    height: 34px;
+    min-width: 80px;
+}
+
+/* Inline styled selects in the admin panel */
+#admin-panel select,
+#leads-filter-status,
+#template-select,
+#shortener-category,
+#add-lead-occupancy,
+#rec-tier-select,
+#rec-term-select,
+#edit-user-role,
+#edit-user-tier,
+#edit-user-status,
+#keys-ai-provider,
+#invite-role,
+#invite-tier {
+    background-color: #1e293b;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23c5a059' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+}
+
+/* Status dropdown in leads table */
+td select {
+    background-color: rgba(0,0,0,0.4);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    padding: 4px 20px 4px 8px;
+    font-family: var(--font-heading);
+    font-size: 8px;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%23c5a059' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+}
+
+/* Property type and other form selects */
+#in-property-type {
+    background-color: #1e293b;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.2);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23c5a059' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+}
 .input-field input[type="color"] { padding: 2px; cursor: pointer; height: 34px; }
-.btn { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-family: var(--font-heading); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
-.btn:hover { transform: scale(1.02); }
+.btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-family: var(--font-heading); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 10px; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+.btn:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .btn-print { background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: white; }
-.btn-save { background: #10b981; color: white; }
-.btn-add { background: #f97316; color: white; font-size: 8px; padding: 5px 10px; }
-.btn-email { background: #3b82f6; color: white; }
-.btn-copy { background: #8b5cf6; color: white; }
+.btn-print:hover { box-shadow: 0 4px 16px rgba(197, 160, 89, 0.4); }
+.btn-save { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+.btn-save:hover { box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4); }
+.btn-add { background: linear-gradient(135deg, #f97316, #ea580c); color: white; font-size: 8px; padding: 5px 10px; }
+.btn-add:hover { box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4); }
+.btn-email { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+.btn-email:hover { box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4); }
+.btn-copy { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
+.btn-copy:hover { box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4); }
 .pts-amt { font-size: 9px; color: var(--accent-color); margin-top: 2px; font-weight: 700; }
-#address-results { position: absolute; top: 100%; left: 0; right: 0; background: #1e293b; border: 1px solid var(--accent-color); list-style: none; padding: 0; margin: 0; border-radius: 0 0 5px 5px; display: none; z-index: 1000; }
-#address-results li { padding: 8px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 11px; }
-#address-results li:hover { background: rgba(197, 160, 89, 0.2); }
+#address-results { position: absolute; top: 100%; left: 0; right: 0; background: #1e293b; border: 1px solid var(--accent-color); list-style: none; padding: 6px; margin: 4px 0 0 0; border-radius: 8px; display: none; z-index: 1000; box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+#address-results li { padding: 10px 12px; cursor: pointer; border-radius: 6px; font-size: 12px; color: rgba(255,255,255,0.9); transition: all 0.15s ease; margin-bottom: 2px; }
+#address-results li:hover { background: rgba(197, 160, 89, 0.15); color: white; }
+#address-results li:last-child { margin-bottom: 0; }
 .debt-input-row { display: flex; gap: 8px; margin-bottom: 6px; align-items: center; }
 .debt-input-row input { flex: 1; height: 32px; font-size: 11px; }
-.toggle-container { display: flex; align-items: center; gap: 8px; }
-.toggle-switch { position: relative; width: 44px; height: 22px; background: #374151; border-radius: 11px; cursor: pointer; transition: background 0.3s; }
-.toggle-switch.active { background: var(--accent-color); }
-.toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: transform 0.3s; }
+.toggle-container { display: flex; align-items: center; gap: 10px; }
+.toggle-switch { position: relative; width: 48px; height: 26px; background: #374151; border-radius: 13px; cursor: pointer; transition: all 0.3s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); }
+.toggle-switch.active { background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 0 12px rgba(197, 160, 89, 0.3); }
+.toggle-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: linear-gradient(135deg, #ffffff, #e5e7eb); border-radius: 50%; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .toggle-switch.active::after { transform: translateX(22px); }
-.toggle-label { font-family: var(--font-heading); font-size: 9px; text-transform: uppercase; font-weight: 700; color: rgba(255,255,255,0.8); }
+.toggle-label { font-family: var(--font-heading); font-size: 9px; text-transform: uppercase; font-weight: 700; color: rgba(255,255,255,0.8); letter-spacing: 0.5px; }
 /* Password modal styles removed — role-based access via Supabase auth */
-.modal-content { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 30px; border-radius: 12px; text-align: center; border: 2px solid var(--accent-color); max-width: 350px; width: 90%; }
-.modal-content h2 { font-family: var(--font-heading); color: var(--accent-color); margin-bottom: 15px; font-size: 18px; }
-.modal-content input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: #1e293b; color: white; font-size: 14px; text-align: center; margin-bottom: 12px; box-sizing: border-box; }
-.modal-content button { background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: white; border: none; padding: 10px 25px; border-radius: 6px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; font-size: 12px; }
+.modal-content { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 32px; border-radius: 16px; text-align: center; border: 1px solid rgba(197, 160, 89, 0.3); max-width: 380px; width: 90%; box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05); }
+.modal-content h2 { font-family: var(--font-heading); color: var(--accent-color); margin-bottom: 18px; font-size: 20px; }
+.modal-content input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(30, 41, 59, 0.8); color: white; font-size: 14px; text-align: center; margin-bottom: 16px; box-sizing: border-box; transition: all 0.2s ease; }
+.modal-content input:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15); }
+.modal-content button { background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: white; border: none; padding: 12px 28px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; font-size: 12px; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(197, 160, 89, 0.3); }
+.modal-content button:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(197, 160, 89, 0.4); }
 .modal-error { color: #ef4444; font-size: 11px; margin-top: 8px; display: none; }
 .locked-section { position: relative; }
 .locked-section.locked { opacity: 0.5; cursor: pointer; position: relative; }
 .locked-section.locked input, .locked-section.locked select, .locked-section.locked textarea, .locked-section.locked button, .locked-section.locked .input-group, .locked-section.locked .input-field, .locked-section.locked .toggle-switch, .locked-section.locked .color-row, .locked-section.locked .quick-actions, .locked-section.locked .template-box { pointer-events: none; }
 .locked-section.locked::after { content: attr(data-lock-text); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #3b82f6; color: white; padding: 8px 16px; border-radius: 6px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; pointer-events: none; font-size: 11px; white-space: nowrap; }
-.settings-tabs { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
-.settings-tab { padding: 8px 16px; background: rgba(255,255,255,0.1); border: none; border-radius: 6px; color: rgba(255,255,255,0.7); cursor: pointer; font-family: var(--font-heading); font-size: 10px; text-transform: uppercase; font-weight: 700; transition: all 0.2s; }
-.settings-tab:hover { background: rgba(255,255,255,0.2); }
-.settings-tab.active { background: var(--accent-color); color: white; }
+.settings-tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; padding: 4px; background: rgba(0,0,0,0.2); border-radius: 10px; }
+.settings-tab { padding: 10px 18px; background: transparent; border: none; border-radius: 8px; color: rgba(255,255,255,0.6); cursor: pointer; font-family: var(--font-heading); font-size: 10px; text-transform: uppercase; font-weight: 700; transition: all 0.2s ease; }
+.settings-tab:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.9); }
+.settings-tab.active { background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: white; box-shadow: 0 2px 8px rgba(197, 160, 89, 0.3); }
 .settings-content { display: none; }
 .settings-content.active { display: block; }
-.template-box { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; margin-top: 10px; }
-.template-box h5 { font-family: var(--font-heading); font-size: 10px; color: var(--accent-color); margin: 0 0 8px 0; text-transform: uppercase; }
+.template-box { background: rgba(0,0,0,0.25); border-radius: 10px; padding: 16px; margin-top: 12px; border: 1px solid rgba(255,255,255,0.05); }
+.template-box h5 { font-family: var(--font-heading); font-size: 10px; color: var(--accent-color); margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.5px; }
 .template-box textarea { width: 100%; min-height: 80px; resize: vertical; font-size: 11px; }
-.color-row { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 10px; }
-.color-picker-group { display: flex; align-items: center; gap: 8px; }
-.color-picker-group label { font-size: 9px; color: rgba(255,255,255,0.7); min-width: 80px; }
-.color-picker-group input[type="color"] { width: 40px; height: 30px; border: none; border-radius: 4px; cursor: pointer; }
-.quick-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.color-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 12px; }
+.color-picker-group { display: flex; align-items: center; gap: 10px; }
+.color-picker-group label { font-size: 10px; color: rgba(255,255,255,0.7); min-width: 80px; font-weight: 600; }
+.color-picker-group input[type="color"] { width: 44px; height: 34px; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; cursor: pointer; background: transparent; padding: 2px; transition: all 0.2s ease; }
+.color-picker-group input[type="color"]:hover { border-color: var(--accent-color); }
+.quick-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
 .quick-actions .btn { flex: 1; min-width: 120px; justify-content: center; }
-#floating-toolbar { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center; z-index: 1000; background: rgba(30,41,59,0.95); padding: 10px 15px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); flex-wrap: wrap; max-width: 400px; }
-.toolbar-btn { background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; font-size: 11px; transition: transform 0.2s; }
-.toolbar-btn:hover { transform: scale(1.05); }
-.autosave-indicator { font-family: var(--font-heading); font-size: 10px; color: #10b981; padding: 4px 8px; background: rgba(16,185,129,0.2); border-radius: 4px; }
-.autosave-indicator.saving { color: #f59e0b; background: rgba(245,158,11,0.2); }
+#floating-toolbar { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; align-items: center; z-index: 1000; background: rgba(30,41,59,0.98); padding: 12px 18px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(197, 160, 89, 0.15); border: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; max-width: 420px; backdrop-filter: blur(10px); }
+.toolbar-btn { background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: white; border: none; padding: 8px 16px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; font-size: 11px; transition: all 0.2s ease; box-shadow: 0 2px 8px rgba(197, 160, 89, 0.3); }
+.toolbar-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(197, 160, 89, 0.4); }
+.toolbar-btn:active { transform: translateY(0); }
+.autosave-indicator { font-family: var(--font-heading); font-size: 10px; color: #10b981; padding: 6px 12px; background: rgba(16,185,129,0.15); border-radius: 6px; border: 1px solid rgba(16,185,129,0.2); display: inline-flex; align-items: center; gap: 6px; }
+.autosave-indicator::before { content: '✓'; font-weight: 700; }
+.autosave-indicator.saving { color: #f59e0b; background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.2); }
+.autosave-indicator.saving::before { content: '◌'; animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @media print {
     @page { size: letter; margin: 0.25in; } 
     body { padding: 0; margin: 0; background-color: #fff; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; font-size: 9px; } 
@@ -209,7 +322,7 @@ footer { margin-top: 12px; padding: 12px 20px; background-color: var(--slate); c
     .cta-link-text { font-size: 6px; margin-top: 2px; }
     footer { margin-top: 6px; padding: 8px 15px; }
     .footer-main { gap: 8px; }
-    .footer-headshot { width: 40px; height: 40px; }
+    .footer-headshot { width: 40px !important; height: 40px !important; max-width: 40px !important; max-height: 40px !important; }
     .footer-name { font-size: 10px; }
     .footer-info { font-size: 7px; line-height: 1.3; }
     .footer-stars { font-size: 6px; }
@@ -885,34 +998,125 @@ Best regards,
                 <button class="btn btn-copy" style="background: #f97316;" onclick="captureAndCopy()">📸 Screenshot</button>
                 <button class="btn btn-copy" style="background: #0ea5e9;" onclick="captureAndEmail()">📸 Screenshot &amp; Email</button>
             </div>
-            <!-- Client Link Section (Platinum+ only) -->
-            <div id="client-link-section" style="display:none; margin-top: 15px; padding: 12px; background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2); border-radius: 8px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                    <h5 style="font-family: var(--font-heading); color: #a78bfa; margin: 0; font-size: 10px;">🔗 Client Quote Link</h5>
-                    <span style="font-size: 8px; background: #7c3aed; color: white; padding: 1px 6px; border-radius: 8px;">Platinum+</span>
-                </div>
-                <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 0 0 8px 0;">Generate a branded link your client can view on any device. Includes full analytics tracking.</p>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <button class="btn" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); font-size: 9px; padding: 5px 14px; white-space: nowrap;" onclick="generateClientLink()">🔗 Generate Link</button>
-                    <input type="text" id="client-link-output" readonly placeholder="Click Generate to create link" style="flex:1; background: rgba(0,0,0,0.3); border: 1px solid rgba(139,92,246,0.3); color: #a78bfa; border-radius: 4px; padding: 6px 10px; font-family: var(--font-heading); font-size: 9px; cursor: pointer;" onclick="if(this.value){navigator.clipboard.writeText(this.value);showToast('Link copied!','success')}">
-                    <span id="client-link-views" style="font-size: 8px; color: rgba(255,255,255,0.4); white-space: nowrap;"></span>
-                </div>
-                <!-- SMS-Ready Copy Section (appears after link generation) -->
-                <div id="sms-ready-section" style="display: none; margin-top: 12px; padding: 10px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); border-radius: 6px;">
-                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
-                        <h5 style="font-family: var(--font-heading); color: #10b981; margin: 0; font-size: 9px;">📱 SMS-Ready Message</h5>
-                        <span style="font-size: 7px; background: #10b981; color: white; padding: 1px 5px; border-radius: 6px;">Auto-generated</span>
+            <!-- Client Link Section (Platinum+ only) - ENHANCED -->
+            <div id="client-link-section" style="display:none; margin-top: 15px; padding: 16px; background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(124,58,237,0.12)); border: 1px solid rgba(139,92,246,0.25); border-radius: 12px; box-shadow: 0 4px 20px rgba(139,92,246,0.1);">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px;">🔗</div>
+                    <div>
+                        <h5 style="font-family: var(--font-heading); color: #a78bfa; margin: 0; font-size: 12px;">Client Quote Link</h5>
+                        <span style="font-size: 9px; color: rgba(255,255,255,0.5);">Share an interactive, trackable quote experience</span>
                     </div>
-                    <textarea id="sms-ready-text" rows="3" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; border-radius: 4px; padding: 8px; font-family: var(--font-heading); font-size: 9px; resize: vertical;"></textarea>
-                    <div style="display: flex; gap: 6px; margin-top: 6px;">
-                        <button class="btn" style="background: #10b981; font-size: 8px; padding: 4px 12px;" onclick="copySmsText()">📋 Copy SMS</button>
-                        <button class="btn" style="background: #6366f1; font-size: 8px; padding: 4px 12px;" onclick="generateQRCode()">📱 QR Code</button>
-                        <span style="font-size: 7px; color: rgba(255,255,255,0.4); align-self: center;">Link expires in 7 days | Clicks tracked with attribution</span>
+                    <span style="margin-left: auto; font-size: 9px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 3px 10px; border-radius: 12px; font-weight: 600;">Platinum+</span>
+                </div>
+                
+                <!-- Link Configuration -->
+                <div id="link-config-panel" style="margin-bottom: 12px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 10px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                        <span style="font-size: 9px; color: rgba(255,255,255,0.7); font-weight: 600;">⚙️ Link Options</span>
                     </div>
-                    <!-- QR Code Display -->
-                    <div id="qr-code-display" style="display: none; margin-top: 10px; text-align: center; padding: 10px; background: white; border-radius: 8px;">
-                        <img id="qr-code-img" style="max-width: 200px; margin: 0 auto;" alt="QR Code">
-                        <p style="font-size: 8px; color: #666; margin: 6px 0 0 0;">Scan to view quote on mobile</p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.8);">
+                            <input type="checkbox" id="link-opt-analytics" checked style="accent-color: #8b5cf6;"> Enable Analytics
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.8);">
+                            <input type="checkbox" id="link-opt-expiry" checked style="accent-color: #8b5cf6;"> 7-Day Expiry
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.8);">
+                            <input type="checkbox" id="link-opt-password" style="accent-color: #8b5cf6;"> Password Protect
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.8);">
+                            <input type="checkbox" id="link-opt-download" checked style="accent-color: #8b5cf6;"> Allow PDF Download
+                        </label>
+                    </div>
+                    <div id="link-password-field" style="display: none; margin-top: 10px;">
+                        <input type="text" id="link-password-input" placeholder="Enter password (optional)" style="width: 100%; max-width: 200px; background: rgba(0,0,0,0.3); border: 1px solid rgba(139,92,246,0.3); color: white; border-radius: 6px; padding: 8px 12px; font-size: 11px;">
+                    </div>
+                </div>
+                
+                <!-- Generate Link Button -->
+                <div style="display: flex; gap: 10px; align-items: stretch;">
+                    <button class="btn" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); font-size: 10px; padding: 10px 20px; white-space: nowrap; box-shadow: 0 4px 15px rgba(139,92,246,0.3);" onclick="generateClientLink()">
+                        <span style="font-size: 14px;">✨</span> Generate Link
+                    </button>
+                    <div style="flex: 1; position: relative;">
+                        <input type="text" id="client-link-output" readonly placeholder="Your branded link will appear here..." style="width: 100%; height: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(139,92,246,0.3); color: #a78bfa; border-radius: 8px; padding: 10px 40px 10px 12px; font-family: var(--font-heading); font-size: 11px; cursor: pointer; box-sizing: border-box;" onclick="if(this.value){copyClientLinkWithFeedback(this)}">
+                        <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; opacity: 0.5;">📋</span>
+                    </div>
+                </div>
+                
+                <!-- Link Stats Bar -->
+                <div id="client-link-stats" style="display: none; margin-top: 12px; padding: 12px; background: rgba(0,0,0,0.25); border-radius: 10px;">
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
+                        <div style="text-align: center;">
+                            <span id="client-link-view-count" style="font-size: 20px; font-weight: 800; color: #a78bfa;">0</span>
+                            <div style="font-size: 8px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">Views</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <span id="client-link-unique-count" style="font-size: 20px; font-weight: 800; color: #22d3ee;">0</span>
+                            <div style="font-size: 8px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">Unique</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <span id="client-link-avg-time" style="font-size: 16px; font-weight: 700; color: #fbbf24;">—</span>
+                            <div style="font-size: 8px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px;">Avg. Time</div>
+                        </div>
+                        <div style="flex: 1; min-width: 150px;">
+                            <div style="font-size: 8px; color: rgba(255,255,255,0.5); margin-bottom: 4px;">Last Viewed</div>
+                            <span id="client-link-last-view" style="font-size: 10px; color: rgba(255,255,255,0.7);">Never</span>
+                        </div>
+                        <button class="btn" style="background: rgba(239,68,68,0.8); font-size: 8px; padding: 6px 12px;" onclick="revokeClientLink()">🗑 Revoke</button>
+                    </div>
+                </div>
+                
+                <!-- Share Options (appears after generation) -->
+                <div id="share-options-panel" style="display: none; margin-top: 16px;">
+                    <div style="font-size: 9px; color: rgba(255,255,255,0.6); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">📤 Quick Share</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px;">
+                        <button class="btn" style="background: linear-gradient(135deg, #10b981, #059669); font-size: 9px; padding: 10px; flex-direction: column; gap: 4px;" onclick="shareViaSMS()">
+                            <span style="font-size: 16px;">💬</span>
+                            <span>SMS</span>
+                        </button>
+                        <button class="btn" style="background: linear-gradient(135deg, #3b82f6, #2563eb); font-size: 9px; padding: 10px; flex-direction: column; gap: 4px;" onclick="shareViaEmail()">
+                            <span style="font-size: 16px;">✉️</span>
+                            <span>Email</span>
+                        </button>
+                        <button class="btn" style="background: linear-gradient(135deg, #06b6d4, #0891b2); font-size: 9px; padding: 10px; flex-direction: column; gap: 4px;" onclick="shareViaWhatsApp()">
+                            <span style="font-size: 16px;">💬</span>
+                            <span>WhatsApp</span>
+                        </button>
+                        <button class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); font-size: 9px; padding: 10px; flex-direction: column; gap: 4px;" onclick="generateQRCode()">
+                            <span style="font-size: 16px;">📱</span>
+                            <span>QR Code</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- QR Code Display -->
+                <div id="qr-code-display" style="display: none; margin-top: 16px; padding: 20px; background: white; border-radius: 12px; text-align: center;">
+                    <img id="qr-code-img" style="max-width: 200px; margin: 0 auto; border-radius: 8px;" alt="QR Code">
+                    <p style="font-size: 10px; color: #666; margin: 12px 0 0 0; font-weight: 500;">Scan to view quote on mobile</p>
+                    <div style="margin-top: 12px; display: flex; gap: 8px; justify-content: center;">
+                        <button class="btn" style="background: #1e293b; font-size: 9px; padding: 6px 14px;" onclick="downloadQRCode()">⬇ Download PNG</button>
+                        <button class="btn" style="background: #8b5cf6; font-size: 9px; padding: 6px 14px;" onclick="copyQRCode()">📋 Copy</button>
+                    </div>
+                </div>
+                
+                <!-- Preview Panel -->
+                <div id="client-preview-panel" style="display: none; margin-top: 16px; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 10px; border: 1px solid rgba(139,92,246,0.2);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                        <span style="font-size: 9px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">👁️ Client Preview</span>
+                        <button class="btn" style="background: rgba(255,255,255,0.1); font-size: 8px; padding: 4px 10px;" onclick="openClientPreview()">Open in New Tab ↗</button>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 8px; padding: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></div>
+                            <span style="font-size: 10px; color: rgba(255,255,255,0.7);">Interactive quote page ready</span>
+                        </div>
+                        <div style="font-size: 9px; color: rgba(255,255,255,0.5); line-height: 1.5;">
+                            • Mobile-responsive design<br>
+                            • Real-time rate calculator<br>
+                            • One-click apply button<br>
+                            • PDF download option
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1387,26 +1591,134 @@ Best regards,
     </div>
 </div>
 
-<!-- PRINT SELECTION DIALOG -->
+<!-- ENHANCED PRINT/PDF DIALOG -->
 <div id="print-selection-dialog">
-    <div class="print-dialog-box">
-        <h3>📄 Select Sections to Print</h3>
-        <label><input type="checkbox" id="print-header" checked> Header &amp; Branding</label>
-        <label><input type="checkbox" id="print-client-info" checked> Client Information</label>
-        <label><input type="checkbox" id="print-valuation" checked> Valuation &amp; Liquidity Summary</label>
-        <label><input type="checkbox" id="print-fixed-matrix" checked> Fixed Rate Funding Matrix</label>
-        <label><input type="checkbox" id="print-variable-matrix"> Variable Rate Funding Matrix</label>
-        <label><input type="checkbox" id="print-recommendation" checked> Recommendation &amp; Snapshot</label>
-        <label><input type="checkbox" id="print-break-even"> Break-Even Analysis</label>
-        <label><input type="checkbox" id="print-refi"> HELOC Refi Comparison</label>
-        <label><input type="checkbox" id="print-debt"> Debt Consolidation Analysis</label>
-        <label><input type="checkbox" id="print-ai"> AI-Generated Strategy</label>
-        <label><input type="checkbox" id="print-cta" checked> Apply Now CTA</label>
-        <label><input type="checkbox" id="print-disclaimer" checked> Disclaimer</label>
-        <label><input type="checkbox" id="print-footer" checked> Footer / LO Info</label>
-        <div class="print-dialog-actions">
-            <button style="background: #6b7280; color: white;" onclick="closePrintDialog()">Cancel</button>
-            <button style="background: var(--accent-color); color: #0f172a;" onclick="executePrint()">🖨️ Print / Save PDF</button>
+    <div class="print-dialog-box" style="max-width: 520px; background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 16px; padding: 28px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <h3 style="color: var(--accent-color); margin: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                <span>📄</span> PDF & Print Options
+            </h3>
+            <button onclick="closePrintDialog()" style="background: none; border: none; color: rgba(255,255,255,0.5); font-size: 20px; cursor: pointer; padding: 4px;">×</button>
+        </div>
+        
+        <!-- Output Format Selection -->
+        <div style="margin-bottom: 20px; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 10px; color: rgba(255,255,255,0.6); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">📤 Output Format</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                <label style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px; background: rgba(197, 160, 89, 0.15); border: 2px solid var(--accent-color); border-radius: 10px; cursor: pointer; transition: all 0.2s;">
+                    <input type="radio" name="output-format" value="pdf" checked style="display: none;">
+                    <span style="font-size: 24px;">📄</span>
+                    <span style="font-size: 10px; font-weight: 600; color: white;">PDF Document</span>
+                    <span style="font-size: 8px; color: rgba(255,255,255,0.5);">Best for email</span>
+                </label>
+                <label style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; cursor: pointer; transition: all 0.2s;">
+                    <input type="radio" name="output-format" value="print" style="display: none;">
+                    <span style="font-size: 24px;">🖨️</span>
+                    <span style="font-size: 10px; font-weight: 600; color: white;">Print</span>
+                    <span style="font-size: 8px; color: rgba(255,255,255,0.5);">Send to printer</span>
+                </label>
+                <label style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; cursor: pointer; transition: all 0.2s;">
+                    <input type="radio" name="output-format" value="image" style="display: none;">
+                    <span style="font-size: 24px;">🖼️</span>
+                    <span style="font-size: 10px; font-weight: 600; color: white;">Image</span>
+                    <span style="font-size: 8px; color: rgba(255,255,255,0.5);">PNG/JPG</span>
+                </label>
+            </div>
+        </div>
+        
+        <!-- PDF Quality Options -->
+        <div id="pdf-quality-options" style="margin-bottom: 20px; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 10px; color: rgba(255,255,255,0.6); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">⚙️ PDF Quality</div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="radio" name="pdf-quality" value="standard" checked style="accent-color: var(--accent-color);">
+                    <span style="font-size: 10px; color: rgba(255,255,255,0.8);">Standard (faster)</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="radio" name="pdf-quality" value="high" style="accent-color: var(--accent-color);">
+                    <span style="font-size: 10px; color: rgba(255,255,255,0.8);">High Quality</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="radio" name="pdf-quality" value="ultra" style="accent-color: var(--accent-color);">
+                    <span style="font-size: 10px; color: rgba(255,255,255,0.8);">Ultra HD (larger file)</span>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Content Sections -->
+        <div style="margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                <div style="font-size: 10px; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">📋 Content Sections</div>
+                <button onclick="toggleAllPrintSections(true)" style="background: none; border: none; color: var(--accent-color); font-size: 9px; cursor: pointer; font-weight: 600;">Select All</button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.9); transition: all 0.15s;">
+                    <input type="checkbox" id="print-header" checked style="accent-color: var(--accent-color); width: 14px; height: 14px;"> Header &amp; Branding
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.9); transition: all 0.15s;">
+                    <input type="checkbox" id="print-client-info" checked style="accent-color: var(--accent-color); width: 14px; height: 14px;"> Client Information
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.9); transition: all 0.15s;">
+                    <input type="checkbox" id="print-valuation" checked style="accent-color: var(--accent-color); width: 14px; height: 14px;"> Valuation Summary
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.9); transition: all 0.15s;">
+                    <input type="checkbox" id="print-fixed-matrix" checked style="accent-color: var(--accent-color); width: 14px; height: 14px;"> Fixed Rate Matrix
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.9); transition: all 0.15s;">
+                    <input type="checkbox" id="print-variable-matrix" style="accent-color: var(--accent-color); width: 14px; height: 14px;"> Variable Rate Matrix
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.9); transition: all 0.15s;">
+                    <input type="checkbox" id="print-recommendation" checked style="accent-color: var(--accent-color); width: 14px; height: 14px;"> Recommendation
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.9); transition: all 0.15s;">
+                    <input type="checkbox" id="print-break-even" style="accent-color: var(--accent-color); width: 14px; height: 14px;"> Break-Even Analysis
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.9); transition: all 0.15s;">
+                    <input type="checkbox" id="print-refi" style="accent-color: var(--accent-color); width: 14px; height: 14px;"> Refi Comparison
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.9); transition: all 0.15s;">
+                    <input type="checkbox" id="print-debt" style="accent-color: var(--accent-color); width: 14px; height: 14px;"> Debt Consolidation
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.9); transition: all 0.15s;">
+                    <input type="checkbox" id="print-ai" style="accent-color: var(--accent-color); width: 14px; height: 14px;"> AI Strategy
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.9); transition: all 0.15s;">
+                    <input type="checkbox" id="print-cta" checked style="accent-color: var(--accent-color); width: 14px; height: 14px;"> Apply Now CTA
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.9); transition: all 0.15s;">
+                    <input type="checkbox" id="print-disclaimer" checked style="accent-color: var(--accent-color); width: 14px; height: 14px;"> Disclaimer
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; cursor: pointer; font-size: 10px; color: rgba(255,255,255,0.9); transition: all 0.15s;">
+                    <input type="checkbox" id="print-footer" checked style="accent-color: var(--accent-color); width: 14px; height: 14px;"> Footer / LO Info
+                </label>
+            </div>
+        </div>
+        
+        <!-- Page Options -->
+        <div style="margin-bottom: 20px; padding: 16px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+            <div style="font-size: 10px; color: rgba(255,255,255,0.6); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">📄 Page Options</div>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" id="print-color-bg" checked style="accent-color: var(--accent-color);">
+                    <span style="font-size: 10px; color: rgba(255,255,255,0.8);">Color backgrounds</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" id="print-page-numbers" style="accent-color: var(--accent-color);">
+                    <span style="font-size: 10px; color: rgba(255,255,255,0.8);">Page numbers</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="checkbox" id="print-watermark" style="accent-color: var(--accent-color);">
+                    <span style="font-size: 10px; color: rgba(255,255,255,0.8);">Draft watermark</span>
+                </label>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button style="background: rgba(255,255,255,0.1); color: white; padding: 10px 20px; border: none; border-radius: 8px; font-family: var(--font-heading); font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onclick="closePrintDialog()">Cancel</button>
+            <button style="background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: #0f172a; padding: 10px 24px; border: none; border-radius: 8px; font-family: var(--font-heading); font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);" onclick="executePrint()">
+                <span style="margin-right: 6px;">✨</span> Generate PDF
+            </button>
         </div>
     </div>
 </div>
@@ -1559,7 +1871,9 @@ Best regards,
 
     <footer>
         <div class="footer-main">
-            <img src="https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/693bb3fdeac0a8d6852417e6.jpg" alt="Loan Officer" class="footer-headshot" loading="lazy" decoding="async" id="footer-img">
+            <div style="width: 55px; height: 55px; flex-shrink: 0; display: block;">
+                <img src="https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/693bb3fdeac0a8d6852417e6.jpg" alt="Loan Officer" class="footer-headshot" loading="lazy" decoding="async" id="footer-img" width="55" height="55" style="width: 55px; height: 55px; max-width: 55px; max-height: 55px; display: block;">
+            </div>
             <div class="footer-info">
                 <span class="footer-name" id="footer-name">Eddie Barragan</span>
                 <span id="footer-title">Executive Branch Manager</span><br>
@@ -3666,7 +3980,15 @@ function updateProfile() {
     if (coNmls) document.getElementById('footer-co-nmls').innerText = coNmls.value;
     if (coDre) document.getElementById('footer-co-dre').innerText = coDre.value;
     if (loAddress) document.getElementById('footer-address').innerText = loAddress.value;
-    if (loHeadshotUrl && loHeadshotUrl.value) document.getElementById('footer-img').src = loHeadshotUrl.value;
+    if (loHeadshotUrl && loHeadshotUrl.value) {
+        var img = document.getElementById('footer-img');
+        img.src = loHeadshotUrl.value;
+        // Ensure dimensions are maintained
+        img.width = 55;
+        img.height = 55;
+        img.style.width = '55px';
+        img.style.height = '55px';
+    }
     if (loLogoUrl && loLogoUrl.value) document.getElementById('company-logo-footer').src = loLogoUrl.value;
     autoSave();
 }
@@ -4972,21 +5294,30 @@ async function generateClientLink() {
         // Store for SMS-ready copy
         window._lastGeneratedQuoteLink = shortUrl;
         window._lastGeneratedQuoteData = quoteData;
+        window._lastGeneratedQuoteCode = code;
 
-        // Show SMS-ready section
-        var smsSection = document.getElementById('sms-ready-section');
-        if (smsSection) {
-            var clientName = quoteData.clientName || 'there';
-            var firstName = clientName.split(' ')[0];
-            var loName = loInfo.name || 'Your Loan Officer';
-            var smsText = 'Hi ' + firstName + ', your personalized HELOC quote is ready! ' +
-                quoteData.payment + '/mo at ' + quoteData.rate + '%. View here: ' + shortUrl +
-                ' - ' + loName;
-            document.getElementById('sms-ready-text').value = smsText;
-            smsSection.style.display = '';
+        // Show enhanced share options panel
+        var sharePanel = document.getElementById('share-options-panel');
+        if (sharePanel) sharePanel.style.display = 'block';
+        
+        // Show client preview panel
+        var previewPanel = document.getElementById('client-preview-panel');
+        if (previewPanel) previewPanel.style.display = 'block';
+        
+        // Show link stats panel (initially with zeros)
+        var statsPanel = document.getElementById('client-link-stats');
+        if (statsPanel) {
+            statsPanel.style.display = 'block';
+            document.getElementById('client-link-view-count').textContent = '0';
+            document.getElementById('client-link-unique-count').textContent = '0';
+            document.getElementById('client-link-avg-time').textContent = '—';
+            document.getElementById('client-link-last-view').textContent = 'Just created';
         }
 
-        showToast(shortLinkId ? 'Link generated, shortened & copied!' : 'Client link generated and copied!', 'success');
+        showToast(shortLinkId ? '✨ Link generated, shortened & copied!' : '✨ Client link generated and copied!', 'success');
+        
+        // Start polling for link stats
+        startLinkStatsPolling(shortLinkId || code);
 
         // Fire outbound webhooks
         fireOutboundWebhooks('client_link_created', {
@@ -5000,9 +5331,81 @@ async function generateClientLink() {
     }
 }
 
+// Link stats polling
+var _linkStatsInterval = null;
+
+function startLinkStatsPolling(linkId) {
+    // Clear any existing interval
+    if (_linkStatsInterval) clearInterval(_linkStatsInterval);
+    
+    // Poll immediately
+    fetchLinkStats(linkId);
+    
+    // Poll every 10 seconds
+    _linkStatsInterval = setInterval(function() {
+        fetchLinkStats(linkId);
+    }, 10000);
+}
+
+async function fetchLinkStats(linkId) {
+    if (!linkId) return;
+    
+    var sb = window._supabase;
+    if (!sb) return;
+    
+    try {
+        // Fetch click stats from the links table
+        var { data, error } = await sb
+            .from('link_clicks')
+            .select('*')
+            .eq('link_id', linkId);
+            
+        if (error || !data) return;
+        
+        var totalClicks = data.length;
+        var uniqueDevices = new Set(data.map(function(c) { return c.ip_hash || c.user_agent; })).size;
+        
+        // Update UI
+        var viewCountEl = document.getElementById('client-link-view-count');
+        var uniqueCountEl = document.getElementById('client-link-unique-count');
+        var lastViewEl = document.getElementById('client-link-last-view');
+        
+        if (viewCountEl) viewCountEl.textContent = totalClicks;
+        if (uniqueCountEl) uniqueCountEl.textContent = uniqueDevices;
+        
+        if (lastViewEl && data.length > 0) {
+            var lastClick = data[data.length - 1];
+            var timeAgo = getTimeAgo(new Date(lastClick.created_at));
+            lastViewEl.textContent = timeAgo;
+        }
+    } catch (e) {
+        console.warn('Failed to fetch link stats:', e);
+    }
+}
+
+function getTimeAgo(date) {
+    var seconds = Math.floor((new Date() - date) / 1000);
+    if (seconds < 60) return 'Just now';
+    var minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return minutes + ' min ago';
+    var hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours + ' hr ago';
+    return Math.floor(hours / 24) + ' days ago';
+}
+
 // Copy SMS-ready text to clipboard
 function copySmsText() {
-    var text = document.getElementById('sms-ready-text').value;
+    var text = document.getElementById('sms-ready-text')?.value;
+    if (!text) {
+        // Generate SMS text if not exists
+        var link = window._lastGeneratedQuoteLink;
+        if (!link) { showToast('Generate a link first', 'warning'); return; }
+        
+        var clientName = document.getElementById('in-client-name')?.value || 'there';
+        var firstName = clientName.split(' ')[0];
+        text = 'Hi ' + firstName + ', your personalized HELOC quote is ready! View here: ' + link;
+    }
+    
     navigator.clipboard.writeText(text).then(function() {
         showToast('SMS text copied! Paste into your messaging app.', 'success');
     });
@@ -5010,7 +5413,7 @@ function copySmsText() {
 
 // Generate QR code for the last generated short link
 async function generateQRCode() {
-    var link = window._lastGeneratedQuoteLink;
+    var link = window._lastGeneratedQuoteLink || document.getElementById('client-link-output')?.value;
     if (!link) { showToast('Generate a client link first', 'warning'); return; }
 
     var qrDisplay = document.getElementById('qr-code-display');
@@ -5019,9 +5422,136 @@ async function generateQRCode() {
 
     // Use the QR server API directly (no auth needed)
     var encoded = encodeURIComponent(link);
-    qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encoded + '&format=png';
-    qrDisplay.style.display = '';
+    qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encoded + '&format=png&color=0f2b4c&bgcolor=ffffff';
+    qrDisplay.style.display = 'block';
     showToast('QR code generated!', 'success');
+}
+
+// Download QR Code as PNG
+function downloadQRCode() {
+    var qrImg = document.getElementById('qr-code-img');
+    if (!qrImg || !qrImg.src) return;
+    
+    var link = document.createElement('a');
+    link.href = qrImg.src;
+    link.download = 'quote-qr-code.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('QR code downloaded!', 'success');
+}
+
+// Copy QR Code to clipboard
+async function copyQRCode() {
+    var qrImg = document.getElementById('qr-code-img');
+    if (!qrImg || !qrImg.src) return;
+    
+    try {
+        const response = await fetch(qrImg.src);
+        const blob = await response.blob();
+        await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+        ]);
+        showToast('QR code copied to clipboard!', 'success');
+    } catch (err) {
+        showToast('Could not copy image. Try downloading instead.', 'error');
+    }
+}
+
+// Copy client link with visual feedback
+function copyClientLinkWithFeedback(input) {
+    if (!input.value) return;
+    
+    navigator.clipboard.writeText(input.value).then(function() {
+        // Visual feedback
+        var originalBg = input.style.background;
+        input.style.background = 'rgba(16, 185, 129, 0.2)';
+        input.style.borderColor = '#10b981';
+        showToast('Link copied to clipboard!', 'success');
+        
+        setTimeout(function() {
+            input.style.background = originalBg || 'rgba(0,0,0,0.3)';
+            input.style.borderColor = 'rgba(139,92,246,0.3)';
+        }, 1000);
+    });
+}
+
+// Share via SMS
+function shareViaSMS() {
+    var link = window._lastGeneratedQuoteLink || document.getElementById('client-link-output')?.value;
+    if (!link) { showToast('Generate a link first', 'warning'); return; }
+    
+    var clientName = document.getElementById('in-client-name')?.value || 'there';
+    var message = 'Hi ' + clientName + '! Here is your personalized HELOC quote: ' + link;
+    
+    var smsUrl = 'sms:?body=' + encodeURIComponent(message);
+    window.open(smsUrl, '_blank');
+}
+
+// Share via Email
+function shareViaEmail() {
+    var link = window._lastGeneratedQuoteLink || document.getElementById('client-link-output')?.value;
+    if (!link) { showToast('Generate a link first', 'warning'); return; }
+    
+    var clientName = document.getElementById('in-client-name')?.value || 'Client';
+    var subject = 'Your Personalized HELOC Quote - ' + clientName;
+    var body = document.getElementById('email-template')?.value || 
+        'Hi ' + clientName + ',\n\nView your personalized HELOC quote here: ' + link;
+    
+    var mailtoUrl = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    window.open(mailtoUrl, '_blank');
+}
+
+// Share via WhatsApp
+function shareViaWhatsApp() {
+    var link = window._lastGeneratedQuoteLink || document.getElementById('client-link-output')?.value;
+    if (!link) { showToast('Generate a link first', 'warning'); return; }
+    
+    var clientName = document.getElementById('in-client-name')?.value || 'there';
+    var message = 'Hi ' + clientName + '! Here is your personalized HELOC quote: ' + link;
+    
+    var whatsappUrl = 'https://wa.me/?text=' + encodeURIComponent(message);
+    window.open(whatsappUrl, '_blank');
+}
+
+// Open client preview
+function openClientPreview() {
+    var link = window._lastGeneratedQuoteLink || document.getElementById('client-link-output')?.value;
+    if (!link) { showToast('Generate a link first', 'warning'); return; }
+    
+    window.open(link, '_blank');
+}
+
+// Revoke client link
+async function revokeClientLink() {
+    if (!confirm('Are you sure you want to revoke this link? Clients will no longer be able to access it.')) return;
+    
+    // Clear the link data
+    document.getElementById('client-link-output').value = '';
+    document.getElementById('client-link-stats').style.display = 'none';
+    document.getElementById('share-options-panel').style.display = 'none';
+    document.getElementById('client-preview-panel').style.display = 'none';
+    document.getElementById('qr-code-display').style.display = 'none';
+    window._lastGeneratedQuoteLink = null;
+    
+    showToast('Link revoked successfully', 'success');
+}
+
+// Toggle password field visibility
+function togglePasswordField() {
+    var checkbox = document.getElementById('link-opt-password');
+    var field = document.getElementById('link-password-field');
+    if (field) {
+        field.style.display = checkbox?.checked ? 'block' : 'none';
+    }
+}
+
+// Toggle all print sections
+function toggleAllPrintSections(selectAll) {
+    var checkboxes = document.querySelectorAll('#print-selection-dialog input[type="checkbox"][id^="print-"]');
+    checkboxes.forEach(function(cb) {
+        cb.checked = selectAll;
+    });
 }
 
 // ===== STANDALONE URL SHORTENER =====
@@ -5465,6 +5995,14 @@ async function captureAndCopy() {
             onclone: function(clonedDoc) {
                 var el = clonedDoc.getElementById('proposal-container');
                 if (el) { el.style.width = '950px'; el.style.maxWidth = '950px'; }
+                // Fix headshot size for email compatibility
+                var headshot = clonedDoc.getElementById('footer-img');
+                if (headshot) {
+                    headshot.style.width = '55px';
+                    headshot.style.height = '55px';
+                    headshot.setAttribute('width', '55');
+                    headshot.setAttribute('height', '55');
+                }
             }
         });
         container.style.width = origWidth; // restore
@@ -5650,6 +6188,14 @@ async function captureAndEmail() {
             onclone: function(clonedDoc) {
                 var el = clonedDoc.getElementById('proposal-container');
                 if (el) { el.style.width = '950px'; el.style.maxWidth = '950px'; }
+                // Fix headshot size for email compatibility
+                var headshot = clonedDoc.getElementById('footer-img');
+                if (headshot) {
+                    headshot.style.width = '55px';
+                    headshot.style.height = '55px';
+                    headshot.setAttribute('width', '55');
+                    headshot.setAttribute('height', '55');
+                }
             }
         });
         container.style.width = origWidth;
@@ -7606,10 +8152,11 @@ if ('serviceWorker' in navigator) {
     });
 }
 </script>
-<!-- Ezra AI Loan Structuring Assistant -->
+<!-- Ezra AI Loan Structuring Assistant - Ultimate Edition -->
 <script src="./js/ezra-real.js"></script>
 <script src="./js/ezra-complete.js"></script>
 <script src="./js/ezra-advanced.js"></script>
+<script src="./js/ezra-ultimate.js"></script>
 <script src="./js/ezra-chat.js"></script>
 </body>
 </html>

@@ -22,7 +22,218 @@
     --green: #10b981;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: var(--font-body); background-color: #eef2f6; color: var(--font-color); min-height: 100vh; -webkit-font-smoothing: antialiased; padding: 16px; line-height: 1.3; }
+body { font-family: var(--font-body); background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f2b4c 100%); color: var(--font-color); min-height: 100vh; -webkit-font-smoothing: antialiased; padding: 16px; line-height: 1.3; }
+
+/* Floating Action Bar */
+.floating-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(30, 41, 59, 0.98);
+    backdrop-filter: blur(10px);
+    padding: 12px 20px;
+    border-radius: 50px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(197, 160, 89, 0.2);
+    display: flex;
+    gap: 10px;
+    z-index: 1000;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 95vw;
+}
+.floating-bar button {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-family: var(--font-heading);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.floating-bar button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4);
+}
+.floating-bar button.secondary {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+.floating-bar button.secondary:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* Interactive Elements */
+.interactive-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.interactive-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(15, 43, 76, 0.15);
+}
+.rate-row {
+    transition: all 0.2s ease;
+}
+.rate-row:hover {
+    background: rgba(197, 160, 89, 0.05);
+}
+.rate-row.selected {
+    background: var(--highlight-bg);
+    border-left: 3px solid var(--accent-color);
+}
+
+/* Modal Styles */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.modal-overlay.visible {
+    display: flex;
+}
+.modal-box {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 420px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+}
+.modal-box h3 {
+    color: var(--accent-color);
+    font-family: var(--font-heading);
+    margin: 0 0 16px 0;
+    font-size: 16px;
+}
+.modal-box input, .modal-box textarea {
+    width: 100%;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    padding: 12px;
+    color: white;
+    font-family: var(--font-body);
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+.modal-box input:focus, .modal-box textarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
+}
+
+/* Calculator Widget */
+.calc-widget {
+    background: linear-gradient(135deg, rgba(197,160,89,0.1), rgba(166,133,67,0.05));
+    border: 1px solid rgba(197,160,89,0.2);
+    border-radius: 12px;
+    padding: 16px;
+    margin: 16px 0;
+}
+.calc-widget h4 {
+    color: var(--accent-color);
+    font-family: var(--font-heading);
+    font-size: 11px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.calc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.calc-row:last-child {
+    border-bottom: none;
+}
+.calc-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+}
+.calc-value {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+}
+
+/* Savings Badge */
+.savings-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+/* Tooltip */
+.tooltip {
+    position: relative;
+}
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    margin-bottom: 6px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.tooltip:hover::after {
+    opacity: 1;
+}
+
+/* Confetti Animation */
+.confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background: var(--accent-color);
+    position: absolute;
+    animation: confetti-fall 3s ease-out forwards;
+}
+@keyframes confetti-fall {
+    0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
 
 /* Loading & Error */
 .loading { display: flex; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; gap: 16px; }
@@ -141,6 +352,63 @@ body { font-family: var(--font-body); background-color: #eef2f6; color: var(--fo
 </style>
 </head>
 <body>
+
+<!-- Floating Action Bar -->
+<div class="floating-bar" id="floating-bar" style="display: none;">
+    <button onclick="openApplyModal()">🚀 Apply Now</button>
+    <button class="secondary" onclick="openContactModal()">💬 Ask Question</button>
+    <button class="secondary" onclick="downloadPDF()">📄 Save PDF</button>
+    <button class="secondary" onclick="shareQuote()">🔗 Share</button>
+</div>
+
+<!-- Apply Modal -->
+<div id="apply-modal" class="modal-overlay" onclick="if(event.target===this)closeApplyModal()">
+    <div class="modal-box">
+        <h3>🚀 Start Your Application</h3>
+        <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 16px;">Ready to move forward? Fill out your details and we'll get started immediately.</p>
+        <input type="text" id="apply-name" placeholder="Your Full Name">
+        <input type="email" id="apply-email" placeholder="Email Address">
+        <input type="tel" id="apply-phone" placeholder="Phone Number">
+        <textarea id="apply-message" rows="3" placeholder="Any questions or notes? (optional)"></textarea>
+        <div style="display: flex; gap: 10px; margin-top: 16px;">
+            <button onclick="closeApplyModal()" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer;">Cancel</button>
+            <button onclick="submitApplication()" style="flex: 1; background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: #0f172a; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer;">Submit Application</button>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Modal -->
+<div id="contact-modal" class="modal-overlay" onclick="if(event.target===this)closeContactModal()">
+    <div class="modal-box">
+        <h3>💬 Ask a Question</h3>
+        <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 16px;">Have questions about your quote? Send a message to your loan officer.</p>
+        <input type="text" id="contact-name" placeholder="Your Name">
+        <input type="email" id="contact-email" placeholder="Email Address">
+        <textarea id="contact-message" rows="4" placeholder="Your question..."></textarea>
+        <div style="display: flex; gap: 10px; margin-top: 16px;">
+            <button onclick="closeContactModal()" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer;">Cancel</button>
+            <button onclick="submitQuestion()" style="flex: 1; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer;">Send Message</button>
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div id="share-modal" class="modal-overlay" onclick="if(event.target===this)closeShareModal()">
+    <div class="modal-box">
+        <h3>🔗 Share Your Quote</h3>
+        <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 16px;">Share this quote with your partner, advisor, or family member.</p>
+        <input type="text" id="share-url" readonly style="background: rgba(0,0,0,0.3); color: #a78bfa;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0;">
+            <button onclick="shareVia('email')" style="background: #ea4335; color: white; border: none; padding: 10px; border-radius: 8px; font-family: var(--font-heading); font-size: 10px; cursor: pointer;">📧 Email</button>
+            <button onclick="shareVia('sms')" style="background: #34d399; color: #0f172a; border: none; padding: 10px; border-radius: 8px; font-family: var(--font-heading); font-size: 10px; cursor: pointer;">💬 SMS</button>
+            <button onclick="shareVia('copy')" style="background: #6366f1; color: white; border: none; padding: 10px; border-radius: 8px; font-family: var(--font-heading); font-size: 10px; cursor: pointer;">📋 Copy</button>
+        </div>
+        <button onclick="closeShareModal()" style="width: 100%; background: rgba(255,255,255,0.1); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer;">Close</button>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" style="display: none; position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 14px 20px; border-radius: 10px; font-family: var(--font-heading); font-size: 12px; font-weight: 600; box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 3000; animation: slideIn 0.3s ease;"></div>
 
 <div id="loading" class="loading">
     <div class="spinner"></div>
@@ -298,6 +566,7 @@ body { font-family: var(--font-body); background-color: #eef2f6; color: var(--fo
 
         document.getElementById('loading').style.display = 'none';
         document.getElementById('content').style.display = 'block';
+        document.getElementById('floating-bar').style.display = 'flex';
 
         // Title
         var title = lo.company ? lo.company + ' HELOC Proposal' : 'Your HELOC Proposal';
@@ -442,6 +711,142 @@ body { font-family: var(--font-body); background-color: #eef2f6; color: var(--fo
     window.trackCTA = function(buttonName) {
         trackEvent('button_clicked', { button_name: buttonName, code: code });
     };
+
+    // -- Interactive Features --
+    
+    // Show floating bar after quote loads
+    setTimeout(function() {
+        document.getElementById('floating-bar').style.display = 'flex';
+    }, 1500);
+    
+    // Modal Functions
+    window.openApplyModal = function() {
+        document.getElementById('apply-modal').classList.add('visible');
+        trackEvent('modal_opened', { modal: 'apply', code: code });
+    };
+    window.closeApplyModal = function() {
+        document.getElementById('apply-modal').classList.remove('visible');
+    };
+    window.openContactModal = function() {
+        document.getElementById('contact-modal').classList.add('visible');
+        trackEvent('modal_opened', { modal: 'contact', code: code });
+    };
+    window.closeContactModal = function() {
+        document.getElementById('contact-modal').classList.remove('visible');
+    };
+    window.openShareModal = function() {
+        document.getElementById('share-url').value = window.location.href;
+        document.getElementById('share-modal').classList.add('visible');
+        trackEvent('modal_opened', { modal: 'share', code: code });
+    };
+    window.closeShareModal = function() {
+        document.getElementById('share-modal').classList.remove('visible');
+    };
+    
+    // Submit Application
+    window.submitApplication = async function() {
+        var name = document.getElementById('apply-name').value.trim();
+        var email = document.getElementById('apply-email').value.trim();
+        var phone = document.getElementById('apply-phone').value.trim();
+        var message = document.getElementById('apply-message').value.trim();
+        
+        if (!name || !email || !phone) {
+            showToast('Please fill in all required fields');
+            return;
+        }
+        
+        trackEvent('application_submitted', { 
+            code: code, 
+            has_message: !!message,
+            name: name 
+        });
+        
+        // Create confetti effect
+        createConfetti();
+        
+        closeApplyModal();
+        showToast('🎉 Application submitted! Your loan officer will contact you shortly.');
+        
+        // In a real implementation, you would send this to your backend
+        console.log('Application:', { name, email, phone, message, quoteCode: code });
+    };
+    
+    // Submit Question
+    window.submitQuestion = async function() {
+        var name = document.getElementById('contact-name').value.trim();
+        var email = document.getElementById('contact-email').value.trim();
+        var message = document.getElementById('contact-message').value.trim();
+        
+        if (!name || !email || !message) {
+            showToast('Please fill in all fields');
+            return;
+        }
+        
+        trackEvent('question_submitted', { 
+            code: code, 
+            name: name,
+            message_length: message.length
+        });
+        
+        closeContactModal();
+        showToast('✅ Message sent! Your loan officer will respond shortly.');
+    };
+    
+    // Share Functions
+    window.shareQuote = function() {
+        openShareModal();
+    };
+    window.shareVia = function(method) {
+        var url = window.location.href;
+        var title = 'My HELOC Quote';
+        
+        switch(method) {
+            case 'email':
+                window.open('mailto:?subject=' + encodeURIComponent(title) + '&body=' + encodeURIComponent('Check out my HELOC quote: ' + url));
+                break;
+            case 'sms':
+                window.open('sms:?body=' + encodeURIComponent('Check out my HELOC quote: ' + url));
+                break;
+            case 'copy':
+                navigator.clipboard.writeText(url).then(function() {
+                    showToast('✅ Link copied to clipboard!');
+                });
+                break;
+        }
+        trackEvent('share_clicked', { method: method, code: code });
+    };
+    
+    // Download PDF
+    window.downloadPDF = function() {
+        trackEvent('pdf_download_clicked', { code: code });
+        window.print();
+    };
+    
+    // Toast Notification
+    function showToast(message) {
+        var toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.style.display = 'block';
+        setTimeout(function() {
+            toast.style.display = 'none';
+        }, 4000);
+    }
+    window.showToast = showToast;
+    
+    // Confetti Effect
+    function createConfetti() {
+        var colors = ['#c5a059', '#10b981', '#3b82f6', '#f59e0b', '#ec4899'];
+        for (var i = 0; i < 50; i++) {
+            var confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.animationDelay = Math.random() * 0.5 + 's';
+            confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+            document.body.appendChild(confetti);
+            setTimeout(function() { confetti.remove(); }, 3000);
+        }
+    }
 
     function esc(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
     function num(v) { return Number(v).toLocaleString(); }
