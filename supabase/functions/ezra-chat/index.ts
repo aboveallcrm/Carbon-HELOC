@@ -43,6 +43,19 @@ const AI_CONFIG = {
     temperature: 0.7,
     model: 'gpt-4-turbo-preview',
   },
+  openrouter: {
+    endpoint: 'https://openrouter.ai/api/v1/chat/completions',
+    apiKey: Deno.env.get('OPENROUTER_API_KEY'),
+    maxTokens: 4096,
+    temperature: 0.7,
+    // Fallback models in order of preference
+    models: [
+      'anthropic/claude-3-sonnet',
+      'openai/gpt-4-turbo-preview',
+      'google/gemini-pro',
+      'meta-llama/llama-2-70b-chat',
+    ],
+  },
   openaiEmbedding: {
     endpoint: 'https://api.openai.com/v1/embeddings',
     apiKey: Deno.env.get('OPENAI_API_KEY'),
@@ -128,16 +141,8 @@ async function routeToAIModel(message: string, model: string, intent: string, hi
   // Build system prompt
   const systemPrompt = buildSystemPrompt(intent, knowledgeContext, quoteContext);
 
-  // Route to specific model
-  switch (model) {
-    case 'gemini':
-      return callGemini(message, systemPrompt, history, startTime);
-    case 'gpt':
-      return callGPT(message, systemPrompt, history, startTime);
-    case 'claude':
-    default:
-      return callClaude(message, systemPrompt, history, startTime);
-  }
+  // Use smart router with fallback
+  return callAIWithFallback(message, model, systemPrompt, history, startTime);
 }
 
 // ============================================
@@ -249,6 +254,97 @@ async function callGPT(message: string, systemPrompt: string, history: any[], st
     tokensUsed: data.usage?.total_tokens || 0,
     latency: Date.now() - startTime,
   };
+}
+
+// ============================================
+// OPENROUTER FALLBACK
+// ============================================
+async function callOpenRouter(message: string, systemPrompt: string, history: any[], startTime: number) {
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...history.map(h => ({
+      role: h.role,
+      content: h.content,
+    })),
+    { role: 'user', content: message },
+  ];
+
+  const response = await fetch(AI_CONFIG.openrouter.endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${AI_CONFIG.openrouter.apiKey}`,
+      'HTTP-Referer': 'https://aboveallcrm.com', // Required by OpenRouter
+      'X-Title': 'Ezra AI Assistant',
+    },
+    body: JSON.stringify({
+      model: AI_CONFIG.openrouter.models[0], // Try primary model
+      fallback_models: AI_CONFIG.openrouter.models.slice(1),
+      max_tokens: AI_CONFIG.openrouter.maxTokens,
+      temperature: AI_CONFIG.openrouter.temperature,
+      messages,
+    }),
+  });
+
+  const data = await response.json();
+  
+  // OpenRouter returns the model that actually responded
+  const actualModel = data.model?.split('/')[0] || 'openrouter';
+  
+  return {
+    content: data.choices?.[0]?.message?.content || 'I apologize, I could not generate a response.',
+    model: `openrouter-${actualModel}`,
+    tokensUsed: data.usage?.total_tokens || 0,
+    latency: Date.now() - startTime,
+  };
+}
+
+// ============================================
+// SMART AI ROUTER WITH FALLBACK
+// ============================================
+async function callAIWithFallback(
+  message: string, 
+  preferredModel: string, 
+  systemPrompt: string, 
+  history: any[],
+  startTime: number
+) {
+  const modelsToTry = [];
+  
+  // Add preferred model first
+  if (preferredModel === 'claude') modelsToTry.push(callClaude);
+  else if (preferredModel === 'gpt') modelsToTry.push(callGPT);
+  else if (preferredModel === 'gemini') modelsToTry.push(callGemini);
+  else modelsToTry.push(callClaude);
+  
+  // Add fallback models
+  if (preferredModel !== 'gpt') modelsToTry.push(callGPT);
+  if (preferredModel !== 'claude') modelsToTry.push(callClaude);
+  
+  // Always try OpenRouter last as ultimate fallback
+  modelsToTry.push(callOpenRouter);
+  
+  let lastError;
+  
+  for (const modelFn of modelsToTry) {
+    try {
+      console.log(`Trying AI model: ${modelFn.name}`);
+      const result = await modelFn(message, systemPrompt, history, startTime);
+      
+      // If successful, return result
+      if (result.content && result.content.length > 10) {
+        console.log(`Success with ${modelFn.name}`);
+        return result;
+      }
+    } catch (error) {
+      console.error(`${modelFn.name} failed:`, error.message);
+      lastError = error;
+      // Continue to next model
+    }
+  }
+  
+  // All models failed
+  throw new Error(`All AI models failed. Last error: ${lastError?.message}`);
 }
 
 // ============================================

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { RateMatrix } from './components/RateMatrix';
@@ -18,6 +18,7 @@ import { UserProfile } from './components/UserProfile';
 import { BillingSettings } from './components/BillingSettings';
 import { TierGate } from './components/TierGate';
 import { useTier } from './hooks/useTier';
+import { ExportPanel } from './components/ExportPanel';
 
 function SettingsTabs() {
   const [activeTab, setActiveTab] = useState<'profile' | 'bonzo' | 'billing'>('profile');
@@ -54,6 +55,28 @@ function AppContent() {
   const [rates] = useState<RatesData>(DEFAULT_RATES);
   const [leadBody, setLeadBody] = useState('');
 
+  const [isClientView, setIsClientView] = useState(false);
+  const [sections, setSections] = useState({
+    rateMatrix: true,
+    recommendation: true,
+    analysis: true,
+  });
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const q = searchParams.get('q');
+    if (q) {
+      try {
+        const payload = JSON.parse(atob(q));
+        if (payload.i) setInputs(payload.i);
+        if (payload.s) setSections(payload.s);
+        setIsClientView(true);
+      } catch (e) {
+        console.error("Failed to parse client link");
+      }
+    }
+  }, []);
+
   // Custom hooks
   const quoteResult = useQuoteCalculator(inputs, rates);
   const { parseLeadEmail } = useLeadParser();
@@ -74,85 +97,87 @@ function AppContent() {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
 
-  if (!session) {
+  if (!session && !isClientView) {
     return <Login />;
   }
 
   return (
     <div className="main-container bg-gray-50 min-h-screen font-sans">
       {/* Navigation Bar */}
-      <nav className="bg-white shadow-sm border-b px-6 py-3 flex justify-between items-center sticky top-0 z-50">
-        <div className="flex items-center space-x-4">
-          <span className="font-bold text-lg text-gray-800 tracking-tight">Above All HELOC</span>
-          <div className="h-6 w-px bg-gray-300 mx-2"></div>
-          <button
-            onClick={() => setCurrentView('quote')}
-            className={`px-3 py-1 rounded text-sm font-medium transition ${currentView === 'quote' ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}
-          >
-            Quote Tool
-          </button>
-          {hasTier('platinum') && (
+      {!isClientView && (
+        <nav className="bg-white shadow-sm border-b px-6 py-3 flex justify-between items-center sticky top-0 z-50 print:hidden">
+          <div className="flex items-center space-x-4">
+            <span className="font-bold text-lg text-gray-800 tracking-tight">Above All HELOC</span>
+            <div className="h-6 w-px bg-gray-300 mx-2"></div>
             <button
-              onClick={() => setCurrentView('leads')}
-              className={`px-3 py-1 rounded text-sm font-medium transition ${currentView === 'leads' ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}
+              onClick={() => setCurrentView('quote')}
+              className={`px-3 py-1 rounded text-sm font-medium transition ${currentView === 'quote' ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}
             >
-              Leads
+              Quote Tool
             </button>
-          )}
-
-          {(role === 'super_admin' || role === 'admin') && (
-            <button
-              onClick={() => setCurrentView('admin')}
-              className={`px-3 py-1 rounded text-sm font-medium transition ${currentView === 'admin' ? 'bg-purple-100 text-purple-800' : 'text-gray-600 hover:bg-gray-100'}`}
-            >
-              Admin Dashboard
-            </button>
-          )}
-          <button
-            onClick={() => setCurrentView('settings')}
-            className={`px-3 py-1 rounded text-sm font-medium transition ${currentView === 'settings' ? 'bg-gray-200 text-gray-800' : 'text-gray-600 hover:bg-gray-100'}`}
-          >
-            Settings
-          </button>
-        </div>
-        <div className="flex items-center space-x-4">
-          {(role === 'super_admin' || role === 'admin') && (
-            <div className="flex items-center space-x-2 mr-2 border-r pr-4 border-gray-200">
-              <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Demo:</span>
-              <select
-                className="text-xs border-transparent hover:border-gray-300 rounded bg-gray-100 hover:bg-white text-gray-700 font-medium py-1 px-2 cursor-pointer transition focus:ring-0 focus:border-blue-500 outline-none"
-                value={tier === realTier ? 'real' : tier ?? 'carbon'}
-                onChange={(e) => {
-                  if (e.target.value === 'real') {
-                    setDemoTier(null);
-                  } else {
-                    setDemoTier(e.target.value as Tier);
-                  }
-                }}
+            {hasTier('platinum') && (
+              <button
+                onClick={() => setCurrentView('leads')}
+                className={`px-3 py-1 rounded text-sm font-medium transition ${currentView === 'leads' ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}
               >
-                <option value="real">Real Tier ({realTier || 'carbon'})</option>
-                <option value="carbon">Carbon</option>
-                <option value="platinum">Platinum</option>
-                <option value="titanium">Titanium</option>
-                <option value="obsidian">Obsidian</option>
-                <option value="diamond">Diamond</option>
-              </select>
-            </div>
-          )}
-          <span className="text-sm text-gray-500">
-            {session.user.email}
-            <span className="ml-1 text-xs opacity-60">
-              ({tier ?? 'carbon'})
+                Leads
+              </button>
+            )}
+
+            {(role === 'super_admin' || role === 'admin') && (
+              <button
+                onClick={() => setCurrentView('admin')}
+                className={`px-3 py-1 rounded text-sm font-medium transition ${currentView === 'admin' ? 'bg-purple-100 text-purple-800' : 'text-gray-600 hover:bg-gray-100'}`}
+              >
+                Admin Dashboard
+              </button>
+            )}
+            <button
+              onClick={() => setCurrentView('settings')}
+              className={`px-3 py-1 rounded text-sm font-medium transition ${currentView === 'settings' ? 'bg-gray-200 text-gray-800' : 'text-gray-600 hover:bg-gray-100'}`}
+            >
+              Settings
+            </button>
+          </div>
+          <div className="flex items-center space-x-4">
+            {(role === 'super_admin' || role === 'admin') && (
+              <div className="flex items-center space-x-2 mr-2 border-r pr-4 border-gray-200">
+                <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Demo:</span>
+                <select
+                  className="text-xs border-transparent hover:border-gray-300 rounded bg-gray-100 hover:bg-white text-gray-700 font-medium py-1 px-2 cursor-pointer transition focus:ring-0 focus:border-blue-500 outline-none"
+                  value={tier === realTier ? 'real' : tier ?? 'carbon'}
+                  onChange={(e) => {
+                    if (e.target.value === 'real') {
+                      setDemoTier(null);
+                    } else {
+                      setDemoTier(e.target.value as Tier);
+                    }
+                  }}
+                >
+                  <option value="real">Real Tier ({realTier || 'carbon'})</option>
+                  <option value="carbon">Carbon</option>
+                  <option value="platinum">Platinum</option>
+                  <option value="titanium">Titanium</option>
+                  <option value="obsidian">Obsidian</option>
+                  <option value="diamond">Diamond</option>
+                </select>
+              </div>
+            )}
+            <span className="text-sm text-gray-500">
+              {session?.user?.email}
+              <span className="ml-1 text-xs opacity-60">
+                ({tier ?? 'carbon'})
+              </span>
             </span>
-          </span>
-          <button
-            onClick={signOut}
-            className="text-sm text-red-600 hover:text-red-800 font-medium"
-          >
-            Sign Out
-          </button>
-        </div>
-      </nav>
+            <button
+              onClick={signOut}
+              className="text-sm text-red-600 hover:text-red-800 font-medium"
+            >
+              Sign Out
+            </button>
+          </div>
+        </nav>
+      )}
 
       {/* Main Content Area */}
       {currentView === 'admin' ? (
@@ -171,22 +196,30 @@ function AppContent() {
           <Header />
 
           <div className="content-body">
+
+            {/* Export Panel (Hidden from Clients and Print) */}
+            {!isClientView && (
+              <ExportPanel inputs={inputs} quoteResult={quoteResult} sections={sections} setSections={setSections} />
+            )}
+
             {/* Helper for Parser */}
-            <div className="mb-4 p-4 bg-gray-100 rounded">
-              <h3>Lead Parser</h3>
-              <textarea
-                className="w-full h-24 p-2 text-xs border rounded"
-                placeholder="Paste Broker Launch Notification email body here..."
-                value={leadBody}
-                onChange={(e) => setLeadBody(e.target.value)}
-              />
-              <button
-                className="mt-2 bg-blue-600 text-white px-4 py-2 rounded text-xs font-bold uppercase"
-                onClick={handleParse}
-              >
-                Parse Lead
-              </button>
-            </div>
+            {!isClientView && (
+              <div className="mb-4 p-4 bg-gray-100 rounded print:hidden">
+                <h3>Lead Parser</h3>
+                <textarea
+                  className="w-full h-24 p-2 text-xs border rounded"
+                  placeholder="Paste Broker Launch Notification email body here..."
+                  value={leadBody}
+                  onChange={(e) => setLeadBody(e.target.value)}
+                />
+                <button
+                  className="mt-2 bg-blue-600 text-white px-4 py-2 rounded text-xs font-bold uppercase"
+                  onClick={handleParse}
+                >
+                  Parse Lead
+                </button>
+              </div>
+            )}
 
             <div className="client-grid">
               {/* Inputs Placeholders - normally these would be editable inputs */}
@@ -233,17 +266,21 @@ function AppContent() {
             </div>
 
             {/* Rate Matrix */}
-            <RateMatrix quoteResult={quoteResult} />
+            {sections.rateMatrix && <RateMatrix quoteResult={quoteResult} />}
 
             {/* Recommendation — Platinum+ */}
-            <TierGate requires="platinum" message="Scenario recommendations and savings breakdown require the Platinum tier.">
-              <Recommendation quoteResult={quoteResult} netCash={inputs.netCash} />
-            </TierGate>
+            {sections.recommendation && (
+              <TierGate requires="platinum" message="Scenario recommendations and savings breakdown require the Platinum tier.">
+                <Recommendation quoteResult={quoteResult} netCash={inputs.netCash} />
+              </TierGate>
+            )}
 
             {/* Analysis Sections — Obsidian only */}
-            <TierGate requires="obsidian" message="Deep financial analysis and AI-powered insights require the Obsidian tier.">
-              <Analysis quoteResult={quoteResult} inputs={inputs} />
-            </TierGate>
+            {sections.analysis && (
+              <TierGate requires="obsidian" message="Deep financial analysis and AI-powered insights require the Obsidian tier.">
+                <Analysis quoteResult={quoteResult} inputs={inputs} />
+              </TierGate>
+            )}
 
           </div>
 

@@ -21,6 +21,7 @@
         placeholderText: 'Ask Ezra anything...',
         quickCommands: [
             { label: 'Create Quote', icon: '💰', action: 'create_quote' },
+            { label: 'Deal Radar', icon: '🎯', action: 'deal_radar' },
             { label: 'Structure Deal', icon: '🏗️', action: 'structure_deal' },
             { label: 'Handle Objection', icon: '🛡️', action: 'handle_objection' },
             { label: 'Explain Strategy', icon: '📋', action: 'explain_strategy' },
@@ -48,37 +49,45 @@
         autoFillEnabled: true,
         isTyping: false,
         supabase: null,
-        user: null
+        user: null,
+        dealRadarData: null,
+        activeTab: 'chat' // 'chat' | 'deal-radar'
     };
 
     // ============================================
     // INITIALIZATION
     // ============================================
+    let _initAttempts = 0;
     function initEzra() {
-        // Wait for Supabase to be available
-        if (typeof window.supabase === 'undefined') {
-            console.log('Ezra: Waiting for Supabase...');
-            setTimeout(initEzra, 500);
+        // Wait for the app's Supabase client to be available
+        if (!window._supabase) {
+            _initAttempts++;
+            if (_initAttempts <= 30) { // up to 15 seconds
+                if (_initAttempts === 1) console.log('Ezra: Waiting for Supabase client...');
+                setTimeout(initEzra, 500);
+            } else {
+                console.warn('Ezra: Supabase client not found after 15s — widget disabled');
+            }
             return;
         }
 
-        // Initialize Supabase client
-        EzraState.supabase = window.supabase.createClient(
-            EZRA_CONFIG.supabaseUrl,
-            EZRA_CONFIG.supabaseKey
-        );
+        // Use the app's existing Supabase client
+        EzraState.supabase = window._supabase;
 
-        // Check auth state
-        checkAuthState();
+        // Pick up tier from app globals
+        if (window.currentUserTier) EzraState.userTier = window.currentUserTier;
 
-        // Create widget DOM
+        // Create widget DOM first so elements exist
         createWidgetDOM();
-
-        // Load user preferences
-        loadUserPreferences();
 
         // Setup event listeners
         setupEventListeners();
+
+        // Check auth state (async — loads conversation)
+        checkAuthState();
+
+        // Load user preferences
+        loadUserPreferences();
 
         console.log('Ezra: Initialized successfully');
     }
@@ -103,20 +112,20 @@
         widget.id = 'ezra-widget';
         widget.className = 'ezra-widget';
         widget.innerHTML = `
-            <!-- Floating Toggle Button -->
-            <button id="ezra-toggle" class="ezra-toggle" aria-label="Open Ezra AI Assistant">
-                <span class="ezra-toggle-icon">🤖</span>
-                <span class="ezra-toggle-text">Ezra</span>
+            <!-- Floating Gold Orb -->
+            <button id="ezra-orb" class="ezra-orb" aria-label="Open Ezra AI Assistant">
+                <span class="ezra-orb-icon">\u2726</span>
+                <span class="ezra-orb-ring"></span>
             </button>
 
-            <!-- Chat Container -->
+            <!-- Chat Panel -->
             <div id="ezra-container" class="ezra-container">
                 <!-- Header -->
                 <div class="ezra-header">
                     <div class="ezra-header-left">
-                        <span class="ezra-avatar">🤖</span>
+                        <div class="ezra-avatar">\u2726</div>
                         <div class="ezra-header-info">
-                            <span class="ezra-title">${EZRA_CONFIG.widgetTitle}</span>
+                            <span class="ezra-title">EZRA</span>
                             <span class="ezra-status">
                                 <span class="ezra-status-dot"></span>
                                 <span class="ezra-status-text">Online</span>
@@ -125,11 +134,10 @@
                     </div>
                     <div class="ezra-header-actions">
                         <button id="ezra-model-selector" class="ezra-model-btn" title="AI Model">
-                            <span class="ezra-model-icon">🧠</span>
                             <span class="ezra-model-name">Claude</span>
                         </button>
-                        <button id="ezra-minimize" class="ezra-icon-btn" title="Minimize">−</button>
-                        <button id="ezra-close" class="ezra-icon-btn" title="Close">×</button>
+                        <button id="ezra-minimize" class="ezra-icon-btn" title="Minimize">\u2212</button>
+                        <button id="ezra-close" class="ezra-icon-btn" title="Close">\u00D7</button>
                     </div>
                 </div>
 
@@ -146,16 +154,15 @@
                 <!-- Messages Area -->
                 <div id="ezra-messages" class="ezra-messages">
                     <div class="ezra-welcome">
-                        <div class="ezra-welcome-icon">👋</div>
-                        <h3>Hello! I'm Ezra</h3>
-                        <p>Your AI loan structuring assistant. I can help you:</p>
-                        <ul>
-                            <li>Build HELOC quotes</li>
-                            <li>Structure optimal loan scenarios</li>
-                            <li>Handle borrower objections</li>
-                            <li>Generate client scripts</li>
-                        </ul>
-                        <p class="ezra-welcome-hint">Try a quick command above or type your question!</p>
+                        <div class="ezra-welcome-icon">\u2726</div>
+                        <h3>Hello, I'm Ezra</h3>
+                        <p>Your AI loan structuring co-pilot.</p>
+                        <div class="ezra-welcome-capabilities">
+                            <div class="ezra-welcome-cap"><span>\u2726</span> Build HELOC quotes</div>
+                            <div class="ezra-welcome-cap"><span>\u2726</span> Structure loan scenarios</div>
+                            <div class="ezra-welcome-cap"><span>\u2726</span> Handle objections</div>
+                            <div class="ezra-welcome-cap"><span>\u2726</span> Generate client scripts</div>
+                        </div>
                     </div>
                 </div>
 
@@ -169,9 +176,9 @@
                 <!-- Input Area -->
                 <div class="ezra-input-area">
                     <div class="ezra-input-wrapper">
-                        <textarea 
-                            id="ezra-input" 
-                            class="ezra-input" 
+                        <textarea
+                            id="ezra-input"
+                            class="ezra-input"
                             placeholder="${EZRA_CONFIG.placeholderText}"
                             rows="1"
                         ></textarea>
@@ -182,7 +189,7 @@
                         </button>
                     </div>
                     <div class="ezra-input-footer">
-                        <span class="ezra-tier-badge">${EzraState.userTier} tier</span>
+                        <span class="ezra-tier-badge">${EzraState.userTier}</span>
                         <span class="ezra-powered-by">Powered by AI</span>
                     </div>
                 </div>
@@ -218,84 +225,113 @@
         styles.id = 'ezra-styles';
         styles.textContent = `
             /* ============================================
-               EZRA WIDGET STYLES
+               EZRA WIDGET — DARK GLASS + GOLD THEME
                ============================================ */
-            
+
             /* CSS Variables */
             :root {
-                --ezra-primary: #1e3a5f;
-                --ezra-primary-light: #2d5a8f;
-                --ezra-accent: #d4af37;
-                --ezra-bg: #ffffff;
-                --ezra-surface: #f8fafc;
-                --ezra-border: #e2e8f0;
-                --ezra-text: #1e293b;
-                --ezra-text-muted: #64748b;
-                --ezra-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                --ezra-gold: #c5a059;
+                --ezra-gold-bright: #d4af37;
+                --ezra-gold-dim: rgba(197,160,89,0.3);
+                --ezra-dark-1: #0f172a;
+                --ezra-dark-2: #1e293b;
+                --ezra-dark-3: #334155;
+                --ezra-glass: rgba(30,41,59,0.85);
+                --ezra-glass-border: rgba(197,160,89,0.25);
+                --ezra-text: #e2e8f0;
+                --ezra-text-muted: #94a3b8;
                 --ezra-radius: 16px;
-                --ezra-radius-sm: 8px;
+                --ezra-radius-sm: 10px;
             }
 
-            /* Widget Container */
+            /* Widget Wrapper */
             .ezra-widget {
                 position: fixed;
-                bottom: 24px;
-                right: 24px;
+                bottom: 28px;
+                right: 28px;
                 z-index: 9999;
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             }
 
-            /* Toggle Button */
-            .ezra-toggle {
+            /* ===== FLOATING ORB ===== */
+            .ezra-orb {
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                border: none;
+                cursor: pointer;
+                background: linear-gradient(135deg, #c5a059 0%, #d4af37 50%, #c5a059 100%);
+                color: #1e293b;
+                font-size: 22px;
                 display: flex;
                 align-items: center;
-                gap: 8px;
-                padding: 12px 20px;
-                background: linear-gradient(135deg, var(--ezra-primary) 0%, var(--ezra-primary-light) 100%);
-                color: white;
-                border: none;
-                border-radius: 50px;
-                font-size: 14px;
-                font-weight: 600;
-                cursor: pointer;
-                box-shadow: var(--ezra-shadow);
-                transition: all 0.3s ease;
+                justify-content: center;
+                position: relative;
+                box-shadow:
+                    0 0 20px rgba(212,175,55,0.4),
+                    0 0 60px rgba(212,175,55,0.15),
+                    0 8px 32px rgba(0,0,0,0.3);
+                transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+                z-index: 2;
             }
 
-            .ezra-toggle:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.15);
+            .ezra-orb:hover {
+                transform: translateY(-4px) scale(1.08);
+                box-shadow:
+                    0 0 30px rgba(212,175,55,0.6),
+                    0 0 80px rgba(212,175,55,0.25),
+                    0 12px 40px rgba(0,0,0,0.35);
             }
 
-            .ezra-toggle-icon {
-                font-size: 20px;
+            .ezra-orb-icon {
+                font-size: 24px;
+                filter: drop-shadow(0 0 4px rgba(212,175,55,0.6));
+                z-index: 1;
             }
 
-            /* Chat Container */
+            .ezra-orb-ring {
+                position: absolute;
+                inset: -4px;
+                border-radius: 50%;
+                border: 2px solid rgba(212,175,55,0.4);
+                animation: ezra-orb-pulse 2.5s ease-in-out infinite;
+                pointer-events: none;
+            }
+
+            @keyframes ezra-orb-pulse {
+                0%, 100% { transform: scale(1); opacity: 0.6; }
+                50% { transform: scale(1.15); opacity: 0; }
+            }
+
+            /* ===== CHAT PANEL ===== */
             .ezra-container {
                 position: absolute;
-                bottom: 80px;
+                bottom: 0;
                 right: 0;
-                width: 420px;
-                height: 600px;
-                background: var(--ezra-bg);
+                width: 400px;
+                height: 560px;
+                background: linear-gradient(135deg, var(--ezra-dark-2), var(--ezra-dark-1));
                 border-radius: var(--ezra-radius);
-                box-shadow: var(--ezra-shadow);
+                border: 1px solid var(--ezra-glass-border);
+                box-shadow:
+                    0 0 40px rgba(197,160,89,0.12),
+                    0 25px 50px rgba(0,0,0,0.5),
+                    inset 0 1px 0 rgba(255,255,255,0.05);
                 display: none;
                 flex-direction: column;
                 overflow: hidden;
-                border: 1px solid var(--ezra-border);
+                backdrop-filter: blur(20px);
             }
 
             .ezra-container.open {
                 display: flex;
-                animation: ezra-slide-in 0.3s ease;
+                animation: ezra-panel-in 0.35s cubic-bezier(0.4,0,0.2,1);
             }
 
-            @keyframes ezra-slide-in {
+            @keyframes ezra-panel-in {
                 from {
                     opacity: 0;
-                    transform: translateY(20px) scale(0.95);
+                    transform: translateY(16px) scale(0.96);
                 }
                 to {
                     opacity: 1;
@@ -303,31 +339,34 @@
                 }
             }
 
-            /* Header */
+            /* ===== HEADER ===== */
             .ezra-header {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 16px 20px;
-                background: linear-gradient(135deg, var(--ezra-primary) 0%, var(--ezra-primary-light) 100%);
-                color: white;
+                padding: 14px 18px;
+                background: transparent;
+                border-bottom: 1px solid var(--ezra-glass-border);
             }
 
             .ezra-header-left {
                 display: flex;
                 align-items: center;
-                gap: 12px;
+                gap: 10px;
             }
 
             .ezra-avatar {
-                width: 40px;
-                height: 40px;
-                background: rgba(255,255,255,0.2);
+                width: 36px;
+                height: 36px;
+                background: linear-gradient(135deg, var(--ezra-gold), var(--ezra-gold-bright));
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 20px;
+                font-size: 16px;
+                color: var(--ezra-dark-1);
+                font-weight: 700;
+                box-shadow: 0 0 12px rgba(212,175,55,0.3);
             }
 
             .ezra-header-info {
@@ -336,76 +375,91 @@
             }
 
             .ezra-title {
-                font-weight: 600;
-                font-size: 14px;
+                font-family: 'DM Sans', 'Inter', sans-serif;
+                font-weight: 700;
+                font-size: 15px;
+                letter-spacing: 2px;
+                color: var(--ezra-gold);
             }
 
             .ezra-status {
                 display: flex;
                 align-items: center;
-                gap: 6px;
-                font-size: 12px;
-                opacity: 0.9;
+                gap: 5px;
+                font-size: 11px;
+                color: var(--ezra-text-muted);
             }
 
             .ezra-status-dot {
-                width: 8px;
-                height: 8px;
+                width: 7px;
+                height: 7px;
                 background: #22c55e;
                 border-radius: 50%;
-                animation: ezra-pulse 2s infinite;
+                box-shadow: 0 0 6px rgba(34,197,94,0.5);
+                animation: ezra-status-pulse 2s infinite;
             }
 
-            @keyframes ezra-pulse {
+            @keyframes ezra-status-pulse {
                 0%, 100% { opacity: 1; }
-                50% { opacity: 0.5; }
+                50% { opacity: 0.4; }
             }
 
             .ezra-header-actions {
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: 6px;
             }
 
-            .ezra-icon-btn, .ezra-model-btn {
-                width: 32px;
-                height: 32px;
-                background: rgba(255,255,255,0.1);
-                border: none;
-                border-radius: var(--ezra-radius-sm);
-                color: white;
-                font-size: 18px;
+            .ezra-icon-btn {
+                width: 30px;
+                height: 30px;
+                background: rgba(255,255,255,0.06);
+                border: 1px solid rgba(255,255,255,0.08);
+                border-radius: 8px;
+                color: var(--ezra-text-muted);
+                font-size: 16px;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                transition: background 0.2s;
+                transition: all 0.2s;
             }
 
-            .ezra-icon-btn:hover, .ezra-model-btn:hover {
-                background: rgba(255,255,255,0.2);
+            .ezra-icon-btn:hover {
+                background: rgba(255,255,255,0.12);
+                color: var(--ezra-text);
             }
 
             .ezra-model-btn {
+                height: 30px;
                 width: auto;
                 padding: 0 10px;
-                gap: 6px;
-                font-size: 12px;
+                background: rgba(197,160,89,0.12);
+                border: 1px solid var(--ezra-gold-dim);
+                border-radius: 8px;
+                color: var(--ezra-gold);
+                font-size: 11px;
+                font-weight: 600;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                transition: all 0.2s;
             }
 
-            .ezra-model-icon {
-                font-size: 14px;
+            .ezra-model-btn:hover {
+                background: rgba(197,160,89,0.2);
+                border-color: var(--ezra-gold);
             }
 
-            /* Quick Commands */
+            /* ===== QUICK COMMANDS ===== */
             .ezra-quick-commands {
                 display: flex;
-                gap: 8px;
-                padding: 12px 16px;
-                background: var(--ezra-surface);
-                border-bottom: 1px solid var(--ezra-border);
+                gap: 6px;
+                padding: 10px 14px;
                 overflow-x: auto;
                 scrollbar-width: none;
+                border-bottom: 1px solid rgba(255,255,255,0.04);
             }
 
             .ezra-quick-commands::-webkit-scrollbar {
@@ -415,79 +469,99 @@
             .ezra-quick-btn {
                 display: flex;
                 align-items: center;
-                gap: 6px;
-                padding: 8px 14px;
-                background: white;
-                border: 1px solid var(--ezra-border);
+                gap: 5px;
+                padding: 6px 12px;
+                background: rgba(255,255,255,0.04);
+                border: 1px solid rgba(255,255,255,0.08);
                 border-radius: 20px;
-                font-size: 12px;
+                font-size: 11px;
                 font-weight: 500;
-                color: var(--ezra-text);
+                color: var(--ezra-text-muted);
                 cursor: pointer;
                 white-space: nowrap;
                 transition: all 0.2s;
             }
 
             .ezra-quick-btn:hover {
-                background: var(--ezra-primary);
-                color: white;
-                border-color: var(--ezra-primary);
+                background: rgba(197,160,89,0.12);
+                border-color: var(--ezra-gold-dim);
+                color: var(--ezra-gold);
             }
 
-            /* Messages Area */
+            /* ===== MESSAGES ===== */
             .ezra-messages {
                 flex: 1;
                 overflow-y: auto;
-                padding: 20px;
+                padding: 18px;
                 display: flex;
                 flex-direction: column;
-                gap: 16px;
+                gap: 14px;
+                scrollbar-width: thin;
+                scrollbar-color: var(--ezra-dark-3) transparent;
             }
 
+            .ezra-messages::-webkit-scrollbar { width: 4px; }
+            .ezra-messages::-webkit-scrollbar-track { background: transparent; }
+            .ezra-messages::-webkit-scrollbar-thumb { background: var(--ezra-dark-3); border-radius: 4px; }
+
+            /* Welcome */
             .ezra-welcome {
                 text-align: center;
-                padding: 20px;
+                padding: 24px 16px;
                 color: var(--ezra-text);
             }
 
             .ezra-welcome-icon {
-                font-size: 48px;
-                margin-bottom: 16px;
+                font-size: 40px;
+                color: var(--ezra-gold);
+                margin-bottom: 12px;
+                filter: drop-shadow(0 0 8px rgba(212,175,55,0.4));
             }
 
             .ezra-welcome h3 {
-                margin: 0 0 12px;
-                font-size: 20px;
+                margin: 0 0 8px;
+                font-family: 'DM Sans', 'Inter', sans-serif;
+                font-size: 18px;
+                font-weight: 600;
+                color: var(--ezra-text);
             }
 
             .ezra-welcome p {
                 margin: 0 0 16px;
                 color: var(--ezra-text-muted);
+                font-size: 13px;
                 line-height: 1.5;
             }
 
-            .ezra-welcome ul {
+            .ezra-welcome-capabilities {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
                 text-align: left;
-                display: inline-block;
-                margin: 0 0 16px;
-                padding-left: 20px;
+            }
+
+            .ezra-welcome-cap {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding: 8px 10px;
+                background: rgba(255,255,255,0.03);
+                border: 1px solid rgba(255,255,255,0.06);
+                border-radius: 8px;
+                font-size: 11px;
                 color: var(--ezra-text-muted);
             }
 
-            .ezra-welcome li {
-                margin: 6px 0;
-            }
-
-            .ezra-welcome-hint {
-                font-size: 13px;
-                font-style: italic;
+            .ezra-welcome-cap span {
+                color: var(--ezra-gold);
+                font-size: 10px;
             }
 
             /* Message Bubbles */
             .ezra-message {
                 display: flex;
-                gap: 12px;
-                max-width: 85%;
+                gap: 10px;
+                max-width: 88%;
             }
 
             .ezra-message.user {
@@ -496,51 +570,68 @@
             }
 
             .ezra-message-avatar {
-                width: 32px;
-                height: 32px;
+                width: 28px;
+                height: 28px;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 14px;
+                font-size: 12px;
                 flex-shrink: 0;
             }
 
             .ezra-message.assistant .ezra-message-avatar {
-                background: var(--ezra-primary);
+                background: linear-gradient(135deg, var(--ezra-dark-3), var(--ezra-dark-2));
+                border: 1px solid var(--ezra-glass-border);
+                color: var(--ezra-gold);
             }
 
             .ezra-message.user .ezra-message-avatar {
-                background: var(--ezra-accent);
+                background: linear-gradient(135deg, var(--ezra-gold), var(--ezra-gold-bright));
+                color: var(--ezra-dark-1);
             }
 
             .ezra-message-content {
-                background: var(--ezra-surface);
-                padding: 12px 16px;
-                border-radius: var(--ezra-radius-sm);
-                font-size: 14px;
-                line-height: 1.5;
+                padding: 10px 14px;
+                border-radius: 12px;
+                font-size: 13px;
+                line-height: 1.55;
+            }
+
+            .ezra-message.assistant .ezra-message-content {
+                background: rgba(255,255,255,0.05);
+                border: 1px solid rgba(255,255,255,0.08);
                 color: var(--ezra-text);
             }
 
             .ezra-message.user .ezra-message-content {
-                background: var(--ezra-primary);
-                color: white;
+                background: linear-gradient(135deg, rgba(197,160,89,0.2), rgba(212,175,55,0.15));
+                border: 1px solid var(--ezra-gold-dim);
+                color: var(--ezra-text);
+            }
+
+            .ezra-message-content code {
+                background: rgba(0,0,0,0.3);
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 12px;
+                color: var(--ezra-gold);
             }
 
             .ezra-message-time {
-                font-size: 11px;
+                font-size: 10px;
                 color: var(--ezra-text-muted);
                 margin-top: 4px;
+                opacity: 0.7;
             }
 
-            /* Auto-fill Block */
+            /* Auto-fill Block (dark emerald) */
             .ezra-autofill-block {
-                background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-                border: 1px solid #86efac;
+                background: linear-gradient(135deg, rgba(5,46,22,0.6), rgba(6,78,59,0.4));
+                border: 1px solid rgba(34,197,94,0.3);
                 border-radius: var(--ezra-radius-sm);
-                padding: 16px;
-                margin-top: 12px;
+                padding: 14px;
+                margin-top: 10px;
             }
 
             .ezra-autofill-header {
@@ -548,23 +639,24 @@
                 align-items: center;
                 gap: 8px;
                 font-weight: 600;
-                color: #166534;
-                margin-bottom: 12px;
+                color: #4ade80;
+                font-size: 13px;
+                margin-bottom: 10px;
             }
 
             .ezra-autofill-fields {
                 display: grid;
-                gap: 8px;
+                gap: 6px;
             }
 
             .ezra-autofill-field {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 8px 12px;
-                background: white;
+                padding: 7px 10px;
+                background: rgba(0,0,0,0.2);
                 border-radius: 6px;
-                font-size: 13px;
+                font-size: 12px;
             }
 
             .ezra-autofill-label {
@@ -573,21 +665,21 @@
 
             .ezra-autofill-value {
                 font-weight: 600;
-                color: var(--ezra-text);
+                color: #4ade80;
             }
 
             .ezra-autofill-actions {
                 display: flex;
                 gap: 8px;
-                margin-top: 12px;
+                margin-top: 10px;
             }
 
             .ezra-autofill-btn {
                 flex: 1;
-                padding: 10px;
+                padding: 8px;
                 border: none;
                 border-radius: 6px;
-                font-size: 13px;
+                font-size: 12px;
                 font-weight: 600;
                 cursor: pointer;
                 transition: all 0.2s;
@@ -598,28 +690,28 @@
                 color: white;
             }
 
-            . .ezra-autofill-btn.primary:hover {
+            .ezra-autofill-btn.primary:hover {
                 background: #16a34a;
             }
 
             .ezra-autofill-btn.secondary {
-                background: white;
+                background: rgba(255,255,255,0.06);
                 color: var(--ezra-text);
-                border: 1px solid var(--ezra-border);
+                border: 1px solid rgba(255,255,255,0.1);
             }
 
-            /* Typing Indicator */
+            /* ===== TYPING INDICATOR ===== */
             .ezra-typing {
                 display: flex;
                 align-items: center;
-                gap: 4px;
-                padding: 16px 20px;
+                gap: 5px;
+                padding: 12px 18px;
             }
 
             .ezra-typing-dot {
-                width: 8px;
-                height: 8px;
-                background: var(--ezra-text-muted);
+                width: 7px;
+                height: 7px;
+                background: var(--ezra-gold);
                 border-radius: 50%;
                 animation: ezra-typing-bounce 1.4s infinite ease-in-out both;
             }
@@ -628,109 +720,130 @@
             .ezra-typing-dot:nth-child(2) { animation-delay: -0.16s; }
 
             @keyframes ezra-typing-bounce {
-                0%, 80%, 100% { transform: scale(0); }
-                40% { transform: scale(1); }
+                0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
+                40% { transform: scale(1); opacity: 1; }
             }
 
-            /* Input Area */
+            /* ===== INPUT AREA ===== */
             .ezra-input-area {
-                padding: 16px 20px;
-                border-top: 1px solid var(--ezra-border);
-                background: white;
+                padding: 12px 16px;
+                border-top: 1px solid rgba(255,255,255,0.06);
+                background: rgba(0,0,0,0.15);
             }
 
             .ezra-input-wrapper {
                 display: flex;
                 gap: 8px;
-                background: var(--ezra-surface);
+                background: rgba(255,255,255,0.04);
                 border-radius: 24px;
                 padding: 4px;
-                border: 1px solid var(--ezra-border);
+                border: 1px solid rgba(255,255,255,0.08);
+                transition: border-color 0.2s;
+            }
+
+            .ezra-input-wrapper:focus-within {
+                border-color: var(--ezra-gold-dim);
+                box-shadow: 0 0 0 3px rgba(197,160,89,0.08);
             }
 
             .ezra-input {
                 flex: 1;
                 border: none;
                 background: transparent;
-                padding: 12px 16px;
-                font-size: 14px;
+                padding: 10px 14px;
+                font-size: 13px;
                 resize: none;
                 outline: none;
                 max-height: 120px;
                 font-family: inherit;
+                color: var(--ezra-text);
+            }
+
+            .ezra-input::placeholder {
+                color: var(--ezra-text-muted);
+                opacity: 0.6;
             }
 
             .ezra-send-btn {
-                width: 40px;
-                height: 40px;
-                background: var(--ezra-primary);
+                width: 36px;
+                height: 36px;
+                background: linear-gradient(135deg, var(--ezra-gold), var(--ezra-gold-bright));
                 border: none;
                 border-radius: 50%;
-                color: white;
+                color: var(--ezra-dark-1);
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 transition: all 0.2s;
+                flex-shrink: 0;
             }
 
             .ezra-send-btn:hover:not(:disabled) {
-                background: var(--ezra-primary-light);
+                transform: scale(1.05);
+                box-shadow: 0 0 12px rgba(212,175,55,0.4);
             }
 
             .ezra-send-btn:disabled {
-                opacity: 0.5;
+                opacity: 0.3;
                 cursor: not-allowed;
             }
 
             .ezra-send-btn svg {
-                width: 18px;
-                height: 18px;
+                width: 16px;
+                height: 16px;
             }
 
             .ezra-input-footer {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-top: 8px;
-                font-size: 11px;
-                color: var(--ezra-text-muted);
+                margin-top: 6px;
+                padding: 0 4px;
+                font-size: 10px;
+                color: rgba(148,163,184,0.5);
             }
 
             .ezra-tier-badge {
-                background: linear-gradient(135deg, var(--ezra-accent) 0%, #b8941f 100%);
-                color: white;
+                background: linear-gradient(135deg, var(--ezra-gold), var(--ezra-gold-bright));
+                color: var(--ezra-dark-1);
                 padding: 2px 8px;
                 border-radius: 10px;
-                font-weight: 600;
+                font-weight: 700;
+                font-size: 9px;
                 text-transform: uppercase;
+                letter-spacing: 0.5px;
             }
 
-            /* Model Modal */
+            /* ===== MODEL MODAL ===== */
             .ezra-modal {
                 position: fixed;
                 top: 0;
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(0,0,0,0.5);
+                background: rgba(0,0,0,0.6);
+                backdrop-filter: blur(4px);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                z-index: 10000;
+                z-index: 10001;
             }
 
             .ezra-modal-content {
-                background: white;
+                background: linear-gradient(135deg, var(--ezra-dark-2), var(--ezra-dark-1));
+                border: 1px solid var(--ezra-glass-border);
                 border-radius: var(--ezra-radius);
                 padding: 24px;
                 width: 320px;
-                box-shadow: var(--ezra-shadow);
+                box-shadow: 0 25px 50px rgba(0,0,0,0.5);
             }
 
             .ezra-modal-content h4 {
                 margin: 0 0 16px;
-                font-size: 16px;
+                font-size: 15px;
+                font-weight: 600;
+                color: var(--ezra-text);
             }
 
             .ezra-model-options {
@@ -744,42 +857,285 @@
                 align-items: center;
                 gap: 12px;
                 padding: 12px;
-                border: 2px solid var(--ezra-border);
+                border: 1px solid rgba(255,255,255,0.08);
                 border-radius: var(--ezra-radius-sm);
-                background: white;
+                background: rgba(255,255,255,0.03);
                 cursor: pointer;
                 transition: all 0.2s;
+                color: var(--ezra-text);
             }
 
-            .ezra-model-option:hover,
+            .ezra-model-option:hover {
+                background: rgba(255,255,255,0.06);
+                border-color: rgba(255,255,255,0.15);
+            }
+
             .ezra-model-option.active {
-                border-color: var(--ezra-primary);
-                background: var(--ezra-surface);
+                border-color: var(--ezra-gold-dim);
+                background: rgba(197,160,89,0.08);
             }
 
             .ezra-model-color {
                 width: 12px;
                 height: 12px;
                 border-radius: 50%;
+                flex-shrink: 0;
             }
 
             .ezra-model-label {
                 font-weight: 600;
                 flex: 1;
                 text-align: left;
+                font-size: 13px;
             }
 
             .ezra-model-use {
+                font-size: 10px;
+                color: var(--ezra-text-muted);
+            }
+
+            /* ===== DEAL RADAR (dark theme) ===== */
+            .ezra-deal-radar {
+                padding: 16px;
+                height: 100%;
+                overflow-y: auto;
+            }
+
+            .ezra-dr-header {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .ezra-dr-header h3 {
+                margin: 0 0 8px;
+                font-size: 18px;
+                color: var(--ezra-text);
+            }
+
+            .ezra-dr-header p {
+                margin: 0;
+                color: var(--ezra-text-muted);
+                font-size: 12px;
+            }
+
+            .ezra-dr-actions {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+            .ezra-dr-btn {
+                flex: 1;
+                padding: 10px;
+                border: none;
+                border-radius: var(--ezra-radius-sm);
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                transition: all 0.2s;
+            }
+
+            .ezra-dr-btn.primary {
+                background: linear-gradient(135deg, var(--ezra-gold), var(--ezra-gold-bright));
+                color: var(--ezra-dark-1);
+            }
+
+            .ezra-dr-btn.primary:hover {
+                box-shadow: 0 0 12px rgba(212,175,55,0.3);
+            }
+
+            .ezra-dr-btn.secondary {
+                background: rgba(255,255,255,0.04);
+                color: var(--ezra-text);
+                border: 1px solid rgba(255,255,255,0.08);
+            }
+
+            .ezra-dr-btn.secondary:hover {
+                background: rgba(255,255,255,0.08);
+            }
+
+            .ezra-dr-content {
+                min-height: 200px;
+            }
+
+            .ezra-dr-empty {
+                text-align: center;
+                padding: 40px 20px;
+                color: var(--ezra-text-muted);
+            }
+
+            .ezra-dr-icon {
+                font-size: 48px;
+                display: block;
+                margin-bottom: 16px;
+            }
+
+            .ezra-dr-scanning {
+                text-align: center;
+                padding: 40px 20px;
+            }
+
+            .ezra-dr-spinner {
+                width: 40px;
+                height: 40px;
+                border: 3px solid var(--ezra-dark-3);
+                border-top-color: var(--ezra-gold);
+                border-radius: 50%;
+                animation: ezra-spin 1s linear infinite;
+                margin: 0 auto 16px;
+            }
+
+            @keyframes ezra-spin {
+                to { transform: rotate(360deg); }
+            }
+
+            .ezra-dr-sub {
+                font-size: 12px;
+                color: var(--ezra-text-muted);
+            }
+
+            .ezra-dr-stats {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+            .ezra-dr-stat {
+                background: rgba(255,255,255,0.03);
+                border: 1px solid rgba(255,255,255,0.06);
+                padding: 14px;
+                border-radius: var(--ezra-radius-sm);
+                text-align: center;
+            }
+
+            .ezra-dr-stat-value {
+                display: block;
+                font-size: 22px;
+                font-weight: 700;
+                color: var(--ezra-gold);
+            }
+
+            .ezra-dr-stat-label {
                 font-size: 11px;
                 color: var(--ezra-text-muted);
             }
 
-            /* Responsive */
+            .ezra-dr-list {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .ezra-dr-card {
+                background: rgba(255,255,255,0.03);
+                border-radius: var(--ezra-radius-sm);
+                padding: 14px;
+                border: 1px solid rgba(255,255,255,0.06);
+                transition: all 0.2s;
+            }
+
+            .ezra-dr-card:hover {
+                border-color: var(--ezra-gold-dim);
+                box-shadow: 0 0 12px rgba(197,160,89,0.1);
+            }
+
+            .ezra-dr-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+
+            .ezra-dr-type {
+                background: linear-gradient(135deg, var(--ezra-gold), var(--ezra-gold-bright));
+                color: var(--ezra-dark-1);
+                padding: 3px 10px;
+                border-radius: 12px;
+                font-size: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .ezra-dr-card-body h4 {
+                margin: 0 0 8px;
+                font-size: 15px;
+                color: var(--ezra-text);
+            }
+
+            .ezra-dr-metrics {
+                display: flex;
+                gap: 16px;
+                margin-bottom: 8px;
+            }
+
+            .ezra-dr-equity {
+                color: #4ade80;
+                font-weight: 600;
+                font-size: 13px;
+            }
+
+            .ezra-dr-cltv {
+                color: var(--ezra-text-muted);
+                font-size: 13px;
+            }
+
+            .ezra-dr-strategy {
+                margin: 0;
+                font-size: 12px;
+                color: var(--ezra-text-muted);
+                line-height: 1.4;
+            }
+
+            .ezra-dr-card-actions {
+                display: flex;
+                gap: 8px;
+                margin-top: 10px;
+            }
+
+            .ezra-dr-action-btn {
+                flex: 1;
+                padding: 8px;
+                border: none;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: 600;
+                cursor: pointer;
+                background: linear-gradient(135deg, var(--ezra-gold), var(--ezra-gold-bright));
+                color: var(--ezra-dark-1);
+                transition: all 0.2s;
+            }
+
+            .ezra-dr-action-btn:hover {
+                box-shadow: 0 0 10px rgba(212,175,55,0.3);
+            }
+
+            .ezra-dr-action-btn.secondary {
+                background: transparent;
+                color: var(--ezra-text);
+                border: 1px solid rgba(255,255,255,0.1);
+            }
+
+            .ezra-dr-action-btn.secondary:hover {
+                background: rgba(255,255,255,0.06);
+            }
+
+            .ezra-dr-error {
+                text-align: center;
+                padding: 40px 20px;
+                color: #f87171;
+            }
+
+            /* ===== RESPONSIVE ===== */
             @media (max-width: 480px) {
                 .ezra-widget {
-                    bottom: 16px;
-                    right: 16px;
-                    left: 16px;
+                    bottom: 20px;
+                    right: 20px;
                 }
 
                 .ezra-container {
@@ -791,10 +1147,7 @@
                     width: auto;
                     height: auto;
                     border-radius: 0;
-                }
-
-                .ezra-toggle-text {
-                    display: none;
+                    border: none;
                 }
             }
         `;
@@ -807,7 +1160,7 @@
     // ============================================
     function setupEventListeners() {
         // Toggle button
-        document.getElementById('ezra-toggle')?.addEventListener('click', toggleWidget);
+        document.getElementById('ezra-orb')?.addEventListener('click', toggleWidget);
 
         // Close button
         document.getElementById('ezra-close')?.addEventListener('click', closeWidget);
@@ -860,18 +1213,18 @@
         
         if (EzraState.isOpen) {
             container.classList.add('open');
-            document.getElementById('ezra-toggle').style.display = 'none';
+            document.getElementById('ezra-orb').style.display = 'none';
             setTimeout(() => document.getElementById('ezra-input')?.focus(), 100);
         } else {
             container.classList.remove('open');
-            document.getElementById('ezra-toggle').style.display = 'flex';
+            document.getElementById('ezra-orb').style.display = 'flex';
         }
     }
 
     function closeWidget() {
         EzraState.isOpen = false;
         document.getElementById('ezra-container').classList.remove('open');
-        document.getElementById('ezra-toggle').style.display = 'flex';
+        document.getElementById('ezra-orb').style.display = 'flex';
     }
 
     function minimizeWidget() {
@@ -961,7 +1314,7 @@
         const messageDiv = document.createElement('div');
         messageDiv.className = `ezra-message ${role}`;
         
-        const avatar = role === 'assistant' ? '🤖' : '👤';
+        const avatar = role === 'assistant' ? '\u2726' : '\u2726';
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
         messageDiv.innerHTML = `
@@ -1003,6 +1356,11 @@
     // QUICK COMMANDS
     // ============================================
     function handleQuickCommand(action) {
+        if (action === 'deal_radar') {
+            showDealRadar();
+            return;
+        }
+
         const prompts = {
             create_quote: 'Create a HELOC quote for my borrower',
             structure_deal: 'How should I structure this deal for optimal approval?',
@@ -1015,6 +1373,246 @@
         input.value = prompts[action] || '';
         input.focus();
         autoResizeTextarea();
+    }
+
+    // ============================================
+    // DEAL RADAR UI
+    // ============================================
+    async function showDealRadar() {
+        EzraState.activeTab = 'deal-radar';
+        
+        const messagesContainer = document.getElementById('ezra-messages');
+        messagesContainer.innerHTML = `
+            <div class="ezra-deal-radar">
+                <div class="ezra-dr-header">
+                    <h3>🎯 Deal Radar</h3>
+                    <p>AI-powered equity opportunity scanner</p>
+                </div>
+                <div class="ezra-dr-actions">
+                    <button class="ezra-dr-btn primary" onclick="Ezra.scanDealRadar()">
+                        <span>🔍</span> Scan Database
+                    </button>
+                    <button class="ezra-dr-btn secondary" onclick="Ezra.showDealDashboard()">
+                        <span>📊</span> Dashboard
+                    </button>
+                </div>
+                <div id="ezra-dr-content" class="ezra-dr-content">
+                    <div class="ezra-dr-empty">
+                        <span class="ezra-dr-icon">📡</span>
+                        <p>Click "Scan Database" to find equity opportunities in your borrower database</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Load existing opportunities if available
+        loadDealOpportunities();
+    }
+
+    async function loadDealOpportunities() {
+        if (!EzraState.user) return;
+
+        try {
+            const { data, error } = await EzraState.supabase
+                .from('deal_radar')
+                .select(`
+                    *,
+                    borrowers (first_name, last_name, credit_score)
+                `)
+                .eq('loan_officer_id', EzraState.user.id)
+                .eq('status', 'new')
+                .gt('expires_at', new Date().toISOString())
+                .order('priority_score', { ascending: false })
+                .limit(10);
+
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                renderDealOpportunities(data);
+            }
+        } catch (e) {
+            console.error('Error loading deal opportunities:', e);
+        }
+    }
+
+    function renderDealOpportunities(opportunities) {
+        const content = document.getElementById('ezra-dr-content');
+        if (!content) return;
+
+        const totalEquity = opportunities.reduce((sum, opp) => sum + (opp.tappable_equity || 0), 0);
+
+        content.innerHTML = `
+            <div class="ezra-dr-stats">
+                <div class="ezra-dr-stat">
+                    <span class="ezra-dr-stat-value">${opportunities.length}</span>
+                    <span class="ezra-dr-stat-label">Opportunities</span>
+                </div>
+                <div class="ezra-dr-stat">
+                    <span class="ezra-dr-stat-value">$${(totalEquity / 1000).toFixed(0)}k</span>
+                    <span class="ezra-dr-stat-label">Total Equity</span>
+                </div>
+            </div>
+            <div class="ezra-dr-list">
+                ${opportunities.map(opp => `
+                    <div class="ezra-dr-card" data-opp-id="${opp.id}">
+                        <div class="ezra-dr-card-header">
+                            <span class="ezra-dr-type">${formatOpportunityType(opp.opportunity_type)}</span>
+                            <span class="ezra-dr-priority" style="--priority: ${opp.priority_score}">
+                                ${opp.priority_score >= 80 ? '🔥' : opp.priority_score >= 60 ? '⚡' : '💡'}
+                            </span>
+                        </div>
+                        <div class="ezra-dr-card-body">
+                            <h4>${opp.borrowers?.first_name} ${opp.borrowers?.last_name}</h4>
+                            <div class="ezra-dr-metrics">
+                                <span class="ezra-dr-equity">$${(opp.tappable_equity / 1000).toFixed(0)}k tappable</span>
+                                <span class="ezra-dr-cltv">${opp.current_combined_ltv?.toFixed(1)}% CLTV</span>
+                            </div>
+                            <p class="ezra-dr-strategy">${opp.suggested_strategy?.substring(0, 100)}...</p>
+                        </div>
+                        <div class="ezra-dr-card-actions">
+                            <button class="ezra-dr-action-btn" onclick="Ezra.createQuoteFromDeal('${opp.id}')">
+                                Create Quote
+                            </button>
+                            <button class="ezra-dr-action-btn secondary" onclick="Ezra.viewDealDetails('${opp.id}')">
+                                Details
+                            </button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function formatOpportunityType(type) {
+        const types = {
+            heloc: 'HELOC',
+            cash_out_refi: 'Cash-Out Refi',
+            debt_consolidation: 'Debt Consolidation',
+            rate_reduction: 'Rate Reduction',
+            equity_access: 'Equity Access'
+        };
+        return types[type] || type;
+    }
+
+    async function scanDealRadar() {
+        const content = document.getElementById('ezra-dr-content');
+        content.innerHTML = `
+            <div class="ezra-dr-scanning">
+                <div class="ezra-dr-spinner"></div>
+                <p>Scanning borrower database for equity opportunities...</p>
+                <p class="ezra-dr-sub">This may take a moment</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch(`${EzraState.supabase.supabaseUrl}/functions/v1/deal-radar`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${EzraState.supabase.supabaseKey}`
+                },
+                body: JSON.stringify({
+                    action: 'full_scan',
+                    loanOfficerId: EzraState.user.id
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                showToast(`Found ${result.opportunitiesFound} opportunities!`, 'success');
+                loadDealOpportunities();
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (e) {
+            console.error('Deal Radar scan error:', e);
+            content.innerHTML = `
+                <div class="ezra-dr-error">
+                    <span>⚠️</span>
+                    <p>Scan failed. Please try again.</p>
+                    <button onclick="Ezra.scanDealRadar()">Retry</button>
+                </div>
+            `;
+        }
+    }
+
+    async function createQuoteFromDeal(opportunityId) {
+        try {
+            const { data: opp, error } = await EzraState.supabase
+                .from('deal_radar')
+                .select(`*, borrowers (*)`)
+                .eq('id', opportunityId)
+                .single();
+
+            if (error) throw error;
+
+            // Build quote from opportunity data
+            const quoteMessage = `Build a HELOC quote for ${opp.borrowers.first_name} ${opp.borrowers.last_name}, ` +
+                `$${(opp.tappable_equity / 1000).toFixed(0)}k equity available, ` +
+                `${opp.current_combined_ltv?.toFixed(1)}% CLTV`;
+
+            // Switch back to chat and send
+            EzraState.activeTab = 'chat';
+            document.getElementById('ezra-input').value = quoteMessage;
+            sendMessage();
+
+        } catch (e) {
+            console.error('Error creating quote from deal:', e);
+            showToast('Failed to create quote', 'error');
+        }
+    }
+
+    async function viewDealDetails(opportunityId) {
+        // Show detailed view in chat
+        EzraState.activeTab = 'chat';
+        document.getElementById('ezra-input').value = `Show me details for deal opportunity ${opportunityId}`;
+        sendMessage();
+    }
+
+    async function showDealDashboard() {
+        try {
+            const response = await fetch(`${EzraState.supabase.supabaseUrl}/functions/v1/deal-radar`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${EzraState.supabase.supabaseKey}`
+                },
+                body: JSON.stringify({
+                    action: 'get_dashboard',
+                    loanOfficerId: EzraState.user.id
+                })
+            });
+
+            const result = await response.json();
+            
+            // Display dashboard in chat
+            EzraState.activeTab = 'chat';
+            const dashboardText = formatDashboardText(result.dashboard);
+            addMessage('assistant', dashboardText);
+
+        } catch (e) {
+            console.error('Error loading dashboard:', e);
+            showToast('Failed to load dashboard', 'error');
+        }
+    }
+
+    function formatDashboardText(dashboard) {
+        return `## 📊 Deal Radar Dashboard
+
+**Overview**
+• Total Opportunities: ${dashboard.total_opportunities || 0}
+• Total Tappable Equity: $${((dashboard.total_tappable_equity || 0) / 1000).toFixed(0)}k
+
+**By Opportunity Type**
+${Object.entries(dashboard.by_type || {}).map(([type, count]) => `• ${formatOpportunityType(type)}: ${count}`).join('\n')}
+
+**Top Opportunities**
+${(dashboard.top_opportunities || []).slice(0, 5).map((opp, i) => 
+    `${i + 1}. ${opp.type} - $${(opp.equity / 1000).toFixed(0)}k equity (${opp.confidence * 100}% confidence)`
+).join('\n')}
+
+Use the **Deal Radar** tab to view all opportunities and create quotes.`;
     }
 
     // ============================================
@@ -1405,7 +2003,13 @@ What would you like to work on?`
         applyAutoFill: applyAutoFill,
         setModel: selectModel,
         getState: () => ({ ...EzraState }),
-        searchKnowledge: searchKnowledgeBase
+        searchKnowledge: searchKnowledgeBase,
+        // Deal Radar API
+        showDealRadar: showDealRadar,
+        scanDealRadar: scanDealRadar,
+        showDealDashboard: showDealDashboard,
+        createQuoteFromDeal: createQuoteFromDeal,
+        viewDealDetails: viewDealDetails
     };
 
     // Auto-initialize when DOM is ready
@@ -1414,5 +2018,12 @@ What would you like to work on?`
     } else {
         initEzra();
     }
+
+    // Also listen for auth-ready event as a fallback trigger
+    document.addEventListener('auth-ready', () => {
+        if (!EzraState.supabase && window._supabase) {
+            initEzra();
+        }
+    });
 
 })();

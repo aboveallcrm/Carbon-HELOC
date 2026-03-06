@@ -33,27 +33,24 @@ END $$;
 -- ==========================================
 -- STEP 1: Clean ALL stale policies on profiles
 -- ==========================================
--- Drop old policies that reference user_roles (from fix-profiles-rls.sql)
+-- Drop ALL known stale policies (every naming variant ever used)
 DROP POLICY IF EXISTS "Super admins can view all profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Super admin can view all profiles" ON public.profiles;
 DROP POLICY IF EXISTS "Super admins can update all profiles" ON public.profiles;
-
--- Drop old policies with period naming (from schema.sql original)
+DROP POLICY IF EXISTS "Super admin can update all profiles" ON public.profiles;
 DROP POLICY IF EXISTS "Users can view own profile." ON public.profiles;
 DROP POLICY IF EXISTS "Users can insert their own profile." ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile." ON public.profiles;
-
--- Drop old policies without period (from fix-profiles-rls.sql)
 DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
-
--- Drop super admin policies (from schema.sql)
 DROP POLICY IF EXISTS "super_admin_select_all" ON public.profiles;
 DROP POLICY IF EXISTS "super_admin_update_all" ON public.profiles;
 DROP POLICY IF EXISTS "super_admin_insert_all" ON public.profiles;
 DROP POLICY IF EXISTS "super_admin_delete_all" ON public.profiles;
-
--- Drop new-named policies too (idempotent — safe to re-run)
+DROP POLICY IF EXISTS "profiles_select_own" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_insert_own" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_update_own" ON public.profiles;
 DROP POLICY IF EXISTS "profiles_own_select" ON public.profiles;
 DROP POLICY IF EXISTS "profiles_own_insert" ON public.profiles;
 DROP POLICY IF EXISTS "profiles_own_update" ON public.profiles;
@@ -206,7 +203,9 @@ CREATE OR REPLACE FUNCTION public.is_super_admin() RETURNS boolean
   LANGUAGE sql SECURITY DEFINER STABLE
 AS $$
   SELECT EXISTS (
-    SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin'
+    SELECT 1 FROM public.profiles
+    WHERE id::text = auth.uid()::text
+    AND role = 'super_admin'
   );
 $$;
 
