@@ -14,23 +14,198 @@
     'use strict';
 
     // ============================================
+    // EZRA MASTER PROMPT — AI LOAN STRUCTURING ENGINE
+    // Created by Eddie Barragan — Above All CRM
+    // ============================================
+
+    // Payment calculation functions (app-side math, not LLM)
+    function calcAmortizedPayment(loanAmount, annualRatePct, years) {
+        const r = annualRatePct / 100 / 12;
+        const n = years * 12;
+        if (r === 0) return +(loanAmount / n).toFixed(2);
+        return +((loanAmount * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)).toFixed(2);
+    }
+    function calcInterestOnlyPayment(loanAmount, annualRatePct) {
+        return +(loanAmount * (annualRatePct / 100) / 12).toFixed(2);
+    }
+    function calcCLTV(firstMortgage, helocAmount, propertyValue) {
+        if (!propertyValue) return 0;
+        return +(((firstMortgage + helocAmount) / propertyValue) * 100).toFixed(2);
+    }
+
+    // HELOC Product definitions — single source of truth
+    const HELOC_PROGRAMS = {
+        fixed: [
+            { name: '5 Year Fixed HELOC',  term: 5,  draw: 2, type: 'principal_and_interest' },
+            { name: '10 Year Fixed HELOC', term: 10, draw: 3, type: 'principal_and_interest' },
+            { name: '15 Year Fixed HELOC', term: 15, draw: 4, type: 'principal_and_interest' },
+            { name: '30 Year Fixed HELOC', term: 30, draw: 5, type: 'principal_and_interest' }
+        ],
+        variable: [
+            { name: '10 Year Variable HELOC', drawPeriod: 10, repayment: 20, type: 'interest_only_draw' },
+            { name: '5 Year Draw HELOC',      drawPeriod: 5,  repayment: 15, type: 'interest_only_draw' }
+        ]
+    };
+
+    const EZRA_KNOWLEDGE = {
+        buildSystemPrompt() {
+            return `You are Ezra, an internal AI loan structuring assistant inside a HELOC quote platform used by professional loan officers.
+Created by Eddie Barragan — Above All CRM.
+
+SYSTEM IDENTITY
+Your role is to help loan officers: structure HELOC deals, generate accurate loan quotes, explain loan options clearly, recommend the best program structure, respond to borrower objections, and coach the loan officer on how to present the loan.
+You do not speak directly to borrowers unless generating a suggested script.
+Your responses should be clear, structured, and professional.
+
+CORE OBJECTIVE
+Help the loan officer: build quotes faster, structure better HELOC strategies, avoid incorrect product assumptions, close more loans.
+
+KNOWLEDGE AUTHORITY — Order of priority:
+1. Internal HELOC knowledge base (this prompt)
+2. Product rules defined below
+3. Loan officer provided inputs
+4. General mortgage knowledge
+If information conflicts with the internal knowledge base, the internal knowledge base overrides.
+You must NEVER invent loan program structures.
+
+═══════════════════════════════════════
+HELOC PRODUCT STRUCTURES
+═══════════════════════════════════════
+
+FIXED HELOC PROGRAMS
+Fixed HELOC programs are fully amortizing loans. Monthly payments include principal and interest from day one.
+Borrowers typically draw the full approved amount upfront (minus fees) at closing.
+Additional draws may be available as principal is repaid.
+Unlike traditional HELOCs, these do NOT have long interest-only draw periods.
+
+Draw Windows:
+• 5 Year Fixed HELOC — Draw: 2 years, Term: 5 years
+• 10 Year Fixed HELOC — Draw: 3 years, Term: 10 years
+• 15 Year Fixed HELOC — Draw: 4 years, Term: 15 years
+• 30 Year Fixed HELOC — Draw: 5 years, Term: 30 years
+
+All fixed programs use fully amortized principal and interest payments.
+
+VARIABLE HELOC PROGRAMS
+• 10 Year Variable HELOC — Draw: 10 years (interest-only), Repayment: 20 years amortization
+• 5 Year Draw HELOC — Draw: 5 years (interest-only), Repayment begins after draw
+
+PAYMENT CALCULATION
+Fixed programs: monthly payment = fully amortized P&I using loan amount, rate, and term.
+Variable programs during draw: monthly payment = loan amount × rate ÷ 12 (interest-only).
+Variable after draw: remaining balance amortizes over repayment term.
+Always clearly label which payment is being displayed.
+
+═══════════════════════════════════════
+UNDERWRITING & APPROVAL PROCESS
+═══════════════════════════════════════
+1. Borrower submits application
+2. Soft credit check determines eligibility — NO impact to credit score
+3. AI-assisted underwriting evaluates profile
+4. Income verified using secure bank-grade technology
+5. Borrower chooses preferred offer from multiple structures
+6. Final underwriting approval and closing
+
+Borrowers remain in control of which offer they select.
+No hard credit pull is required to initially view offers.
+
+APPROVAL SPEED
+Automated underwriting and digital verification enable fast approvals.
+Some loans may fund in as little as 5 days depending on documentation.
+RULE: Always present timelines as possibilities, NEVER as guarantees.
+
+DATA PRIVACY
+• Borrower information handled with bank-grade security
+• Information is NEVER sold to third parties
+• Borrowers maintain control of their information and loan choices
+• All options shown transparently
+
+═══════════════════════════════════════
+STRUCTURING INTELLIGENCE
+═══════════════════════════════════════
+Recommend based on borrower goals:
+• Debt consolidation → longer amortization (15yr or 30yr fixed)
+• Short-term liquidity → shorter fixed (5yr or 10yr)
+• Payment flexibility → variable HELOC
+• Rapid payoff → shorter amortization
+
+CORE VALUE PROPOSITION
+• Multiple loan structures to choose from
+• Soft credit check to view offers
+• AI-assisted underwriting for faster decisions
+• Secure bank-grade income verification
+• Borrower controls which offer to select
+• Potential funding as fast as 5 days
+
+═══════════════════════════════════════
+DEAL ARCHITECT MODE
+═══════════════════════════════════════
+When a loan officer says "structure this deal" or provides borrower info, perform:
+Step 1 — Identify borrower goal (consolidation, equity access, liquidity, payment reduction)
+Step 2 — Calculate CLTV: (first mortgage + HELOC amount) ÷ property value
+Step 3 — Evaluate program eligibility based on loan size, goal, and payment preference
+Step 4 — Recommend best program with reasoning
+Step 5 — Calculate payment (P&I for fixed, IO for variable draw)
+Step 6 — Return structured quote data in AUTO_FILL_FIELDS JSON block
+Step 7 — Generate client explanation
+
+QUOTE GENERATION RULE
+When generating a quote, return a JSON block labeled AUTO_FILL_FIELDS:
+AUTO_FILL_FIELDS
+{
+  "borrower_name": "string",
+  "property_value": number,
+  "first_mortgage_balance": number,
+  "heloc_amount": number,
+  "combined_ltv": number,
+  "program_selected": "string",
+  "draw_period": "X years",
+  "loan_term": "X years",
+  "interest_rate": number,
+  "origination_fee": number,
+  "payment_type": "principal_and_interest" | "interest_only",
+  "monthly_payment_estimate": number
+}
+
+═══════════════════════════════════════
+SALES COACH MODE
+═══════════════════════════════════════
+When asked how to present a loan, provide three sections:
+1. Loan Structure — program details
+2. Strategy Explanation — why this structure fits
+3. Suggested Script — ready-to-use client wording
+
+═══════════════════════════════════════
+RESPONSE RULES
+═══════════════════════════════════════
+• Clear, structured, professional — short paragraphs
+• Use headings when explaining loan structures
+• Never invent programs not listed above
+• Never claim hard pull needed to view initial offers
+• Timelines are possibilities, not guarantees
+• If inputs are missing, ask the loan officer for clarification
+• Behave like a senior mortgage strategist sitting next to the loan officer`;
+        }
+    };
+
+    // ============================================
     // CONFIGURATION
     // ============================================
     const EZRA_CONFIG = {
         widgetTitle: 'Ezra — AI Loan Structuring Assistant',
         placeholderText: 'Ask Ezra anything...',
         quickCommands: [
-            { label: 'Create Quote', icon: '💰', action: 'create_quote' },
-            { label: 'Deal Radar', icon: '🎯', action: 'deal_radar' },
-            { label: 'Structure Deal', icon: '🏗️', action: 'structure_deal' },
-            { label: 'Handle Objection', icon: '🛡️', action: 'handle_objection' },
-            { label: 'Explain Strategy', icon: '📋', action: 'explain_strategy' },
-            { label: 'Client Script', icon: '📝', action: 'client_script' }
+            { label: 'Build Quote', icon: '💰', action: 'build_quote', prompt: 'Ezra build a quote for this borrower' },
+            { label: 'Structure Deal', icon: '🏗️', action: 'structure_deal', prompt: 'Ezra structure this deal' },
+            { label: 'Recommend Program', icon: '🎯', action: 'recommend_program', prompt: 'Which HELOC program is best for this borrower?' },
+            { label: 'Handle Objection', icon: '🛡️', action: 'handle_objection', prompt: 'How do I handle common HELOC objections?' },
+            { label: 'Client Script', icon: '📝', action: 'client_script', prompt: 'How should I explain this HELOC to my client?' },
+            { label: 'Approval Process', icon: '⚡', action: 'approval_process', prompt: 'How does the approval process work?' }
         ],
         models: {
-            gemini: { name: 'Gemini', color: '#4285f4', defaultFor: 'simple_chat' },
-            claude: { name: 'Claude', color: '#d97757', defaultFor: 'quote_calculations' },
-            gpt: { name: 'GPT', color: '#10a37f', defaultFor: 'complex_strategy' }
+            gemini: { name: 'Fast', color: '#4285f4', desc: 'Quick answers & simple questions' },
+            claude: { name: 'Deep', color: '#d97757', desc: 'Calculations & detailed analysis' },
+            gpt: { name: 'Complex', color: '#10a37f', desc: 'Strategy & advanced reasoning' }
         },
         supabaseUrl: window.SUPABASE_URL || '',
         supabaseKey: window.SUPABASE_ANON_KEY || ''
@@ -44,7 +219,7 @@
         isMinimized: false,
         conversationId: null,
         messages: [],
-        currentModel: 'claude',
+        currentModel: 'gemini',
         userTier: 'diamond',
         autoFillEnabled: true,
         isTyping: false,
@@ -76,6 +251,13 @@
 
         // Pick up tier from app globals
         if (window.currentUserTier) EzraState.userTier = window.currentUserTier;
+
+        // Diamond-only feature gate
+        const tier = (EzraState.userTier || '').toLowerCase();
+        if (tier !== 'diamond' && window.currentUserRole !== 'super_admin') {
+            console.log('Ezra: Requires Diamond tier — widget hidden');
+            return;
+        }
 
         // Create widget DOM first so elements exist
         createWidgetDOM();
@@ -133,8 +315,8 @@
                         </div>
                     </div>
                     <div class="ezra-header-actions">
-                        <button id="ezra-model-selector" class="ezra-model-btn" title="AI Model">
-                            <span class="ezra-model-name">Claude</span>
+                        <button id="ezra-model-selector" class="ezra-model-btn" title="AI Mode">
+                            <span class="ezra-model-name">Fast</span>
                         </button>
                         <button id="ezra-minimize" class="ezra-icon-btn" title="Minimize">\u2212</button>
                         <button id="ezra-close" class="ezra-icon-btn" title="Close">\u00D7</button>
@@ -158,10 +340,10 @@
                         <h3>Hello, I'm Ezra</h3>
                         <p>Your AI loan structuring co-pilot.</p>
                         <div class="ezra-welcome-capabilities">
-                            <div class="ezra-welcome-cap"><span>\u2726</span> Build HELOC quotes</div>
-                            <div class="ezra-welcome-cap"><span>\u2726</span> Structure loan scenarios</div>
-                            <div class="ezra-welcome-cap"><span>\u2726</span> Handle objections</div>
-                            <div class="ezra-welcome-cap"><span>\u2726</span> Generate client scripts</div>
+                            <div class="ezra-welcome-cap"><span>\u2726</span> Build & auto-fill quotes</div>
+                            <div class="ezra-welcome-cap"><span>\u2726</span> Structure deals instantly</div>
+                            <div class="ezra-welcome-cap"><span>\u2726</span> Recommend best program</div>
+                            <div class="ezra-welcome-cap"><span>\u2726</span> Client scripts & coaching</div>
                         </div>
                     </div>
                 </div>
@@ -198,13 +380,13 @@
             <!-- Model Selector Modal -->
             <div id="ezra-model-modal" class="ezra-modal" style="display: none;">
                 <div class="ezra-modal-content">
-                    <h4>Select AI Model</h4>
+                    <h4>Select AI Mode</h4>
                     <div class="ezra-model-options">
                         ${Object.entries(EZRA_CONFIG.models).map(([key, model]) => `
                             <button class="ezra-model-option ${key === EzraState.currentModel ? 'active' : ''}" data-model="${key}">
                                 <span class="ezra-model-color" style="background: ${model.color}"></span>
                                 <span class="ezra-model-label">${model.name}</span>
-                                <span class="ezra-model-use">Best for: ${model.defaultFor.replace('_', ' ')}</span>
+                                <span class="ezra-model-use">${model.desc}</span>
                             </button>
                         `).join('')}
                     </div>
@@ -308,8 +490,8 @@
                 position: absolute;
                 bottom: 0;
                 right: 0;
-                width: 400px;
-                height: 560px;
+                width: 480px;
+                height: 660px;
                 background: linear-gradient(135deg, var(--ezra-dark-2), var(--ezra-dark-1));
                 border-radius: var(--ezra-radius);
                 border: 1px solid var(--ezra-glass-border);
@@ -1132,7 +1314,7 @@
             }
 
             /* ===== RESPONSIVE ===== */
-            @media (max-width: 480px) {
+            @media (max-width: 520px) {
                 .ezra-widget {
                     bottom: 20px;
                     right: 20px;
@@ -1321,7 +1503,7 @@
             <div class="ezra-message-avatar">${avatar}</div>
             <div>
                 <div class="ezra-message-content">${formatMessage(content)}</div>
-                <div class="ezra-message-time">${time}${metadata.model ? ` · ${EZRA_CONFIG.models[metadata.model]?.name || metadata.model}` : ''}</div>
+                <div class="ezra-message-time">${time}${metadata.model ? ` · ${EZRA_CONFIG.models[metadata.model]?.name || 'AI'}` : ''}</div>
             </div>
         `;
 
@@ -1333,8 +1515,10 @@
     }
 
     function formatMessage(content) {
+        // Strip AUTO_FILL_FIELDS JSON block from display (handled by auto-fill UI)
+        let clean = content.replace(/AUTO_FILL_FIELDS\s*\n?\s*\{[\s\S]*?\}/g, '').trim();
         // Simple markdown-like formatting
-        return content
+        return clean
             .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.+?)\*/g, '<em>$1</em>')
             .replace(/`(.+?)`/g, '<code>$1</code>')
@@ -1361,16 +1545,19 @@
             return;
         }
 
-        const prompts = {
-            create_quote: 'Create a HELOC quote for my borrower',
-            structure_deal: 'How should I structure this deal for optimal approval?',
-            handle_objection: 'Help me handle a borrower objection about rates',
-            explain_strategy: 'Explain this loan strategy in simple terms',
-            client_script: 'Generate a client script for presenting this HELOC'
-        };
+        // Use prompt from config, fallback to legacy map
+        const cmd = EZRA_CONFIG.quickCommands.find(c => c.action === action);
+        const prompt = cmd?.prompt || {
+            build_quote: 'Ezra build a quote for this borrower',
+            structure_deal: 'Ezra structure this deal',
+            recommend_program: 'Which HELOC program is best for this borrower?',
+            handle_objection: 'How do I handle common HELOC objections?',
+            client_script: 'How should I explain this HELOC to my client?',
+            approval_process: 'How does the approval process work?'
+        }[action] || '';
 
         const input = document.getElementById('ezra-input');
-        input.value = prompts[action] || '';
+        input.value = prompt;
         input.focus();
         autoResizeTextarea();
     }
@@ -1625,13 +1812,13 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         // Route based on intent and user preference
         let model = EzraState.currentModel;
         
-        // Override based on task complexity
-        if (intent === 'quote_calculation') {
-            model = 'claude'; // Best for calculations
-        } else if (intent === 'simple_chat') {
-            model = 'gemini'; // Fast for simple queries
-        } else if (intent === 'complex_strategy') {
-            model = 'gpt'; // Best for complex reasoning
+        // Auto-route based on task complexity
+        if (intent === 'deal_architect' || intent === 'quote_calculation' || intent === 'quote_creation') {
+            model = 'claude'; // Deep — calculations & structured output
+        } else if (intent === 'complex_strategy' || intent === 'program_recommendation') {
+            model = 'gpt'; // Complex — strategy & reasoning
+        } else if (intent === 'simple_chat' || intent === 'approval_process') {
+            model = 'gemini'; // Fast — quick answers
         }
 
         // Call the appropriate AI service
@@ -1646,21 +1833,38 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
 
     function determineIntent(message) {
         const lower = message.toLowerCase();
-        
-        if (/quote|calculate|cltv|payment|amount|rate/i.test(lower)) {
+
+        // Deal architect — structured deal building
+        if (/structure this deal|build.*quote for|ezra structure|ezra build/i.test(lower)) {
+            return 'deal_architect';
+        }
+        // Quote creation
+        if (/create.*quote|build.*quote|make.*quote|generate.*quote/i.test(lower)) {
+            return 'quote_creation';
+        }
+        // Payment / calculation
+        if (/calculate|cltv|payment|amortiz/i.test(lower)) {
             return 'quote_calculation';
         }
+        // Program recommendation
+        if (/recommend|best program|which program|suggest.*program|which heloc/i.test(lower)) {
+            return 'program_recommendation';
+        }
+        // Deal strategy
         if (/structure|strategy|optimize|approval|probability/i.test(lower)) {
             return 'complex_strategy';
         }
-        if (/create|build|make|generate.*quote/i.test(lower)) {
-            return 'quote_creation';
-        }
-        if (/objection|handle|respond|concern/i.test(lower)) {
+        // Objection handling
+        if (/objection|handle|respond|concern|pushback/i.test(lower)) {
             return 'objection_handling';
         }
-        if (/explain|script|say|tell|presentation/i.test(lower)) {
+        // Sales coach / explain to client
+        if (/explain|script|say|tell|presentation|how.*present|how.*explain/i.test(lower)) {
             return 'sales_coach';
+        }
+        // Approval process questions
+        if (/process|underwriting|approval|how.*work|soft.*pull|hard.*pull|fund|timeline/i.test(lower)) {
+            return 'approval_process';
         }
         return 'simple_chat';
     }
@@ -1674,65 +1878,202 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         // { message, model, intent, conversationId, userId }
         
         const mockResponses = {
-            quote_creation: `I'll help you create a HELOC quote. Let me gather the borrower information and calculate the optimal structure.
+            deal_architect: `**DEAL ARCHITECT**
 
-**Quote Summary**
-• Loan Amount: $150,000
-• Interest Rate: 8.25%
+**Step 1 — Borrower Goal**
+Debt consolidation — pay off high-interest credit cards using home equity.
+
+**Step 2 — Equity Analysis**
+• Property Value: $900,000
+• First Mortgage: $480,000
+• Requested HELOC: $150,000
+• Combined LTV: 70% ✓ (well within 85% max)
+
+**Step 3 — Program Recommendation**
+**15 Year Fixed HELOC** with 4-year draw window.
+
+**Why This Program**
+Fully amortized P&I payments start paying down the balance immediately. For debt consolidation, a predictable payment schedule ensures the borrower replaces revolving debt with structured payoff.
+
+**Step 4 — Payment Calculation**
+• Rate: 8.25%
+• Monthly Payment: $1,453 (principal & interest)
 • Origination Fee: $995
-• Draw Period: 10 years
-• Repayment Term: 20 years
 
-**Key Metrics**
-• Combined LTV: 67%
-• Interest-Only Payment: ~$1,031/month
+**Step 5 — Client Explanation**
+"This program works more like a traditional loan. Instead of interest-only payments, the balance starts paying down right away with principal and interest. That helps build equity faster and keeps the loan on a predictable payoff schedule."
 
-Would you like me to auto-fill these fields in the quote tool?`,
+AUTO_FILL_FIELDS
+{"borrower_name":"John Martinez","property_value":900000,"first_mortgage_balance":480000,"heloc_amount":150000,"combined_ltv":70,"program_selected":"15 Year Fixed HELOC","draw_period":"4 years","loan_term":"15 years","interest_rate":8.25,"origination_fee":995,"payment_type":"principal_and_interest","monthly_payment_estimate":1453}`,
 
-            complex_strategy: `Based on the borrower's profile, here's my recommended deal strategy:
+            quote_creation: `I'll help you build a HELOC quote. To structure the best deal, I need:
 
-**Deal Strategy**
-Structure as a fixed-rate HELOC to provide payment stability. The 67% CLTV is well within guidelines.
+• **Property value** and address
+• **Current mortgage balance**
+• **Desired cash-out amount**
+• **Borrower's goal** (debt consolidation, home improvement, liquidity, etc.)
+• **Credit score range**
 
-**Approval Considerations**
-• Strong equity position (33% remaining)
-• Credit score qualifies for tier 1 rates
-• Debt-to-income within acceptable range
+**Available Programs**
+Fixed: 5yr / 10yr / 15yr / 30yr — fully amortized P&I from day one
+Variable: 10yr draw (IO) + 20yr repayment, or 5yr draw (IO)
+
+**How It Works**
+Borrower can view offers with just a soft credit check — no impact to their score. AI-assisted underwriting evaluates eligibility, and they choose from multiple structures.
+
+Once you provide the details, I'll calculate CLTV, recommend the best program, and auto-fill the quote fields.`,
+
+            quote_calculation: `**Payment Calculation**
+
+**Fixed HELOC (Principal & Interest)**
+Formula: Fully amortized P&I = Loan × [r(1+r)^n] / [(1+r)^n - 1]
+
+Example at $150,000 / 8.25% / 15 years:
+• Monthly P&I: $1,453
+• Total interest over life: ~$111,540
+
+**Variable HELOC (Interest-Only Draw)**
+Formula: IO Payment = Loan × Rate ÷ 12
+
+Example at $150,000 / 8.25%:
+• Monthly IO: $1,031 (during draw period)
+• After draw: converts to fully amortized repayment
+
+**CLTV Calculation**
+CLTV = (First Mortgage + HELOC Amount) ÷ Property Value
+Most programs allow up to 85% CLTV for primary residences.
+
+What numbers would you like me to calculate?`,
+
+            program_recommendation: `**Program Recommendation Guide**
+
+Based on borrower goals, here are my recommendations:
+
+**Debt Consolidation** → 15 Year Fixed HELOC
+• 4-year draw window, fully amortized P&I
+• Replaces revolving debt with structured payoff
+• Balance pays down from day one
+
+**Short-Term Liquidity** → 5 Year Fixed HELOC
+• 2-year draw window, shortest term
+• Lower total interest cost
+• Fast payoff for short-term needs
+
+**Home Improvement** → 10 Year Fixed HELOC
+• 3-year draw window, moderate term
+• Good balance of payment size and payoff speed
+
+**Payment Flexibility** → 10 Year Variable HELOC
+• 10-year interest-only draw period
+• Lower payments during draw phase
+• 20-year repayment after draw ends
+
+**Maximum Cash Flow** → 30 Year Fixed HELOC
+• 5-year draw window, longest term
+• Lowest monthly payment of all fixed programs
+• Best for borrowers prioritizing cash flow
+
+Tell me about your borrower's situation and I'll recommend the best fit.`,
+
+            complex_strategy: `**Deal Strategy Analysis**
 
 **Recommended Structure**
-• 10-year draw with 20-year amortization
-• Interest-only option for first 10 years
-• Consider rate lock for first $50K draw`,
+15 Year Fixed HELOC — 4-year draw window
+Fully amortized principal and interest payments.
 
-            objection_handling: `Here's how to handle rate concerns:
+**Why This Structure**
+This program starts paying down the balance immediately. For borrowers looking to consolidate debt or access equity responsibly, the structured payoff prevents the balance from growing like revolving credit.
 
-**Explanation**
-While the rate may seem higher than a first mortgage, remember you're only paying interest on what you use, not the full credit line.
+**Approval Path**
+1. Soft credit check — zero impact to score
+2. AI-assisted underwriting — fast eligibility decision
+3. Bank-grade income verification — secure digital process
+4. Borrower selects preferred offer — full control
+5. Funding possible in as fast as 5 days
 
-**Analogy**
-"Think of the HELOC as a financial safety net - like insurance. You have access to $150K but if you only use $20K for a kitchen remodel, you only pay interest on that $20K."
+**Alternative Structures to Present**
+• 10 Year Fixed — higher payment, faster payoff, lower total interest
+• 30 Year Fixed — lower payment, more cash flow flexibility
+• Variable 10yr Draw — interest-only during draw for maximum flexibility
 
-**Suggested Script**
-"I understand rate is important. The beauty of a HELOC is flexibility - you can lock in portions at fixed rates when rates are favorable, while keeping the rest as a low-cost safety net. You're not committed to borrowing the full amount."`,
+Present all options transparently. Let the borrower decide what fits their goals.`,
 
-            sales_coach: `Here's a client-friendly explanation:
+            objection_handling: `**Objection Response Scripts**
 
-**Quote Summary**
-$150,000 HELOC at 8.25% with a 10-year draw period.
+**"The rate seems high"**
+"I understand rate is important. The advantage is you can see your actual offers with just a soft credit check — no impact to your score. You compare multiple structures and pick what fits your goals. Unlike credit cards at 22%+, this HELOC at 8-9% saves thousands in interest while giving you structured payoff."
 
-**Loan Strategy**
-Use the HELOC to consolidate high-interest debt while preserving your first mortgage rate.
+**"How long does this take?"**
+"Our platform uses AI-assisted underwriting and bank-grade digital verification. The process is faster than traditional HELOCs — some approvals can fund in as little as 5 days depending on documentation."
 
-**What To Say To The Client**
-"Think of this HELOC as a financial safety net. You only pay interest on the amount you actually use, not the full $150,000. It's there when you need it - for home improvements, debt consolidation, or emergencies. During the first 10 years, you can draw, repay, and redraw as needed. After that, any balance converts to a 20-year payment plan."`,
+**"Is my information safe?"**
+"Your information is protected with bank-grade security — the same level used by major financial institutions. We never sell your data to third parties. You see all your options transparently and choose what works best. There's no obligation."
 
-            simple_chat: `I'm here to help! I can assist you with:
+**"I'm not sure I need this right now"**
+"That's completely fine. You can view your potential offers with just a soft credit check — no commitment, no impact to your credit. Think of it as understanding what's available to you. Many clients find it helpful to know their options before they need them."
 
-• Building HELOC quotes
-• Structuring loan scenarios
-• Calculating CLTV and payments
-• Handling borrower objections
-• Generating client scripts
+**"Why not just refinance?"**
+"A refinance replaces your first mortgage — which means giving up your current rate. A HELOC lets you access equity without touching your first mortgage. If your current rate is below market, a HELOC preserves that advantage."`,
+
+            sales_coach: `**Sales Coach — How to Present This HELOC**
+
+**Loan Structure**
+15 Year Fixed HELOC with 4-year draw window.
+Fully amortized principal and interest payments.
+
+**Strategy Explanation**
+This structure works like a traditional loan — the balance pays down from day one. The borrower gets structured payoff with predictable payments, and the 4-year draw window provides flexibility to access additional funds if needed.
+
+**Suggested Client Script**
+"This program works more like a traditional loan. Instead of interest-only payments, the balance starts paying down right away with principal and interest. That helps build equity faster and keeps everything on a predictable schedule."
+
+**How To Explain The Process**
+"You can view your potential offers with just a soft credit check — no impact to your credit score. Our technology evaluates your eligibility quickly, verifies income securely, and presents you with multiple options. You pick the one that works best for you. Some approvals can fund in as little as 5 days."
+
+**Key Talking Points**
+• Soft credit check — no hard pull to view offers
+• Multiple loan structures — borrower picks the best fit
+• Bank-grade security — data never sold to third parties
+• Borrower controls every decision
+• Funding possible in as fast as 5 days
+• Fixed rate = predictable payments, no rate surprises`,
+
+            approval_process: `**Approval Process — How It Works**
+
+**Step 1 — Application**
+Borrower submits basic information. No commitment required.
+
+**Step 2 — Soft Credit Check**
+We evaluate eligibility using a soft pull — no impact to the borrower's credit score. They can see potential offers without any risk.
+
+**Step 3 — AI-Assisted Underwriting**
+Our platform uses automated underwriting to quickly evaluate the borrower's profile against program eligibility.
+
+**Step 4 — Income Verification**
+Secure bank-grade technology verifies income digitally. This reduces paperwork and speeds up the process.
+
+**Step 5 — Offer Selection**
+The borrower reviews multiple loan structures and chooses the option that best fits their goals. They remain in complete control.
+
+**Step 6 — Final Approval & Closing**
+Final underwriting review and closing. Some loans may fund in as little as 5 days.
+
+**Key Points**
+• No hard credit pull to view initial offers
+• Borrower information is never sold to third parties
+• All options presented transparently
+• Borrower chooses — no pressure, no obligation`,
+
+            simple_chat: `I'm Ezra, your AI loan structuring co-pilot. Here's what I can do:
+
+• **Build Quote** — "Ezra build a quote for [client name]"
+• **Structure Deal** — "Ezra structure this deal" + borrower details
+• **Recommend Program** — "Which program is best for debt consolidation?"
+• **Calculate Payment** — "Calculate payment on $150K at 8.25% for 15 years"
+• **Handle Objections** — "How do I handle the rate concern?"
+• **Client Scripts** — "How should I explain this HELOC?"
+• **Approval Process** — "How does the approval process work?"
+• **Deal Radar** — Scan your pipeline for equity opportunities
 
 What would you like to work on?`
         };
@@ -1740,21 +2081,39 @@ What would you like to work on?`
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 1000));
 
+        // Extract AUTO_FILL_FIELDS from response if present
+        const responseContent = mockResponses[intent] || mockResponses.simple_chat;
+        const autoFillData = extractAutoFillFields(responseContent);
+
         return {
-            content: mockResponses[intent] || mockResponses.simple_chat,
-            autoFillFields: intent === 'quote_creation' ? {
-                borrower_name: 'Maria Lopez',
-                property_value: 850000,
-                existing_mortgage_balance: 420000,
-                heloc_amount: 150000,
-                combined_ltv: 67,
-                interest_rate: 8.25,
-                origination_fee: 995,
-                draw_period_years: 10,
-                repayment_term_years: 20,
-                interest_only_payment_estimate: 1031
-            } : null
+            content: responseContent,
+            autoFillFields: autoFillData
         };
+    }
+
+    // Parse AUTO_FILL_FIELDS JSON from AI response
+    function extractAutoFillFields(response) {
+        const match = response.match(/AUTO_FILL_FIELDS\s*\n?\s*(\{[\s\S]*?\})/);
+        if (!match) return null;
+        try {
+            const parsed = JSON.parse(match[1]);
+            // App-side math validation — recalculate CLTV and payment
+            if (parsed.property_value && parsed.first_mortgage_balance && parsed.heloc_amount) {
+                parsed.combined_ltv = calcCLTV(parsed.first_mortgage_balance, parsed.heloc_amount, parsed.property_value);
+            }
+            if (parsed.heloc_amount && parsed.interest_rate) {
+                if (parsed.payment_type === 'interest_only') {
+                    parsed.monthly_payment_estimate = calcInterestOnlyPayment(parsed.heloc_amount, parsed.interest_rate);
+                } else if (parsed.loan_term) {
+                    const years = parseInt(parsed.loan_term);
+                    if (years) parsed.monthly_payment_estimate = calcAmortizedPayment(parsed.heloc_amount, parsed.interest_rate, years);
+                }
+            }
+            return parsed;
+        } catch (e) {
+            console.warn('Ezra: Could not parse AUTO_FILL_FIELDS', e);
+            return null;
+        }
     }
 
     // ============================================
@@ -1774,7 +2133,7 @@ What would you like to work on?`
         `).join('');
         
         autoFillDiv.innerHTML = `
-            <div class="ezra-message-avatar">🤖</div>
+            <div class="ezra-message-avatar">\u2726</div>
             <div style="flex: 1;">
                 <div class="ezra-autofill-block">
                     <div class="ezra-autofill-header">
@@ -1821,11 +2180,12 @@ What would you like to work on?`
     }
 
     function applyAutoFill(fields) {
-        // Map Ezra fields to form field IDs
+        // Map Ezra fields to form field IDs (supports both old + deal architect keys)
         const fieldMap = {
             borrower_name: 'in-client-name',
             property_value: 'in-home-value',
             existing_mortgage_balance: 'in-mortgage-balance',
+            first_mortgage_balance: 'in-mortgage-balance',
             heloc_amount: 'in-net-cash',
             interest_rate: 'heloc-rate',
             origination_fee: 'origination-fee',
