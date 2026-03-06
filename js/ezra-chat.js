@@ -2164,62 +2164,81 @@ What would you like to work on?`
     }
 
     function formatFieldValue(key, value) {
+        if (typeof value === 'string' && isNaN(value)) return value;
+        if (key === 'payment_type') return String(value).replace(/_/g, ' ');
+        if (key.includes('payment_estimate') || key.includes('payment')) {
+            return '$' + Number(value).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 2}) + '/mo';
+        }
         if (key.includes('amount') || key.includes('value') || key.includes('balance') || key.includes('fee')) {
-            return '$' + value.toLocaleString();
+            return '$' + Number(value).toLocaleString();
         }
         if (key.includes('rate') || key.includes('ltv')) {
             return value + '%';
         }
-        if (key.includes('years')) {
-            return value + ' years';
-        }
-        if (key.includes('payment')) {
-            return '$' + value.toLocaleString() + '/mo';
+        if (key.includes('period') || key.includes('term')) {
+            return value;
         }
         return value;
     }
 
     function applyAutoFill(fields) {
-        // Map Ezra fields to form field IDs (supports both old + deal architect keys)
+        // Map Ezra fields to actual form input IDs
         const fieldMap = {
             borrower_name: 'in-client-name',
             property_value: 'in-home-value',
             existing_mortgage_balance: 'in-mortgage-balance',
             first_mortgage_balance: 'in-mortgage-balance',
-            heloc_amount: 'in-net-cash',
-            interest_rate: 'heloc-rate',
-            origination_fee: 'origination-fee',
-            combined_ltv: 'cltv-display'
+            heloc_amount: 'in-net-cash'
         };
 
         let appliedCount = 0;
-        
+
+        // Helper to set a field and flash it green
+        function setField(id, value) {
+            const field = document.getElementById(id);
+            if (!field) return false;
+            field.value = value;
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            appliedCount++;
+            field.style.transition = 'background 0.3s';
+            field.style.background = '#dcfce7';
+            setTimeout(() => field.style.background = '', 1500);
+            return true;
+        }
+
+        // Apply core form fields
         Object.entries(fields).forEach(([ezraKey, value]) => {
             const formFieldId = fieldMap[ezraKey];
-            if (formFieldId) {
-                const field = document.getElementById(formFieldId);
-                if (field) {
-                    field.value = value;
-                    field.dispatchEvent(new Event('change'));
-                    appliedCount++;
-                    
-                    // Visual feedback
-                    field.style.transition = 'background 0.3s';
-                    field.style.background = '#dcfce7';
-                    setTimeout(() => field.style.background = '', 1000);
-                }
-            }
+            if (formFieldId) setField(formFieldId, value);
         });
 
-        // Show confirmation
-        showToast(`Applied ${appliedCount} fields to quote tool`, 'success');
-        
-        // Trigger calculations
-        if (typeof updateCalculations === 'function') {
-            updateCalculations();
+        // Apply origination fee to tier 2 (the recommended/default tier)
+        if (fields.origination_fee !== undefined) {
+            // Convert flat fee to percentage of loan amount
+            const loanAmt = fields.heloc_amount || 0;
+            if (loanAmt > 0) {
+                const origPct = ((fields.origination_fee / loanAmt) * 100).toFixed(2);
+                setField('t2-orig', origPct);
+            }
         }
+
+        // Trigger full quote recalculation
+        if (typeof updateQuote === 'function') {
+            setTimeout(() => {
+                updateQuote();
+                // Show confirmation after recalc
+                if (typeof showToast === 'function') {
+                    showToast(`Ezra applied ${appliedCount} fields — quote updated`, 'success');
+                }
+            }, 100);
+        } else if (typeof showToast === 'function') {
+            showToast(`Applied ${appliedCount} fields to quote tool`, 'success');
+        }
+
+        // Auto-save
         if (typeof autoSave === 'function') {
-            autoSave();
+            setTimeout(autoSave, 300);
         }
     }
 
