@@ -2961,11 +2961,8 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
 
     // ============================================
     // SUPABASE INTEGRATION
-    // Ezra tables (ezra_conversations, ezra_messages, ezra_user_preferences)
-    // are not yet deployed — skip all DB calls to avoid 400 console noise.
-    // Ezra works fully without persistence (in-memory session).
     // ============================================
-    const EZRA_TABLES_DEPLOYED = false;
+    const EZRA_TABLES_DEPLOYED = true;
 
     async function loadOrCreateConversation() {
         if (!EZRA_TABLES_DEPLOYED || !EzraState.user) return;
