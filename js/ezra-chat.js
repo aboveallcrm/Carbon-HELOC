@@ -2607,6 +2607,13 @@ RESPONSE RULES
             // Hide typing indicator
             hideTypingIndicator();
 
+            // Some handlers (portal paste with tier buttons) handle their own messaging
+            // and return null — skip the rest in that case
+            if (!response) {
+                saveMessageToSupabase('user', message);
+                return;
+            }
+
             // Add assistant response
             addMessage('assistant', response.content, response.metadata);
 
