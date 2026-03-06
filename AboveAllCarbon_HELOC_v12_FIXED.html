@@ -12936,7 +12936,7 @@ Sent via Above All Carbon HELOC Tool`;
                             .select('id')
                             .eq('user_id', userId)
                             .eq('provider', 'heloc_settings')
-                            .single();
+                            .maybeSingle();
 
                         if (existing) {
                             await sb.from('user_integrations')
