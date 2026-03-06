@@ -316,6 +316,7 @@ When generating a quote, return a JSON block labeled AUTO_FILL_FIELDS:
 AUTO_FILL_FIELDS
 {
   "borrower_name": "string",
+  "credit_score": "string or number",
   "property_value": number,
   "first_mortgage_balance": number,
   "heloc_amount": number,
@@ -327,6 +328,19 @@ AUTO_FILL_FIELDS
   "origination_fee": number,
   "payment_type": "principal_and_interest" | "interest_only",
   "monthly_payment_estimate": number
+}
+
+QUOTE TOOL INTERACTION
+When the loan officer says things like "go with option 2", "tier 2 at 20", "use tier 1", "switch to 30 year",
+"highlight that one", or makes follow-up corrections like "change cash to $150K", "make it 15 years",
+include an ACTION_COMMAND JSON block:
+ACTION_COMMAND
+{
+  "action": "select_tier" | "select_term" | "set_field" | "highlight",
+  "tier": "t1" | "t2" | "t3",
+  "term": 30 | 20 | 15 | 10,
+  "field": "field_id",
+  "value": "new_value"
 }
 
 ═══════════════════════════════════════
@@ -360,9 +374,11 @@ RESPONSE RULES
             { label: 'Build Quote', icon: '💰', action: 'build_quote', prompt: 'Ezra build a quote for this borrower' },
             { label: 'Structure Deal', icon: '🏗️', action: 'structure_deal', prompt: 'Ezra structure this deal' },
             { label: 'Recommend Program', icon: '🎯', action: 'recommend_program', prompt: 'Which HELOC program is best for this borrower?' },
+            { label: 'Tier 1', icon: '1️⃣', action: 'tier1', prompt: 'Go with tier 1' },
+            { label: 'Tier 2', icon: '2️⃣', action: 'tier2', prompt: 'Go with tier 2' },
+            { label: 'Tier 3', icon: '3️⃣', action: 'tier3', prompt: 'Go with tier 3' },
             { label: 'Handle Objection', icon: '🛡️', action: 'handle_objection', prompt: 'How do I handle common HELOC objections?' },
-            { label: 'Client Script', icon: '📝', action: 'client_script', prompt: 'How should I explain this HELOC to my client?' },
-            { label: 'Approval Process', icon: '⚡', action: 'approval_process', prompt: 'How does the approval process work?' }
+            { label: 'Client Script', icon: '📝', action: 'client_script', prompt: 'How should I explain this HELOC to my client?' }
         ],
         models: {
             gemini: { name: 'Fast', color: '#4285f4', desc: 'Quick answers & simple questions' },
@@ -2004,10 +2020,25 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
             }
         }
         
+        // Check for quote tool interaction commands (tier/term/field changes)
+        const quoteCmd = parseQuoteCommand(message);
+        if (quoteCmd) {
+            showTypingIndicator();
+            await new Promise(r => setTimeout(r, 300)); // Brief delay for UX
+            hideTypingIndicator();
+            const response = executeQuoteCommand(quoteCmd);
+            if (response) {
+                return {
+                    content: response,
+                    metadata: { model: 'local', intent: 'quote_command' }
+                };
+            }
+        }
+
         // Fall back to AI service for non-command queries
         const intent = determineIntent(message);
         let model = EzraState.currentModel;
-        
+
         if (intent === 'deal_architect' || intent === 'quote_calculation' || intent === 'quote_creation') {
             model = 'claude';
         } else if (intent === 'complex_strategy' || intent === 'program_recommendation') {
@@ -2025,8 +2056,260 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         };
     }
 
+    // ============================================
+    // QUOTE TOOL INTERACTION — Conversational Commands
+    // ============================================
+
+    // Parse natural language commands that interact with the quote tool
+    function parseQuoteCommand(message) {
+        const lower = message.toLowerCase().trim();
+
+        // --- TIER + TERM COMBO (check FIRST — more specific) ---
+        // "tier 2 at 20", "t1 30 year", "tier 3 at 15", "option 1 at 30", "go with tier 2 at 15 year"
+        const comboMatch = lower.match(/(?:tier|option)\s*(\d)\s*(?:at|@|,)?\s*(\d+)\s*(?:year|yr|y)?/i)
+            || lower.match(/\bt(\d)\s+(\d+)\s*(?:year|yr|y)?/i)
+            || lower.match(/(?:go\s*(?:with)?|use|select)\s*(?:tier|option|t)\s*(\d)\s*(?:at|@|,)\s*(\d+)/i);
+        if (comboMatch) {
+            const tierNum = parseInt(comboMatch[1]);
+            const termNum = parseInt(comboMatch[2]);
+            if (tierNum >= 1 && tierNum <= 3 && [5, 10, 15, 20, 30].includes(termNum)) {
+                return { action: 'select_both', tier: 't' + tierNum, term: termNum };
+            }
+        }
+
+        // --- TIER SELECTION ---
+        // "go with tier 1", "use tier 2", "option 1", "go with option 3", "select tier 2"
+        const tierMatch = lower.match(/(?:go\s*(?:with)?|use|select|switch\s*to|pick|choose)\s*(?:tier|option|t)\s*(\d)/i)
+            || lower.match(/^(?:tier|option|t)\s*(\d)$/i);
+        if (tierMatch) {
+            const tierNum = parseInt(tierMatch[1]);
+            if (tierNum >= 1 && tierNum <= 3) {
+                return { action: 'select_tier', tier: 't' + tierNum };
+            }
+        }
+
+        // --- TERM SELECTION ---
+        // "go with 30 year", "switch to 15", "make it 20 year", "30 yr", "use 10 year term"
+        const termMatch = lower.match(/(?:go\s*(?:with)?|use|select|switch\s*to|pick|choose|make\s*it)\s*(\d+)\s*(?:year|yr|y)?(?:\s*term)?/i)
+            || lower.match(/^(\d+)\s*(?:year|yr|y)(?:\s*term)?$/i);
+        if (termMatch) {
+            const termNum = parseInt(termMatch[1]);
+            if ([5, 10, 15, 20, 30].includes(termNum)) {
+                return { action: 'select_term', term: termNum };
+            }
+        }
+
+        // --- HIGHLIGHT / SHOW ---
+        // "highlight that", "highlight tier 2", "show me tier 1", "show me the 30 year"
+        const highlightTierMatch = lower.match(/(?:highlight|show\s*(?:me)?|focus)\s*(?:tier|option|t)\s*(\d)/i);
+        if (highlightTierMatch) {
+            const tierNum = parseInt(highlightTierMatch[1]);
+            if (tierNum >= 1 && tierNum <= 3) {
+                return { action: 'highlight_tier', tier: 't' + tierNum };
+            }
+        }
+        if (/^highlight\s*(?:that|this|it)$/i.test(lower)) {
+            return { action: 'highlight_current' };
+        }
+
+        // --- FIELD ADJUSTMENTS ---
+        // "change cash to $150K", "set home value to $800,000", "make the cash $200k"
+        // "change mortgage to $400k", "adjust the heloc to $100k"
+        const fieldChangeMatch = lower.match(/(?:change|set|make|adjust|update)\s*(?:the\s*)?(.+?)\s*(?:to|=)\s*\$?\s*([0-9,.]+)\s*(k|m)?/i);
+        if (fieldChangeMatch) {
+            let fieldName = fieldChangeMatch[1].trim().toLowerCase();
+            let val = parseFloat(fieldChangeMatch[2].replace(/,/g, ''));
+            if (fieldChangeMatch[3] && fieldChangeMatch[3].toLowerCase() === 'k') val *= 1000;
+            if (fieldChangeMatch[3] && fieldChangeMatch[3].toLowerCase() === 'm') val *= 1000000;
+
+            const fieldAliases = {
+                'cash': 'in-net-cash', 'cash back': 'in-net-cash', 'net cash': 'in-net-cash', 'heloc': 'in-net-cash', 'heloc amount': 'in-net-cash', 'draw': 'in-net-cash',
+                'home value': 'in-home-value', 'property value': 'in-home-value', 'property': 'in-home-value', 'home': 'in-home-value', 'value': 'in-home-value',
+                'mortgage': 'in-mortgage-balance', 'mortgage balance': 'in-mortgage-balance', '1st mortgage': 'in-mortgage-balance', 'first mortgage': 'in-mortgage-balance', 'balance': 'in-mortgage-balance',
+                'payoff': 'in-refi-balance', 'heloc payoff': 'in-refi-balance', 'refi balance': 'in-refi-balance', 'existing heloc': 'in-refi-balance',
+                'credit': 'in-client-credit', 'credit score': 'in-client-credit', 'score': 'in-client-credit', 'fico': 'in-client-credit'
+            };
+
+            const fieldId = fieldAliases[fieldName];
+            if (fieldId) {
+                return { action: 'set_field', fieldId: fieldId, value: val, fieldLabel: fieldName };
+            }
+        }
+
+        // --- INTEREST ONLY TOGGLE ---
+        // "switch to interest only", "make it IO", "turn on interest only"
+        if (/(?:switch\s*to|make\s*it|turn\s*on|enable)\s*(?:interest[\s-]?only|IO|i\.o\.)/i.test(lower)) {
+            return { action: 'toggle_io', enable: true };
+        }
+        if (/(?:switch\s*to|make\s*it|turn\s*off|disable)\s*(?:p&i|p\s*and\s*i|principal|amortiz|fully\s*amort)/i.test(lower)) {
+            return { action: 'toggle_io', enable: false };
+        }
+
+        // --- SHORTHAND ---
+        // "lower the rate", "bump the cash", "more cash", "less origination"
+        if (/(?:lower|reduce|decrease)\s*(?:the\s*)?(?:rate|interest)/i.test(lower)) {
+            return { action: 'nudge', direction: 'lower_rate' };
+        }
+        if (/(?:raise|increase|bump|more)\s*(?:the\s*)?(?:cash|heloc|draw)/i.test(lower)) {
+            return { action: 'nudge', direction: 'more_cash' };
+        }
+        if (/(?:lower|reduce|less)\s*(?:the\s*)?(?:cash|heloc|draw)/i.test(lower)) {
+            return { action: 'nudge', direction: 'less_cash' };
+        }
+
+        return null; // Not a quote command
+    }
+
+    // Execute a parsed quote command and return a response message
+    function executeQuoteCommand(cmd) {
+        const fmt = (n) => '$' + Number(n).toLocaleString();
+        const tierNames = { t1: 'Tier 1', t2: 'Tier 2', t3: 'Tier 3' };
+
+        function setField(id, value) {
+            const field = document.getElementById(id);
+            if (!field) return false;
+            field.value = value;
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            field.style.transition = 'background 0.3s';
+            field.style.background = '#dcfce7';
+            setTimeout(() => field.style.background = '', 1500);
+            return true;
+        }
+
+        function refreshQuote() {
+            if (typeof updateQuote === 'function') {
+                setTimeout(() => updateQuote(), 50);
+            }
+        }
+
+        function readSnapshot() {
+            const g = (id) => { const el = document.getElementById(id); return el ? (el.value || el.innerText || '').trim() : ''; };
+            return {
+                rate: g('snap-rate'),
+                term: g('snap-term'),
+                payment: g('snap-payment'),
+                totalLoan: g('snap-total-loan'),
+                origPts: g('snap-orig-perc'),
+                origAmt: g('snap-orig-amt'),
+                tier: document.getElementById('rec-tier-select')?.value || 't2'
+            };
+        }
+
+        function highlightTierTable(tierId) {
+            // Flash the tier's table with a gold border
+            const tableEl = document.getElementById(tierId + '-table');
+            if (tableEl) {
+                tableEl.style.transition = 'box-shadow 0.3s';
+                tableEl.style.boxShadow = '0 0 12px rgba(197,160,89,0.6)';
+                setTimeout(() => { tableEl.style.boxShadow = ''; }, 3000);
+            }
+            // Scroll the matrix into view
+            const matrixEl = document.querySelector('.matrix-container');
+            if (matrixEl) matrixEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        switch (cmd.action) {
+            case 'select_tier': {
+                const sel = document.getElementById('rec-tier-select');
+                if (sel) { sel.value = cmd.tier; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+                refreshQuote();
+                highlightTierTable(cmd.tier);
+                const snap = readSnapshot();
+                return `**Done — switched to ${tierNames[cmd.tier]}**\n\nUpdated snapshot:\n• Rate: ${snap.rate}% | Term: ${snap.term}yr | Payment: ${snap.payment}\n• Origination: ${snap.origPts}% (${snap.origAmt}) | Total Loan: ${snap.totalLoan}\n\nThe quote tool has been updated. Want me to adjust the term too?`;
+            }
+            case 'select_term': {
+                const sel = document.getElementById('rec-term-select');
+                if (sel) { sel.value = String(cmd.term); sel.dispatchEvent(new Event('change', { bubbles: true })); }
+                refreshQuote();
+                const snap = readSnapshot();
+                return `**Done — switched to ${cmd.term}-Year term**\n\nUpdated snapshot:\n• Rate: ${snap.rate}% | Term: ${snap.term}yr | Payment: ${snap.payment}\n• Origination: ${snap.origPts}% (${snap.origAmt}) | Total Loan: ${snap.totalLoan}\n\nQuote updated. Need to change the tier or adjust any values?`;
+            }
+            case 'select_both': {
+                const tierSel = document.getElementById('rec-tier-select');
+                const termSel = document.getElementById('rec-term-select');
+                if (tierSel) { tierSel.value = cmd.tier; tierSel.dispatchEvent(new Event('change', { bubbles: true })); }
+                if (termSel) { termSel.value = String(cmd.term); termSel.dispatchEvent(new Event('change', { bubbles: true })); }
+                refreshQuote();
+                highlightTierTable(cmd.tier);
+                const snap = readSnapshot();
+                return `**Done — ${tierNames[cmd.tier]} at ${cmd.term} years**\n\nUpdated snapshot:\n• Rate: ${snap.rate}% | Term: ${snap.term}yr | Payment: ${snap.payment}\n• Origination: ${snap.origPts}% (${snap.origAmt}) | Total Loan: ${snap.totalLoan}\n\nQuote updated and highlighted. Anything else to adjust?`;
+            }
+            case 'highlight_tier': {
+                highlightTierTable(cmd.tier);
+                const g = (id) => { const el = document.getElementById(id); return el ? el.innerText.trim() : ''; };
+                return `**Highlighted ${tierNames[cmd.tier]}**\n\n| Term | Rate | Payment |\n|------|------|--------|\n| 30yr | ${g('out-' + cmd.tier + '-30-rate')}% | ${g('out-' + cmd.tier + '-30-pay')} |\n| 20yr | ${g('out-' + cmd.tier + '-20-rate')}% | ${g('out-' + cmd.tier + '-20-pay')} |\n| 15yr | ${g('out-' + cmd.tier + '-15-rate')}% | ${g('out-' + cmd.tier + '-15-pay')} |\n| 10yr | ${g('out-' + cmd.tier + '-10-rate')}% | ${g('out-' + cmd.tier + '-10-pay')} |\n\nOrigination: ${g('out-' + cmd.tier + '-orig')}%\n\nWant to go with this tier? Just say "use ${tierNames[cmd.tier].toLowerCase()}".`;
+            }
+            case 'highlight_current': {
+                const currentTier = document.getElementById('rec-tier-select')?.value || 't2';
+                highlightTierTable(currentTier);
+                return `**Highlighted current recommendation (${tierNames[currentTier]})**\n\nThe recommended tier is now scrolled into view with a gold highlight. Want to switch to a different tier?`;
+            }
+            case 'set_field': {
+                setField(cmd.fieldId, cmd.value);
+                refreshQuote();
+                // Read updated snapshot after a brief delay
+                setTimeout(() => {}, 100);
+                const snap = readSnapshot();
+                const displayVal = cmd.fieldId === 'in-client-credit' ? String(cmd.value) : fmt(cmd.value);
+                return `**Done — ${cmd.fieldLabel} updated to ${displayVal}**\n\nQuote recalculated:\n• Rate: ${snap.rate}% | Term: ${snap.term}yr | Payment: ${snap.payment}\n• Total Loan: ${snap.totalLoan}\n\nAnything else to adjust?`;
+            }
+            case 'toggle_io': {
+                const toggle = document.getElementById('toggle-interest-only');
+                if (toggle) {
+                    const isActive = toggle.classList.contains('active');
+                    if (cmd.enable && !isActive) toggle.click();
+                    if (!cmd.enable && isActive) toggle.click();
+                }
+                refreshQuote();
+                const snap = readSnapshot();
+                return cmd.enable
+                    ? `**Switched to Interest-Only payments**\n\nPayments now show interest-only amounts (draw period).\n• Payment: ${snap.payment}\n\nRemember: after the draw period ends, payments convert to fully amortized P&I.`
+                    : `**Switched to Principal & Interest payments**\n\nPayments now show fully amortized P&I.\n• Payment: ${snap.payment}`;
+            }
+            case 'nudge': {
+                if (cmd.direction === 'lower_rate') {
+                    // Move to tier 1 (lower rate, higher points)
+                    const sel = document.getElementById('rec-tier-select');
+                    if (sel) { sel.value = 't1'; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+                    refreshQuote();
+                    highlightTierTable('t1');
+                    const snap = readSnapshot();
+                    return `**Switched to Tier 1 for the lowest rate**\n\nTier 1 offers the lowest rates with higher origination points.\n• Rate: ${snap.rate}% | Payment: ${snap.payment}\n• Origination: ${snap.origPts}% (${snap.origAmt})\n\nThe trade-off is higher upfront cost for a lower monthly payment.`;
+                }
+                if (cmd.direction === 'more_cash') {
+                    const el = document.getElementById('in-net-cash');
+                    const current = parseFloat(el?.value) || 0;
+                    const newVal = current + 25000;
+                    setField('in-net-cash', newVal);
+                    refreshQuote();
+                    const snap = readSnapshot();
+                    return `**Cash increased by $25,000 → ${fmt(newVal)}**\n\n• Payment: ${snap.payment} | Total Loan: ${snap.totalLoan}\n\nSay "more cash" again or specify an exact amount.`;
+                }
+                if (cmd.direction === 'less_cash') {
+                    const el = document.getElementById('in-net-cash');
+                    const current = parseFloat(el?.value) || 0;
+                    const newVal = Math.max(0, current - 25000);
+                    setField('in-net-cash', newVal);
+                    refreshQuote();
+                    const snap = readSnapshot();
+                    return `**Cash decreased by $25,000 → ${fmt(newVal)}**\n\n• Payment: ${snap.payment} | Total Loan: ${snap.totalLoan}`;
+                }
+                return 'I can adjust the quote — tell me what to change specifically.';
+            }
+            default:
+                return null;
+        }
+    }
+
     function determineIntent(message) {
         const lower = message.toLowerCase();
+
+        // Check for quote tool interaction commands FIRST
+        const quoteCmd = parseQuoteCommand(message);
+        if (quoteCmd) {
+            return 'quote_command';
+        }
 
         // Deal architect — structured deal building
         if (/structure this deal|build.*quote for|ezra structure|ezra build/i.test(lower)) {
@@ -2045,7 +2328,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
             return 'program_recommendation';
         }
         // Deal strategy
-        if (/structure|strategy|optimize|approval|probability/i.test(lower)) {
+        if (/strategy|optimize|approval|probability/i.test(lower)) {
             return 'complex_strategy';
         }
         // Objection handling
@@ -2210,6 +2493,7 @@ ${recReason}
 AUTO_FILL_FIELDS
 ${JSON.stringify({
     borrower_name: ctx.clientName,
+    credit_score: ctx.creditScore !== 'Not provided' ? ctx.creditScore : undefined,
     property_value: ctx.homeValue,
     first_mortgage_balance: ctx.mortgageBalance,
     heloc_amount: ctx.helocAmount,
@@ -2257,6 +2541,7 @@ Click **Apply to Quote Tool** below to auto-fill these values.${cltvWarning}
 AUTO_FILL_FIELDS
 ${JSON.stringify({
     borrower_name: ctx.clientName,
+    credit_score: ctx.creditScore !== 'Not provided' ? ctx.creditScore : undefined,
     property_value: ctx.homeValue,
     first_mortgage_balance: ctx.mortgageBalance,
     heloc_amount: ctx.helocAmount,
@@ -2444,6 +2729,13 @@ Here's what I can do:
 • **Handle Objections** — scripts for common concerns
 • **Client Scripts** — word-for-word presentation scripts
 
+**Quick Commands** — talk to me like a colleague:
+• "Go with tier 2" or "tier 1 at 30" — switch tiers/terms
+• "Change cash to $150K" — adjust any field
+• "Switch to interest only" — toggle IO mode
+• "Show me tier 3" — highlight a tier's rates
+• "More cash" / "Lower the rate" — quick adjustments
+
 ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal"** or **"Build Quote"** for a full analysis.' : 'Enter borrower details in the quote form, then ask me to structure the deal.'}`;
 
         // Simulate brief delay for UX
@@ -2560,7 +2852,8 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
             property_value: 'in-home-value',
             existing_mortgage_balance: 'in-mortgage-balance',
             first_mortgage_balance: 'in-mortgage-balance',
-            heloc_amount: 'in-net-cash'
+            heloc_amount: 'in-net-cash',
+            credit_score: 'in-client-credit'
         };
 
         let appliedCount = 0;
