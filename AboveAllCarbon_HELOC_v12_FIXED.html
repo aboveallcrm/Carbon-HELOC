@@ -1612,12 +1612,65 @@
             letter-spacing: 0.5px;
         }
 
+        .tier-card .tier-price {
+            margin-bottom: 4px;
+        }
+
+        .tier-card .tier-price-dollar {
+            font-family: var(--font-heading);
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.5);
+            vertical-align: top;
+            line-height: 1.8;
+        }
+
+        .tier-card .tier-price-amount {
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: -0.5px;
+        }
+
+        .tier-card .tier-price-period {
+            font-family: var(--font-heading);
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-left: 1px;
+        }
+
+        .tier-card.current .tier-price-amount {
+            color: var(--accent-color);
+        }
+
         .tier-card .tier-tagline {
             font-family: var(--font-heading);
             font-size: 9px;
             color: rgba(255, 255, 255, 0.4);
             font-style: italic;
             margin-bottom: 6px;
+        }
+
+        .tier-card .tier-tools {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .tier-card .tier-tool-tag {
+            background: rgba(197, 160, 89, 0.1);
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            color: var(--accent-color);
+            font-family: var(--font-heading);
+            font-size: 7px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
 
         .tier-card .tier-time-badge {
@@ -4059,7 +4112,7 @@
             <p class="modal-subtitle">Top-producing LOs automate what slows them down</p>
             <div class="tier-grid" id="upgrade-tier-grid"></div>
             <div class="upgrade-cta">
-                <p>The average LO spends 45 minutes per quote manually. You don't have to.</p>
+                <p>One extra deal a month pays for every tier. How many are you leaving on the table?</p>
                 <a href="mailto:barraganmortgage@gmail.com?subject=Upgrade%20My%20Carbon%20HELOC%20Plan">Upgrade Now</a>
             </div>
         </div>
@@ -4171,30 +4224,43 @@
                         Copy</button>
                 </div>
                 <div class="esm-options" id="esm-options">
+                    <div class="esm-option" onclick="esmSendGmail()">
+                        <div class="esm-icon" style="background:linear-gradient(135deg,#ea4335,#c5221f);">📧</div>
+                        <div class="esm-text">
+                            <h4>Send via Gmail</h4>
+                            <p>Copies rich HTML email to clipboard and opens Gmail compose. Paste with Ctrl+V.</p>
+                        </div>
+                        <span class="esm-arrow">&#8250;</span>
+                    </div>
+                    <div class="esm-option" id="esm-ghl-option" onclick="esmSendGHL()" style="display:none;">
+                        <div class="esm-icon" style="background:linear-gradient(135deg,#10b981,#059669);">📧</div>
+                        <div class="esm-text">
+                            <h4>Send via Go High Level</h4>
+                            <p>Send rich HTML email directly through GHL API with contact sync and tracking.</p>
+                        </div>
+                        <span class="esm-arrow">&#8250;</span>
+                    </div>
+                    <div class="esm-option" id="esm-bonzo-option" onclick="esmSendBonzoThenGmail()" style="display:none;">
+                        <div class="esm-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">📧</div>
+                        <div class="esm-text">
+                            <h4>Send via Bonzo + Gmail</h4>
+                            <p>Creates contact in Bonzo with tags, then opens Gmail with rich HTML to send.</p>
+                        </div>
+                        <span class="esm-arrow">&#8250;</span>
+                    </div>
                     <div class="esm-option" onclick="esmSendOutlook()">
                         <div class="esm-icon outlook">📧</div>
                         <div class="esm-text">
                             <h4>Open in Outlook</h4>
-                            <p>Opens Outlook with template pre-filled. Screenshot copied to clipboard — paste with
-                                Ctrl+V.</p>
+                            <p>Copies rich HTML email to clipboard and opens Outlook. Paste with Ctrl+V.</p>
                         </div>
                         <span class="esm-arrow">&#8250;</span>
                     </div>
                     <div class="esm-option" onclick="esmShowRichHTML()">
                         <div class="esm-icon html">🎨</div>
                         <div class="esm-text">
-                            <h4>Rich HTML Email</h4>
-                            <p>Beautiful branded email with quote image inline. Copy the HTML to paste into any email
-                                client.</p>
-                        </div>
-                        <span class="esm-arrow">&#8250;</span>
-                    </div>
-                    <div class="esm-option" id="esm-crm-option" onclick="esmSendViaCRM()">
-                        <div class="esm-icon crm">🔗</div>
-                        <div class="esm-text">
-                            <h4 id="esm-crm-title">Send via CRM</h4>
-                            <p id="esm-crm-desc">Send directly through your connected CRM (Bonzo or GHL) with contact
-                                sync and tracking.</p>
+                            <h4>Preview & Copy Rich HTML</h4>
+                            <p>Preview the professional email and copy HTML to paste into any email client.</p>
                         </div>
                         <span class="esm-arrow">&#8250;</span>
                     </div>
@@ -5019,6 +5085,28 @@
                     <p style="font-size: 7px; color: rgba(255,255,255,0.4); margin: 6px 0 0 0;">When enabled, you'll
                         receive an email at your account address each time a lead is received via webhook.</p>
                 </div>
+
+                <!-- Email Send Preferences -->
+                <div
+                    style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(59,130,246,0.2);">
+                    <h5 style="font-family: var(--font-heading); font-size: 10px; color: #60a5fa; margin: 0 0 8px 0;">✉️
+                        Email Send Preferences</h5>
+                    <div class="input-group">
+                        <div class="input-field">
+                            <label>Default Email Client</label>
+                            <select id="pref-email-client" onchange="localStorage.setItem('emailPref',this.value)"
+                                style="width:100%;border-radius:5px;border:1px solid rgba(255,255,255,0.2);padding:8px;font-family:var(--font-body);font-size:11px;background:#1e293b;color:white;">
+                                <option value="gmail">Gmail</option>
+                                <option value="outlook">Outlook (Desktop)</option>
+                                <option value="ghl">Go High Level (API)</option>
+                                <option value="bonzo-gmail">Bonzo + Gmail</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p style="font-size: 7px; color: rgba(255,255,255,0.4); margin: 6px 0 0 0;">
+                        Gmail and Outlook copy the rich HTML email to clipboard and open compose — paste with Ctrl+V.
+                        GHL sends directly via API. Google OAuth for direct send coming soon.</p>
+                </div>
             </div>
             <div id="company-settings-section" class="control-section locked-section locked"
                 style="background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(109,40,217,0.1)); border-color: #8b5cf6;"
@@ -5160,8 +5248,17 @@
                             placeholder="client@email.com"></div>
                     <div class="input-field"><label>Client Phone</label><input type="tel" id="client-phone"
                             placeholder="(555) 123-4567"></div>
-                    <div class="input-field"><label>Email Subject</label><input type="text" id="email-subject"
-                            value="Your Personalized HELOC Quote - {{CLIENT_NAME}}"></div>
+                    <div class="input-field"><label>Email Subject</label>
+                        <select id="email-subject-preset" onchange="applySubjectPreset(this.value)"
+                            style="width:100%;border-radius:5px;border:1px solid rgba(255,255,255,0.2);padding:8px;font-family:var(--font-body);font-size:11px;background:#1e293b;color:white;margin-bottom:4px;">
+                            <option value="Your HELOC quote is ready, {{CLIENT_NAME}}">Your HELOC quote is ready, {{CLIENT_NAME}}</option>
+                            <option value="{{CLIENT_NAME}}, here are your HELOC numbers">{{CLIENT_NAME}}, here are your HELOC numbers</option>
+                            <option value="HELOC options prepared for {{CLIENT_NAME}}">HELOC options prepared for {{CLIENT_NAME}}</option>
+                            <option value="Following up on your home equity inquiry">Following up on your home equity inquiry</option>
+                            <option value="custom">Custom subject line...</option>
+                        </select>
+                        <input type="text" id="email-subject" value="Your HELOC quote is ready, {{CLIENT_NAME}}" style="display:none;" placeholder="Type your custom subject line">
+                    </div>
                 </div>
                 <div class="template-box">
                     <h5>📧 Email Body Template</h5>
@@ -5185,16 +5282,12 @@ Best regards,
                 </div>
                 <div class="quick-actions" style="margin-top: 15px;">
                     <button class="btn btn-email" onclick="sendViaOutlook()">📧 Outlook</button>
-                    <button class="btn btn-email" style="background: #ea4335;" onclick="sendViaGmail()">📧
-                        Gmail</button>
+                    <button class="btn btn-email" style="background: #ea4335;" onclick="sendViaGmail()">📧 Gmail</button>
                     <button class="btn btn-email" style="background: #10b981;" onclick="sendViaGHL()">📧 GHL</button>
-                    <button class="btn btn-email" style="background: #6366f1;" onclick="sendViaBonzo()">📧
-                        Bonzo</button>
-                    <button class="btn btn-copy" onclick="copyEmailBody()">📋 Copy Body</button>
-                    <button class="btn btn-copy" style="background: #f97316;" onclick="captureAndCopy()">📸
-                        Screenshot</button>
-                    <button class="btn btn-copy" style="background: #0ea5e9;" onclick="captureAndEmail()">📸 Screenshot
-                        &amp; Email</button>
+                    <button class="btn btn-email" style="background: #f59e0b;" onclick="sendViaBonzo()">📧 Bonzo</button>
+                    <button class="btn btn-copy" onclick="copyRichEmailHTML()">📋 Copy Rich HTML</button>
+                    <button class="btn btn-copy" style="background: #f97316;" onclick="captureAndCopy()">📸 Screenshot</button>
+                    <button class="btn btn-copy" style="background: #0ea5e9;" onclick="captureAndEmail()">📸 Screenshot &amp; Email</button>
                 </div>
                 <!-- Client Link Section (Platinum+ only) -->
                 <div id="client-link-section"
@@ -6745,9 +6838,12 @@ Best regards,
             const tierFeatures = {
                 carbon: {
                     tagline: 'Get Started',
-                    pitch: 'Replace your spreadsheet today.',
+                    pitch: 'Replace your spreadsheet. Look like a pro.',
+                    price: 297,
+                    tools: ['Carbon HELOC', 'Carbon Refinance Architect'],
                     features: [
-                        { name: 'Quote Builder — 3 tier pricing', has: true },
+                        { name: 'HELOC quote builder — 3 tier pricing', has: true },
+                        { name: 'Refinance Architect — refi analysis', has: true },
                         { name: 'PDF & screenshot export', has: true },
                         { name: 'LO profile & branding', has: true },
                         { name: 'Rate sheets', has: true },
@@ -6760,7 +6856,9 @@ Best regards,
                 titanium: {
                     tagline: 'Close More Deals',
                     pitch: 'Stop losing leads. Start closing them.',
+                    price: 597,
                     timeSaved: 'Save 30+ min/day',
+                    tools: ['Everything in Carbon'],
                     features: [
                         { name: 'Everything in Carbon', has: true },
                         { name: 'Leads pipeline — track every borrower', has: true, isNew: true },
@@ -6775,7 +6873,9 @@ Best regards,
                 platinum: {
                     tagline: 'Work Smarter, Not Harder',
                     pitch: 'Every minute saved is another client you can call.',
+                    price: 797,
                     timeSaved: 'Save 2+ hours/day',
+                    tools: ['Everything in Titanium'],
                     features: [
                         { name: 'Everything in Titanium', has: true },
                         { name: 'Paste Rates — import Figure in seconds', has: true, isNew: true },
@@ -6789,7 +6889,9 @@ Best regards,
                 obsidian: {
                     tagline: 'Your Brand, Your Business',
                     pitch: 'Make it yours. Scale it.',
+                    price: 1297,
                     timeSaved: 'Unlimited AI',
+                    tools: ['Everything in Platinum'],
                     features: [
                         { name: 'Everything in Platinum', has: true },
                         { name: 'White label — your logo & colors', has: true, isNew: true },
@@ -6801,11 +6903,13 @@ Best regards,
                 },
                 diamond: {
                     tagline: 'All Access',
-                    pitch: 'Everything. No limits.',
+                    pitch: 'Everything. No limits. Ever.',
+                    price: 1999,
+                    tools: ['Everything in Obsidian'],
                     features: [
                         { name: 'Everything in Obsidian', has: true },
                         { name: 'Admin dashboard', has: true, isNew: true },
-                        { name: 'All future features', has: true, isNew: true },
+                        { name: 'All future tools & features', has: true, isNew: true },
                         { name: 'Beta access & roadmap input', has: true, isNew: true }
                     ]
                 }
@@ -6829,17 +6933,23 @@ Best regards,
                 name.textContent = tier.toUpperCase();
                 if (idx === currentLevel) name.textContent += ' (You)';
 
+                card.appendChild(dot);
+                card.appendChild(name);
+
+                // Price
+                if (info.price) {
+                    const priceEl = document.createElement('div');
+                    priceEl.className = 'tier-price';
+                    priceEl.innerHTML = '<span class="tier-price-dollar">$</span><span class="tier-price-amount">' + info.price.toLocaleString() + '</span><span class="tier-price-period">/mo</span>';
+                    card.appendChild(priceEl);
+                }
+
                 // Tagline
                 if (info.tagline) {
                     const tagline = document.createElement('div');
                     tagline.className = 'tier-tagline';
                     tagline.textContent = info.tagline;
-                    card.appendChild(dot);
-                    card.appendChild(name);
                     card.appendChild(tagline);
-                } else {
-                    card.appendChild(dot);
-                    card.appendChild(name);
                 }
 
                 // Time-saved badge (psychological hook)
@@ -6848,6 +6958,14 @@ Best regards,
                     timeBadge.className = 'tier-time-badge';
                     timeBadge.textContent = info.timeSaved;
                     card.appendChild(timeBadge);
+                }
+
+                // Tools included
+                if (info.tools && info.tools.length > 0) {
+                    const toolsEl = document.createElement('div');
+                    toolsEl.className = 'tier-tools';
+                    toolsEl.innerHTML = info.tools.map(function(t) { return '<span class="tier-tool-tag">' + t + '</span>'; }).join('');
+                    card.appendChild(toolsEl);
                 }
 
                 const list = document.createElement('ul');
@@ -10939,6 +11057,116 @@ Generate the sales strategy and phone script now.`;
             return processed;
         }
 
+        function buildRichEmailHTML(options) {
+            var opts = options || {};
+            var data = getEmailData();
+            var loHeadshot = document.getElementById('lo-headshot-url')?.value || '';
+            var loLogo = document.getElementById('lo-logo-url')?.value || '';
+            var applyLink = document.getElementById('wl-apply-link')?.value || '';
+            var calendarLink = opts.calendarLink || document.getElementById('ghl-calendar-link')?.value || '';
+            var quoteLink = data.QUOTE_LINK;
+            var hasQuoteLink = quoteLink && !quoteLink.includes('[Generate');
+            var screenshotDataUrl = opts.screenshotDataUrl || _esmScreenshotDataUrl || null;
+            var trackingPixel = opts.trackingPixelUrl
+                ? '<img src="' + opts.trackingPixelUrl + '" width="1" height="1" style="display:none;" alt="" />'
+                : '';
+            var calendarBtn = calendarLink
+                ? '<div style="text-align:center;margin:8px 0 16px;"><a href="' + calendarLink + '" style="display:inline-block;background:#1e3a5f;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-size:13px;font-weight:700;">📅 Book a Call</a></div>'
+                : '';
+
+            return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>' +
+                '<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">' +
+                '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:20px 0;">' +
+                '<tr><td align="center">' +
+                '<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">' +
+                // Header
+                '<tr><td style="background:linear-gradient(135deg,#1e293b,#0f172a);padding:24px 30px;text-align:center;">' +
+                (loLogo ? '<img src="' + loLogo + '" alt="Logo" style="max-height:40px;margin-bottom:10px;"><br>' : '') +
+                '<h1 style="color:#ffffff;font-size:22px;margin:0;font-weight:800;">Your Personalized HELOC Quote</h1>' +
+                '<p style="color:rgba(255,255,255,0.7);font-size:13px;margin:6px 0 0;">Prepared exclusively for ' + data.CLIENT_NAME + '</p>' +
+                '</td></tr>' +
+                // Greeting
+                '<tr><td style="padding:28px 30px 0;">' +
+                '<p style="font-size:15px;color:#334155;margin:0 0 16px;line-height:1.6;">Hi ' + data.CLIENT_NAME + ',</p>' +
+                '<p style="font-size:14px;color:#475569;margin:0 0 20px;line-height:1.6;">Thank you for your interest! I\'ve prepared a personalized HELOC quote based on your property and financial situation. Here are the highlights:</p>' +
+                '</td></tr>' +
+                // Key Numbers
+                '<tr><td style="padding:0 30px;">' +
+                '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden;">' +
+                '<tr>' +
+                '<td style="padding:16px 20px;text-align:center;width:50%;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">' +
+                '<div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Property Value</div>' +
+                '<div style="font-size:20px;font-weight:800;color:#1e293b;">' + data.HOME_VALUE + '</div>' +
+                '</td>' +
+                '<td style="padding:16px 20px;text-align:center;width:50%;border-bottom:1px solid #e2e8f0;">' +
+                '<div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Cash Available</div>' +
+                '<div style="font-size:20px;font-weight:800;color:#10b981;">' + data.NET_CASH + '</div>' +
+                '</td>' +
+                '</tr><tr>' +
+                '<td style="padding:16px 20px;text-align:center;width:50%;border-right:1px solid #e2e8f0;">' +
+                '<div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Rate</div>' +
+                '<div style="font-size:20px;font-weight:800;color:#1e293b;">' + data.REC_RATE + '%</div>' +
+                '</td>' +
+                '<td style="padding:16px 20px;text-align:center;width:50%;">' +
+                '<div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Monthly Payment</div>' +
+                '<div style="font-size:20px;font-weight:800;color:#1e293b;">' + data.REC_PAYMENT + '</div>' +
+                '</td>' +
+                '</tr></table>' +
+                '</td></tr>' +
+                // Screenshot
+                '<tr><td style="padding:20px 30px;">' +
+                '<p style="font-size:12px;color:#94a3b8;text-align:center;margin:0 0 10px;text-transform:uppercase;letter-spacing:0.5px;">Full Quote Details</p>' +
+                (screenshotDataUrl
+                    ? '<img src="' + screenshotDataUrl + '" alt="HELOC Quote" style="width:100%;border-radius:8px;border:1px solid #e2e8f0;">'
+                    : '<p style="font-size:13px;color:#94a3b8;text-align:center;padding:40px;background:#f8fafc;border-radius:8px;border:1px dashed #e2e8f0;">[Quote screenshot]</p>') +
+                '</td></tr>' +
+                // CTA Buttons
+                '<tr><td style="padding:0 30px 24px;text-align:center;">' +
+                (hasQuoteLink ? '<a href="' + quoteLink + '" style="display:inline-block;background:#0ea5e9;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;margin:0 6px 8px;">📊 View Interactive Quote</a>' : '') +
+                (applyLink ? '<a href="' + applyLink + '" style="display:inline-block;background:#10b981;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;margin:0 6px 8px;">🚀 Start Application</a>' : '') +
+                calendarBtn +
+                '</td></tr>' +
+                // LO Footer
+                '<tr><td style="background:#f8fafc;padding:20px 30px;border-top:1px solid #e2e8f0;">' +
+                '<table width="100%" cellpadding="0" cellspacing="0"><tr>' +
+                (loHeadshot ? '<td width="60" style="vertical-align:top;padding-right:14px;"><img src="' + loHeadshot + '" alt="" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0;"></td>' : '') +
+                '<td style="vertical-align:top;">' +
+                '<div style="font-size:14px;font-weight:700;color:#1e293b;">' + data.LO_NAME + '</div>' +
+                '<div style="font-size:12px;color:#64748b;margin-top:2px;">' + (document.getElementById('lo-title')?.value || 'Loan Officer') + '</div>' +
+                '<div style="font-size:12px;color:#64748b;margin-top:4px;">📞 ' + data.LO_PHONE + ' &nbsp;|&nbsp; ✉️ ' + data.LO_EMAIL + '</div>' +
+                '</td></tr></table>' +
+                '</td></tr>' +
+                // Legal + tracking pixel
+                '<tr><td style="padding:14px 30px;background:#f1f5f9;text-align:center;">' +
+                '<p style="font-size:9px;color:#94a3b8;margin:0;line-height:1.5;">This quote is an estimate and does not represent a commitment to lend. All terms are subject to underwriting approval. NMLS #' + (document.getElementById('lo-nmls')?.value || '') + '</p>' +
+                trackingPixel +
+                '</td></tr>' +
+                '</table></td></tr></table></body></html>';
+        }
+
+        function applySubjectPreset(value) {
+            var customInput = document.getElementById('email-subject');
+            if (value === 'custom') {
+                customInput.style.display = 'block';
+                customInput.value = '';
+                customInput.focus();
+            } else {
+                customInput.style.display = 'none';
+                customInput.value = value;
+            }
+        }
+
+        async function copyRichHTMLToClipboard(html) {
+            try {
+                var blob = new Blob([html], { type: 'text/html' });
+                var textBlob = new Blob([html], { type: 'text/plain' });
+                await navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': textBlob })]);
+                return true;
+            } catch (e) {
+                try { await navigator.clipboard.writeText(html); return true; } catch (e2) { return false; }
+            }
+        }
+
         function checkTemplateBeforeSend() {
             const subject = processTemplate(document.getElementById('email-subject').value);
             const body = processTemplate(document.getElementById('email-template').value);
@@ -10959,16 +11187,29 @@ Generate the sales strategy and phone script now.`;
             return { subject, body, to };
         }
 
-        function sendViaOutlook() {
+        async function sendViaOutlook() {
             const prepared = checkTemplateBeforeSend();
             if (!prepared) return;
-            window.open('mailto:' + prepared.to + '?subject=' + encodeURIComponent(prepared.subject) + '&body=' + encodeURIComponent(prepared.body));
+            var html = buildRichEmailHTML();
+            await copyRichHTMLToClipboard(html);
+            window.open('mailto:' + prepared.to + '?subject=' + encodeURIComponent(prepared.subject));
+            showToast('Rich HTML email copied! Paste into Outlook with Ctrl+V.', 'info', 5000);
         }
 
-        function sendViaGmail() {
+        async function sendViaGmail() {
             const prepared = checkTemplateBeforeSend();
             if (!prepared) return;
-            window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(prepared.to) + '&su=' + encodeURIComponent(prepared.subject) + '&body=' + encodeURIComponent(prepared.body));
+            var html = buildRichEmailHTML();
+            await copyRichHTMLToClipboard(html);
+            window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(prepared.to) + '&su=' + encodeURIComponent(prepared.subject));
+            showToast('Rich HTML email copied! Paste into Gmail with Ctrl+V.', 'info', 5000);
+        }
+
+        async function copyRichEmailHTML() {
+            var html = buildRichEmailHTML();
+            var ok = await copyRichHTMLToClipboard(html);
+            if (ok) showToast('Rich HTML email copied! Paste with Ctrl+V.', 'success');
+            else showToast('Copy failed — try the Email modal instead.', 'error');
         }
 
         async function sendViaGHL() {
@@ -11203,23 +11444,13 @@ Sent via Above All Carbon HELOC Tool`;
                     });
                 } catch (taskErr) { console.log('Task error:', taskErr); }
 
-                // Step 7: Send email via GHL
+                // Step 7: Send email via GHL (rich HTML template)
                 statusDiv.innerHTML = '<div style="font-size:24px;margin-bottom:10px;">📧</div>Sending email...';
 
                 const emailSubject = processTemplate(document.getElementById('email-subject').value);
-                const emailBody = processTemplate(document.getElementById('email-template').value);
 
-                let calendarButton = '';
-                if (calendarLink) {
-                    calendarButton = `
-                <div style="text-align: center; margin: 15px 0;">
-                    <a href="${calendarLink}" style="display: inline-block; background: #1a365d; color: white; padding: 10px 25px; text-decoration: none; border-radius: 20px; font-weight: bold;">📅 Book a Call</a>
-                </div>
-            `;
-                }
-
-                // Look up lead_id for tracking pixel (match by email)
-                let trackingPixel = '';
+                // Look up lead_id for tracking pixel
+                let trackingPixelUrl = '';
                 if (window._supabase && window.currentUserId && contactEmail) {
                     try {
                         const { data: matchedLead } = await window._supabase.from('leads')
@@ -11227,27 +11458,16 @@ Sent via Above All Carbon HELOC Tool`;
                             .ilike('email', contactEmail.toLowerCase().trim())
                             .limit(1).maybeSingle();
                         if (matchedLead) {
-                            const pixelUrl = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/track-quote-view?lead_id=' + matchedLead.id + '&user_id=' + window.currentUserId + '&event=quote_opened';
-                            trackingPixel = '<img src="' + pixelUrl + '" width="1" height="1" style="display:none;" alt="" />';
+                            trackingPixelUrl = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/track-quote-view?lead_id=' + matchedLead.id + '&user_id=' + window.currentUserId + '&event=quote_opened';
                         }
                     } catch (tpErr) { console.log('Tracking pixel lookup skipped:', tpErr.message); }
                 }
 
-                const emailHtml = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <p>${emailBody.replace(/\n/g, '<br>')}</p>
-                ${imageBase64 ? `
-                <div style="margin: 20px 0; text-align: center;">
-                    <img src="${imageBase64}" alt="Your HELOC Quote" style="max-width: 100%; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                </div>
-                ` : ''}
-                <div style="text-align: center; margin: 25px 0;">
-                    <a href="${document.getElementById('wl-apply-link').value || 'https://heloc.westcapitallending.com'}" style="display: inline-block; background: linear-gradient(135deg, #c5a059, #a68543); color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; font-weight: bold;">🚀 Start Your Application</a>
-                </div>
-                ${calendarButton}
-                ${trackingPixel}
-            </div>
-        `;
+                const emailHtml = buildRichEmailHTML({
+                    screenshotDataUrl: imageBase64,
+                    trackingPixelUrl: trackingPixelUrl,
+                    calendarLink: calendarLink
+                });
 
                 const emailResponse = await fetch(`${GHL_API}/conversations/messages`, {
                     method: 'POST', headers: headers,
@@ -11987,8 +12207,10 @@ Sent via Above All Carbon HELOC Tool`;
                     }
                 }
 
-                // Step 2: Send data via webhook if configured
+                // Step 2: Send data via webhook if configured (include rich HTML email for automations)
                 const webhookUrl = document.getElementById('bonzo-inbound-url')?.value;
+                var _bonzoRichHtml = buildRichEmailHTML();
+                var _bonzoEmailSubject = processTemplate(document.getElementById('email-subject').value);
                 if (webhookUrl) {
                     log('⏳ Sending via webhook...');
                     try {
@@ -12002,6 +12224,11 @@ Sent via Above All Carbon HELOC Tool`;
                                     homeValue, mortgageBalance, cashBack, rate, payment,
                                     term, totalLoan, origination, creditScore, propertyType,
                                     timestamp: new Date().toISOString()
+                                },
+                                email: {
+                                    subject: _bonzoEmailSubject,
+                                    html: _bonzoRichHtml,
+                                    toEmail: contactEmail
                                 }
                             })
                         });
@@ -12023,18 +12250,38 @@ Sent via Above All Carbon HELOC Tool`;
                 }, 'bonzo');
                 log('✅ Tags synced to linked CRMs');
 
-                // Step 4: Process email template
-                log('⏳ Processing email template...');
-                const body = processTemplate(document.getElementById('email-template').value);
-                log('✅ Email template processed');
                 log('');
                 log('🎉 <strong>Bonzo send complete!</strong> (' + tags.length + ' tags applied)');
+                log('');
+                log('Choose how to send the email:');
 
-                // Copy email body button
-                const copyBtn = document.createElement('button');
-                copyBtn.textContent = '📋 Copy Email Body';
+                // Gmail button
+                var gmailBtn = document.createElement('button');
+                gmailBtn.textContent = '📧 Open in Gmail';
+                gmailBtn.style.cssText = 'margin-top:12px;padding:8px 16px;background:#ea4335;color:white;border:none;border-radius:6px;cursor:pointer;font-family:var(--font-heading);font-size:11px;margin-right:8px;';
+                gmailBtn.onclick = async function() {
+                    await copyRichHTMLToClipboard(_bonzoRichHtml);
+                    window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(contactEmail) + '&su=' + encodeURIComponent(_bonzoEmailSubject));
+                    gmailBtn.textContent = '✅ Gmail opened — paste with Ctrl+V';
+                };
+                box.appendChild(gmailBtn);
+
+                // Outlook button
+                var outlookBtn = document.createElement('button');
+                outlookBtn.textContent = '📧 Open in Outlook';
+                outlookBtn.style.cssText = 'margin-top:12px;padding:8px 16px;background:#0078d4;color:white;border:none;border-radius:6px;cursor:pointer;font-family:var(--font-heading);font-size:11px;margin-right:8px;';
+                outlookBtn.onclick = async function() {
+                    await copyRichHTMLToClipboard(_bonzoRichHtml);
+                    window.open('mailto:' + contactEmail + '?subject=' + encodeURIComponent(_bonzoEmailSubject));
+                    outlookBtn.textContent = '✅ Outlook opened — paste with Ctrl+V';
+                };
+                box.appendChild(outlookBtn);
+
+                // Copy Rich HTML button
+                var copyBtn = document.createElement('button');
+                copyBtn.textContent = '📋 Copy Rich HTML';
                 copyBtn.style.cssText = 'margin-top:12px;padding:8px 16px;background:#6366f1;color:white;border:none;border-radius:6px;cursor:pointer;font-family:var(--font-heading);font-size:11px;';
-                copyBtn.onclick = () => { navigator.clipboard.writeText(body); copyBtn.textContent = '✅ Copied!'; };
+                copyBtn.onclick = async function() { await copyRichHTMLToClipboard(_bonzoRichHtml); copyBtn.textContent = '✅ Copied!'; };
                 box.appendChild(copyBtn);
 
             } catch (e) {
@@ -12290,31 +12537,32 @@ Sent via Above All Carbon HELOC Tool`;
                 container.style.width = origWidth;
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
 
-                // Copy to clipboard
+                // Build rich HTML with embedded screenshot and copy to clipboard
+                var screenshotDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                var richHtml = buildRichEmailHTML({ screenshotDataUrl: screenshotDataUrl });
                 let clipboardOk = false;
                 try {
-                    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+                    await copyRichHTMLToClipboard(richHtml);
                     clipboardOk = true;
                 } catch (e) {
-                    // Clipboard failed — open image in new tab as fallback
-                    window.open(URL.createObjectURL(blob));
+                    try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); clipboardOk = true; } catch (e2) { window.open(URL.createObjectURL(blob)); }
                 }
 
-                // Show email picker inline (no confirm() dialog)
-                notification.innerHTML = (clipboardOk ? '✅ Screenshot copied!' : '✅ Screenshot opened in tab') +
+                // Show email picker inline
+                notification.innerHTML = (clipboardOk ? '✅ Rich HTML email copied!' : '✅ Screenshot opened in tab') +
                     '<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">' +
                     '<button id="_email-gmail" style="background:#ea4335;color:white;border:none;padding:8px 16px;border-radius:6px;font-family:var(--font-heading);font-size:11px;font-weight:700;cursor:pointer;">Gmail</button>' +
                     '<button id="_email-outlook" style="background:#0078d4;color:white;border:none;padding:8px 16px;border-radius:6px;font-family:var(--font-heading);font-size:11px;font-weight:700;cursor:pointer;">Outlook</button>' +
                     '<button id="_email-cancel" style="background:#6b7280;color:white;border:none;padding:8px 12px;border-radius:6px;font-family:var(--font-heading);font-size:11px;cursor:pointer;">Close</button>' +
                     '</div>' +
-                    '<div style="font-size:9px;color:rgba(255,255,255,0.7);margin-top:6px;">Paste the screenshot in the email body with Ctrl+V</div>';
+                    '<div style="font-size:9px;color:rgba(255,255,255,0.7);margin-top:6px;">Rich HTML email on clipboard — paste with Ctrl+V</div>';
 
                 document.getElementById('_email-gmail').onclick = function () {
-                    window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(prepared.to) + '&su=' + encodeURIComponent(prepared.subject) + '&body=' + encodeURIComponent(prepared.body + '\n\n[Screenshot copied — paste with Ctrl+V]'));
+                    window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(prepared.to) + '&su=' + encodeURIComponent(prepared.subject));
                     notification.remove();
                 };
                 document.getElementById('_email-outlook').onclick = function () {
-                    window.open('mailto:' + prepared.to + '?subject=' + encodeURIComponent(prepared.subject) + '&body=' + encodeURIComponent(prepared.body));
+                    window.open('mailto:' + prepared.to + '?subject=' + encodeURIComponent(prepared.subject));
                     notification.remove();
                 };
                 document.getElementById('_email-cancel').onclick = function () { notification.remove(); };
@@ -12437,27 +12685,10 @@ Sent via Above All Carbon HELOC Tool`;
         function _esmDetectCRM() {
             var ghlKey = document.getElementById('ghl-api-key')?.value;
             var bonzoKey = document.getElementById('bonzo-api-key')?.value;
-            var crmOption = document.getElementById('esm-crm-option');
-            var crmTitle = document.getElementById('esm-crm-title');
-            var crmDesc = document.getElementById('esm-crm-desc');
-
-            if (ghlKey && bonzoKey) {
-                crmTitle.textContent = 'Send via CRM (GHL + Bonzo)';
-                crmDesc.textContent = 'Send through both connected CRMs with contact sync, tags, and tracking.';
-                crmOption.classList.remove('disabled');
-            } else if (ghlKey) {
-                crmTitle.textContent = 'Send via Go High Level';
-                crmDesc.textContent = 'Create/update contact, apply tags, add quote note, and send branded email through GHL.';
-                crmOption.classList.remove('disabled');
-            } else if (bonzoKey) {
-                crmTitle.textContent = 'Send via Bonzo';
-                crmDesc.textContent = 'Create/update contact in Bonzo with quote data, tags, and custom fields.';
-                crmOption.classList.remove('disabled');
-            } else {
-                crmTitle.textContent = 'Send via CRM';
-                crmDesc.textContent = 'No CRM configured. Set up GHL or Bonzo in Settings → Integrations to enable.';
-                crmOption.classList.add('disabled');
-            }
+            var ghlOption = document.getElementById('esm-ghl-option');
+            var bonzoOption = document.getElementById('esm-bonzo-option');
+            if (ghlOption) ghlOption.style.display = ghlKey ? 'flex' : 'none';
+            if (bonzoOption) bonzoOption.style.display = bonzoKey ? 'flex' : 'none';
         }
 
         function _esmShowStatus(msg, type) {
@@ -12466,149 +12697,27 @@ Sent via Above All Carbon HELOC Tool`;
             el.className = 'esm-status ' + type;
         }
 
-        function esmSendOutlook() {
+        async function esmSendOutlook() {
             var toEmail = document.getElementById('esm-to-email').value;
-            if (!toEmail) {
-                _esmShowStatus('Please enter the client email address.', 'error');
-                return;
-            }
-
-            // Build the email subject and body from template
-            var data = getEmailData();
-            var subject = 'Your Personalized HELOC Quote - ' + data.CLIENT_NAME;
-            var body = 'Hi ' + data.CLIENT_NAME + ',\n\n' +
-                'Thank you for your interest! I\'ve prepared a personalized HELOC quote based on your situation.\n\n' +
-                '📊 Quote Summary:\n' +
-                '• Property Value: ' + data.HOME_VALUE + '\n' +
-                '• Cash Available: ' + data.NET_CASH + '\n' +
-                '• Recommended Rate: ' + data.REC_RATE + '%\n' +
-                '• Monthly Payment: ' + data.REC_PAYMENT + '\n\n' +
-                '📸 Full quote screenshot is attached below — paste it with Ctrl+V if not already showing.\n\n';
-
-            if (data.QUOTE_LINK && !data.QUOTE_LINK.includes('[Generate')) {
-                body += '🔗 View your interactive quote online: ' + data.QUOTE_LINK + '\n\n';
-            }
-
-            body += 'Please review and let me know if you have any questions. I\'m happy to walk through the numbers with you.\n\n' +
-                'Best regards,\n' +
-                data.LO_NAME + '\n' +
-                data.LO_PHONE + '\n' +
-                data.LO_EMAIL;
-
-            // Re-copy screenshot to clipboard right before opening
-            if (_esmScreenshotBlob) {
-                navigator.clipboard.write([new ClipboardItem({ 'image/png': _esmScreenshotBlob })]).catch(function () { });
-            }
-
-            window.open('mailto:' + toEmail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body));
-            _esmShowStatus('✅ Outlook opened! Paste the screenshot with Ctrl+V in the email body.', 'success');
+            if (!toEmail) { _esmShowStatus('Please enter the client email address.', 'error'); return; }
+            var subject = processTemplate(document.getElementById('email-subject').value);
+            var html = buildRichEmailHTML({ screenshotDataUrl: _esmScreenshotDataUrl });
+            await copyRichHTMLToClipboard(html);
+            window.open('mailto:' + toEmail + '?subject=' + encodeURIComponent(subject));
+            _esmShowStatus('✅ Rich HTML copied! Paste into Outlook with Ctrl+V.', 'success');
         }
 
         function esmShowRichHTML() {
             var toEmail = document.getElementById('esm-to-email').value;
-            if (!toEmail) {
-                _esmShowStatus('Please enter the client email address.', 'error');
-                return;
-            }
+            if (!toEmail) { _esmShowStatus('Please enter the client email address.', 'error'); return; }
 
-            var data = getEmailData();
-            var loHeadshot = document.getElementById('lo-headshot-url')?.value || '';
-            var loLogo = document.getElementById('lo-logo-url')?.value || '';
-            var applyLink = document.getElementById('apply-link-url')?.value || '';
-            var quoteLink = data.QUOTE_LINK;
-            var hasQuoteLink = quoteLink && !quoteLink.includes('[Generate');
-
-            var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>' +
-                '<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">' +
-                '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:20px 0;">' +
-                '<tr><td align="center">' +
-                '<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">' +
-
-                // Header
-                '<tr><td style="background:linear-gradient(135deg,#1e293b,#0f172a);padding:24px 30px;text-align:center;">' +
-                (loLogo ? '<img src="' + loLogo + '" alt="Logo" style="max-height:40px;margin-bottom:10px;"><br>' : '') +
-                '<h1 style="color:#ffffff;font-size:22px;margin:0;font-weight:800;">Your Personalized HELOC Quote</h1>' +
-                '<p style="color:rgba(255,255,255,0.7);font-size:13px;margin:6px 0 0;">Prepared exclusively for ' + data.CLIENT_NAME + '</p>' +
-                '</td></tr>' +
-
-                // Greeting
-                '<tr><td style="padding:28px 30px 0;">' +
-                '<p style="font-size:15px;color:#334155;margin:0 0 16px;line-height:1.6;">Hi ' + data.CLIENT_NAME + ',</p>' +
-                '<p style="font-size:14px;color:#475569;margin:0 0 20px;line-height:1.6;">Thank you for your interest! I\'ve prepared a personalized HELOC quote based on your property and financial situation. Here are the highlights:</p>' +
-                '</td></tr>' +
-
-                // Key Numbers
-                '<tr><td style="padding:0 30px;">' +
-                '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden;">' +
-                '<tr>' +
-                '<td style="padding:16px 20px;text-align:center;width:50%;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">' +
-                '<div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Property Value</div>' +
-                '<div style="font-size:20px;font-weight:800;color:#1e293b;">' + data.HOME_VALUE + '</div>' +
-                '</td>' +
-                '<td style="padding:16px 20px;text-align:center;width:50%;border-bottom:1px solid #e2e8f0;">' +
-                '<div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Cash Available</div>' +
-                '<div style="font-size:20px;font-weight:800;color:#10b981;">' + data.NET_CASH + '</div>' +
-                '</td>' +
-                '</tr>' +
-                '<tr>' +
-                '<td style="padding:16px 20px;text-align:center;width:50%;border-right:1px solid #e2e8f0;">' +
-                '<div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Rate</div>' +
-                '<div style="font-size:20px;font-weight:800;color:#1e293b;">' + data.REC_RATE + '%</div>' +
-                '</td>' +
-                '<td style="padding:16px 20px;text-align:center;width:50%;">' +
-                '<div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Monthly Payment</div>' +
-                '<div style="font-size:20px;font-weight:800;color:#1e293b;">' + data.REC_PAYMENT + '</div>' +
-                '</td>' +
-                '</tr>' +
-                '</table>' +
-                '</td></tr>' +
-
-                // Screenshot image
-                '<tr><td style="padding:20px 30px;">' +
-                '<p style="font-size:12px;color:#94a3b8;text-align:center;margin:0 0 10px;text-transform:uppercase;letter-spacing:0.5px;">Full Quote Details</p>' +
-                (_esmScreenshotDataUrl ?
-                    '<img src="' + _esmScreenshotDataUrl + '" alt="HELOC Quote" style="width:100%;border-radius:8px;border:1px solid #e2e8f0;">' :
-                    '<p style="font-size:13px;color:#94a3b8;text-align:center;padding:40px;background:#f8fafc;border-radius:8px;border:1px dashed #e2e8f0;">[Quote screenshot]</p>') +
-                '</td></tr>' +
-
-                // CTA Buttons
-                '<tr><td style="padding:0 30px 24px;text-align:center;">' +
-                (hasQuoteLink ? '<a href="' + quoteLink + '" style="display:inline-block;background:#0ea5e9;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;margin:0 6px 8px;">📊 View Interactive Quote</a>' : '') +
-                (applyLink ? '<a href="' + applyLink + '" style="display:inline-block;background:#10b981;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;margin:0 6px 8px;">🚀 Start Application</a>' : '') +
-                '</td></tr>' +
-
-                // LO Footer
-                '<tr><td style="background:#f8fafc;padding:20px 30px;border-top:1px solid #e2e8f0;">' +
-                '<table width="100%" cellpadding="0" cellspacing="0">' +
-                '<tr>' +
-                (loHeadshot ? '<td width="60" style="vertical-align:top;padding-right:14px;"><img src="' + loHeadshot + '" alt="" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0;"></td>' : '') +
-                '<td style="vertical-align:top;">' +
-                '<div style="font-size:14px;font-weight:700;color:#1e293b;">' + data.LO_NAME + '</div>' +
-                '<div style="font-size:12px;color:#64748b;margin-top:2px;">' + (document.getElementById('lo-title')?.value || 'Loan Officer') + '</div>' +
-                '<div style="font-size:12px;color:#64748b;margin-top:4px;">' +
-                '📞 ' + data.LO_PHONE + ' &nbsp;|&nbsp; ✉️ ' + data.LO_EMAIL +
-                '</div>' +
-                '</td>' +
-                '</tr>' +
-                '</table>' +
-                '</td></tr>' +
-
-                // Legal
-                '<tr><td style="padding:14px 30px;background:#f1f5f9;text-align:center;">' +
-                '<p style="font-size:9px;color:#94a3b8;margin:0;line-height:1.5;">This quote is an estimate and does not represent a commitment to lend. All terms are subject to underwriting approval. NMLS #' + (document.getElementById('lo-nmls')?.value || '') + '</p>' +
-                '</td></tr>' +
-
-                '</table></td></tr></table></body></html>';
+            var html = buildRichEmailHTML({ screenshotDataUrl: _esmScreenshotDataUrl });
 
             // Show preview
             document.getElementById('esm-options').style.display = 'none';
             var previewDiv = document.getElementById('esm-html-preview');
             previewDiv.style.display = 'block';
-
-            var iframe = document.getElementById('esm-html-iframe');
-            iframe.srcdoc = html;
-
-            // Store the HTML for copying
+            document.getElementById('esm-html-iframe').srcdoc = html;
             window._esmRichHTML = html;
             _esmShowStatus('Preview ready. Click "Copy HTML Email" to copy to clipboard.', 'info');
         }
@@ -12643,32 +12752,35 @@ Sent via Above All Carbon HELOC Tool`;
             }
         }
 
-        async function esmSendViaCRM() {
+        async function esmSendGmail() {
             var toEmail = document.getElementById('esm-to-email').value;
-            if (!toEmail) {
-                _esmShowStatus('Please enter the client email address.', 'error');
-                return;
-            }
-
-            // Sync the client-email field so CRM functions can pick it up
+            if (!toEmail) { _esmShowStatus('Please enter the client email address.', 'error'); return; }
             var clientEmailField = document.getElementById('client-email');
             if (clientEmailField) clientEmailField.value = toEmail;
+            var subject = processTemplate(document.getElementById('email-subject').value);
+            var html = buildRichEmailHTML({ screenshotDataUrl: _esmScreenshotDataUrl });
+            await copyRichHTMLToClipboard(html);
+            window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(toEmail) + '&su=' + encodeURIComponent(subject));
+            _esmShowStatus('✅ Rich HTML copied! Paste into Gmail with Ctrl+V.', 'success');
+        }
 
-            var ghlKey = document.getElementById('ghl-api-key')?.value;
-            var bonzoKey = document.getElementById('bonzo-api-key')?.value;
-
+        async function esmSendGHL() {
+            var toEmail = document.getElementById('esm-to-email').value;
+            if (!toEmail) { _esmShowStatus('Please enter the client email address.', 'error'); return; }
+            var clientEmailField = document.getElementById('client-email');
+            if (clientEmailField) clientEmailField.value = toEmail;
             closeEmailSendModal();
+            await sendViaGHL();
+        }
 
-            if (ghlKey && bonzoKey) {
-                // Both configured — send via both
-                showToast('Sending via GHL and Bonzo...', 'info', 3000);
-                try { await sendViaGHL(); } catch (e) { showToast('GHL send failed: ' + e.message, 'error'); }
-                try { await sendViaBonzo(); } catch (e) { showToast('Bonzo send failed: ' + e.message, 'error'); }
-            } else if (ghlKey) {
-                sendViaGHL();
-            } else if (bonzoKey) {
-                sendViaBonzo();
-            }
+        async function esmSendBonzoThenGmail() {
+            var toEmail = document.getElementById('esm-to-email').value;
+            if (!toEmail) { _esmShowStatus('Please enter the client email address.', 'error'); return; }
+            var clientEmailField = document.getElementById('client-email');
+            if (clientEmailField) clientEmailField.value = toEmail;
+            _esmShowStatus('Creating contact in Bonzo...', 'info');
+            closeEmailSendModal();
+            try { await sendViaBonzo(); } catch (e) { console.warn('Bonzo send issue:', e.message); }
         }
 
         // ===== INTEGRATIONS =====
@@ -14589,6 +14701,10 @@ Sent via Above All Carbon HELOC Tool`;
                 // Column may not exist yet — default to enabled
                 var toggle = document.getElementById('toggle-lead-email-notif');
                 if (toggle) toggle.classList.toggle('active', true);
+                // Restore email preference
+                var emailPref = localStorage.getItem('emailPref') || 'gmail';
+                var emailPrefEl = document.getElementById('pref-email-client');
+                if (emailPrefEl) emailPrefEl.value = emailPref;
             } catch (e) {
                 console.log('Could not load notification prefs:', e.message);
             }
