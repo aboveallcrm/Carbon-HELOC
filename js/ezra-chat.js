@@ -180,6 +180,341 @@
         return ctx;
     }
 
+    // ============================================
+    // LENDER PORTAL PASTE PARSER (Figure, etc.)
+    // ============================================
+    // Detects pasted lender portal text and extracts structured quote data
+    function parseLenderPortalData(message) {
+        // Detect Figure portal paste: look for key signatures
+        const hasFixedRate = /fixed\s*rate/i.test(message);
+        const hasVariableRate = /variable\s*rate/i.test(message);
+        const hasOriginationFee = /origination\s*fee/i.test(message);
+        const hasSelectMonthly = /select.*monthly\s*payment|monthly\s*payment.*term/i.test(message);
+        const hasCashAmount = /cash\s*amount/i.test(message);
+
+        // Need at least 2 signals to identify as portal paste
+        const signals = [hasFixedRate || hasVariableRate, hasOriginationFee, hasSelectMonthly, hasCashAmount].filter(Boolean).length;
+        if (signals < 2) return null;
+
+        const result = {
+            source: 'figure_portal',
+            cashAmount: 0,
+            tiers: [] // { origPct, rates: { fixed: {30:x, 20:x, 15:x, 10:x}, variable: {30:x, 20:x, 15:x, 10:x} } }
+        };
+
+        // Extract cash amount
+        const cashMatch = message.match(/cash\s*amount\s*[\n\r]*\s*[\$]?([\d,]+)/i);
+        if (cashMatch) result.cashAmount = parseFloat(cashMatch[1].replace(/,/g, ''));
+
+        // Extract origination fee tiers (e.g., "1.50%" or "4.99%")
+        // Figure shows: 1.50% \n $2,358 \n 2.99% \n $4,699 \n 4.99% \n $7,843
+        const origPattern = /(\d+\.\d+)\s*%\s*\n?\s*\$[\d,]+/g;
+        const origFees = [];
+        let origMatch;
+        while ((origMatch = origPattern.exec(message)) !== null) {
+            const pct = parseFloat(origMatch[1]);
+            if (pct > 0 && pct < 10) origFees.push(pct);
+        }
+        // Fallback: just find percentage patterns near "origination"
+        if (origFees.length === 0) {
+            const origSection = message.match(/origination[\s\S]*?(?=select|fixed|$)/i);
+            if (origSection) {
+                const pcts = origSection[0].match(/(\d+\.\d+)\s*%/g);
+                if (pcts) pcts.forEach(p => {
+                    const val = parseFloat(p);
+                    if (val > 0 && val < 10) origFees.push(val);
+                });
+            }
+        }
+
+        // Parse the rate blocks: "$X,XXX/month \n X.XX% \n 30yr fixed \n Select"
+        // Pattern: $amount/month, rate%, term+type
+        const rateBlockPattern = /\$([\d,]+)\s*\/\s*month\s*\n?\s*(?:starting\s*at\s*)?(\d+\.?\d*)\s*%\s*\n?\s*(\d+)\s*yr?\s*(fixed|variable)/gi;
+        const rateEntries = [];
+        let rateMatch;
+        while ((rateMatch = rateBlockPattern.exec(message)) !== null) {
+            rateEntries.push({
+                payment: parseFloat(rateMatch[1].replace(/,/g, '')),
+                rate: parseFloat(rateMatch[2]),
+                term: parseInt(rateMatch[3]),
+                type: rateMatch[4].toLowerCase()
+            });
+        }
+
+        if (rateEntries.length === 0) return null;
+
+        // Group rate entries by origination fee tier
+        // Figure shows rates in blocks per origination fee. The rates repeat for each o-fee.
+        // If we have 3 o-fees and 8 rate entries (4 fixed + 4 variable), each o-fee gets the same set.
+        // If we have 3 o-fees and 24 rate entries, each o-fee gets 8 entries (4 fixed + 4 variable).
+        const fixedEntries = rateEntries.filter(r => r.type === 'fixed');
+        const variableEntries = rateEntries.filter(r => r.type === 'variable');
+
+        // Figure portal shows all rates for the SELECTED origination fee.
+        // The pasted text typically has one set of rates (for the selected fee).
+        // But the user message may also include conversational rate data for all tiers.
+
+        // Map origination fees to standard tier order: highest=t1, middle=t2, lowest=t3
+        const sortedOrigs = [...origFees].sort((a, b) => b - a);
+
+        // If we only have one set of rates, assign to the matching o-fee tier
+        if (fixedEntries.length <= 4) {
+            // Single set — determine which origination fee these rates belong to
+            // Check if user pasted rates match a specific o-fee from the amount shown
+            for (let i = 0; i < sortedOrigs.length; i++) {
+                result.tiers.push({
+                    origPct: sortedOrigs[i],
+                    tierNum: i + 1,
+                    fixed: {},
+                    variable: {}
+                });
+            }
+
+            // Assign the single set of fixed rates to all tiers (same rates for selected view)
+            // Actually, Figure shows different rates per o-fee. The pasted block has rates for one.
+            // We'll assign the pasted rates to the tier whose o-fee matches the selected view.
+            const selectedOrig = sortedOrigs.find(o => {
+                // Check if the text suggests this origination is "selected"
+                const regex = new RegExp(o.toFixed(2).replace('.', '\\.') + '\\s*%', 'i');
+                const idx = message.search(regex);
+                // If it appears before the rate blocks, it's likely the selected one
+                return idx >= 0;
+            }) || sortedOrigs[sortedOrigs.length - 1]; // default to lowest
+
+            const targetTier = result.tiers.find(t => t.origPct === selectedOrig) || result.tiers[0];
+            if (targetTier) {
+                fixedEntries.forEach(e => { targetTier.fixed[e.term] = e.rate; });
+                variableEntries.forEach(e => { targetTier.variable[e.term] = e.rate; });
+            }
+        } else {
+            // Multiple sets — divide evenly among tiers
+            const setsPerTier = Math.floor(fixedEntries.length / Math.max(sortedOrigs.length, 1));
+            for (let i = 0; i < sortedOrigs.length; i++) {
+                const tier = { origPct: sortedOrigs[i], tierNum: i + 1, fixed: {}, variable: {} };
+                const start = i * setsPerTier;
+                fixedEntries.slice(start, start + setsPerTier).forEach(e => { tier.fixed[e.term] = e.rate; });
+                variableEntries.slice(start, start + setsPerTier).forEach(e => { tier.variable[e.term] = e.rate; });
+                result.tiers.push(tier);
+            }
+        }
+
+        return result.tiers.length > 0 ? result : null;
+    }
+
+    // ============================================
+    // CONVERSATIONAL RATE PARSER
+    // ============================================
+    // Parses messages like: "For the 4.99 origination fee, 30yr is 7.45%, 20yr is 7.20..."
+    function parseConversationalRates(message) {
+        const result = { tiers: [], borrowerName: null, propertyValue: 0, mortgageBalance: 0, helocAmount: 0, creditScore: null, occupancy: null };
+
+        // Extract borrower name
+        const nameMatch = message.match(/(?:for|client|borrower)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/);
+        if (nameMatch) result.borrowerName = nameMatch[1];
+
+        // Extract dollar amounts with context
+        const propMatch = message.match(/\$?([\d,.]+)\s*(k|K)?\s*(?:property|home|house|value)/);
+        if (propMatch) {
+            let v = parseFloat(propMatch[1].replace(/,/g, ''));
+            if (propMatch[2] && propMatch[2].toLowerCase() === 'k') v *= 1000;
+            result.propertyValue = v;
+        }
+        const mortMatch = message.match(/\$?([\d,.]+)\s*(k|K)?\s*(?:mortgage|1st|first|owe|balance)/);
+        if (mortMatch) {
+            let v = parseFloat(mortMatch[1].replace(/,/g, ''));
+            if (mortMatch[2] && mortMatch[2].toLowerCase() === 'k') v *= 1000;
+            result.mortgageBalance = v;
+        }
+        const helocMatch = message.match(/\$?([\d,.]+)\s*(k|K)?\s*(?:heloc|cash|equity|draw)/i);
+        if (helocMatch) {
+            let v = parseFloat(helocMatch[1].replace(/,/g, ''));
+            if (helocMatch[2] && helocMatch[2].toLowerCase() === 'k') v *= 1000;
+            result.helocAmount = v;
+        }
+        const creditMatch = message.match(/(\d{3})\s*(?:score|credit|fico)/i);
+        if (creditMatch) result.creditScore = creditMatch[1];
+
+        // Detect occupancy
+        if (/investment/i.test(message)) result.occupancy = 'Investment Property';
+        else if (/second\s*home|vacation/i.test(message)) result.occupancy = 'Second Home';
+
+        // Parse rate blocks by origination fee
+        // Patterns: "for the 4.99 origination..." or "4.99% origination" or "4.99 o-fee" or "4.99 pts"
+        const origBlocks = message.split(/(?:for\s+(?:the\s+)?|at\s+(?:the\s+)?)(\d+\.?\d*)\s*(?:%?\s*)?(?:origination|orig|o-?fee|points?|pts)/i);
+
+        if (origBlocks.length >= 3) {
+            // origBlocks: [before, origPct1, textBlock1, origPct2, textBlock2, ...]
+            for (let i = 1; i < origBlocks.length; i += 2) {
+                const origPct = parseFloat(origBlocks[i]);
+                const textBlock = origBlocks[i + 1] || '';
+                if (isNaN(origPct) || origPct <= 0 || origPct >= 10) continue;
+
+                const tier = { origPct, fixed: {}, variable: {} };
+
+                // Parse rate entries: "30-year is 7.45%", "30yr 7.45", "30 year rate is 7.45"
+                const ratePattern = /(\d+)\s*[-\s]?\s*(?:year|yr|y)\s*(?:rate\s*)?(?:is|=|:|\s)\s*(\d+\.?\d*)%?/gi;
+                let rm;
+                while ((rm = ratePattern.exec(textBlock)) !== null) {
+                    const term = parseInt(rm[1]);
+                    const rate = parseFloat(rm[2]);
+                    if ([5, 10, 15, 20, 30].includes(term) && rate > 0 && rate < 20) {
+                        tier.fixed[term] = rate;
+                    }
+                }
+
+                // Check for variable rates
+                const varSection = textBlock.match(/variable[\s\S]*$/i);
+                if (varSection) {
+                    const varRatePattern = /(\d+)\s*[-\s]?\s*(?:year|yr|y)\s*(?:variable\s*)?(?:rate\s*)?(?:is|=|:|\s)\s*(\d+\.?\d*)%?/gi;
+                    let vm;
+                    while ((vm = varRatePattern.exec(varSection[0])) !== null) {
+                        const term = parseInt(vm[1]);
+                        const rate = parseFloat(vm[2]);
+                        if ([5, 10, 15, 20, 30].includes(term) && rate > 0 && rate < 20) {
+                            tier.variable[term] = rate;
+                        }
+                    }
+                }
+
+                // Check for "this is a fixed rate" indicator
+                if (/fixed\s*rate/i.test(textBlock)) {
+                    // All parsed rates are fixed — already in tier.fixed
+                }
+
+                if (Object.keys(tier.fixed).length > 0 || Object.keys(tier.variable).length > 0) {
+                    result.tiers.push(tier);
+                }
+            }
+        }
+
+        // Also try inline format: "the 4.99 category... 30yr is 7.45"
+        // If no blocks found, try a simpler pattern
+        if (result.tiers.length === 0) {
+            // Try: "X.XX origination... 30-year is Y.YY"
+            const simpleOrigPattern = /(\d+\.?\d*)\s*(?:%?\s*)?(?:origination|orig|o-?fee|fee\s*category|category)\s*[\s,]*(?:.*?)\b(\d+)\s*[-]?\s*(?:year|yr)\s*(?:.*?)(\d+\.?\d*)%?/gi;
+            let sm;
+            while ((sm = simpleOrigPattern.exec(message)) !== null) {
+                const origPct = parseFloat(sm[1]);
+                const term = parseInt(sm[2]);
+                const rate = parseFloat(sm[3]);
+                if (origPct > 0 && origPct < 10 && [5, 10, 15, 20, 30].includes(term) && rate > 0 && rate < 20) {
+                    let tier = result.tiers.find(t => t.origPct === origPct);
+                    if (!tier) {
+                        tier = { origPct, fixed: {}, variable: {} };
+                        result.tiers.push(tier);
+                    }
+                    tier.fixed[term] = rate;
+                }
+            }
+        }
+
+        // Sort tiers: highest origination = tier 1
+        result.tiers.sort((a, b) => b.origPct - a.origPct);
+        result.tiers.forEach((t, i) => t.tierNum = i + 1);
+
+        return result.tiers.length > 0 ? result : null;
+    }
+
+    // ============================================
+    // APPLY MULTI-TIER DATA TO FORM
+    // ============================================
+    function applyMultiTierData(data) {
+        let appliedCount = 0;
+
+        function setField(id, value) {
+            const field = document.getElementById(id);
+            if (!field) return false;
+            field.value = value;
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            appliedCount++;
+            field.style.transition = 'background 0.3s';
+            field.style.background = '#dcfce7';
+            setTimeout(() => field.style.background = '', 1500);
+            return true;
+        }
+
+        function setManualRate(baseId, rate) {
+            const manualEl = document.getElementById(baseId + '-manual');
+            const selectEl = document.getElementById(baseId);
+            if (manualEl) {
+                manualEl.value = rate.toFixed(2);
+                manualEl.style.display = 'block';
+                manualEl.dispatchEvent(new Event('input', { bubbles: true }));
+                appliedCount++;
+                manualEl.style.transition = 'background 0.3s';
+                manualEl.style.background = '#dcfce7';
+                setTimeout(() => manualEl.style.background = '', 1500);
+            }
+            if (selectEl) selectEl.style.display = 'none';
+        }
+
+        // Enable manual rates mode
+        const toggle = document.getElementById('toggle-manual-rates');
+        if (toggle && !toggle.classList.contains('active')) {
+            toggle.click(); // Activate manual rates
+        }
+
+        // Set borrower fields
+        if (data.borrowerName) setField('in-client-name', data.borrowerName);
+        if (data.propertyValue) setField('in-home-value', data.propertyValue);
+        if (data.mortgageBalance) setField('in-mortgage-balance', data.mortgageBalance);
+        if (data.helocAmount || data.cashAmount) setField('in-net-cash', data.helocAmount || data.cashAmount);
+        if (data.creditScore) setField('in-client-credit', data.creditScore);
+        if (data.occupancy) {
+            const occEl = document.getElementById('in-property-type');
+            if (occEl) {
+                // Find matching option
+                for (const opt of occEl.options) {
+                    if (opt.text.toLowerCase().includes(data.occupancy.toLowerCase())) {
+                        occEl.value = opt.value;
+                        occEl.dispatchEvent(new Event('change', { bubbles: true }));
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Set per-tier origination fees and rates
+        const tiers = data.tiers || [];
+        tiers.forEach(tier => {
+            const prefix = 't' + tier.tierNum; // t1, t2, t3
+
+            // Set origination fee
+            if (tier.origPct) setField(prefix + '-orig', tier.origPct);
+
+            // Set fixed rates
+            if (tier.fixed) {
+                Object.entries(tier.fixed).forEach(([term, rate]) => {
+                    setManualRate(prefix + '-' + term + '-rate', rate);
+                });
+            }
+
+            // Set variable rates
+            if (tier.variable) {
+                Object.entries(tier.variable).forEach(([term, rate]) => {
+                    setManualRate(prefix + '-' + term + '-var', rate);
+                });
+            }
+        });
+
+        // Trigger full recalculation
+        if (typeof updateQuote === 'function') {
+            setTimeout(() => {
+                updateQuote();
+                if (typeof showToast === 'function') {
+                    showToast(`Ezra applied ${appliedCount} fields across ${tiers.length} tier(s) — quote updated`, 'success');
+                }
+            }, 100);
+        }
+
+        if (typeof autoSave === 'function') {
+            setTimeout(autoSave, 300);
+        }
+
+        return appliedCount;
+    }
+
     // Build a context summary string for AI prompts
     function buildContextSummary() {
         const ctx = getFormContext();
@@ -382,6 +717,21 @@ AUTO_FILL_FIELDS
   "payment_type": "principal_and_interest" | "interest_only",
   "monthly_payment_estimate": number
 }
+
+MULTI-TIER RATE INPUT
+Loan officers may paste data from lender portals (Figure, etc.) or give you rates for multiple origination fee tiers.
+When given rates per origination tier, include them in the AUTO_FILL_FIELDS JSON with a "tiers" array:
+"tiers": [
+  { "origPct": 4.99, "tierNum": 1, "fixed": { "30": 7.45, "20": 7.20, "15": 7.20, "10": 7.20 }, "variable": {} },
+  { "origPct": 2.99, "tierNum": 2, "fixed": { "30": 7.85, "20": 7.60, "15": 7.60, "10": 7.60 }, "variable": {} },
+  { "origPct": 1.50, "tierNum": 3, "fixed": { "30": 8.35, "20": 8.10, "15": 8.10, "10": 8.10 }, "variable": {} }
+]
+Tier 1 = highest origination fee (lowest rates), Tier 3 = lowest origination fee (highest rates).
+
+PASTED LENDER DATA
+If a loan officer pastes raw text from a lender portal, extract the cash amount, origination fee options,
+and all rate/term/payment combinations. Return them in AUTO_FILL_FIELDS with the tiers array above.
+The app will auto-populate all rate fields across all 3 pricing tiers.
 
 QUOTE TOOL INTERACTION
 When the loan officer says things like "go with option 2", "tier 2 at 20", "use tier 1", "switch to 30 year",
@@ -2044,7 +2394,61 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
     // AI ROUTING (Task 3)
     // ============================================
     async function routeToAI(message) {
-        // First, try to parse as a real command
+        // Check for pasted lender portal data FIRST (Figure, etc.) — most specific
+        const portalData = parseLenderPortalData(message);
+        if (portalData) {
+            showTypingIndicator();
+            await new Promise(r => setTimeout(r, 400));
+            hideTypingIndicator();
+
+            const applied = applyMultiTierData(portalData);
+            const tierSummary = portalData.tiers.map(t =>
+                `**Tier ${t.tierNum}** (${t.origPct}% orig): ` +
+                Object.entries(t.fixed).map(([term, rate]) => `${term}yr @ ${rate}%`).join(', ')
+            ).join('\n');
+
+            return {
+                content: `**Lender Portal Data Imported**\n\nI detected pricing data from a lender portal and applied it to the quote tool.\n\n${portalData.cashAmount ? `**Cash Amount:** $${portalData.cashAmount.toLocaleString()}\n\n` : ''}**Rate Matrix:**\n${tierSummary}\n\n${applied} fields populated across ${portalData.tiers.length} tier(s). The quote has been updated.`,
+                metadata: { model: 'local', intent: 'portal_import' }
+            };
+        }
+
+        // Check for conversational rate data (user telling Ezra rates per tier)
+        const rateData = parseConversationalRates(message);
+        if (rateData && rateData.tiers.length > 0) {
+            showTypingIndicator();
+            await new Promise(r => setTimeout(r, 400));
+            hideTypingIndicator();
+
+            const applied = applyMultiTierData(rateData);
+            const tierSummary = rateData.tiers.map(t =>
+                `**Tier ${t.tierNum}** (${t.origPct}% orig): ` +
+                Object.entries(t.fixed).map(([term, rate]) => `${term}yr @ ${rate}%`).join(', ')
+            ).join('\n');
+
+            const ctx = getFormContext();
+            const helocAmt = rateData.helocAmount || ctx.helocAmount;
+            const propVal = rateData.propertyValue || ctx.homeValue;
+
+            // Build payment summary for the recommended tier
+            const recTier = rateData.tiers.find(t => t.tierNum === 2) || rateData.tiers[0];
+            let paymentInfo = '';
+            if (helocAmt > 0 && recTier) {
+                const terms = Object.entries(recTier.fixed).sort((a, b) => parseInt(b[0]) - parseInt(a[0]));
+                paymentInfo = '\n\n**Payment Estimates (Tier ' + recTier.tierNum + '):**\n' +
+                    terms.map(([term, rate]) => {
+                        const pmt = calcAmortizedPayment(helocAmt, rate, parseInt(term));
+                        return `• ${term}yr Fixed @ ${rate}% → $${pmt.toLocaleString()}/mo`;
+                    }).join('\n');
+            }
+
+            return {
+                content: `**Quote Data Applied**\n\n${rateData.borrowerName ? `**Borrower:** ${rateData.borrowerName}\n` : ''}${propVal ? `**Property:** $${propVal.toLocaleString()}\n` : ''}${rateData.mortgageBalance ? `**Mortgage:** $${rateData.mortgageBalance.toLocaleString()}\n` : ''}${helocAmt ? `**HELOC:** $${helocAmt.toLocaleString()}\n` : ''}\n**Rate Matrix:**\n${tierSummary}${paymentInfo}\n\n${applied} fields populated. Use the recommended tier selector or say "go with tier 2 at 20 year" to highlight a specific option.`,
+                metadata: { model: 'local', intent: 'rate_import' }
+            };
+        }
+
+        // Try EzraReal command parsing (simple quote/deal commands without rate data)
         if (window.EzraReal) {
             const parsed = window.EzraReal.parseCommand(message);
             if (parsed) {
@@ -2053,11 +2457,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
                 hideTypingIndicator();
 
                 if (result.success) {
-                    // Store quote data for auto-fill
-                    if (result.quote) {
-                        EzraState.lastQuote = result.quote;
-                    }
-
+                    if (result.quote) EzraState.lastQuote = result.quote;
                     return {
                         content: result.message,
                         metadata: { model: 'ezra-real', intent: parsed.command },
@@ -2794,6 +3194,8 @@ Here's what I can do:
 • "Switch to interest only" — toggle IO mode
 • "Show me tier 3" — highlight a tier's rates
 • "More cash" / "Lower the rate" — quick adjustments
+• **Paste lender portal data** — I'll parse rates and fill all tiers
+• **Tell me rates per tier** — e.g., "For 4.99 orig, 30yr is 7.45..."
 
 ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal"** or **"Build Quote"** for a full analysis.' : 'Enter borrower details in the quote form, then ask me to structure the deal.'}`;
 
@@ -2940,6 +3342,29 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
             if (loanAmt > 0) {
                 const origPct = ((fields.origination_fee / loanAmt) * 100).toFixed(2);
                 setField('t2-orig', origPct);
+            }
+        }
+
+        // Handle multi-tier rate data if present (from AI or parser)
+        if (fields.tiers && Array.isArray(fields.tiers)) {
+            applyMultiTierData(fields);
+        }
+
+        // Handle single-rate data: populate recommended tier rate manually
+        if (fields.interest_rate && !fields.tiers) {
+            const term = parseInt(fields.loan_term) || 30;
+            const rateFieldId = 't2-' + term + '-rate-manual';
+            const manualEl = document.getElementById(rateFieldId);
+            const selectEl = document.getElementById('t2-' + term + '-rate');
+            if (manualEl) {
+                // Enable manual rates mode if not already
+                const toggle = document.getElementById('toggle-manual-rates');
+                if (toggle && !toggle.classList.contains('active')) toggle.click();
+                manualEl.value = parseFloat(fields.interest_rate).toFixed(2);
+                manualEl.style.display = 'block';
+                manualEl.dispatchEvent(new Event('input', { bubbles: true }));
+                if (selectEl) selectEl.style.display = 'none';
+                appliedCount++;
             }
         }
 
