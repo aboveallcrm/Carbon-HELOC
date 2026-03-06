@@ -15,7 +15,7 @@ CREATE OR REPLACE FUNCTION public.is_super_admin() RETURNS boolean
 AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.profiles
-    WHERE id::text = auth.uid()::text
+    WHERE id = auth.uid()
     AND role = 'super_admin'
   );
 $$;
@@ -78,8 +78,10 @@ CREATE TABLE IF NOT EXISTS ezra_knowledge_base (
     content TEXT NOT NULL,
     content_vector vector(1536),
     is_active BOOLEAN DEFAULT true,
+    is_system BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(category, title)
 );
 ALTER TABLE ezra_knowledge_base ENABLE ROW LEVEL SECURITY;
 
@@ -205,61 +207,61 @@ ALTER TABLE deal_radar_scans ENABLE ROW LEVEL SECURITY;
 DO $$
 BEGIN
     -- ezra_conversations
-    EXECUTE 'CREATE POLICY "ezra_conv_own_select" ON ezra_conversations FOR SELECT USING (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "ezra_conv_own_insert" ON ezra_conversations FOR INSERT WITH CHECK (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "ezra_conv_own_update" ON ezra_conversations FOR UPDATE USING (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "ezra_conv_own_delete" ON ezra_conversations FOR DELETE USING (auth.uid()::text = loan_officer_id::text)';
+    EXECUTE 'CREATE POLICY "ezra_conv_own_select" ON ezra_conversations FOR SELECT USING (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "ezra_conv_own_insert" ON ezra_conversations FOR INSERT WITH CHECK (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "ezra_conv_own_update" ON ezra_conversations FOR UPDATE USING (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "ezra_conv_own_delete" ON ezra_conversations FOR DELETE USING (auth.uid() = loan_officer_id)';
 
-    -- ezra_messages (via join — cast ec.id and conversation_id to text for safety)
-    EXECUTE 'CREATE POLICY "ezra_msg_own_select" ON ezra_messages FOR SELECT USING (EXISTS (SELECT 1 FROM ezra_conversations ec WHERE ec.id::text = conversation_id::text AND ec.loan_officer_id::text = auth.uid()::text))';
-    EXECUTE 'CREATE POLICY "ezra_msg_own_insert" ON ezra_messages FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM ezra_conversations ec WHERE ec.id::text = conversation_id::text AND ec.loan_officer_id::text = auth.uid()::text))';
+    -- ezra_messages
+    EXECUTE 'CREATE POLICY "ezra_msg_own_select" ON ezra_messages FOR SELECT USING (EXISTS (SELECT 1 FROM ezra_conversations ec WHERE ec.id = ezra_messages.conversation_id AND ec.loan_officer_id = auth.uid()))';
+    EXECUTE 'CREATE POLICY "ezra_msg_own_insert" ON ezra_messages FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM ezra_conversations ec WHERE ec.id = ezra_messages.conversation_id AND ec.loan_officer_id = auth.uid()))';
 
     -- ezra_knowledge_base (public read)
     EXECUTE 'CREATE POLICY "ezra_kb_public_read" ON ezra_knowledge_base FOR SELECT USING (is_active = true)';
 
     -- ezra_loan_scenarios
-    EXECUTE 'CREATE POLICY "ezra_scen_own_select" ON ezra_loan_scenarios FOR SELECT USING (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "ezra_scen_own_insert" ON ezra_loan_scenarios FOR INSERT WITH CHECK (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "ezra_scen_own_update" ON ezra_loan_scenarios FOR UPDATE USING (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "ezra_scen_own_delete" ON ezra_loan_scenarios FOR DELETE USING (auth.uid()::text = loan_officer_id::text)';
+    EXECUTE 'CREATE POLICY "ezra_scen_own_select" ON ezra_loan_scenarios FOR SELECT USING (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "ezra_scen_own_insert" ON ezra_loan_scenarios FOR INSERT WITH CHECK (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "ezra_scen_own_update" ON ezra_loan_scenarios FOR UPDATE USING (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "ezra_scen_own_delete" ON ezra_loan_scenarios FOR DELETE USING (auth.uid() = loan_officer_id)';
 
     -- ezra_user_preferences
-    EXECUTE 'CREATE POLICY "ezra_pref_own_select" ON ezra_user_preferences FOR SELECT USING (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "ezra_pref_own_insert" ON ezra_user_preferences FOR INSERT WITH CHECK (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "ezra_pref_own_update" ON ezra_user_preferences FOR UPDATE USING (auth.uid()::text = loan_officer_id::text)';
+    EXECUTE 'CREATE POLICY "ezra_pref_own_select" ON ezra_user_preferences FOR SELECT USING (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "ezra_pref_own_insert" ON ezra_user_preferences FOR INSERT WITH CHECK (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "ezra_pref_own_update" ON ezra_user_preferences FOR UPDATE USING (auth.uid() = loan_officer_id)';
 
     -- borrowers
-    EXECUTE 'CREATE POLICY "borrowers_own_select" ON borrowers FOR SELECT USING (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "borrowers_own_insert" ON borrowers FOR INSERT WITH CHECK (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "borrowers_own_update" ON borrowers FOR UPDATE USING (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "borrowers_own_delete" ON borrowers FOR DELETE USING (auth.uid()::text = loan_officer_id::text)';
+    EXECUTE 'CREATE POLICY "borrowers_own_select" ON borrowers FOR SELECT USING (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "borrowers_own_insert" ON borrowers FOR INSERT WITH CHECK (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "borrowers_own_update" ON borrowers FOR UPDATE USING (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "borrowers_own_delete" ON borrowers FOR DELETE USING (auth.uid() = loan_officer_id)';
 
     -- properties
-    EXECUTE 'CREATE POLICY "properties_own_select" ON properties FOR SELECT USING (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "properties_own_insert" ON properties FOR INSERT WITH CHECK (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "properties_own_update" ON properties FOR UPDATE USING (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "properties_own_delete" ON properties FOR DELETE USING (auth.uid()::text = loan_officer_id::text)';
+    EXECUTE 'CREATE POLICY "properties_own_select" ON properties FOR SELECT USING (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "properties_own_insert" ON properties FOR INSERT WITH CHECK (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "properties_own_update" ON properties FOR UPDATE USING (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "properties_own_delete" ON properties FOR DELETE USING (auth.uid() = loan_officer_id)';
 
     -- mortgages
-    EXECUTE 'CREATE POLICY "mortgages_own_select" ON mortgages FOR SELECT USING (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "mortgages_own_insert" ON mortgages FOR INSERT WITH CHECK (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "mortgages_own_update" ON mortgages FOR UPDATE USING (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "mortgages_own_delete" ON mortgages FOR DELETE USING (auth.uid()::text = loan_officer_id::text)';
+    EXECUTE 'CREATE POLICY "mortgages_own_select" ON mortgages FOR SELECT USING (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "mortgages_own_insert" ON mortgages FOR INSERT WITH CHECK (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "mortgages_own_update" ON mortgages FOR UPDATE USING (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "mortgages_own_delete" ON mortgages FOR DELETE USING (auth.uid() = loan_officer_id)';
 
     -- deal_radar
-    EXECUTE 'CREATE POLICY "deal_radar_own_select" ON deal_radar FOR SELECT USING (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "deal_radar_own_insert" ON deal_radar FOR INSERT WITH CHECK (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "deal_radar_own_update" ON deal_radar FOR UPDATE USING (auth.uid()::text = loan_officer_id::text)';
-    EXECUTE 'CREATE POLICY "deal_radar_own_delete" ON deal_radar FOR DELETE USING (auth.uid()::text = loan_officer_id::text)';
+    EXECUTE 'CREATE POLICY "deal_radar_own_select" ON deal_radar FOR SELECT USING (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "deal_radar_own_insert" ON deal_radar FOR INSERT WITH CHECK (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "deal_radar_own_update" ON deal_radar FOR UPDATE USING (auth.uid() = loan_officer_id)';
+    EXECUTE 'CREATE POLICY "deal_radar_own_delete" ON deal_radar FOR DELETE USING (auth.uid() = loan_officer_id)';
 
     -- deal_radar_scans
-    EXECUTE 'CREATE POLICY "dr_scans_own_select" ON deal_radar_scans FOR SELECT USING (auth.uid()::text = loan_officer_id::text)';
+    EXECUTE 'CREATE POLICY "dr_scans_own_select" ON deal_radar_scans FOR SELECT USING (auth.uid() = loan_officer_id)';
 
-    -- Super admin policies using hardcoded UUID (no function dependency)
-    EXECUTE 'CREATE POLICY "ezra_conv_sa_all" ON ezra_conversations FOR ALL USING (auth.uid()::text = ''795aea13-6aba-45f2-97d4-04576f684557'')';
-    EXECUTE 'CREATE POLICY "ezra_msg_sa_all" ON ezra_messages FOR ALL USING (auth.uid()::text = ''795aea13-6aba-45f2-97d4-04576f684557'')';
-    EXECUTE 'CREATE POLICY "ezra_kb_sa_all" ON ezra_knowledge_base FOR ALL USING (auth.uid()::text = ''795aea13-6aba-45f2-97d4-04576f684557'')';
-    EXECUTE 'CREATE POLICY "borrowers_sa_all" ON borrowers FOR ALL USING (auth.uid()::text = ''795aea13-6aba-45f2-97d4-04576f684557'')';
+    -- Super admin policies
+    EXECUTE 'CREATE POLICY "ezra_conv_sa_all" ON ezra_conversations FOR ALL USING (is_super_admin())';
+    EXECUTE 'CREATE POLICY "ezra_msg_sa_all" ON ezra_messages FOR ALL USING (is_super_admin())';
+    EXECUTE 'CREATE POLICY "ezra_kb_sa_all" ON ezra_knowledge_base FOR ALL USING (is_super_admin())';
+    EXECUTE 'CREATE POLICY "borrowers_sa_all" ON borrowers FOR ALL USING (is_super_admin())';
 END $$;
 
 -- ============================================
@@ -338,11 +340,11 @@ END $$;
 -- ============================================
 -- 6. SEED KNOWLEDGE BASE
 -- ============================================
-INSERT INTO ezra_knowledge_base (category, title, content) VALUES
-('sales_scripts', 'HELOC Value Proposition', 'A HELOC gives homeowners financial flexibility. Think of it as a safety net that turns your home equity into accessible cash.'),
-('objections', 'Rate Concern Response', 'I understand rate is important. With a HELOC, you have flexibility - you can lock in portions at fixed rates when rates are favorable.'),
-('heloc_guidelines', 'CLTV Calculation', 'Combined Loan-to-Value (CLTV) = (First Mortgage Balance + HELOC Amount) / Property Value. Most HELOC programs allow up to 85% CLTV.')
-ON CONFLICT DO NOTHING;
+INSERT INTO ezra_knowledge_base (category, title, content, is_system) VALUES
+('sales_scripts', 'HELOC Value Proposition', 'A HELOC gives homeowners financial flexibility. Think of it as a safety net that turns your home equity into accessible cash.', true),
+('objections', 'Rate Concern Response', 'I understand rate is important. With a HELOC, you have flexibility - you can lock in portions at fixed rates when rates are favorable.', true),
+('heloc_guidelines', 'CLTV Calculation', 'Combined Loan-to-Value (CLTV) = (First Mortgage Balance + HELOC Amount) / Property Value. Most HELOC programs allow up to 85% CLTV.', true)
+ON CONFLICT (category, title) DO UPDATE SET content = EXCLUDED.content;
 
 -- DONE
 SELECT 'Ezra AI + Deal Radar installed successfully' AS result;
