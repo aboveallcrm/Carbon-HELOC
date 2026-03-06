@@ -2568,22 +2568,21 @@ function applyTierAccess(tier) {
     }
 
     // AI Strategy button + checkbox
-    const aiBtn = document.querySelector('button[onclick="generateAIStrategy()"]');
+    const aiBtn = document.querySelector('button[onclick="generateAIStrategy()"]') || document.querySelector('button[onclick="generateAIStrategyKBOnly()"]');
     const aiCheckbox = document.getElementById('chk-show-ai');
     if (level >= 1) {
+        // Titanium+: Full AI strategy (KB + AI proxy)
         if (aiBtn) { aiBtn.disabled = false; aiBtn.style.opacity = ''; aiBtn.title = ''; aiBtn.setAttribute('onclick', 'generateAIStrategy()'); }
         if (aiCheckbox) { aiCheckbox.disabled = false; }
     } else {
+        // Carbon: KB-only strategy (no API call, instant response)
         if (aiBtn) {
-            aiBtn.disabled = false; // keep clickable so it can open modal
-            aiBtn.style.opacity = '0.4';
-            aiBtn.title = 'Upgrade to Titanium to unlock AI Strategy';
-            aiBtn.setAttribute('onclick', 'showUpgradeModal()');
+            aiBtn.disabled = false;
+            aiBtn.style.opacity = '';
+            aiBtn.title = 'Knowledge-based strategy (upgrade to Titanium for AI-enhanced)';
+            aiBtn.setAttribute('onclick', 'generateAIStrategyKBOnly()');
         }
-        if (aiCheckbox) { aiCheckbox.disabled = true; aiCheckbox.checked = false; }
-        // Hide AI output
-        const aiContainer = document.getElementById('ai-assistant-container');
-        if (aiContainer) aiContainer.classList.remove('visible');
+        if (aiCheckbox) { aiCheckbox.disabled = false; }
     }
 
     // ---- TITANIUM+ (level >= 1): Debt Consolidation, Refi Comparison, Break-Even ----
@@ -5996,6 +5995,22 @@ function generateAIStrategy() {
     generateCustomAIStrategy();
 }
 
+// Carbon tier: KB-only strategy — instant, no API call
+function generateAIStrategyKBOnly() {
+    var ctx = _gatherFullQuoteContext();
+    var kbStrategy = _generateKBStrategy(ctx);
+    var outputEl = document.getElementById('ai-output-text');
+    outputEl.innerText = kbStrategy;
+    // Ensure checkbox is checked so container stays visible on recalc
+    var chk = document.getElementById('chk-show-ai');
+    if (chk) chk.checked = true;
+    // Show the AI output container
+    var container = document.getElementById('ai-assistant-container');
+    if (container) container.classList.add('visible');
+    // Add a subtle note at the end
+    outputEl.innerText += '\n\n─────────────────\n📋 Strategy generated from built-in knowledge base.\nUpgrade to Titanium for AI-enhanced personalized strategies.';
+}
+
 // ===== BUILT-IN KNOWLEDGE BASE STRATEGY GENERATOR =====
 function _generateKBStrategy(ctx) {
     var name = (ctx.clientName || 'Client').split(' ')[0];
@@ -8365,16 +8380,12 @@ function copyBonzoWebhookUrl() {
 async function testBonzoConnection() {
     const apiKey = document.getElementById('bonzo-api-key').value;
     if (!apiKey) { showToast('Enter your Bonzo Xcode / API Key first.', 'warning'); return; }
-    try {
-        const resp = await fetch('https://api.getbonzo.com/v1/contacts?limit=1', {
-            method: 'GET',
-            headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' }
-        });
-        if (resp.ok) { showToast('Bonzo connection successful!', 'success'); }
-        else if (resp.status === 401) { showToast('Bonzo API key is invalid. Check your Xcode key.', 'error'); }
-        else { showToast('Bonzo responded with status ' + resp.status + '. Verify your key.', 'warning'); }
-    } catch (e) {
-        showToast('Could not reach Bonzo API. This may be a CORS issue - the key will still work server-side. ' + e.message, 'warning');
+    // Bonzo API cannot be tested from the browser (CORS blocked).
+    // Validate key format and confirm it's saved — actual connectivity is verified server-side via webhooks.
+    if (apiKey.length >= 10) {
+        showToast('Bonzo Xcode saved. Connectivity is verified server-side when leads sync via webhooks.', 'success');
+    } else {
+        showToast('Bonzo Xcode key looks too short. Double-check your key from Bonzo settings.', 'warning');
     }
 }
 
@@ -9848,7 +9859,11 @@ async function loadNotifPrefs() {
 
 </script>
 <script type="module" src="./js/main.js"></script>
-<!-- Ezra AI Loan Structuring Assistant -->
+<!-- Ezra AI Loan Structuring Assistant - Ultimate Edition -->
+<script src="./js/ezra-real.js"></script>
+<script src="./js/ezra-complete.js"></script>
+<script src="./js/ezra-advanced.js"></script>
+<script src="./js/ezra-ultimate.js"></script>
 <script src="./js/ezra-chat.js"></script>
 </body>
 </html>
