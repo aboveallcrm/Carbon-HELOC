@@ -47,6 +47,168 @@
         ]
     };
 
+    // ============================================
+    // FORM CONTEXT — Read live data from the quote tool
+    // ============================================
+    function getFormContext() {
+        const val = (id) => {
+            const el = document.getElementById(id);
+            if (!el) return '';
+            return el.value || '';
+        };
+        const num = (id) => {
+            const v = parseFloat(val(id));
+            return isNaN(v) ? 0 : v;
+        };
+
+        const homeValue = num('in-home-value');
+        const mortgageBalance = num('in-mortgage-balance');
+        const helocAmount = num('in-net-cash');
+        const clientName = val('in-client-name');
+        const creditScore = val('in-client-credit');
+        const occupancy = val('in-property-type');
+
+        // Read best available rate from tier 2 (the recommended tier)
+        const getRate = (id) => {
+            const el = document.getElementById(id);
+            if (!el) return 0;
+            // Check manual override first
+            const manual = document.getElementById(id + '-manual');
+            if (manual && manual.style.display !== 'none' && manual.value) return parseFloat(manual.value) || 0;
+            // Then select value
+            return parseFloat(el.value) || 0;
+        };
+
+        const rates = {
+            fixed30: getRate('t2-30-rate'),
+            fixed20: getRate('t2-20-rate'),
+            fixed15: getRate('t2-15-rate'),
+            fixed10: getRate('t2-10-rate'),
+            var30: getRate('t2-30-var'),
+            var20: getRate('t2-20-var'),
+            var15: getRate('t2-15-var'),
+            var10: getRate('t2-10-var')
+        };
+
+        const origFee = num('t2-orig'); // percentage
+
+        // Compute CLTV
+        const cltv = homeValue > 0 ? (((mortgageBalance + helocAmount) / homeValue) * 100) : 0;
+
+        // Available equity
+        const maxEquity85 = homeValue > 0 ? (homeValue * 0.85) - mortgageBalance : 0;
+
+        return {
+            clientName: clientName || 'Borrower',
+            creditScore: creditScore || 'Not provided',
+            homeValue,
+            mortgageBalance,
+            helocAmount,
+            occupancy: occupancy || 'Primary Residence',
+            cltv: +cltv.toFixed(2),
+            maxEquityAt85: Math.max(0, +maxEquity85.toFixed(0)),
+            rates,
+            origFee,
+            hasFormData: homeValue > 0 || helocAmount > 0 || clientName.length > 0
+        };
+    }
+
+    // Parse inline deal details from a chat message and merge with form context
+    function parseMessageContext(message, formCtx) {
+        const ctx = { ...formCtx };
+        const lower = message.toLowerCase();
+
+        // Parse dollar amounts like "$800K", "$400,000", "$100k"
+        const dollarPattern = /\$([0-9,.]+)\s*(k|K|m|M)?\s*(property|home|house|value|prop)?/g;
+        const amounts = [];
+        let m;
+        while ((m = dollarPattern.exec(message)) !== null) {
+            let val = parseFloat(m[1].replace(/,/g, ''));
+            if (m[2] && m[2].toLowerCase() === 'k') val *= 1000;
+            if (m[2] && m[2].toLowerCase() === 'm') val *= 1000000;
+            amounts.push({ val, label: (m[3] || '').toLowerCase() });
+        }
+
+        // Try to assign by label first
+        for (const a of amounts) {
+            if (/property|home|house|value/.test(a.label)) ctx.homeValue = a.val;
+        }
+
+        // Then by context keywords in the message
+        const mortMatch = lower.match(/\$([0-9,.]+)\s*(k|m)?\s*(mortgage|loan|owe|balance|1st|first)/i);
+        if (mortMatch) {
+            let val = parseFloat(mortMatch[1].replace(/,/g, ''));
+            if (mortMatch[2] && mortMatch[2].toLowerCase() === 'k') val *= 1000;
+            if (mortMatch[2] && mortMatch[2].toLowerCase() === 'm') val *= 1000000;
+            ctx.mortgageBalance = val;
+        }
+
+        const helocMatch = lower.match(/\$([0-9,.]+)\s*(k|m)?\s*(heloc|cash|equity|draw|need|want|access)/i);
+        if (helocMatch) {
+            let val = parseFloat(helocMatch[1].replace(/,/g, ''));
+            if (helocMatch[2] && helocMatch[2].toLowerCase() === 'k') val *= 1000;
+            if (helocMatch[2] && helocMatch[2].toLowerCase() === 'm') val *= 1000000;
+            ctx.helocAmount = val;
+        }
+
+        // If we found inline numbers but form is empty, use them
+        if (!ctx.hasFormData && amounts.length >= 2) {
+            // Heuristic: largest = property, smallest = HELOC, middle = mortgage
+            const sorted = amounts.map(a => a.val).sort((a, b) => b - a);
+            if (!ctx.homeValue && sorted[0]) ctx.homeValue = sorted[0];
+            if (!ctx.mortgageBalance && sorted[1]) ctx.mortgageBalance = sorted[1];
+            if (!ctx.helocAmount && sorted[2]) ctx.helocAmount = sorted[2];
+        }
+
+        // Parse name from message
+        const nameMatch = message.match(/(?:for|client|borrower)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/);
+        if (nameMatch && ctx.clientName === 'Borrower') {
+            ctx.clientName = nameMatch[1];
+        }
+
+        // Parse credit score
+        const scoreMatch = message.match(/(\d{3})\s*(?:score|credit|fico)/i);
+        if (scoreMatch) ctx.creditScore = scoreMatch[1];
+
+        // Recalculate derived values
+        if (ctx.homeValue > 0 && ctx.helocAmount > 0) {
+            ctx.cltv = +(((ctx.mortgageBalance + ctx.helocAmount) / ctx.homeValue) * 100).toFixed(2);
+            ctx.maxEquityAt85 = Math.max(0, +(ctx.homeValue * 0.85 - ctx.mortgageBalance).toFixed(0));
+            ctx.hasFormData = true;
+        }
+
+        return ctx;
+    }
+
+    // Build a context summary string for AI prompts
+    function buildContextSummary() {
+        const ctx = getFormContext();
+        if (!ctx.hasFormData) return '';
+
+        let summary = '\n\n--- CURRENT QUOTE FORM DATA ---\n';
+        if (ctx.clientName !== 'Borrower') summary += `Client Name: ${ctx.clientName}\n`;
+        if (ctx.creditScore !== 'Not provided') summary += `Credit Score: ${ctx.creditScore}\n`;
+        if (ctx.homeValue > 0) summary += `Property Value: $${ctx.homeValue.toLocaleString()}\n`;
+        if (ctx.mortgageBalance > 0) summary += `First Mortgage Balance: $${ctx.mortgageBalance.toLocaleString()}\n`;
+        if (ctx.helocAmount > 0) summary += `Requested HELOC Amount: $${ctx.helocAmount.toLocaleString()}\n`;
+        summary += `Occupancy: ${ctx.occupancy}\n`;
+        if (ctx.homeValue > 0) {
+            summary += `CLTV: ${ctx.cltv}%\n`;
+            summary += `Max Equity at 85% CLTV: $${ctx.maxEquityAt85.toLocaleString()}\n`;
+        }
+
+        // Include rates if available
+        const rateEntries = Object.entries(ctx.rates).filter(([,v]) => v > 0);
+        if (rateEntries.length > 0) {
+            summary += 'Available Rates (Tier 2): ';
+            summary += rateEntries.map(([k, v]) => `${k}: ${v}%`).join(', ');
+            summary += '\n';
+        }
+        if (ctx.origFee > 0) summary += `Origination Fee: ${ctx.origFee}%\n`;
+        summary += '--- END FORM DATA ---';
+        return summary;
+    }
+
     const EZRA_KNOWLEDGE = {
         buildSystemPrompt() {
             return `You are Ezra, an internal AI loan structuring assistant inside a HELOC quote platform used by professional loan officers.
@@ -1545,16 +1707,23 @@ RESPONSE RULES
             return;
         }
 
-        // Use prompt from config, fallback to legacy map
+        // Use prompt from config, enriched with current form data
         const cmd = EZRA_CONFIG.quickCommands.find(c => c.action === action);
-        const prompt = cmd?.prompt || {
-            build_quote: 'Ezra build a quote for this borrower',
-            structure_deal: 'Ezra structure this deal',
-            recommend_program: 'Which HELOC program is best for this borrower?',
-            handle_objection: 'How do I handle common HELOC objections?',
-            client_script: 'How should I explain this HELOC to my client?',
-            approval_process: 'How does the approval process work?'
-        }[action] || '';
+        let prompt = cmd?.prompt || '';
+
+        // For deal-building actions, auto-append form context
+        const ctx = getFormContext();
+        if (ctx.hasFormData && ctx.helocAmount > 0 && ['build_quote', 'structure_deal', 'recommend_program', 'client_script'].includes(action)) {
+            const name = ctx.clientName !== 'Borrower' ? ctx.clientName : '';
+            const details = [];
+            if (name) details.push(name);
+            if (ctx.homeValue > 0) details.push(`$${(ctx.homeValue/1000).toFixed(0)}K property`);
+            if (ctx.mortgageBalance > 0) details.push(`$${(ctx.mortgageBalance/1000).toFixed(0)}K mortgage`);
+            if (ctx.helocAmount > 0) details.push(`$${(ctx.helocAmount/1000).toFixed(0)}K HELOC`);
+            if (details.length > 0) {
+                prompt += ' — ' + details.join(', ');
+            }
+        }
 
         const input = document.getElementById('ezra-input');
         input.value = prompt;
@@ -1806,22 +1975,47 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
     // AI ROUTING (Task 3)
     // ============================================
     async function routeToAI(message) {
-        // Determine intent and route to appropriate model
-        const intent = determineIntent(message);
+        // First, try to parse as a real command
+        if (window.EzraReal) {
+            const parsed = window.EzraReal.parseCommand(message);
+            if (parsed) {
+                showTypingIndicator();
+                const result = await window.EzraReal.processCommand(parsed.command, parsed.params);
+                hideTypingIndicator();
+                
+                if (result.success) {
+                    // Store quote data for auto-fill
+                    if (result.quote) {
+                        EzraState.lastQuote = result.quote;
+                    }
+                    
+                    return {
+                        content: result.message,
+                        metadata: { model: 'ezra-real', intent: parsed.command },
+                        autoFillFields: result.quote ? result.quote : null,
+                        isRealData: true
+                    };
+                } else if (result.error) {
+                    return {
+                        content: `I couldn't process that command: ${result.error}. Let me try a different approach.`,
+                        metadata: { model: 'fallback', intent: 'error_recovery' }
+                    };
+                }
+            }
+        }
         
-        // Route based on intent and user preference
+        // Fall back to AI service for non-command queries
+        const intent = determineIntent(message);
         let model = EzraState.currentModel;
         
-        // Auto-route based on task complexity
         if (intent === 'deal_architect' || intent === 'quote_calculation' || intent === 'quote_creation') {
-            model = 'claude'; // Deep — calculations & structured output
+            model = 'claude';
         } else if (intent === 'complex_strategy' || intent === 'program_recommendation') {
-            model = 'gpt'; // Complex — strategy & reasoning
-        } else if (intent === 'simple_chat' || intent === 'approval_process') {
-            model = 'gemini'; // Fast — quick answers
+            model = 'gpt';
+        } else if (intent === 'simple_chat') {
+            model = 'gemini';
         }
 
-        // Call the appropriate AI service
         const response = await callAIService(message, model, intent);
         
         return {
@@ -1870,119 +2064,294 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
     }
 
     async function callAIService(message, model, intent) {
-        // This would call your Edge Function or API endpoint
-        // For now, returning a mock response
-        
-        // In production, this calls:
-        // POST /functions/v1/ezra-chat
-        // { message, model, intent, conversationId, userId }
-        
-        const mockResponses = {
-            deal_architect: `**DEAL ARCHITECT**
+        const formCtx = getFormContext();
+        // Merge form data with any inline numbers/names from the message
+        const ctx = parseMessageContext(message, formCtx);
+        const contextSummary = buildContextSummary();
+
+        // ── Try real AI backend first ──
+        try {
+            const aiResponse = await callAIProxy(message, model, intent, contextSummary);
+            if (aiResponse) {
+                const autoFillData = extractAutoFillFields(aiResponse);
+                return { content: aiResponse, autoFillFields: autoFillData };
+            }
+        } catch (e) {
+            console.warn('Ezra: AI proxy unavailable, using smart templates', e.message);
+        }
+
+        // ── Fallback: dynamic templates using REAL form data ──
+        return buildDynamicResponse(message, intent, ctx);
+    }
+
+    // Call the ai-proxy Edge Function
+    async function callAIProxy(message, model, intent, contextSummary) {
+        if (!EzraState.supabase) return null;
+
+        const session = await EzraState.supabase.auth.getSession();
+        const token = session?.data?.session?.access_token;
+        if (!token) return null;
+
+        const supabaseUrl = EzraState.supabase.supabaseUrl ||
+            window.SUPABASE_URL || 'https://czzabvfzuxhpdcowgvam.supabase.co';
+
+        // Map internal model names to provider names for the proxy
+        const providerMap = { gemini: 'gemini', claude: 'anthropic', gpt: 'openai' };
+
+        const systemPrompt = EZRA_KNOWLEDGE.buildSystemPrompt() + contextSummary;
+
+        const response = await fetch(`${supabaseUrl}/functions/v1/ai-proxy`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'generate',
+                provider: providerMap[model] || 'gemini',
+                systemPrompt,
+                userMessage: message,
+                maxTokens: 1500
+            })
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || `AI proxy ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.text || null;
+    }
+
+    // Build dynamic responses using REAL form data
+    async function buildDynamicResponse(message, intent, ctx) {
+        const fmt = (n) => '$' + Number(n).toLocaleString();
+        const hasData = ctx.hasFormData;
+
+        // Pick a rate for calculations (prefer 15yr fixed, fallback to any available)
+        const bestRate = ctx.rates.fixed15 || ctx.rates.fixed30 || ctx.rates.fixed10 || ctx.rates.fixed20 || 8.25;
+        const bestVarRate = ctx.rates.var10 || ctx.rates.var30 || ctx.rates.var15 || bestRate;
+
+        // Compute payments with real data
+        const payment15 = ctx.helocAmount > 0 ? calcAmortizedPayment(ctx.helocAmount, bestRate, 15) : 0;
+        const payment30 = ctx.helocAmount > 0 ? calcAmortizedPayment(ctx.helocAmount, bestRate, 30) : 0;
+        const payment10 = ctx.helocAmount > 0 ? calcAmortizedPayment(ctx.helocAmount, bestRate, 10) : 0;
+        const payment5 = ctx.helocAmount > 0 ? calcAmortizedPayment(ctx.helocAmount, bestRate, 5) : 0;
+        const ioPayment = ctx.helocAmount > 0 ? calcInterestOnlyPayment(ctx.helocAmount, bestVarRate) : 0;
+        const origFeeAmt = ctx.helocAmount > 0 ? +(ctx.helocAmount * ctx.origFee / 100).toFixed(0) : 0;
+
+        // Determine best program based on goal cues from message
+        const lower = message.toLowerCase();
+        let recProgram = '15 Year Fixed HELOC';
+        let recDraw = '4 years';
+        let recTerm = '15 years';
+        let recPayment = payment15;
+        let recReason = 'Balanced payoff with manageable monthly payments. Fully amortized P&I pays down principal from day one.';
+
+        if (/cash flow|low.*payment|afford/i.test(lower)) {
+            recProgram = '30 Year Fixed HELOC'; recDraw = '5 years'; recTerm = '30 years'; recPayment = payment30;
+            recReason = 'Lowest monthly payment of all fixed programs. Maximizes cash flow while still paying down principal.';
+        } else if (/short.*term|quick|fast.*payoff|rapid/i.test(lower)) {
+            recProgram = '5 Year Fixed HELOC'; recDraw = '2 years'; recTerm = '5 years'; recPayment = payment5;
+            recReason = 'Fastest payoff with shortest term. Higher payment but lowest total interest cost.';
+        } else if (/flex|interest.only|variable/i.test(lower)) {
+            recProgram = '10 Year Variable HELOC'; recDraw = '10 years'; recTerm = '10yr draw + 20yr repay'; recPayment = ioPayment;
+            recReason = 'Interest-only payments during draw period give maximum payment flexibility.';
+        } else if (/improv|renov|home.*improv/i.test(lower)) {
+            recProgram = '10 Year Fixed HELOC'; recDraw = '3 years'; recTerm = '10 years'; recPayment = payment10;
+            recReason = 'Moderate term with 3-year draw window — ideal for phased home improvement projects.';
+        }
+
+        // CLTV status
+        const cltvStatus = ctx.cltv <= 85 ? `${ctx.cltv}% ✓ (within 85% max)` : `${ctx.cltv}% ⚠️ (exceeds 85% guideline)`;
+        const cltvWarning = ctx.cltv > 85 ? `\n\n⚠️ **CLTV Warning**: At ${ctx.cltv}%, this exceeds the standard 85% maximum. Max HELOC at 85% CLTV: ${fmt(ctx.maxEquityAt85)}. Consider reducing the HELOC amount or verifying property value.` : '';
+
+        const responses = {};
+
+        // ── DEAL ARCHITECT ──
+        responses.deal_architect = hasData && ctx.helocAmount > 0 ? `**DEAL ARCHITECT**
 
 **Step 1 — Borrower Goal**
-Debt consolidation — pay off high-interest credit cards using home equity.
+Analyze the best HELOC structure for ${ctx.clientName}.
 
 **Step 2 — Equity Analysis**
-• Property Value: $900,000
-• First Mortgage: $480,000
-• Requested HELOC: $150,000
-• Combined LTV: 70% ✓ (well within 85% max)
+• Property Value: ${fmt(ctx.homeValue)}
+• First Mortgage: ${fmt(ctx.mortgageBalance)}
+• Requested HELOC: ${fmt(ctx.helocAmount)}
+• Combined LTV: ${cltvStatus}
+• Max Available at 85%: ${fmt(ctx.maxEquityAt85)}${ctx.creditScore !== 'Not provided' ? `\n• Credit Score: ${ctx.creditScore}` : ''}
 
 **Step 3 — Program Recommendation**
-**15 Year Fixed HELOC** with 4-year draw window.
+**${recProgram}** with ${recDraw} draw window.
 
 **Why This Program**
-Fully amortized P&I payments start paying down the balance immediately. For debt consolidation, a predictable payment schedule ensures the borrower replaces revolving debt with structured payoff.
+${recReason}
 
 **Step 4 — Payment Calculation**
-• Rate: 8.25%
-• Monthly Payment: $1,453 (principal & interest)
-• Origination Fee: $995
+• Rate: ${bestRate}%
+• Monthly Payment: ${fmt(recPayment)}/mo (${recProgram.includes('Variable') ? 'interest-only during draw' : 'principal & interest'})
+• Origination Fee: ${fmt(origFeeAmt)} (${ctx.origFee}%)
 
-**Step 5 — Client Explanation**
-"This program works more like a traditional loan. Instead of interest-only payments, the balance starts paying down right away with principal and interest. That helps build equity faster and keeps the loan on a predictable payoff schedule."
+**Step 5 — All Program Comparison**
+| Program | Payment | Type |
+|---------|---------|------|
+| 5yr Fixed | ${fmt(payment5)}/mo | P&I |
+| 10yr Fixed | ${fmt(payment10)}/mo | P&I |
+| 15yr Fixed | ${fmt(payment15)}/mo | P&I |
+| 30yr Fixed | ${fmt(payment30)}/mo | P&I |
+| Variable IO | ${fmt(ioPayment)}/mo | Interest-Only |
+
+**Step 6 — Client Explanation**
+"${recProgram.includes('Variable')
+    ? 'During the draw period, you only pay interest on the amount you use. This keeps your payment lower while giving you access to your equity. After the draw period, the loan converts to a fully amortized repayment schedule.'
+    : 'This program works more like a traditional loan. Instead of interest-only payments, the balance starts paying down right away with principal and interest. That helps build equity faster and keeps the loan on a predictable payoff schedule.'}"${cltvWarning}
 
 AUTO_FILL_FIELDS
-{"borrower_name":"John Martinez","property_value":900000,"first_mortgage_balance":480000,"heloc_amount":150000,"combined_ltv":70,"program_selected":"15 Year Fixed HELOC","draw_period":"4 years","loan_term":"15 years","interest_rate":8.25,"origination_fee":995,"payment_type":"principal_and_interest","monthly_payment_estimate":1453}`,
+${JSON.stringify({
+    borrower_name: ctx.clientName,
+    property_value: ctx.homeValue,
+    first_mortgage_balance: ctx.mortgageBalance,
+    heloc_amount: ctx.helocAmount,
+    combined_ltv: ctx.cltv,
+    program_selected: recProgram,
+    draw_period: recDraw,
+    loan_term: recTerm,
+    interest_rate: bestRate,
+    origination_fee: origFeeAmt,
+    payment_type: recProgram.includes('Variable') ? 'interest_only' : 'principal_and_interest',
+    monthly_payment_estimate: recPayment
+})}` : `**DEAL ARCHITECT**
 
-            quote_creation: `I'll help you build a HELOC quote. To structure the best deal, I need:
+To structure a deal, I need data in the quote form. Please fill in:
+• **Home Value** — property value field
+• **1st Mortgage Balance** — existing mortgage
+• **HELOC Amount** — the green "Net Cash" field at the top
+• **Client Name** — borrower name
 
-• **Property value** and address
-• **Current mortgage balance**
-• **Desired cash-out amount**
-• **Borrower's goal** (debt consolidation, home improvement, liquidity, etc.)
-• **Credit score range**
+Once you enter the numbers, click **"Structure Deal"** again and I'll run a full analysis with program recommendations, payment calculations, and auto-fill.
+
+**Tip**: You can also type specifics like:
+"Structure a deal — $800K property, $400K mortgage, $100K HELOC for debt consolidation"`;
+
+        // ── QUOTE CREATION ──
+        responses.quote_creation = hasData && ctx.helocAmount > 0 ? `**Building quote for ${ctx.clientName}**
+
+**Current Form Data**
+• Property Value: ${fmt(ctx.homeValue)}
+• First Mortgage: ${fmt(ctx.mortgageBalance)}
+• HELOC Amount: ${fmt(ctx.helocAmount)}
+• CLTV: ${cltvStatus}${ctx.creditScore !== 'Not provided' ? `\n• Credit Score: ${ctx.creditScore}` : ''}
+
+**Recommended: ${recProgram}**
+• Draw Window: ${recDraw}
+• Monthly Payment: ${fmt(recPayment)}/mo
+• Payment Type: ${recProgram.includes('Variable') ? 'Interest-only during draw' : 'Fully amortized P&I'}
+
+**All Fixed Options at ${bestRate}%**
+• 5yr: ${fmt(payment5)}/mo | 10yr: ${fmt(payment10)}/mo | 15yr: ${fmt(payment15)}/mo | 30yr: ${fmt(payment30)}/mo
+• Variable IO: ${fmt(ioPayment)}/mo
+
+Click **Apply to Quote Tool** below to auto-fill these values.${cltvWarning}
+
+AUTO_FILL_FIELDS
+${JSON.stringify({
+    borrower_name: ctx.clientName,
+    property_value: ctx.homeValue,
+    first_mortgage_balance: ctx.mortgageBalance,
+    heloc_amount: ctx.helocAmount,
+    combined_ltv: ctx.cltv,
+    program_selected: recProgram,
+    draw_period: recDraw,
+    loan_term: recTerm,
+    interest_rate: bestRate,
+    origination_fee: origFeeAmt,
+    payment_type: recProgram.includes('Variable') ? 'interest_only' : 'principal_and_interest',
+    monthly_payment_estimate: recPayment
+})}` : `I'll help you build a HELOC quote. Please enter the following in the quote form:
+
+• **Home Value** — property value
+• **1st Mortgage Balance** — current mortgage payoff
+• **HELOC Amount** — the green "Net Cash" field at the top
+• **Client Name** — borrower name
+• **Credit Score** — estimated credit score
+
+Or tell me the details directly:
+"Build a quote — $750K home, $350K mortgage, $80K HELOC, 740 score, debt consolidation"
 
 **Available Programs**
 Fixed: 5yr / 10yr / 15yr / 30yr — fully amortized P&I from day one
-Variable: 10yr draw (IO) + 20yr repayment, or 5yr draw (IO)
+Variable: 10yr draw (IO) + 20yr repay, or 5yr draw (IO)`;
 
-**How It Works**
-Borrower can view offers with just a soft credit check — no impact to their score. AI-assisted underwriting evaluates eligibility, and they choose from multiple structures.
+        // ── QUOTE CALCULATION ──
+        responses.quote_calculation = hasData && ctx.helocAmount > 0 ? `**Payment Calculations for ${ctx.clientName}**
 
-Once you provide the details, I'll calculate CLTV, recommend the best program, and auto-fill the quote fields.`,
-
-            quote_calculation: `**Payment Calculation**
+HELOC Amount: ${fmt(ctx.helocAmount)} at ${bestRate}%
 
 **Fixed HELOC (Principal & Interest)**
-Formula: Fully amortized P&I = Loan × [r(1+r)^n] / [(1+r)^n - 1]
-
-Example at $150,000 / 8.25% / 15 years:
-• Monthly P&I: $1,453
-• Total interest over life: ~$111,540
+| Term | Monthly P&I | Total Interest |
+|------|-------------|----------------|
+| 5 Year | ${fmt(payment5)} | ${fmt(payment5 * 60 - ctx.helocAmount)} |
+| 10 Year | ${fmt(payment10)} | ${fmt(payment10 * 120 - ctx.helocAmount)} |
+| 15 Year | ${fmt(payment15)} | ${fmt(payment15 * 180 - ctx.helocAmount)} |
+| 30 Year | ${fmt(payment30)} | ${fmt(payment30 * 360 - ctx.helocAmount)} |
 
 **Variable HELOC (Interest-Only Draw)**
-Formula: IO Payment = Loan × Rate ÷ 12
-
-Example at $150,000 / 8.25%:
-• Monthly IO: $1,031 (during draw period)
+• Monthly IO: ${fmt(ioPayment)} at ${bestVarRate}% (during draw period)
 • After draw: converts to fully amortized repayment
 
-**CLTV Calculation**
-CLTV = (First Mortgage + HELOC Amount) ÷ Property Value
-Most programs allow up to 85% CLTV for primary residences.
+**CLTV**: ${cltvStatus}${cltvWarning}` : `**Payment Calculation**
 
-What numbers would you like me to calculate?`,
+Enter a HELOC amount in the "Net Cash" field and I'll calculate payments across all programs.
 
-            program_recommendation: `**Program Recommendation Guide**
+**Formulas Used:**
+• Fixed P&I: Loan × [r(1+r)^n] / [(1+r)^n - 1]
+• Variable IO: Loan × Rate ÷ 12
+• CLTV: (First Mortgage + HELOC) ÷ Property Value
 
-Based on borrower goals, here are my recommendations:
+Or ask me directly: "Calculate payment on $150K at 8.25% for 15 years"`;
 
-**Debt Consolidation** → 15 Year Fixed HELOC
-• 4-year draw window, fully amortized P&I
-• Replaces revolving debt with structured payoff
-• Balance pays down from day one
+        // ── PROGRAM RECOMMENDATION ──
+        responses.program_recommendation = hasData && ctx.helocAmount > 0 ? `**Program Recommendation for ${ctx.clientName}**
 
-**Short-Term Liquidity** → 5 Year Fixed HELOC
-• 2-year draw window, shortest term
-• Lower total interest cost
-• Fast payoff for short-term needs
+Based on ${fmt(ctx.helocAmount)} HELOC at ${ctx.cltv}% CLTV:
 
-**Home Improvement** → 10 Year Fixed HELOC
-• 3-year draw window, moderate term
-• Good balance of payment size and payoff speed
+**Best Fit: ${recProgram}**
+${recReason}
+• Monthly Payment: ${fmt(recPayment)}/mo
+• Draw Window: ${recDraw}
 
-**Payment Flexibility** → 10 Year Variable HELOC
-• 10-year interest-only draw period
-• Lower payments during draw phase
-• 20-year repayment after draw ends
+**All Options Compared**
+| Program | Payment | Draw | Best For |
+|---------|---------|------|----------|
+| 5yr Fixed | ${fmt(payment5)} | 2yr | Rapid payoff |
+| 10yr Fixed | ${fmt(payment10)} | 3yr | Home improvement |
+| 15yr Fixed | ${fmt(payment15)} | 4yr | Debt consolidation |
+| 30yr Fixed | ${fmt(payment30)} | 5yr | Max cash flow |
+| 10yr Variable | ${fmt(ioPayment)} IO | 10yr | Payment flexibility |
 
-**Maximum Cash Flow** → 30 Year Fixed HELOC
-• 5-year draw window, longest term
-• Lowest monthly payment of all fixed programs
-• Best for borrowers prioritizing cash flow
+Tell me about the borrower's goal and I'll refine my recommendation.${cltvWarning}` : `**Program Recommendation Guide**
 
-Tell me about your borrower's situation and I'll recommend the best fit.`,
+**By Borrower Goal:**
+• **Debt Consolidation** → 15 Year Fixed (4yr draw, P&I)
+• **Short-Term Liquidity** → 5 Year Fixed (2yr draw, fastest payoff)
+• **Home Improvement** → 10 Year Fixed (3yr draw, moderate)
+• **Payment Flexibility** → 10 Year Variable (10yr IO draw)
+• **Maximum Cash Flow** → 30 Year Fixed (5yr draw, lowest payment)
 
-            complex_strategy: `**Deal Strategy Analysis**
+Enter borrower details in the form and click **Recommend Program** for a personalized analysis.`;
 
-**Recommended Structure**
-15 Year Fixed HELOC — 4-year draw window
-Fully amortized principal and interest payments.
+        // ── COMPLEX STRATEGY ──
+        responses.complex_strategy = hasData && ctx.helocAmount > 0 ? `**Deal Strategy for ${ctx.clientName}**
 
-**Why This Structure**
-This program starts paying down the balance immediately. For borrowers looking to consolidate debt or access equity responsibly, the structured payoff prevents the balance from growing like revolving credit.
+**Current Position**
+• Property: ${fmt(ctx.homeValue)} | Mortgage: ${fmt(ctx.mortgageBalance)} | HELOC: ${fmt(ctx.helocAmount)}
+• CLTV: ${cltvStatus}
+• Available equity at 85%: ${fmt(ctx.maxEquityAt85)}
+
+**Recommended: ${recProgram}**
+${recReason}
+• Payment: ${fmt(recPayment)}/mo
 
 **Approval Path**
 1. Soft credit check — zero impact to score
@@ -1991,104 +2360,98 @@ This program starts paying down the balance immediately. For borrowers looking t
 4. Borrower selects preferred offer — full control
 5. Funding possible in as fast as 5 days
 
-**Alternative Structures to Present**
-• 10 Year Fixed — higher payment, faster payoff, lower total interest
-• 30 Year Fixed — lower payment, more cash flow flexibility
-• Variable 10yr Draw — interest-only during draw for maximum flexibility
+**Alternative Structures**
+• 10yr Fixed: ${fmt(payment10)}/mo — faster payoff, lower total interest
+• 30yr Fixed: ${fmt(payment30)}/mo — lower payment, more cash flow
+• Variable IO: ${fmt(ioPayment)}/mo — interest-only during draw
 
-Present all options transparently. Let the borrower decide what fits their goals.`,
+Present all options transparently. Let the borrower decide.${cltvWarning}` : `**Deal Strategy Analysis**
 
-            objection_handling: `**Objection Response Scripts**
+Enter borrower details in the quote form (Home Value, Mortgage Balance, HELOC Amount) and I'll provide a complete strategy with:
+• Equity evaluation & CLTV check
+• Program recommendation with reasoning
+• Payment comparison across all structures
+• Approval path & timeline`;
+
+        // ── OBJECTION HANDLING ──
+        responses.objection_handling = `**Objection Response Scripts**
 
 **"The rate seems high"**
-"I understand rate is important. The advantage is you can see your actual offers with just a soft credit check — no impact to your score. You compare multiple structures and pick what fits your goals. Unlike credit cards at 22%+, this HELOC at 8-9% saves thousands in interest while giving you structured payoff."
+"I understand rate is important. You can see your actual offers with just a soft credit check — no impact to your score. Unlike credit cards at 22%+, a HELOC at 8-9% saves thousands while providing structured payoff."${hasData && ctx.helocAmount > 0 ? `\n*For ${ctx.clientName}: At ${bestRate}%, the ${recProgram} payment is ${fmt(recPayment)}/mo.*` : ''}
 
 **"How long does this take?"**
-"Our platform uses AI-assisted underwriting and bank-grade digital verification. The process is faster than traditional HELOCs — some approvals can fund in as little as 5 days depending on documentation."
+"AI-assisted underwriting and digital verification — some approvals fund in as little as 5 days."
 
 **"Is my information safe?"**
-"Your information is protected with bank-grade security — the same level used by major financial institutions. We never sell your data to third parties. You see all your options transparently and choose what works best. There's no obligation."
+"Bank-grade security. We never sell your data to third parties."
 
 **"I'm not sure I need this right now"**
-"That's completely fine. You can view your potential offers with just a soft credit check — no commitment, no impact to your credit. Think of it as understanding what's available to you. Many clients find it helpful to know their options before they need them."
+"View potential offers with just a soft credit check — no commitment, no impact to credit."
 
 **"Why not just refinance?"**
-"A refinance replaces your first mortgage — which means giving up your current rate. A HELOC lets you access equity without touching your first mortgage. If your current rate is below market, a HELOC preserves that advantage."`,
+"A refinance replaces your first mortgage — you'd give up your current rate. A HELOC accesses equity without touching your first mortgage."`;
 
-            sales_coach: `**Sales Coach — How to Present This HELOC**
+        // ── SALES COACH ──
+        responses.sales_coach = hasData && ctx.helocAmount > 0 ? `**Sales Coach — Presenting to ${ctx.clientName}**
 
 **Loan Structure**
-15 Year Fixed HELOC with 4-year draw window.
-Fully amortized principal and interest payments.
+${recProgram} with ${recDraw} draw window.
+${recProgram.includes('Variable') ? 'Interest-only payments during draw period.' : 'Fully amortized principal and interest payments.'}
+Payment: ${fmt(recPayment)}/mo on ${fmt(ctx.helocAmount)} at ${bestRate}%
 
-**Strategy Explanation**
-This structure works like a traditional loan — the balance pays down from day one. The borrower gets structured payoff with predictable payments, and the 4-year draw window provides flexibility to access additional funds if needed.
+**Strategy**
+${recReason}
 
 **Suggested Client Script**
-"This program works more like a traditional loan. Instead of interest-only payments, the balance starts paying down right away with principal and interest. That helps build equity faster and keeps everything on a predictable schedule."
+"${ctx.clientName.split(' ')[0] || 'Mr./Ms. Borrower'}, ${recProgram.includes('Variable')
+    ? `this program gives you maximum flexibility. During the ${recDraw} draw period, you only pay interest — that's ${fmt(ioPayment)} per month.`
+    : `this program works more like a traditional loan. Your payment of ${fmt(recPayment)} per month includes both principal and interest, so the balance pays down right away.`}"
 
-**How To Explain The Process**
-"You can view your potential offers with just a soft credit check — no impact to your credit score. Our technology evaluates your eligibility quickly, verifies income securely, and presents you with multiple options. You pick the one that works best for you. Some approvals can fund in as little as 5 days."
+**Process Script**
+"You can view your offers with a soft credit check — no impact to your score. Our technology evaluates eligibility quickly, verifies income securely, and presents multiple options. Some approvals fund in as little as 5 days."
 
 **Key Talking Points**
-• Soft credit check — no hard pull to view offers
-• Multiple loan structures — borrower picks the best fit
-• Bank-grade security — data never sold to third parties
-• Borrower controls every decision
-• Funding possible in as fast as 5 days
-• Fixed rate = predictable payments, no rate surprises`,
+• Soft credit check — no hard pull
+• CLTV at ${ctx.cltv}% — ${ctx.cltv <= 85 ? 'well within guidelines' : 'may need adjustment'}
+• ${recProgram.includes('Variable') ? 'IO flexibility during draw' : 'Fixed rate = predictable payments'}
+• Bank-grade security — data never sold` : `**Sales Coach**
 
-            approval_process: `**Approval Process — How It Works**
+Fill in the borrower details in the quote form and I'll generate:
+• A customized loan structure breakdown
+• Personalized client script using their name
+• Strategy explanation tailored to their situation
 
-**Step 1 — Application**
-Borrower submits basic information. No commitment required.
+Or tell me: "How should I present a $100K HELOC for debt consolidation?"`;
 
-**Step 2 — Soft Credit Check**
-We evaluate eligibility using a soft pull — no impact to the borrower's credit score. They can see potential offers without any risk.
+        // ── APPROVAL PROCESS ──
+        responses.approval_process = `**Approval Process — How It Works**
 
-**Step 3 — AI-Assisted Underwriting**
-Our platform uses automated underwriting to quickly evaluate the borrower's profile against program eligibility.
+**Step 1 — Application** — Borrower submits basic info. No commitment.
+**Step 2 — Soft Credit Check** — No impact to score. See potential offers risk-free.
+**Step 3 — AI-Assisted Underwriting** — Automated profile evaluation.
+**Step 4 — Income Verification** — Secure bank-grade digital verification.
+**Step 5 — Offer Selection** — Borrower reviews structures, chooses best fit.
+**Step 6 — Final Approval & Closing** — Some loans fund in as little as 5 days.${hasData && ctx.helocAmount > 0 ? `\n\n**For ${ctx.clientName}'s Deal**\n• HELOC: ${fmt(ctx.helocAmount)} | CLTV: ${ctx.cltv}%\n• ${ctx.cltv <= 85 ? 'CLTV within guidelines — should move through underwriting smoothly.' : '⚠️ CLTV exceeds 85% — may require additional review.'}` : ''}`;
 
-**Step 4 — Income Verification**
-Secure bank-grade technology verifies income digitally. This reduces paperwork and speeds up the process.
+        // ── SIMPLE CHAT ──
+        responses.simple_chat = `I'm Ezra, your AI loan structuring co-pilot.${hasData ? `\n\n**Current Quote**: ${ctx.clientName !== 'Borrower' ? ctx.clientName + ' — ' : ''}${ctx.helocAmount > 0 ? fmt(ctx.helocAmount) + ' HELOC' : 'No amount set'}${ctx.homeValue > 0 ? ' | ' + fmt(ctx.homeValue) + ' property' : ''}${ctx.cltv > 0 ? ' | ' + ctx.cltv + '% CLTV' : ''}` : ''}
 
-**Step 5 — Offer Selection**
-The borrower reviews multiple loan structures and chooses the option that best fits their goals. They remain in complete control.
+Here's what I can do:
+• **Build Quote** — auto-fill quote from borrower data
+• **Structure Deal** — full deal analysis with recommendations
+• **Recommend Program** — best program for borrower's goal
+• **Calculate Payment** — run numbers on any scenario
+• **Handle Objections** — scripts for common concerns
+• **Client Scripts** — word-for-word presentation scripts
 
-**Step 6 — Final Approval & Closing**
-Final underwriting review and closing. Some loans may fund in as little as 5 days.
+${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal"** or **"Build Quote"** for a full analysis.' : 'Enter borrower details in the quote form, then ask me to structure the deal.'}`;
 
-**Key Points**
-• No hard credit pull to view initial offers
-• Borrower information is never sold to third parties
-• All options presented transparently
-• Borrower chooses — no pressure, no obligation`,
+        // Simulate brief delay for UX
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-            simple_chat: `I'm Ezra, your AI loan structuring co-pilot. Here's what I can do:
-
-• **Build Quote** — "Ezra build a quote for [client name]"
-• **Structure Deal** — "Ezra structure this deal" + borrower details
-• **Recommend Program** — "Which program is best for debt consolidation?"
-• **Calculate Payment** — "Calculate payment on $150K at 8.25% for 15 years"
-• **Handle Objections** — "How do I handle the rate concern?"
-• **Client Scripts** — "How should I explain this HELOC?"
-• **Approval Process** — "How does the approval process work?"
-• **Deal Radar** — Scan your pipeline for equity opportunities
-
-What would you like to work on?`
-        };
-
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Extract AUTO_FILL_FIELDS from response if present
-        const responseContent = mockResponses[intent] || mockResponses.simple_chat;
+        const responseContent = responses[intent] || responses.simple_chat;
         const autoFillData = extractAutoFillFields(responseContent);
-
-        return {
-            content: responseContent,
-            autoFillFields: autoFillData
-        };
+        return { content: responseContent, autoFillFields: autoFillData };
     }
 
     // Parse AUTO_FILL_FIELDS JSON from AI response
@@ -2182,7 +2545,16 @@ What would you like to work on?`
     }
 
     function applyAutoFill(fields) {
-        // Map Ezra fields to actual form input IDs
+        // Use EzraReal for comprehensive field mapping if available
+        if (window.EzraReal && EzraState.lastQuote) {
+            const applied = window.EzraReal.applyToForm(EzraState.lastQuote);
+            if (typeof showToast === 'function') {
+                showToast(`Ezra applied ${applied.length} fields — quote updated`, 'success');
+            }
+            return;
+        }
+        
+        // Fallback to basic mapping
         const fieldMap = {
             borrower_name: 'in-client-name',
             property_value: 'in-home-value',
@@ -2193,7 +2565,6 @@ What would you like to work on?`
 
         let appliedCount = 0;
 
-        // Helper to set a field and flash it green
         function setField(id, value) {
             const field = document.getElementById(id);
             if (!field) return false;
@@ -2207,15 +2578,12 @@ What would you like to work on?`
             return true;
         }
 
-        // Apply core form fields
         Object.entries(fields).forEach(([ezraKey, value]) => {
             const formFieldId = fieldMap[ezraKey];
             if (formFieldId) setField(formFieldId, value);
         });
 
-        // Apply origination fee to tier 2 (the recommended/default tier)
         if (fields.origination_fee !== undefined) {
-            // Convert flat fee to percentage of loan amount
             const loanAmt = fields.heloc_amount || 0;
             if (loanAmt > 0) {
                 const origPct = ((fields.origination_fee / loanAmt) * 100).toFixed(2);
@@ -2223,11 +2591,9 @@ What would you like to work on?`
             }
         }
 
-        // Trigger full quote recalculation
         if (typeof updateQuote === 'function') {
             setTimeout(() => {
                 updateQuote();
-                // Show confirmation after recalc
                 if (typeof showToast === 'function') {
                     showToast(`Ezra applied ${appliedCount} fields — quote updated`, 'success');
                 }
@@ -2236,7 +2602,6 @@ What would you like to work on?`
             showToast(`Applied ${appliedCount} fields to quote tool`, 'success');
         }
 
-        // Auto-save
         if (typeof autoSave === 'function') {
             setTimeout(autoSave, 300);
         }
