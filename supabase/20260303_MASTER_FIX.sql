@@ -20,6 +20,8 @@ DO $$ BEGIN
     -- Drop ALL policies on user_roles to stop the recursion
     DROP POLICY IF EXISTS "Super admins can manage roles" ON user_roles;
     DROP POLICY IF EXISTS "Users can view own roles" ON user_roles;
+    DROP POLICY IF EXISTS "Anyone can view own roles" ON user_roles;
+    DROP POLICY IF EXISTS "Super admin manage all roles" ON user_roles;
 
     -- Replace with non-recursive policies
     CREATE POLICY "Anyone can view own roles"
@@ -55,6 +57,15 @@ DROP POLICY IF EXISTS "super_admin_select_all" ON public.profiles;
 DROP POLICY IF EXISTS "super_admin_update_all" ON public.profiles;
 DROP POLICY IF EXISTS "super_admin_insert_all" ON public.profiles;
 DROP POLICY IF EXISTS "super_admin_delete_all" ON public.profiles;
+
+-- Drop new-named policies too (idempotent — safe to re-run)
+DROP POLICY IF EXISTS "profiles_own_select" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_own_insert" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_own_update" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_sa_select" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_sa_update" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_sa_insert" ON public.profiles;
+DROP POLICY IF EXISTS "profiles_sa_delete" ON public.profiles;
 
 -- Now recreate CLEAN policies (no user_roles references, use hardcoded UUID)
 CREATE POLICY "profiles_own_select" ON public.profiles
@@ -101,6 +112,13 @@ DROP POLICY IF EXISTS "Users can insert own quotes" ON public.quotes;
 DROP POLICY IF EXISTS "Users can update own quotes" ON public.quotes;
 DROP POLICY IF EXISTS "Users can delete own quotes" ON public.quotes;
 
+-- Drop new-named policies too (idempotent)
+DROP POLICY IF EXISTS "quotes_own_select" ON public.quotes;
+DROP POLICY IF EXISTS "quotes_own_insert" ON public.quotes;
+DROP POLICY IF EXISTS "quotes_own_update" ON public.quotes;
+DROP POLICY IF EXISTS "quotes_own_delete" ON public.quotes;
+DROP POLICY IF EXISTS "quotes_sa_all" ON public.quotes;
+
 -- Recreate clean policies using is_super_admin() (which is SECURITY DEFINER, bypasses RLS)
 CREATE POLICY "quotes_own_select" ON public.quotes
   FOR SELECT USING (auth.uid() = user_id);
@@ -132,6 +150,13 @@ DROP POLICY IF EXISTS "Users can view own leads" ON public.leads;
 DROP POLICY IF EXISTS "Users can insert own leads" ON public.leads;
 DROP POLICY IF EXISTS "Users can update own leads" ON public.leads;
 DROP POLICY IF EXISTS "Users can delete own leads" ON public.leads;
+
+-- Drop new-named policies too (idempotent)
+DROP POLICY IF EXISTS "leads_own_select" ON public.leads;
+DROP POLICY IF EXISTS "leads_own_insert" ON public.leads;
+DROP POLICY IF EXISTS "leads_own_update" ON public.leads;
+DROP POLICY IF EXISTS "leads_own_delete" ON public.leads;
+DROP POLICY IF EXISTS "leads_sa_all" ON public.leads;
 
 -- Recreate
 CREATE POLICY "leads_own_select" ON public.leads

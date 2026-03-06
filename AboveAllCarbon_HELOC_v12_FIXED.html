@@ -467,6 +467,16 @@ footer { margin-top: 12px; padding: 12px 20px; background-color: var(--slate); c
 .ob-feature-tile .ob-feature-name { font-family:var(--font-heading); font-size:10px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.5px; }
 .ob-feature-tile.ob-locked { opacity:0.4; position:relative; }
 .ob-feature-tile.ob-locked::after { content:'🔒'; position:absolute; top:4px; right:6px; font-size:10px; }
+.ob-upload-group { position:relative; }
+.ob-upload-row { display:flex; gap:8px; align-items:center; }
+.ob-upload-row input[type="url"] { flex:1; }
+.ob-upload-btn { flex-shrink:0; padding:0 14px; height:40px; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; color:#475569; font-family:var(--font-heading); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; gap:6px; }
+.ob-upload-btn:hover { border-color:var(--accent-color); background:#fffbf0; color:var(--primary-color); }
+.ob-upload-btn.uploading { opacity:0.6; pointer-events:none; }
+.ob-upload-preview { margin-top:8px; display:flex; align-items:center; gap:10px; }
+.ob-upload-preview img { border-radius:8px; border:1px solid #e2e8f0; object-fit:cover; }
+.ob-upload-preview .ob-upload-remove { background:none; border:none; color:#ef4444; font-size:16px; cursor:pointer; padding:2px 6px; border-radius:4px; }
+.ob-upload-preview .ob-upload-remove:hover { background:#fef2f2; }
 .ob-score-ring { width:120px; height:120px; margin:0 auto 16px; position:relative; }
 .ob-score-ring svg { transform:rotate(-90deg); }
 .ob-score-ring .ob-ring-bg { fill:none; stroke:#e2e8f0; stroke-width:8; }
@@ -1113,7 +1123,7 @@ footer { border-top: 2px solid var(--accent-color); }
                 <div class="input-field"><label>Website</label><input type="text" id="lo-website" value="helocwitheddie.com" oninput="updateProfile()"></div>
             </div>
             <div class="input-group" style="margin-top:8px;">
-                <div class="input-field" style="flex: 2;"><label>Headshot URL</label><input type="text" id="lo-headshot-url" value="https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/693bb3fdeac0a8d6852417e6.jpg" oninput="updateProfile()"></div>
+                <div class="input-field" style="flex: 2;"><label>Headshot URL</label><div style="display:flex;gap:6px;"><input type="text" id="lo-headshot-url" value="https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/693bb3fdeac0a8d6852417e6.jpg" oninput="updateProfile()" style="flex:1;"><button type="button" class="btn" style="background:rgba(255,255,255,0.1);font-size:9px;padding:6px 12px;white-space:nowrap;" onclick="uploadSettingsImage('lo-headshot-url','headshotUrl')">📷 Upload</button></div></div>
             </div>
 
             <!-- Notification Preferences -->
@@ -1137,7 +1147,7 @@ footer { border-top: 2px solid var(--accent-color); }
             </div>
             <div class="input-group" style="margin-top:8px;">
                 <div class="input-field" style="flex: 2;"><label>Office Address</label><input type="text" id="lo-address" value="17911 Von Karman Ave Suite 400, Irvine, CA 92614" oninput="updateProfile()"></div>
-                <div class="input-field"><label>Logo URL</label><input type="text" id="lo-logo-url" value="https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/696029737cc1b904fa792d8c.png" oninput="updateProfile()"></div>
+                <div class="input-field"><label>Logo URL</label><div style="display:flex;gap:6px;"><input type="text" id="lo-logo-url" value="https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/696029737cc1b904fa792d8c.png" oninput="updateProfile()" style="flex:1;"><button type="button" class="btn" style="background:rgba(255,255,255,0.1);font-size:9px;padding:6px 12px;white-space:nowrap;" onclick="uploadSettingsImage('lo-logo-url','logoUrl')">📷 Upload</button></div></div>
             </div>
         </div>
     </div>
@@ -2861,6 +2871,51 @@ var OnboardingWizard = (function() {
             var key = el.getAttribute('data-ob-field');
             if (key && wizardData[key]) el.value = wizardData[key];
         });
+        // Show upload previews for existing images
+        ['headshotUrl','logoUrl'].forEach(function(key) {
+            if (wizardData[key]) _updateUploadPreview(key, wizardData[key]);
+        });
+        // Populate Bonzo webhook URL if the field is on this step
+        var bonzoUrlEl = document.getElementById('ob-bonzo-webhook-url');
+        if (bonzoUrlEl) _populateBonzoWebhookUrl(bonzoUrlEl);
+    }
+
+    async function _populateBonzoWebhookUrl(el) {
+        var userId = window.currentUserId || 'USER_ID';
+        var baseUrl = (typeof SUPABASE_FUNCTIONS_URL !== 'undefined' ? SUPABASE_FUNCTIONS_URL : 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1') + '/bonzo-webhook';
+        var token = _webhookToken || '';
+        if (!token && window._supabase && userId !== 'USER_ID') {
+            try {
+                var res = await window._supabase.from('user_integrations')
+                    .select('metadata').eq('user_id', userId).eq('provider', 'webhook_config').maybeSingle();
+                token = res.data?.metadata?.webhook_token || '';
+                if (!token) {
+                    token = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+                    await window._supabase.from('user_integrations').upsert({
+                        user_id: userId, provider: 'webhook_config',
+                        metadata: { webhook_token: token },
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'user_id,provider' });
+                }
+                _webhookToken = token;
+            } catch(e) { console.warn('Could not generate webhook token:', e); }
+        }
+        var tokenParam = token ? '&token=' + token : '';
+        el.value = baseUrl + '?user_id=' + userId + '&source=bonzo' + tokenParam;
+    }
+
+    function _copyBonzoUrl() {
+        var el = document.getElementById('ob-bonzo-webhook-url');
+        if (!el || !el.value || el.value === 'Generating...') {
+            if (typeof showToast === 'function') showToast('Webhook URL is still loading...','warning');
+            return;
+        }
+        navigator.clipboard.writeText(el.value).then(function() {
+            if (typeof showToast === 'function') showToast('Webhook URL copied!','success');
+        }).catch(function() {
+            el.select(); document.execCommand('copy');
+            if (typeof showToast === 'function') showToast('Webhook URL copied!','success');
+        });
     }
 
     function renderDots(activeIndex) {
@@ -2955,8 +3010,8 @@ var OnboardingWizard = (function() {
                         '<div class="ob-field"><label>Company DRE</label><input type="text" data-ob-field="coDre" placeholder="e.g., 02022356"></div>'+
                     '</div>'+
                     '<div class="ob-field"><label>Office Address</label><input type="text" data-ob-field="loAddress" placeholder="123 Main St, Suite 100, City, ST 12345"></div>'+
-                    '<div class="ob-field"><label>Headshot URL</label><input type="url" data-ob-field="headshotUrl" placeholder="https://..." oninput="OnboardingWizard._updatePreview()"><div class="ob-hint">Paste a direct image URL. Square crop works best.</div></div>'+
-                    '<div class="ob-field"><label>Company Logo URL</label><input type="url" data-ob-field="logoUrl" placeholder="https://..." oninput="OnboardingWizard._updatePreview()"><div class="ob-hint">Transparent PNG recommended.</div></div>'+
+                    '<div class="ob-field ob-upload-group"><label>LO Headshot</label><div class="ob-upload-row"><input type="url" data-ob-field="headshotUrl" placeholder="https://... or upload" oninput="OnboardingWizard._updatePreview()"><button type="button" class="ob-upload-btn" id="ob-upload-btn-headshotUrl" onclick="OnboardingWizard._uploadFile(\'headshotUrl\',\'image/*\')">&#128247; Upload</button></div><div id="ob-file-preview-headshotUrl"></div><div class="ob-hint">Square crop works best. Upload an image or paste a URL.</div></div>'+
+                    '<div class="ob-field ob-upload-group"><label>Company Logo</label><div class="ob-upload-row"><input type="url" data-ob-field="logoUrl" placeholder="https://... or upload" oninput="OnboardingWizard._updatePreview()"><button type="button" class="ob-upload-btn" id="ob-upload-btn-logoUrl" onclick="OnboardingWizard._uploadFile(\'logoUrl\',\'image/*\')">&#128247; Upload</button></div><div id="ob-file-preview-logoUrl"></div><div class="ob-hint">Transparent PNG recommended. Upload an image or paste a URL.</div></div>'+
                 '</div>'+
                 '<div style="flex:0 0 170px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:8px;">'+
                     '<div class="ob-preview-card" id="ob-preview-card">'+
@@ -3077,15 +3132,9 @@ var OnboardingWizard = (function() {
         if (crm === 'none') {
             cards = '<div style="text-align:center;padding:24px;color:rgba(255,255,255,0.4);font-size:12px;">You chose to skip CRM setup. You can configure integrations anytime in Settings &#8594; Integrations.</div>';
         } else {
-            // Bonzo card (show if bonzo or both)
+            // Bonzo card (show if bonzo or both) — custom layout with webhook URL
             if (crm === 'bonzo' || crm === 'both') {
-                cards += renderIntCard('bonzo','&#127744; Bonzo CRM','Two-way lead sync with Bonzo',[
-                    {field:'bonzoApiKey',label:'Bonzo Xcode / API Key',type:'password',placeholder:'Your Bonzo Xcode key'},
-                    {field:'bonzoTeamId',label:'Team ID (optional)',type:'text',placeholder:'team_xxxxxxxx'}
-                ],'testBonzoConnection',[
-                    'Find in Bonzo &#8594; Settings &#8594; API Keys &#8594; Copy your Xcode key',
-                    'Only needed for multi-team. Find in Bonzo &#8594; Settings &#8594; Teams'
-                ]);
+                cards += renderBonzoCard();
             }
             // Radar (show for all CRM users at tier 1+)
             if (userTierLevel >= 1) {
@@ -3128,6 +3177,33 @@ var OnboardingWizard = (function() {
                 '<button class="ob-btn-skip" onclick="OnboardingWizard.skipStep()">Skip integrations</button>'+
                 '<button class="ob-btn ob-btn-primary" onclick="OnboardingWizard.next()">Next &#8594;</button>'+
             '</div>'+
+        '</div>';
+    }
+
+    function renderBonzoCard() {
+        return '<div class="ob-int-card">'+
+            '<h5>&#127744; Bonzo CRM</h5>'+
+            '<p style="font-size:10px;color:rgba(255,255,255,0.5);margin:0 0 10px 0;">Receive leads from Bonzo via webhook</p>'+
+            '<div class="ob-field" style="margin-bottom:8px;">'+
+                '<label style="color:#fb923c;">Step 1: Copy Your Webhook URL</label>'+
+                '<div style="display:flex;gap:4px;align-items:center;">'+
+                    '<input type="text" id="ob-bonzo-webhook-url" readonly style="flex:1;font-size:9px;background:rgba(0,0,0,0.3);border-color:rgba(251,146,60,0.3);color:#fb923c;cursor:text;" placeholder="Generating...">'+
+                    '<button class="ob-btn" style="background:#fb923c;color:#fff;font-size:9px;padding:5px 10px;white-space:nowrap;" onclick="OnboardingWizard._copyBonzoUrl()">&#128203; Copy</button>'+
+                '</div>'+
+                '<div class="ob-hint" style="font-size:8px;color:rgba(255,255,255,0.35);margin-top:2px;">&#128161; Paste this URL into Bonzo &#8594; Settings &#8594; Webhooks</div>'+
+            '</div>'+
+            '<div class="ob-field" style="margin-bottom:8px;">'+
+                '<label style="color:#fb923c;">Step 2: Enter Your Bonzo Xcode</label>'+
+                '<input type="password" data-ob-field="bonzoApiKey" placeholder="Xcode from Bonzo Settings">'+
+                '<div class="ob-hint" style="font-size:8px;color:rgba(255,255,255,0.35);margin-top:2px;">&#128161; Find in Bonzo &#8594; Settings &#8594; API Keys &#8594; Copy your Xcode key</div>'+
+            '</div>'+
+            '<div class="ob-field" style="margin-bottom:8px;">'+
+                '<label>Team ID (optional)</label>'+
+                '<input type="text" data-ob-field="bonzoTeamId" placeholder="team_xxxxxxxx">'+
+                '<div class="ob-hint" style="font-size:8px;color:rgba(255,255,255,0.35);margin-top:2px;">&#128161; Only needed for multi-team accounts</div>'+
+            '</div>'+
+            '<button class="ob-btn" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);font-size:9px;padding:5px 12px;margin-top:4px;" onclick="OnboardingWizard._testConnection(\'bonzo\',\'testBonzoConnection\')"><span id="ob-test-icon-bonzo">&#128279;</span> Test Connection</button>'+
+            '<div id="ob-test-status-bonzo" style="font-size:10px;margin-top:6px;display:none;"></div>'+
         '</div>';
     }
 
@@ -3338,6 +3414,81 @@ var OnboardingWizard = (function() {
         if (typeof updateQuote === 'function') updateQuote();
     }
 
+    // ===== File upload to Supabase Storage =====
+    function _uploadFile(fieldKey, acceptType) {
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = acceptType || 'image/*';
+        input.onchange = async function() {
+            var file = input.files[0];
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) {
+                if (typeof showToast === 'function') showToast('File too large. Maximum 5MB.', 'error');
+                return;
+            }
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) {
+                if (typeof showToast === 'function') showToast('Please sign in to upload files.', 'error');
+                return;
+            }
+            // Show uploading state
+            var btn = document.getElementById('ob-upload-btn-' + fieldKey);
+            if (btn) { btn.classList.add('uploading'); btn.innerHTML = '&#8987; Uploading...'; }
+
+            var ext = file.name.split('.').pop().toLowerCase();
+            var path = userId + '/' + fieldKey + '_' + Date.now() + '.' + ext;
+            try {
+                var { data, error } = await sb.storage.from('user-assets').upload(path, file, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
+                if (error) throw error;
+                var { data: urlData } = sb.storage.from('user-assets').getPublicUrl(path);
+                var publicUrl = urlData.publicUrl;
+                // Set the URL field and wizard data
+                wizardData[fieldKey] = publicUrl;
+                var urlField = document.querySelector('[data-ob-field="' + fieldKey + '"]');
+                if (urlField) urlField.value = publicUrl;
+                _updatePreview();
+                _updateUploadPreview(fieldKey, publicUrl);
+                if (typeof showToast === 'function') showToast('Image uploaded!', 'success');
+            } catch(e) {
+                console.error('Upload failed:', e);
+                if (typeof showToast === 'function') showToast('Upload failed: ' + (e.message || 'Unknown error'), 'error');
+            } finally {
+                if (btn) { btn.classList.remove('uploading'); btn.innerHTML = '&#128247; Upload'; }
+            }
+        };
+        input.click();
+    }
+
+    function _removeUpload(fieldKey) {
+        wizardData[fieldKey] = '';
+        var urlField = document.querySelector('[data-ob-field="' + fieldKey + '"]');
+        if (urlField) urlField.value = '';
+        _updatePreview();
+        _updateUploadPreview(fieldKey, '');
+    }
+
+    function _updateUploadPreview(fieldKey, url) {
+        var previewEl = document.getElementById('ob-file-preview-' + fieldKey);
+        if (!previewEl) return;
+        if (url) {
+            var isRound = fieldKey === 'headshotUrl';
+            var imgStyle = isRound
+                ? 'width:48px;height:48px;border-radius:50%;object-fit:cover;'
+                : 'height:40px;max-width:120px;object-fit:contain;';
+            previewEl.innerHTML = '<div class="ob-upload-preview">' +
+                '<img style="' + imgStyle + '" src="' + url + '" onerror="this.style.display=\'none\'">' +
+                '<span style="font-size:10px;color:#10b981;font-weight:600;">Uploaded</span>' +
+                '<button class="ob-upload-remove" onclick="OnboardingWizard._removeUpload(\'' + fieldKey + '\')" title="Remove">&times;</button>' +
+            '</div>';
+        } else {
+            previewEl.innerHTML = '';
+        }
+    }
+
     // ===== Preview update for Company step =====
     function _updatePreview() {
         collectStepData();
@@ -3509,7 +3660,8 @@ var OnboardingWizard = (function() {
         complete:complete, minimize:minimize, reopen:reopen,
         _updatePreview:_updatePreview, _selectPreset:_selectPreset,
         _syncAndTest:_syncAndTest, _selectCRM:_selectCRM,
-        _testConnection:_testConnection
+        _testConnection:_testConnection, _uploadFile:_uploadFile,
+        _removeUpload:_removeUpload, _copyBonzoUrl:_copyBonzoUrl
     };
 })();
 
@@ -5240,6 +5392,50 @@ function updateProfile() {
     if (loHeadshotUrl && loHeadshotUrl.value) document.getElementById('footer-img').src = loHeadshotUrl.value;
     if (loLogoUrl && loLogoUrl.value) document.getElementById('company-logo-footer').src = loLogoUrl.value;
     autoSave();
+}
+
+// ===== SETTINGS PANEL IMAGE UPLOAD =====
+function uploadSettingsImage(inputId, fieldKey) {
+    var fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.onchange = async function() {
+        var file = fileInput.files[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) {
+            if (typeof showToast === 'function') showToast('File too large. Maximum 5MB.', 'error');
+            return;
+        }
+        var sb = window._supabase;
+        var userId = window.currentUserId;
+        if (!sb || !userId) {
+            if (typeof showToast === 'function') showToast('Please sign in to upload files.', 'error');
+            return;
+        }
+        var btn = event && event.target;
+        if (btn) { btn.style.opacity = '0.6'; btn.style.pointerEvents = 'none'; btn.textContent = '⏳ Uploading...'; }
+        var ext = file.name.split('.').pop().toLowerCase();
+        var path = userId + '/' + fieldKey + '_' + Date.now() + '.' + ext;
+        try {
+            var { data, error } = await sb.storage.from('user-assets').upload(path, file, {
+                cacheControl: '3600',
+                upsert: true
+            });
+            if (error) throw error;
+            var { data: urlData } = sb.storage.from('user-assets').getPublicUrl(path);
+            var publicUrl = urlData.publicUrl;
+            var target = document.getElementById(inputId);
+            if (target) { target.value = publicUrl; }
+            updateProfile();
+            if (typeof showToast === 'function') showToast('Image uploaded!', 'success');
+        } catch(e) {
+            console.error('Upload failed:', e);
+            if (typeof showToast === 'function') showToast('Upload failed: ' + (e.message || 'Unknown error'), 'error');
+        } finally {
+            if (btn) { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; btn.textContent = '📷 Upload'; }
+        }
+    };
+    fileInput.click();
 }
 
 // ===== ADDRESS AUTOCOMPLETE =====
