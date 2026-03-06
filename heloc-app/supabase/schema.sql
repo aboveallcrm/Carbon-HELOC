@@ -1,6 +1,7 @@
 -- ============================================================
 -- Helper: is_super_admin() — reusable across all non-profiles policies
--- (Cannot be used on profiles table itself — circular dependency)
+-- Runs as function owner (postgres) via SECURITY DEFINER → bypasses RLS
+-- IMPORTANT: Do NOT use on the profiles table itself (use hardcoded UUID instead)
 -- ============================================================
 CREATE OR REPLACE FUNCTION public.is_super_admin() RETURNS boolean
   LANGUAGE sql SECURITY DEFINER STABLE
@@ -16,8 +17,7 @@ create table if not exists public.profiles (
   id uuid references auth.users not null primary key,
   email text,
   role text check (role in ('super_admin', 'admin', 'user')) default 'user',
-  current_tier text check (current_tier in ('carbon', 'titanium', 'platinum', 'obsidian', 'diamond')) default 'carbon',
-  subscription_status text check (subscription_status in ('active', 'trialing', 'canceled', 'past_due', 'suspended')) default 'trialing',
+  tier text check (tier in ('free', 'carbon', 'titanium', 'platinum', 'obsidian', 'diamond')) default 'carbon',
 
   -- Loan Officer Profile Fields
   display_name text,
@@ -27,39 +27,40 @@ create table if not exists public.profiles (
   headshot_url text,
   lead_notifications_email boolean default true,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
-
 );
 
 -- Enable RLS
 alter table public.profiles enable row level security;
 
 -- Policies for Profiles
--- (Super admin uses hardcoded UUID to avoid circular dependency with is_super_admin())
-drop policy if exists "Users can view own profile." on public.profiles;
-create policy "Users can view own profile." on public.profiles for select using (auth.uid() = id);
+-- IMPORTANT: Super admin uses hardcoded UUID to avoid circular dependency with is_super_admin()
+-- Policy names must match 20260303_MASTER_FIX.sql migration
+drop policy if exists "profiles_own_select" on public.profiles;
+create policy "profiles_own_select" on public.profiles for select using (auth.uid() = id);
 
-drop policy if exists "Users can insert their own profile." on public.profiles;
-create policy "Users can insert their own profile." on public.profiles for insert with check (auth.uid() = id);
+drop policy if exists "profiles_own_insert" on public.profiles;
+create policy "profiles_own_insert" on public.profiles for insert with check (auth.uid() = id);
 
-drop policy if exists "Users can update own profile." on public.profiles;
-create policy "Users can update own profile." on public.profiles for update using (auth.uid() = id);
+drop policy if exists "profiles_own_update" on public.profiles;
+create policy "profiles_own_update" on public.profiles for update using (auth.uid() = id);
 
-drop policy if exists "super_admin_select_all" on public.profiles;
-create policy "super_admin_select_all" on public.profiles for select
+drop policy if exists "profiles_sa_select" on public.profiles;
+create policy "profiles_sa_select" on public.profiles for select
   using (auth.uid() = '795aea13-6aba-45f2-97d4-04576f684557'::uuid);
 
-drop policy if exists "super_admin_update_all" on public.profiles;
-create policy "super_admin_update_all" on public.profiles for update
+drop policy if exists "profiles_sa_update" on public.profiles;
+create policy "profiles_sa_update" on public.profiles for update
   using (auth.uid() = '795aea13-6aba-45f2-97d4-04576f684557'::uuid)
   with check (auth.uid() = '795aea13-6aba-45f2-97d4-04576f684557'::uuid);
 
-drop policy if exists "super_admin_insert_all" on public.profiles;
-create policy "super_admin_insert_all" on public.profiles for insert
+drop policy if exists "profiles_sa_insert" on public.profiles;
+create policy "profiles_sa_insert" on public.profiles for insert
   with check (auth.uid() = '795aea13-6aba-45f2-97d4-04576f684557'::uuid);
 
-drop policy if exists "super_admin_delete_all" on public.profiles;
-create policy "super_admin_delete_all" on public.profiles for delete
+drop policy if exists "profiles_sa_delete" on public.profiles;
+create policy "profiles_sa_delete" on public.profiles for delete
   using (auth.uid() = '795aea13-6aba-45f2-97d4-04576f684557'::uuid);
+
 
 -- Create User Integrations Table (Bonzo, GHL)
 create table if not exists public.user_integrations (
@@ -97,6 +98,7 @@ drop policy if exists "Super Admin full access to integrations." on public.user_
 create policy "Super Admin full access to integrations." on public.user_integrations for all
   using (is_super_admin());
 
+
 -- Create Quotes Table
 create table if not exists public.quotes (
   id uuid default gen_random_uuid() primary key,
@@ -108,21 +110,23 @@ create table if not exists public.quotes (
 
 alter table public.quotes enable row level security;
 
-drop policy if exists "Users can view own quotes." on public.quotes;
-create policy "Users can view own quotes." on public.quotes for select using (auth.uid() = user_id);
+-- Policy names must match 20260303_MASTER_FIX.sql migration
+drop policy if exists "quotes_own_select" on public.quotes;
+create policy "quotes_own_select" on public.quotes for select using (auth.uid() = user_id);
 
-drop policy if exists "Users can insert own quotes." on public.quotes;
-create policy "Users can insert own quotes." on public.quotes for insert with check (auth.uid() = user_id);
+drop policy if exists "quotes_own_insert" on public.quotes;
+create policy "quotes_own_insert" on public.quotes for insert with check (auth.uid() = user_id);
 
-drop policy if exists "Users can update own quotes." on public.quotes;
-create policy "Users can update own quotes." on public.quotes for update using (auth.uid() = user_id);
+drop policy if exists "quotes_own_update" on public.quotes;
+create policy "quotes_own_update" on public.quotes for update using (auth.uid() = user_id);
 
-drop policy if exists "Users can delete own quotes." on public.quotes;
-create policy "Users can delete own quotes." on public.quotes for delete using (auth.uid() = user_id);
+drop policy if exists "quotes_own_delete" on public.quotes;
+create policy "quotes_own_delete" on public.quotes for delete using (auth.uid() = user_id);
 
-drop policy if exists "Super admin full access to quotes" on public.quotes;
-create policy "Super admin full access to quotes" on public.quotes for all
+drop policy if exists "quotes_sa_all" on public.quotes;
+create policy "quotes_sa_all" on public.quotes for all
   using (is_super_admin());
+
 
 -- Create Leads Table
 create table if not exists public.leads (
@@ -143,21 +147,23 @@ create table if not exists public.leads (
 
 alter table public.leads enable row level security;
 
-drop policy if exists "Users can view own leads." on public.leads;
-create policy "Users can view own leads." on public.leads for select using (auth.uid() = user_id);
+-- Policy names must match 20260303_MASTER_FIX.sql migration
+drop policy if exists "leads_own_select" on public.leads;
+create policy "leads_own_select" on public.leads for select using (auth.uid() = user_id);
 
-drop policy if exists "Users can insert own leads." on public.leads;
-create policy "Users can insert own leads." on public.leads for insert with check (auth.uid() = user_id);
+drop policy if exists "leads_own_insert" on public.leads;
+create policy "leads_own_insert" on public.leads for insert with check (auth.uid() = user_id);
 
-drop policy if exists "Users can update own leads." on public.leads;
-create policy "Users can update own leads." on public.leads for update using (auth.uid() = user_id);
+drop policy if exists "leads_own_update" on public.leads;
+create policy "leads_own_update" on public.leads for update using (auth.uid() = user_id);
 
-drop policy if exists "Users can delete own leads." on public.leads;
-create policy "Users can delete own leads." on public.leads for delete using (auth.uid() = user_id);
+drop policy if exists "leads_own_delete" on public.leads;
+create policy "leads_own_delete" on public.leads for delete using (auth.uid() = user_id);
 
-drop policy if exists "leads_super_admin_all" on public.leads;
-create policy "leads_super_admin_all" on public.leads for all
+drop policy if exists "leads_sa_all" on public.leads;
+create policy "leads_sa_all" on public.leads for all
   using (is_super_admin());
+
 
 -- Create App Settings Table (Global Keys - Super Admin Only)
 create table if not exists public.app_settings (
@@ -173,14 +179,15 @@ drop policy if exists "Super Admins can manage app settings." on public.app_sett
 create policy "Super Admins can manage app settings." on public.app_settings for all
   using (is_super_admin());
 
+
 -- Trigger to create profile on signup
 -- Auto-assigns super_admin + diamond for barraganmortgage@gmail.com
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
   if new.email = 'barraganmortgage@gmail.com' then
-    insert into public.profiles (id, email, role, current_tier, subscription_status)
-    values (new.id, new.email, 'super_admin', 'diamond', 'active');
+    insert into public.profiles (id, email, role, tier)
+    values (new.id, new.email, 'super_admin', 'diamond');
   else
     insert into public.profiles (id, email, role)
     values (new.id, new.email, 'user');
@@ -189,11 +196,11 @@ begin
 end;
 $$ language plpgsql security definer;
 
--- Drop trigger if exists to avoid duplication error (though create trigger ... if not exists isn't standard in old pg, dropping is safer)
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
 
 -- ============================================================
 -- Guard: Prevent accidental role/tier downgrade of super admin
@@ -201,10 +208,9 @@ create trigger on_auth_user_created
 create or replace function public.protect_super_admin()
 returns trigger as $$
 begin
-  -- If this is the super admin account, force role + tier back
   if old.id = '795aea13-6aba-45f2-97d4-04576f684557'::uuid then
     new.role := 'super_admin';
-    new.current_tier := 'diamond';
+    new.tier := 'diamond';
   end if;
   return new;
 end;

@@ -347,7 +347,7 @@
             users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
             users.forEach(u => {
-                const tier = u.current_tier || 'carbon';
+                const tier = u.tier || 'carbon';
                 const role = u.role || 'user';
                 const status = u.subscription_status || 'trialing';
                 const quotes = quoteCounts[u.id] || 0;
@@ -382,7 +382,7 @@
             document.getElementById('edit-user-id').value = userId;
             document.getElementById('edit-email').value = user.email || '';
             document.getElementById('edit-role').value = user.role || 'user';
-            document.getElementById('edit-tier').value = user.current_tier || 'carbon';
+            document.getElementById('edit-tier').value = user.tier || 'carbon';
             document.getElementById('edit-status').value = user.subscription_status || 'trialing';
 
             // Load integration keys from user_integrations table
@@ -430,7 +430,7 @@
                     .from('profiles')
                     .update({
                         role: role,
-                        current_tier: tier,
+                        tier: tier,
                         subscription_status: status
                     })
                     .eq('id', userId);

@@ -4505,7 +4505,7 @@ async function loadAllUsers() {
         const safeEmail = escapeAttr(p.email || '');
         const safeId = escapeAttr(p.id || '');
         const safeRole = escapeAttr(p.role || 'user');
-        const safeTier = escapeAttr(p.current_tier || 'carbon');
+        const safeTier = escapeAttr(p.tier || 'carbon');
         const safeStatus = escapeAttr(p.subscription_status || 'trialing');
         var isSelf = p.id === currentId;
         var isSuspended = p.subscription_status === 'suspended';
@@ -4519,7 +4519,7 @@ async function loadAllUsers() {
         return '<tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">' +
             '<td style="padding: 8px 6px; color: white; font-size: 10px;">' + (safeEmail || '—') + '</td>' +
             '<td style="padding: 8px 6px;"><span style="background:' + (roleColors[p.role] || '#6b7280') + '; color: white; padding: 2px 8px; border-radius: 10px; font-size: 8px; font-family: var(--font-heading); text-transform: uppercase;">' + safeRole + '</span></td>' +
-            '<td style="padding: 8px 6px;"><span style="background:' + (tierColors[p.current_tier] || '#6b7280') + '; color: white; padding: 2px 8px; border-radius: 10px; font-size: 8px; font-family: var(--font-heading); text-transform: uppercase;">' + safeTier + '</span></td>' +
+            '<td style="padding: 8px 6px;"><span style="background:' + (tierColors[p.tier] || '#6b7280') + '; color: white; padding: 2px 8px; border-radius: 10px; font-size: 8px; font-family: var(--font-heading); text-transform: uppercase;">' + safeTier + '</span></td>' +
             '<td style="padding: 8px 6px;"><span style="background:' + (statusColors[p.subscription_status] || '#6b7280') + '; color: white; padding: 2px 8px; border-radius: 10px; font-size: 8px; font-family: var(--font-heading);">' + safeStatus + '</span></td>' +
             '<td style="padding: 8px 6px; text-align: center;">' + keyDots + '</td>' +
             '<td style="padding: 8px 6px; color: rgba(255,255,255,0.5); font-size: 9px;">' + escapeAttr(created) + '</td>' +
@@ -4585,7 +4585,7 @@ async function saveUserEdit() {
     // Save profile (role, tier, status)
     var { error } = await sb.from('profiles').update({
         role: role,
-        current_tier: tier,
+        tier: tier,
         subscription_status: status
     }).eq('id', id);
 
@@ -4751,7 +4751,7 @@ async function inviteUser() {
             id: data.user.id,
             email: email,
             role: role,
-            current_tier: tier,
+            tier: tier,
             subscription_status: 'trialing'
         });
 
@@ -5212,21 +5212,33 @@ function updateScreenShareStatus(text, color) {
 
 // ===== PROFILE UPDATE =====
 function updateProfile() {
-    document.getElementById('footer-name').innerText = document.getElementById('lo-name').value;
-    document.getElementById('footer-title').innerText = document.getElementById('lo-title').value;
-    document.getElementById('footer-nmls').innerText = document.getElementById('lo-nmls').value;
-    document.getElementById('footer-dre').innerText = document.getElementById('lo-dre').value;
-    document.getElementById('footer-phone').innerText = document.getElementById('lo-phone').value;
-    document.getElementById('footer-email').innerText = document.getElementById('lo-email').value;
-    document.getElementById('footer-website').innerText = document.getElementById('lo-website').value;
-    document.getElementById('footer-company').innerText = document.getElementById('lo-company').value;
-    document.getElementById('footer-co-nmls').innerText = document.getElementById('co-nmls').value;
-    document.getElementById('footer-co-dre').innerText = document.getElementById('co-dre').value;
-    document.getElementById('footer-address').innerText = document.getElementById('lo-address').value;
-    const headshot = document.getElementById('lo-headshot-url').value;
-    if (headshot) document.getElementById('footer-img').src = headshot;
-    const logo = document.getElementById('lo-logo-url').value;
-    if (logo) document.getElementById('company-logo-footer').src = logo;
+    const loName = document.getElementById('lo-name');
+    const loTitle = document.getElementById('lo-title');
+    const loNmls = document.getElementById('lo-nmls');
+    const loDre = document.getElementById('lo-dre');
+    const loPhone = document.getElementById('lo-phone');
+    const loEmail = document.getElementById('lo-email');
+    const loWebsite = document.getElementById('lo-website');
+    const loCompany = document.getElementById('lo-company');
+    const coNmls = document.getElementById('co-nmls');
+    const coDre = document.getElementById('co-dre');
+    const loAddress = document.getElementById('lo-address');
+    const loHeadshotUrl = document.getElementById('lo-headshot-url');
+    const loLogoUrl = document.getElementById('lo-logo-url');
+    
+    if (loName) document.getElementById('footer-name').innerText = loName.value;
+    if (loTitle) document.getElementById('footer-title').innerText = loTitle.value;
+    if (loNmls) document.getElementById('footer-nmls').innerText = loNmls.value;
+    if (loDre) document.getElementById('footer-dre').innerText = loDre.value;
+    if (loPhone) document.getElementById('footer-phone').innerText = loPhone.value;
+    if (loEmail) document.getElementById('footer-email').innerText = loEmail.value;
+    if (loWebsite) document.getElementById('footer-website').innerText = loWebsite.value;
+    if (loCompany) document.getElementById('footer-company').innerText = loCompany.value;
+    if (coNmls) document.getElementById('footer-co-nmls').innerText = coNmls.value;
+    if (coDre) document.getElementById('footer-co-dre').innerText = coDre.value;
+    if (loAddress) document.getElementById('footer-address').innerText = loAddress.value;
+    if (loHeadshotUrl && loHeadshotUrl.value) document.getElementById('footer-img').src = loHeadshotUrl.value;
+    if (loLogoUrl && loLogoUrl.value) document.getElementById('company-logo-footer').src = loLogoUrl.value;
     autoSave();
 }
 
@@ -5274,50 +5286,60 @@ function setupAddressAutocomplete() {
 }
 
 // ===== STORAGE =====
+function getVal(id) {
+    const el = document.getElementById(id);
+    return el ? el.value : '';
+}
+
 function autoSave() {
-    document.getElementById('autosave-status').innerText = '⏳ Saving...';
-    document.getElementById('autosave-status').classList.add('saving');
+    const autosaveStatus = document.getElementById('autosave-status');
+    if (autosaveStatus) {
+        autosaveStatus.innerText = '⏳ Saving...';
+        autosaveStatus.classList.add('saving');
+    }
     const data = {
-        clientName: document.getElementById('in-client-name').value,
-        clientCredit: document.getElementById('in-client-credit').value,
-        homeValue: document.getElementById('in-home-value').value,
-        mortgageBalance: document.getElementById('in-mortgage-balance').value,
-        netCash: document.getElementById('in-net-cash').value,
-        propertyType: document.getElementById('in-property-type').value,
-        address: document.getElementById('custom-address-input').value,
-        loName: document.getElementById('lo-name').value,
-        loTitle: document.getElementById('lo-title').value,
-        loNmls: document.getElementById('lo-nmls').value,
-        loDre: document.getElementById('lo-dre').value,
-        loPhone: document.getElementById('lo-phone').value,
-        loEmail: document.getElementById('lo-email').value,
-        loWebsite: document.getElementById('lo-website').value,
-        loCompany: document.getElementById('lo-company').value,
-        coNmls: document.getElementById('co-nmls').value,
-        coDre: document.getElementById('co-dre').value,
-        loAddress: document.getElementById('lo-address').value,
-        headshotUrl: document.getElementById('lo-headshot-url').value,
-        logoUrl: document.getElementById('lo-logo-url').value,
-        wlLenderName: document.getElementById('wl-lender-name').value,
-        wlTagline: document.getElementById('wl-tagline').value,
-        wlHeaderBg: document.getElementById('wl-header-bg').value,
-        wlAccent: document.getElementById('wl-accent').value,
-        wlHeaderText: document.getElementById('wl-header-text').value,
-        wlBodyText: document.getElementById('wl-body-text').value,
-        wlApplyLink: document.getElementById('wl-apply-link').value,
-        wlApplyText: document.getElementById('wl-apply-text').value,
-        recTier: document.getElementById('rec-tier-select').value,
-        recTerm: document.getElementById('rec-term-select').value,
+        clientName: getVal('in-client-name'),
+        clientCredit: getVal('in-client-credit'),
+        homeValue: getVal('in-home-value'),
+        mortgageBalance: getVal('in-mortgage-balance'),
+        netCash: getVal('in-net-cash'),
+        propertyType: getVal('in-property-type'),
+        address: getVal('custom-address-input'),
+        loName: getVal('lo-name'),
+        loTitle: getVal('lo-title'),
+        loNmls: getVal('lo-nmls'),
+        loDre: getVal('lo-dre'),
+        loPhone: getVal('lo-phone'),
+        loEmail: getVal('lo-email'),
+        loWebsite: getVal('lo-website'),
+        loCompany: getVal('lo-company'),
+        coNmls: getVal('co-nmls'),
+        coDre: getVal('co-dre'),
+        loAddress: getVal('lo-address'),
+        headshotUrl: getVal('lo-headshot-url'),
+        logoUrl: getVal('lo-logo-url'),
+        wlLenderName: getVal('wl-lender-name'),
+        wlTagline: getVal('wl-tagline'),
+        wlHeaderBg: getVal('wl-header-bg'),
+        wlAccent: getVal('wl-accent'),
+        wlHeaderText: getVal('wl-header-text'),
+        wlBodyText: getVal('wl-body-text'),
+        wlApplyLink: getVal('wl-apply-link'),
+        wlApplyText: getVal('wl-apply-text'),
+        recTier: getVal('rec-tier-select'),
+        recTerm: getVal('rec-term-select'),
         isInterestOnly: isInterestOnly,
         manualRatesEnabled: manualRatesEnabled,
-        t1Orig: document.getElementById('t1-orig').value,
-        t2Orig: document.getElementById('t2-orig').value,
-        t3Orig: document.getElementById('t3-orig').value,
+        t1Orig: getVal('t1-orig'),
+        t2Orig: getVal('t2-orig'),
+        t3Orig: getVal('t3-orig'),
     };
     localStorage.setItem('aboveAllCarbonHELOC', JSON.stringify(data));
     setTimeout(() => {
-        document.getElementById('autosave-status').innerText = '✓ Saved';
-        document.getElementById('autosave-status').classList.remove('saving');
+        if (autosaveStatus) {
+            autosaveStatus.innerText = '✓ Saved';
+            autosaveStatus.classList.remove('saving');
+        }
     }, 500);
 }
 

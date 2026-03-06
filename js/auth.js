@@ -110,15 +110,13 @@ export async function register(email, password) {
 
             const { error: profileError } = await supabase
                 .from('profiles')
-                .insert([
-                    {
-                        id: user.id,
-                        email: email,
-                        role: isAdmin ? 'super_admin' : 'user',
-                        current_tier: 'carbon',
-                        subscription_status: 'trialing'
-                    }
-                ]);
+                .upsert({
+                    id: user.id,
+                    email: email,
+                    role: isAdmin ? 'super_admin' : 'user',
+                    tier: isAdmin ? 'diamond' : 'carbon',
+                    subscription_status: isAdmin ? 'active' : 'trialing'
+                }, { onConflict: 'id' });
 
             if (profileError) {
                 console.error("Profile creation failed:", profileError);
@@ -178,7 +176,7 @@ export async function impersonateUser(targetUserId, readOnly = false) {
 
     const { data: targetProfile } = await supabase
         .from('profiles')
-        .select('id, email, role, current_tier, subscription_status')
+        .select('id, email, role, tier, subscription_status')
         .eq('id', targetUserId)
         .single();
 
@@ -216,7 +214,7 @@ export async function getEffectiveUser(realUser) {
         // Fetch the target profile fresh from DB (don't trust stored data)
         const { data: targetProfile } = await supabase
             .from('profiles')
-            .select('id, email, role, current_tier, subscription_status')
+            .select('id, email, role, tier, subscription_status')
             .eq('id', imp.targetId)
             .single();
 

@@ -29,7 +29,7 @@ try {
     window.currentUserRole = effectiveUser.role || 'user';
     window.currentUserId = effectiveUser.id || null;
     window.currentUserEmail = effectiveUser.email || '';
-    window.currentUserTier = effectiveUser.current_tier || 'carbon';
+    window.currentUserTier = effectiveUser.tier || 'carbon';
     window.logoutUser = logout;
     window.stopImpersonation = stopImpersonation;
     window.impersonateUser = impersonateUser;
@@ -50,7 +50,7 @@ try {
         const label = document.createElement('span');
         label.textContent = isReadOnly
             ? `Viewing as: ${effectiveUser.email} (READ ONLY)`
-            : `Logged in as: ${effectiveUser.email} (${effectiveUser.role} / ${effectiveUser.current_tier || 'carbon'})`;
+            : `Logged in as: ${effectiveUser.email} (${effectiveUser.role} / ${effectiveUser.tier || 'carbon'})`;
         const exitBtn = document.createElement('button');
         exitBtn.textContent = 'Exit';
         exitBtn.style.cssText = isReadOnly
@@ -150,7 +150,7 @@ try {
     });
 
     // Signal to inline scripts that auth is ready (use effective user for role-based UI)
-    window.dispatchEvent(new CustomEvent('auth-ready', { detail: { role: effectiveUser.role, email: effectiveUser.email, tier: effectiveUser.current_tier || 'carbon' } }));
+    window.dispatchEvent(new CustomEvent('auth-ready', { detail: { role: effectiveUser.role, email: effectiveUser.email, tier: effectiveUser.tier || 'carbon' } }));
 
     console.log("Auth ready — role:", effectiveUser.role, effectiveUser.isImpersonated ? '(impersonating)' : '');
 
