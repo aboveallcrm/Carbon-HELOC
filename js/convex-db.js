@@ -24,15 +24,14 @@ export async function saveQuoteToConvex(quoteData) {
             const { error } = await supabase
                 .from('quotes')
                 .update({ quote_data: quoteData, status: 'draft' })
-                .eq('id', _currentQuoteId);
+                .eq('id', _currentQuoteId)
+                .eq('user_id', user.id);
 
             if (error) {
-                console.error("Supabase update error:", error);
-                // If the row was deleted, reset and insert fresh
-                if (error.code === 'PGRST116' || error.message?.includes('0 rows')) {
-                    _currentQuoteId = null;
-                    return saveQuoteToConvex(quoteData);
-                }
+                // Reset ID on any failure so next save does a fresh insert
+                console.warn("Quote update failed, will retry as insert:", error.message);
+                _currentQuoteId = null;
+                // Don't retry immediately to avoid loops — let next auto-save handle it
                 return { ok: false, reason: error.message };
             }
             return { ok: true };

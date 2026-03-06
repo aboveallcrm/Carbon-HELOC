@@ -1524,8 +1524,8 @@ Best regards,
                 <div id="int-bonzo" style="background: rgba(0,0,0,0.15); border-radius: 6px; padding: 10px; margin-bottom: 10px;">
                     <h6 style="font-family: var(--font-heading); font-size: 9px; color: #fb923c; margin: 0 0 8px 0;">🟠 Bonzo CRM (Two-Way Sync)</h6>
                     <div class="input-group">
-                        <div class="input-field" style="flex: 2;"><label>Bonzo Xcode / API Key</label><input type="password" id="bonzo-api-key" placeholder="Your Bonzo Xcode key"></div>
-                        <div class="input-field"><label>Bonzo Team ID (optional)</label><input type="text" id="bonzo-team-id" placeholder="team_xxxxxxxx"></div>
+                        <div class="input-field" style="flex: 2;"><label>Bonzo Xcode</label><input type="password" id="bonzo-api-key" placeholder="Your Bonzo Xcode key"></div>
+                        <div class="input-field" style="flex: 2;"><label>Bonzo API Key</label><input type="password" id="bonzo-api-key-2" placeholder="Your Bonzo API key (if different from Xcode)"></div>
                     </div>
                     <div class="input-group" style="margin-top: 8px;">
                         <div class="input-field" style="flex: 2;">
@@ -1683,8 +1683,8 @@ Best regards,
                 <div style="background: rgba(0,0,0,0.15); border-radius: 6px; padding: 10px; margin-bottom: 10px;">
                     <h6 style="font-family: var(--font-heading); font-size: 9px; color: #fb923c; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Bonzo CRM</h6>
                     <div class="input-group">
-                        <div class="input-field" style="flex: 2;"><label>Bonzo API X-Key</label><input type="password" id="keys-bonzo-api" placeholder="Bonzo Xcode key"></div>
-                        <div class="input-field"><label>Bonzo Team ID</label><input type="text" id="keys-bonzo-team-id" placeholder="team_xxxxxxxx"></div>
+                        <div class="input-field" style="flex: 2;"><label>Bonzo Xcode</label><input type="password" id="keys-bonzo-api" placeholder="Bonzo Xcode key"></div>
+                        <div class="input-field" style="flex: 2;"><label>Bonzo API Key</label><input type="password" id="keys-bonzo-api-2" placeholder="Bonzo API key (if different)"></div>
                     </div>
                     <div class="input-group" style="margin-top: 8px;">
                         <div class="input-field" style="flex: 2;"><label>Bonzo Webhook URL</label><input type="text" id="keys-bonzo-webhook-url" placeholder="https://..."></div>
@@ -2859,7 +2859,7 @@ var OnboardingWizard = (function() {
         loCompany:'lo-company',coNmls:'co-nmls',coDre:'co-dre',loAddress:'lo-address',logoUrl:'lo-logo-url'
     };
     var INT_FIELD_MAP = {
-        bonzoApiKey:'bonzo-api-key',bonzoTeamId:'bonzo-team-id',
+        bonzoApiKey:'bonzo-api-key',bonzoApiKey2:'bonzo-api-key-2',
         radarApiKey:'radar-api-key',ghlApiKey:'ghl-api-key',
         ghlLocationId:'ghl-location-id',n8nWebhookUrl:'n8n-webhook-url'
     };
@@ -3339,9 +3339,9 @@ var OnboardingWizard = (function() {
                 '<div class="ob-hint" style="font-size:8px;color:rgba(255,255,255,0.35);margin-top:2px;">&#128161; Find in Bonzo &#8594; Settings &#8594; API Keys &#8594; Copy your Xcode key</div>'+
             '</div>'+
             '<div class="ob-field" style="margin-bottom:8px;">'+
-                '<label>Team ID (optional)</label>'+
-                '<input type="text" data-ob-field="bonzoTeamId" placeholder="team_xxxxxxxx">'+
-                '<div class="ob-hint" style="font-size:8px;color:rgba(255,255,255,0.35);margin-top:2px;">&#128161; Only needed for multi-team accounts</div>'+
+                '<label>Bonzo API Key (if different from Xcode)</label>'+
+                '<input type="password" data-ob-field="bonzoApiKey2" placeholder="API Key from Bonzo Settings">'+
+                '<div class="ob-hint" style="font-size:8px;color:rgba(255,255,255,0.35);margin-top:2px;">&#128161; Some accounts use a separate API key</div>'+
             '</div>'+
             '<button class="ob-btn" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);font-size:9px;padding:5px 12px;margin-top:4px;" onclick="OnboardingWizard._testConnection(\'bonzo\',\'testBonzoConnection\')"><span id="ob-test-icon-bonzo">&#128279;</span> Test Connection</button>'+
             '<div id="ob-test-status-bonzo" style="font-size:10px;margin-top:6px;display:none;"></div>'+
@@ -4939,7 +4939,7 @@ async function manageUserKeys(id, email) {
     document.getElementById('keys-n8n-webhook').value = meta.n8n_webhook_url || '';
     document.getElementById('keys-ai-key').value = meta.ai_api_key || '';
     document.getElementById('keys-bonzo-api').value = meta.bonzo_api_key || '';
-    document.getElementById('keys-bonzo-team-id').value = meta.bonzo_team_id || '';
+    document.getElementById('keys-bonzo-api-2').value = meta.bonzo_api_key_2 || '';
     document.getElementById('keys-bonzo-webhook-url').value = meta.bonzo_webhook_url || '';
     document.getElementById('keys-fub-api').value = meta.fub_api_key || '';
     // AI config fields
@@ -4961,7 +4961,7 @@ async function saveUserKeys() {
         n8n_webhook_url: document.getElementById('keys-n8n-webhook').value,
         ai_api_key: document.getElementById('keys-ai-key').value,
         bonzo_api_key: document.getElementById('keys-bonzo-api').value,
-        bonzo_team_id: document.getElementById('keys-bonzo-team-id').value,
+        bonzo_api_key_2: document.getElementById('keys-bonzo-api-2').value,
         bonzo_webhook_url: document.getElementById('keys-bonzo-webhook-url').value,
         fub_api_key: document.getElementById('keys-fub-api').value,
         // Per-user AI config
@@ -7073,7 +7073,7 @@ async function generateClientLink() {
             await sb.from('leads').update({
                 quote_url: shortUrl,
                 quote_sent_at: new Date().toISOString(),
-                stage: 'quoted'
+                status: 'Quoted'
             }).eq('id', leadId).catch(function(){});
         }
 
@@ -8599,7 +8599,7 @@ function _gatherIntegrationData() {
         },
         n8n: { webhookUrl: _val('n8n-webhook-url'), auth: _val('n8n-auth') },
         radar: { apiKey: _val('radar-api-key') },
-        bonzo: { apiKey: _val('bonzo-api-key'), teamId: _val('bonzo-team-id') },
+        bonzo: { apiKey: _val('bonzo-api-key'), apiKey2: _val('bonzo-api-key-2') },
         fub: { apiKey: _val('fub-api-key') },
         outboundWebhooks: outboundWebhooks
     };
@@ -8625,7 +8625,7 @@ function _applyIntegrationData(data) {
     if (data.radar) _setVal('radar-api-key', data.radar.apiKey);
     if (data.bonzo) {
         _setVal('bonzo-api-key', data.bonzo.apiKey);
-        _setVal('bonzo-team-id', data.bonzo.teamId);
+        _setVal('bonzo-api-key-2', data.bonzo.apiKey2);
     }
     if (data.fub) _setVal('fub-api-key', data.fub.apiKey);
     if (data.outboundWebhooks && Array.isArray(data.outboundWebhooks)) {
@@ -8691,7 +8691,7 @@ async function saveIntegrations() {
         // Non-super_admin: only save Bonzo data (merge into existing metadata)
         var bonzoData = {
             apiKey: _val('bonzo-api-key'),
-            teamId: _val('bonzo-team-id')
+            apiKey2: _val('bonzo-api-key-2')
         };
         if (sb && userId) {
             try {
@@ -9077,8 +9077,8 @@ async function loadAdvancedAnalytics() {
         if (!analytics || analytics.length === 0) return;
 
         // Fetch leads to compute open rate
-        var { data: leads } = await sb.from('leads').select('id, first_name, last_name, stage').eq('user_id', userId);
-        var quotedLeads = (leads || []).filter(function(l) { return l.stage === 'quoted'; });
+        var { data: leads } = await sb.from('leads').select('id, first_name, last_name, status').eq('user_id', userId);
+        var quotedLeads = (leads || []).filter(function(l) { return l.status === 'quoted'; });
 
         // 1. Open Rate — leads with at least one quote_opened event / total quoted leads
         var leadsWithOpens = new Set();
@@ -9191,7 +9191,7 @@ async function loadUserLeads() {
         // 1. Fetch leads for this user
         const { data: leads, error } = await sb
             .from('leads')
-            .select('id, first_name, last_name, email, phone, source, status, stage, metadata, created_at, dnc, dnc_reason')
+            .select('id, first_name, last_name, email, phone, source, status, metadata, created_at, dnc, dnc_reason')
             .eq('user_id', userId)
             .order('created_at', { ascending: false })
             .limit(200);
@@ -9244,7 +9244,7 @@ async function loadUserLeads() {
         } else if (filter === 'dnc') {
             enriched = enriched.filter(function(l) { return l.dnc === true; });
         } else if (filter !== 'all') {
-            enriched = enriched.filter(function(l) { return l.status === filter || l.stage === filter; });
+            enriched = enriched.filter(function(l) { return l.status === filter; });
         }
 
         if (countEl) countEl.innerText = enriched.length + ' lead' + (enriched.length !== 1 ? 's' : '');
@@ -9298,7 +9298,7 @@ async function loadUserLeads() {
             var email = escapeAttr(l.email || '—');
             var phone = escapeAttr(l.phone || '—');
             var src = escapeAttr(l.source || 'webhook');
-            var st = l.status || l.stage || 'New';
+            var st = l.status || 'New';
             var srcColor = sourceColors[src] || '#6b7280';
             var date = l.created_at ? new Date(l.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
             var safeId = escapeAttr(l.id);
@@ -9368,8 +9368,8 @@ async function loadUserLeads() {
 // Update pipeline dashboard metrics
 function updateDashboard(leads, quotedCount) {
     var total = leads.length;
-    var newCount = leads.filter(function(l) { return (l.status || l.stage) === 'New'; }).length;
-    var contactedCount = leads.filter(function(l) { return (l.status || l.stage) === 'Contacted'; }).length;
+    var newCount = leads.filter(function(l) { return l.status === 'New'; }).length;
+    var contactedCount = leads.filter(function(l) { return l.status === 'Contacted'; }).length;
     var rate = total > 0 ? Math.round((quotedCount / total) * 100) + '%' : '—';
 
     var el = function(id) { return document.getElementById(id); };
@@ -9515,7 +9515,7 @@ function exportLeadsCSV() {
             l.email || '',
             l.phone || '',
             l.source || 'webhook',
-            l.status || l.stage || 'New',
+            l.status || 'New',
             l.isQuoted ? 'Yes' : 'No',
             meta.credit_score || '',
             meta.property_address || '',
@@ -9680,7 +9680,6 @@ async function saveNewLead() {
             phone: phone,
             source: 'manual',
             status: 'New',
-            stage: 'new',
             metadata: {
                 added_manually: true,
                 credit_score: creditScore || '',
@@ -9850,6 +9849,7 @@ async function loadNotifPrefs() {
 </script>
 <script type="module" src="./js/main.js"></script>
 <!-- Ezra AI Loan Structuring Assistant -->
+<script src="./js/ezra-real.js"></script>
 <script src="./js/ezra-chat.js"></script>
 </body>
 </html>

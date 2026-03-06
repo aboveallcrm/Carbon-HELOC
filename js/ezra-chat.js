@@ -2612,93 +2612,94 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
     // ============================================
     async function loadOrCreateConversation() {
         if (!EzraState.user) return;
+        try {
+            const { data } = await EzraState.supabase
+                .from('ezra_conversations')
+                .select('*')
+                .eq('loan_officer_id', EzraState.user.id)
+                .eq('status', 'active')
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
 
-        // Check for existing active conversation
-        const { data, error } = await EzraState.supabase
-            .from('ezra_conversations')
-            .select('*')
-            .eq('loan_officer_id', EzraState.user.id)
-            .eq('status', 'active')
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
-
-        if (data) {
-            EzraState.conversationId = data.id;
-            loadConversationHistory(data.id);
-        } else {
-            createNewConversation();
+            if (data) {
+                EzraState.conversationId = data.id;
+                loadConversationHistory(data.id);
+            } else {
+                createNewConversation();
+            }
+        } catch (e) {
+            // Tables may not exist yet — Ezra works fine without persistence
         }
     }
 
     async function createNewConversation() {
-        const conversationId = 'ezra_' + Date.now();
-        
-        const { data, error } = await EzraState.supabase
-            .from('ezra_conversations')
-            .insert({
-                conversation_id: conversationId,
-                loan_officer_id: EzraState.user.id,
-                tier_access: EzraState.userTier,
-                status: 'active'
-            })
-            .select()
-            .single();
+        try {
+            const conversationId = 'ezra_' + Date.now();
+            const { data } = await EzraState.supabase
+                .from('ezra_conversations')
+                .insert({
+                    conversation_id: conversationId,
+                    loan_officer_id: EzraState.user.id,
+                    tier_access: EzraState.userTier,
+                    status: 'active'
+                })
+                .select()
+                .single();
 
-        if (data) {
-            EzraState.conversationId = data.id;
-        }
+            if (data) EzraState.conversationId = data.id;
+        } catch (e) { /* table may not exist */ }
     }
 
     async function loadConversationHistory(conversationId) {
-        const { data, error } = await EzraState.supabase
-            .from('ezra_messages')
-            .select('*')
-            .eq('conversation_id', conversationId)
-            .order('created_at', { ascending: true })
-            .limit(50);
+        try {
+            const { data } = await EzraState.supabase
+                .from('ezra_messages')
+                .select('*')
+                .eq('conversation_id', conversationId)
+                .order('created_at', { ascending: true })
+                .limit(50);
 
-        if (data) {
-            data.forEach(msg => {
-                addMessage(msg.role, msg.content, { model: msg.model_used });
-            });
-        }
+            if (data) {
+                data.forEach(msg => {
+                    addMessage(msg.role, msg.content, { model: msg.model_used });
+                });
+            }
+        } catch (e) { /* table may not exist */ }
     }
 
     async function saveMessageToSupabase(role, content, metadata = {}) {
         if (!EzraState.conversationId) return;
-
-        await EzraState.supabase
-            .from('ezra_messages')
-            .insert({
-                conversation_id: EzraState.conversationId,
-                role,
-                content,
-                model_used: metadata.model,
-                metadata
-            });
+        try {
+            await EzraState.supabase
+                .from('ezra_messages')
+                .insert({
+                    conversation_id: EzraState.conversationId,
+                    role,
+                    content,
+                    model_used: metadata.model,
+                    metadata
+                });
+        } catch (e) { /* table may not exist */ }
     }
 
     async function loadUserPreferences() {
         if (!EzraState.user) return;
+        try {
+            const { data } = await EzraState.supabase
+                .from('ezra_user_preferences')
+                .select('*')
+                .eq('loan_officer_id', EzraState.user.id)
+                .single();
 
-        const { data, error } = await EzraState.supabase
-            .from('ezra_user_preferences')
-            .select('*')
-            .eq('loan_officer_id', EzraState.user.id)
-            .single();
-
-        if (data) {
-            EzraState.currentModel = data.preferred_model;
-            EzraState.autoFillEnabled = data.auto_fill_enabled;
-            EzraState.userTier = data.default_tier;
-            
-            // Update UI
-            document.querySelector('.ezra-model-name').textContent = 
-                EZRA_CONFIG.models[data.preferred_model]?.name || 'Claude';
-            document.querySelector('.ezra-tier-badge').textContent = 
-                data.default_tier + ' tier';
-        }
+            if (data) {
+                EzraState.currentModel = data.preferred_model;
+                EzraState.autoFillEnabled = data.auto_fill_enabled;
+                EzraState.userTier = data.default_tier;
+                document.querySelector('.ezra-model-name').textContent =
+                    EZRA_CONFIG.models[data.preferred_model]?.name || 'Fast';
+            }
+        } catch (e) { /* table may not exist */ }
     }
 
     // ============================================

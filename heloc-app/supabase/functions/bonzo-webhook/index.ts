@@ -168,7 +168,6 @@ serve(async (req: Request) => {
                 source: source,
                 crm_source: crmSource,
                 crm_contact_id: leadData.sourceId,
-                stage: 'new',
                 status: 'New',
                 metadata: {
                     raw: payload,
