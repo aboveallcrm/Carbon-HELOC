@@ -2,6 +2,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
+// Bonzo API v3 — production base URL (api.getbonzo.com does NOT exist)
+const BONZO_API = "https://app.getbonzo.com/api/v3"
+
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -40,8 +43,6 @@ serve(async (req: Request) => {
         const userId = user.id
 
         // 2. Get the user's Bonzo API key — check both storage providers
-        //    SA Key Management stores in provider='heloc_keys' as bonzo_api_key
-        //    Integrations tab stores in provider='heloc_settings' as bonzo.apiKey
         const { data: integrations } = await supabaseAdmin
             .from('user_integrations')
             .select('provider, metadata')
@@ -59,7 +60,7 @@ serve(async (req: Request) => {
         }
 
         if (!bonzoApiKey) {
-            return new Response(JSON.stringify({ error: 'No Bonzo API key configured. Go to Settings → Integrations → Bonzo and enter your Xcode key.' }),
+            return new Response(JSON.stringify({ error: 'No Bonzo API key configured. Go to Settings → Integrations → Bonzo and enter your API key.' }),
                 { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
 
@@ -68,18 +69,19 @@ serve(async (req: Request) => {
         const page = body.page || 1
         const perPage = body.per_page || 100
 
-        // 4. Fetch contacts from Bonzo API
-        // Try paginated list endpoint first, fall back to search
-        const bonzoHeaders = {
-            'Authorization': 'Bearer ' + bonzoApiKey,
+        // 4. Fetch prospects from Bonzo API v3
+        // In v3, contacts are called "prospects": GET /v3/prospects
+        const bonzoHeaders: Record<string, string> = {
+            'Authorization': `Bearer ${bonzoApiKey}`,
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
         }
 
         let contacts: any[] = []
         let bonzoError = null
 
-        // Try GET /v1/contacts with pagination
-        const listUrl = `https://api.getbonzo.com/v1/contacts?page=${page}&per_page=${perPage}`
+        // GET /v3/prospects with pagination
+        const listUrl = `${BONZO_API}/prospects?page=${page}&per_page=${perPage}`
         const listResp = await fetch(listUrl, {
             method: 'GET',
             headers: bonzoHeaders,
@@ -87,24 +89,12 @@ serve(async (req: Request) => {
 
         if (listResp.ok) {
             const listData = await listResp.json()
-            contacts = listData.data || listData.contacts || listData || []
+            // v3 typically returns { data: [...] } or the array directly
+            contacts = listData.data || listData.prospects || listData || []
             if (!Array.isArray(contacts)) contacts = [contacts]
         } else {
-            // Fall back to POST /v1/contacts/search with empty filter
-            const searchResp = await fetch('https://api.getbonzo.com/v1/contacts/search', {
-                method: 'POST',
-                headers: bonzoHeaders,
-                body: JSON.stringify({ page, per_page: perPage }),
-            })
-
-            if (searchResp.ok) {
-                const searchData = await searchResp.json()
-                contacts = searchData.data || searchData.contacts || searchData || []
-                if (!Array.isArray(contacts)) contacts = [contacts]
-            } else {
-                const errText = await searchResp.text().catch(() => '')
-                bonzoError = `Bonzo API returned ${searchResp.status}: ${errText.substring(0, 300)}`
-            }
+            const errText = await listResp.text().catch(() => '')
+            bonzoError = `Bonzo API returned ${listResp.status}: ${errText.substring(0, 300)}`
         }
 
         if (bonzoError) {
@@ -112,7 +102,7 @@ serve(async (req: Request) => {
                 { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
 
-        // 5. For each contact, insert or update in leads table (same dedup logic as bonzo-webhook)
+        // 5. For each prospect, insert or update in leads table (same dedup logic as bonzo-webhook)
         let imported = 0
         let updated = 0
         let skipped = 0

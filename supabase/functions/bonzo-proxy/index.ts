@@ -2,7 +2,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
-const BONZO_API = "https://api.getbonzo.com/v1"
+// Bonzo API v3 — production base URL (api.getbonzo.com does NOT exist)
+const BONZO_API = "https://app.getbonzo.com/api/v3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -66,18 +67,22 @@ serve(async (req: Request) => {
         const body = await req.json()
         const { action, payload, contactId } = body
 
-        const bonzoHeaders = {
-            'Authorization': 'Bearer ' + bonzoApiKey,
+        const bonzoHeaders: Record<string, string> = {
+            'Authorization': `Bearer ${bonzoApiKey}`,
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
         }
 
-        // 4. Route to appropriate Bonzo API call
+        // 4. Route to appropriate Bonzo API v3 call
+        // In v3, "contacts" are called "prospects"
         let bonzoResp: Response
         let bonzoUrl: string
 
         switch (action) {
             case 'create_contact': {
-                bonzoUrl = `${BONZO_API}/contacts`
+                // POST /v3/prospects — store a new prospect
+                // v3 also has POST /v3/prospects/create-or-update-and-message for upsert+message
+                bonzoUrl = `${BONZO_API}/prospects`
                 bonzoResp = await fetch(bonzoUrl, {
                     method: 'POST',
                     headers: bonzoHeaders,
@@ -87,18 +92,26 @@ serve(async (req: Request) => {
             }
 
             case 'search_contact': {
-                bonzoUrl = `${BONZO_API}/contacts/search`
+                // v3 doesn't have a dedicated search endpoint.
+                // Use GET /v3/prospects with query params for filtering.
+                // The payload may contain { email: '...' } — pass as query string.
+                const params = new URLSearchParams()
+                if (payload?.email) params.set('email', payload.email)
+                if (payload?.phone) params.set('phone', payload.phone)
+                if (payload?.page) params.set('page', String(payload.page))
+                if (payload?.per_page) params.set('per_page', String(payload.per_page))
+                bonzoUrl = `${BONZO_API}/prospects?${params.toString()}`
                 bonzoResp = await fetch(bonzoUrl, {
-                    method: 'POST',
+                    method: 'GET',
                     headers: bonzoHeaders,
-                    body: JSON.stringify(payload),
                 })
                 break
             }
 
             case 'update_contact': {
                 if (!contactId) return jsonResponse({ error: 'Missing contactId for update' }, 400)
-                bonzoUrl = `${BONZO_API}/contacts/${contactId}`
+                // PUT /v3/prospects/{prospect}
+                bonzoUrl = `${BONZO_API}/prospects/${contactId}`
                 bonzoResp = await fetch(bonzoUrl, {
                     method: 'PUT',
                     headers: bonzoHeaders,
@@ -109,7 +122,20 @@ serve(async (req: Request) => {
 
             case 'send_sms': {
                 if (!contactId) return jsonResponse({ error: 'Missing contactId for SMS' }, 400)
-                bonzoUrl = `${BONZO_API}/contacts/${contactId}/messages`
+                // POST /v3/prospects/{prospect}/sms
+                bonzoUrl = `${BONZO_API}/prospects/${contactId}/sms`
+                bonzoResp = await fetch(bonzoUrl, {
+                    method: 'POST',
+                    headers: bonzoHeaders,
+                    body: JSON.stringify(payload),
+                })
+                break
+            }
+
+            case 'send_email': {
+                if (!contactId) return jsonResponse({ error: 'Missing contactId for email' }, 400)
+                // POST /v3/prospects/{prospect}/email
+                bonzoUrl = `${BONZO_API}/prospects/${contactId}/email`
                 bonzoResp = await fetch(bonzoUrl, {
                     method: 'POST',
                     headers: bonzoHeaders,
@@ -120,7 +146,28 @@ serve(async (req: Request) => {
 
             case 'get_contact': {
                 if (!contactId) return jsonResponse({ error: 'Missing contactId' }, 400)
-                bonzoUrl = `${BONZO_API}/contacts/${contactId}`
+                // GET /v3/prospects/{prospect}
+                bonzoUrl = `${BONZO_API}/prospects/${contactId}`
+                bonzoResp = await fetch(bonzoUrl, {
+                    method: 'GET',
+                    headers: bonzoHeaders,
+                })
+                break
+            }
+
+            case 'list_campaigns': {
+                // GET /v3/campaigns
+                bonzoUrl = `${BONZO_API}/campaigns`
+                bonzoResp = await fetch(bonzoUrl, {
+                    method: 'GET',
+                    headers: bonzoHeaders,
+                })
+                break
+            }
+
+            case 'list_tags': {
+                // GET /v3/tags
+                bonzoUrl = `${BONZO_API}/tags`
                 bonzoResp = await fetch(bonzoUrl, {
                     method: 'GET',
                     headers: bonzoHeaders,
