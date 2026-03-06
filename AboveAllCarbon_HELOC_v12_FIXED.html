@@ -768,6 +768,11 @@ footer { border-top: 2px solid var(--accent-color); }
                 <label>To:</label>
                 <input type="email" id="esm-to-email" placeholder="client@email.com">
             </div>
+            <div class="esm-to" id="esm-link-row" style="display:none;">
+                <label>Link:</label>
+                <input type="text" id="esm-quote-link" readonly style="background:#f0fdf4;color:#166534;font-size:11px;cursor:pointer;" onclick="if(this.value){navigator.clipboard.writeText(this.value);showToast('Link copied!','success')}" placeholder="Generating client link...">
+                <button type="button" style="flex-shrink:0;background:#10b981;color:white;border:none;padding:8px 12px;border-radius:8px;font-family:var(--font-heading);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;" onclick="navigator.clipboard.writeText(document.getElementById('esm-quote-link').value);showToast('Link copied!','success')">📋 Copy</button>
+            </div>
             <div class="esm-options" id="esm-options">
                 <div class="esm-option" onclick="esmSendOutlook()">
                     <div class="esm-icon outlook">📧</div>
@@ -7798,6 +7803,17 @@ async function openEmailSendModal() {
     // Show modal
     modal.classList.add('active');
 
+    // Auto-generate client view link if one doesn't exist yet
+    if (!window._lastGeneratedQuoteLink && window._supabase && window.currentUserId) {
+        try {
+            await generateClientLink();
+        } catch(e) {
+            console.warn('Auto-generate client link failed:', e);
+        }
+    }
+    // Update the link display in the modal
+    _esmUpdateLinkDisplay();
+
     // Capture screenshot (email-optimized: 600px wide, JPEG for smaller file size)
     try {
         if (typeof html2canvas === 'undefined') {
@@ -7846,6 +7862,18 @@ async function openEmailSendModal() {
 
 function closeEmailSendModal() {
     document.getElementById('email-send-modal').classList.remove('active');
+}
+
+function _esmUpdateLinkDisplay() {
+    var linkRow = document.getElementById('esm-link-row');
+    var linkInput = document.getElementById('esm-quote-link');
+    var link = window._lastGeneratedQuoteLink || document.getElementById('client-link-output')?.value || '';
+    if (link && !link.includes('[Generate')) {
+        linkInput.value = link;
+        linkRow.style.display = 'flex';
+    } else {
+        linkRow.style.display = 'none';
+    }
 }
 
 function _esmDetectCRM() {
