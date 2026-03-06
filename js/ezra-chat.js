@@ -184,6 +184,7 @@
     // FORM SNAPSHOT — Save/Restore for Undo
     // ============================================
     let _formSnapshot = null;
+    let _accumulatedPortalData = null; // Accumulates tier data across multiple Figure pastes
 
     function snapshotForm() {
         const fields = [
@@ -235,6 +236,7 @@
         if (typeof updateQuote === 'function') setTimeout(updateQuote, 50);
         if (typeof autoSave === 'function') setTimeout(autoSave, 200);
         _formSnapshot = null;
+        _accumulatedPortalData = null; // Clear accumulated portal data on undo
         if (typeof showToast === 'function') showToast('Quote fields restored to previous state', 'info');
         return true;
     }
@@ -346,19 +348,41 @@
 
         // --- Map rates to tiers ---
         // Figure only shows ONE set of rates at a time (for the currently selected origination fee).
-        // The user may paste with 1.50% selected, so we see rates for that tier only.
-        // However, the origination fee section lists ALL available fee options.
+        // The origination fee section lists ALL available fee options, but rates are for one.
         //
-        // Strategy: assign the visible rates to the LOWEST origination fee tier (which is what
-        // Figure defaults to), then create empty tiers for the others so origination fees still populate.
-        // The LO can then tell Ezra the other tiers' rates conversationally.
+        // Strategy: try to detect which origination fee is selected, then assign rates to that tier.
+        // Create empty tiers for the others so origination fees still populate.
         const sortedOrigs = [...origFees].sort((a, b) => b - a); // highest first = tier 1
 
-        // Determine which origination fee the displayed rates belong to
-        // The visible rates on Figure correspond to the lowest o-fee by default
-        // But if the user selected a different one, we can't tell from paste alone.
-        // Best guess: assign to the tier whose rate entries we see.
-        // For now, create all tiers, assign rates to last (lowest o-fee = tier 3)
+        // --- Detect which origination fee is currently selected ---
+        // Figure's paste sometimes has the selected fee appearing right before the rate section,
+        // or the fee closest to the rates in the text. We look for the origination fee value
+        // that appears closest (in text position) to "Fixed Rate" or the first rate block.
+        let selectedOrigPct = null;
+        if (sortedOrigs.length > 0) {
+            const rateStart = message.search(/fixed\s*rate|variable\s*rate/i);
+            if (rateStart > 0 && origSection) {
+                // Find each orig fee's position in the text and pick the one closest to rates
+                // In Figure's UI, the selected fee often appears last/closest to the rate display
+                let bestDist = Infinity;
+                for (const fee of origFees) {
+                    // Find all positions of this fee percentage in the orig section
+                    const feePattern = new RegExp(fee.toFixed(2).replace('.', '\\.') + '\\s*%', 'gi');
+                    let fm;
+                    while ((fm = feePattern.exec(message)) !== null) {
+                        const dist = rateStart - fm.index;
+                        if (dist > 0 && dist < bestDist) {
+                            bestDist = dist;
+                            selectedOrigPct = fee;
+                        }
+                    }
+                }
+            }
+            // Fallback: if we couldn't detect, don't assume — mark as unknown
+            // The accumulator in routeToAI will ask the LO
+        }
+        result.selectedOrigPct = selectedOrigPct;
+
         if (sortedOrigs.length > 0) {
             for (let i = 0; i < sortedOrigs.length; i++) {
                 const tier = {
@@ -368,8 +392,12 @@
                     variable: {},
                     origAmount: origAmounts[origFees.indexOf(sortedOrigs[i])] || 0
                 };
-                // Assign rates to the last tier (lowest o-fee, which is Figure's default view)
-                if (i === sortedOrigs.length - 1) {
+                // Assign rates to the detected selected tier, or mark all empty if unknown
+                if (selectedOrigPct !== null && sortedOrigs[i] === selectedOrigPct) {
+                    fixedEntries.forEach(e => { tier.fixed[e.term] = e.rate; });
+                    variableEntries.forEach(e => { tier.variable[e.term] = e.rate; });
+                } else if (selectedOrigPct === null && i === sortedOrigs.length - 1) {
+                    // Fallback: assign to last tier (lowest o-fee) if detection failed
                     fixedEntries.forEach(e => { tier.fixed[e.term] = e.rate; });
                     variableEntries.forEach(e => { tier.variable[e.term] = e.rate; });
                 }
@@ -2809,38 +2837,153 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
             await new Promise(r => setTimeout(r, 400));
             hideTypingIndicator();
 
-            const applied = applyMultiTierData(portalData);
+            // --- Accumulate across multiple pastes ---
+            // On first paste: snapshot form and store the full portal data.
+            // On subsequent pastes: merge new tier rates into the accumulated data.
+            const isFirstPaste = !_accumulatedPortalData;
+            if (isFirstPaste) {
+                // First paste — snapshot form once so "undo" reverts ALL pastes
+                snapshotForm();
+                _accumulatedPortalData = {
+                    cashAmount: portalData.cashAmount,
+                    initialDrawAmount: portalData.initialDrawAmount,
+                    totalLoanAmount: portalData.totalLoanAmount,
+                    mortgagePayoff: portalData.mortgagePayoff,
+                    hasVariableRates: portalData.hasVariableRates,
+                    tiers: portalData.tiers.map(t => ({ ...t, fixed: { ...t.fixed }, variable: { ...t.variable } }))
+                };
+            } else {
+                // Subsequent paste — merge rates into accumulated tiers
+                // Update summary values if the new paste has them
+                if (portalData.cashAmount) _accumulatedPortalData.cashAmount = portalData.cashAmount;
+                if (portalData.initialDrawAmount) _accumulatedPortalData.initialDrawAmount = portalData.initialDrawAmount;
+                if (portalData.totalLoanAmount) _accumulatedPortalData.totalLoanAmount = portalData.totalLoanAmount;
+                if (portalData.mortgagePayoff) _accumulatedPortalData.mortgagePayoff = portalData.mortgagePayoff;
+                if (portalData.hasVariableRates) _accumulatedPortalData.hasVariableRates = true;
 
-            // Build tier summary — show which tiers have rates vs just origination fees
-            const tierLines = portalData.tiers.map(t => {
-                const rateCount = Object.keys(t.fixed).length + Object.keys(t.variable).length;
-                const rateStr = Object.entries(t.fixed).map(([term, rate]) => `${term}yr @ ${rate}%`).join(', ');
-                if (rateCount > 0) {
-                    return `**Tier ${t.tierNum}** (${t.origPct}% orig${t.origAmount ? ', $' + t.origAmount.toLocaleString() + ' fee' : ''}): ${rateStr}`;
+                // Merge tier rates: match by origination fee percentage
+                for (const newTier of portalData.tiers) {
+                    const hasRates = Object.keys(newTier.fixed).length > 0 || Object.keys(newTier.variable).length > 0;
+                    if (!hasRates) continue; // Skip tiers without rates in this paste
+
+                    const existing = _accumulatedPortalData.tiers.find(t => t.origPct === newTier.origPct);
+                    if (existing) {
+                        // Merge rates into existing tier
+                        Object.assign(existing.fixed, newTier.fixed);
+                        Object.assign(existing.variable, newTier.variable);
+                        if (newTier.origAmount) existing.origAmount = newTier.origAmount;
+                    } else {
+                        // New origination fee we haven't seen — add it
+                        _accumulatedPortalData.tiers.push({ ...newTier, fixed: { ...newTier.fixed }, variable: { ...newTier.variable } });
+                        // Re-sort: highest origination = tier 1
+                        _accumulatedPortalData.tiers.sort((a, b) => b.origPct - a.origPct);
+                        _accumulatedPortalData.tiers.forEach((t, i) => t.tierNum = i + 1);
+                    }
                 }
-                return `**Tier ${t.tierNum}** (${t.origPct}% orig${t.origAmount ? ', $' + t.origAmount.toLocaleString() + ' fee' : ''}): *rates not shown — tell me the rates for this tier*`;
+            }
+
+            // Apply the accumulated data (skip snapshotForm since we handle it above)
+            const merged = _accumulatedPortalData;
+
+            // Apply to form without re-snapshotting
+            let appliedCount = 0;
+            function setField(id, value) {
+                const field = document.getElementById(id);
+                if (!field) return false;
+                field.value = value;
+                field.dispatchEvent(new Event('input', { bubbles: true }));
+                field.dispatchEvent(new Event('change', { bubbles: true }));
+                appliedCount++;
+                field.style.transition = 'background 0.3s';
+                field.style.background = '#dcfce7';
+                setTimeout(() => field.style.background = '', 1500);
+                return true;
+            }
+            function setManualRate(baseId, rate) {
+                const manualEl = document.getElementById(baseId + '-manual');
+                const selectEl = document.getElementById(baseId);
+                if (manualEl) {
+                    manualEl.value = rate.toFixed(2);
+                    manualEl.style.display = 'block';
+                    manualEl.dispatchEvent(new Event('input', { bubbles: true }));
+                    appliedCount++;
+                    manualEl.style.transition = 'background 0.3s';
+                    manualEl.style.background = '#dcfce7';
+                    setTimeout(() => manualEl.style.background = '', 1500);
+                }
+                if (selectEl) selectEl.style.display = 'none';
+            }
+
+            // Enable manual rates mode
+            const toggle = document.getElementById('toggle-manual-rates');
+            if (toggle && !toggle.classList.contains('active')) toggle.click();
+
+            // Set borrower summary fields
+            if (merged.cashAmount) setField('in-net-cash', merged.cashAmount);
+
+            // Apply ALL accumulated tiers
+            for (const tier of merged.tiers) {
+                const prefix = 't' + tier.tierNum;
+                if (tier.origPct) setField(prefix + '-orig', tier.origPct);
+                if (tier.fixed) {
+                    Object.entries(tier.fixed).forEach(([term, rate]) => {
+                        setManualRate(prefix + '-' + term + '-rate', rate);
+                    });
+                }
+                if (tier.variable) {
+                    Object.entries(tier.variable).forEach(([term, rate]) => {
+                        setManualRate(prefix + '-' + term + '-var', rate);
+                    });
+                }
+            }
+
+            if (typeof updateQuote === 'function') setTimeout(updateQuote, 100);
+            if (typeof autoSave === 'function') setTimeout(autoSave, 300);
+
+            // --- Build response ---
+            const tiersWithRates = merged.tiers.filter(t => Object.keys(t.fixed).length > 0 || Object.keys(t.variable).length > 0);
+            const tiersWithoutRates = merged.tiers.filter(t => Object.keys(t.fixed).length === 0 && Object.keys(t.variable).length === 0);
+            const pasteCount = tiersWithRates.length;
+            const totalTiers = merged.tiers.length;
+
+            const tierLines = merged.tiers.map(t => {
+                const fixedStr = Object.entries(t.fixed).map(([term, rate]) => `${term}yr @ ${rate}%`).join(', ');
+                const varStr = Object.entries(t.variable || {}).map(([term, rate]) => `${term}yr var @ ${rate}%`).join(', ');
+                const rateCount = Object.keys(t.fixed).length + Object.keys(t.variable || {}).length;
+                const feeStr = t.origAmount ? `, $${t.origAmount.toLocaleString()} fee` : '';
+                if (rateCount > 0) {
+                    return `**Tier ${t.tierNum}** (${t.origPct}% orig${feeStr}): ${fixedStr}${varStr ? ' | Var: ' + varStr : ''} ✓`;
+                }
+                return `**Tier ${t.tierNum}** (${t.origPct}% orig${feeStr}): ⏳ *waiting for rates*`;
             }).join('\n');
 
             // Summary values
-            const cashStr = portalData.cashAmount ? `**Cash to Borrower:** $${portalData.cashAmount.toLocaleString()}` : '';
-            const drawStr = portalData.initialDrawAmount ? `**Initial Draw:** $${portalData.initialDrawAmount.toLocaleString()}` : '';
-            const totalStr = portalData.totalLoanAmount ? `**Total Loan Amount:** $${portalData.totalLoanAmount.toLocaleString()}` : '';
-            const payoffStr = portalData.mortgagePayoff ? `**Payoff/Closing Costs:** $${portalData.mortgagePayoff.toLocaleString()}` : '';
+            const cashStr = merged.cashAmount ? `**Cash to Borrower:** $${merged.cashAmount.toLocaleString()}` : '';
+            const drawStr = merged.initialDrawAmount ? `**Initial Draw:** $${merged.initialDrawAmount.toLocaleString()}` : '';
+            const totalStr = merged.totalLoanAmount ? `**Total Loan Amount:** $${merged.totalLoanAmount.toLocaleString()}` : '';
+            const payoffStr = merged.mortgagePayoff ? `**Payoff/Closing Costs:** $${merged.mortgagePayoff.toLocaleString()}` : '';
             const summaryParts = [cashStr, drawStr, totalStr, payoffStr].filter(Boolean).join('\n');
 
-            // Variable rate note
-            const varNote = portalData.hasVariableRates
-                ? '\n\nVariable rates were detected and applied to the variable rate row. Both fixed and variable rates are populated.'
+            const varNote = merged.hasVariableRates
+                ? '\n\nVariable rates detected and applied.'
                 : '';
 
-            // Note about missing tiers
-            const tiersWithoutRates = portalData.tiers.filter(t => Object.keys(t.fixed).length === 0);
-            const missingNote = tiersWithoutRates.length > 0
-                ? `\n\n*Note: Figure only shows rates for the selected origination fee. Tiers ${tiersWithoutRates.map(t => t.tierNum).join(' and ')} need rates — paste the page again after clicking each origination fee, or tell me the rates.*`
-                : '';
+            // Progress indicator
+            let progressNote = '';
+            if (tiersWithoutRates.length > 0 && pasteCount < totalTiers) {
+                const missing = tiersWithoutRates.map(t => `${t.origPct}%`).join(' and ');
+                progressNote = `\n\n📋 **${pasteCount}/${totalTiers} tiers imported.** Click the ${missing} origination fee in Figure and paste again.`;
+            } else if (pasteCount === totalTiers) {
+                progressNote = `\n\n✅ **All ${totalTiers} tiers complete!** All rates are populated.`;
+                // Reset accumulator since we're done
+                _accumulatedPortalData = null;
+            }
+
+            const isUpdate = !isFirstPaste;
+            const header = isUpdate ? '**Figure Portal Data Updated**' : '**Figure Portal Data Imported**';
 
             return {
-                content: `**Figure Portal Data Imported**\n\n${summaryParts ? summaryParts + '\n\n' : ''}**Pricing Tiers:**\n${tierLines}${varNote}${missingNote}\n\n${applied} fields populated. Say **"undo"** to revert.\nSay "go with tier 2 at 20 year" to highlight a specific option.`,
+                content: `${header}\n\n${summaryParts ? summaryParts + '\n\n' : ''}**Pricing Tiers:**\n${tierLines}${varNote}${progressNote}\n\n${appliedCount} fields populated. Say **"undo"** to revert all imports.\nSay "go with tier 2 at 20 year" to highlight a specific option.`,
                 metadata: { model: 'local', intent: 'portal_import' }
             };
         }
