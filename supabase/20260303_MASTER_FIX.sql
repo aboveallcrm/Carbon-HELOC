@@ -14,23 +14,18 @@
 -- ==========================================
 -- STEP 0: Fix user_roles table recursion
 -- (Must do first since other policies reference it)
+-- Uses EXECUTE inside DO block because DDL in PL/pgSQL
+-- needs dynamic SQL to work reliably
 -- ==========================================
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'user_roles') THEN
-    -- Drop ALL policies on user_roles to stop the recursion
-    DROP POLICY IF EXISTS "Super admins can manage roles" ON user_roles;
-    DROP POLICY IF EXISTS "Users can view own roles" ON user_roles;
-    DROP POLICY IF EXISTS "Anyone can view own roles" ON user_roles;
-    DROP POLICY IF EXISTS "Super admin manage all roles" ON user_roles;
+    EXECUTE 'DROP POLICY IF EXISTS "Super admins can manage roles" ON user_roles';
+    EXECUTE 'DROP POLICY IF EXISTS "Users can view own roles" ON user_roles';
+    EXECUTE 'DROP POLICY IF EXISTS "Anyone can view own roles" ON user_roles';
+    EXECUTE 'DROP POLICY IF EXISTS "Super admin manage all roles" ON user_roles';
 
-    -- Replace with non-recursive policies
-    CREATE POLICY "Anyone can view own roles"
-      ON user_roles FOR SELECT
-      USING (auth.uid() = user_id);
-
-    CREATE POLICY "Super admin manage all roles"
-      ON user_roles FOR ALL
-      USING (auth.uid() = '795aea13-6aba-45f2-97d4-04576f684557'::uuid);
+    EXECUTE 'CREATE POLICY "Anyone can view own roles" ON user_roles FOR SELECT USING (auth.uid() = user_id)';
+    EXECUTE 'CREATE POLICY "Super admin manage all roles" ON user_roles FOR ALL USING (auth.uid() = ''795aea13-6aba-45f2-97d4-04576f684557''::uuid)';
   END IF;
 END $$;
 

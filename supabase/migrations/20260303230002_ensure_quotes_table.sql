@@ -57,22 +57,10 @@ CREATE POLICY "Users can delete own quotes"
     ON quotes FOR DELETE 
     USING (auth.uid() = user_id);
 
--- Super admin policies
-CREATE POLICY "Super admins can view all quotes" 
-    ON quotes FOR SELECT 
-    USING (EXISTS (
-        SELECT 1 FROM user_roles 
-        WHERE user_id = auth.uid() 
-        AND role = 'super_admin'
-    ));
-
-CREATE POLICY "Super admins can delete any quotes" 
-    ON quotes FOR DELETE 
-    USING (EXISTS (
-        SELECT 1 FROM user_roles 
-        WHERE user_id = auth.uid() 
-        AND role = 'super_admin'
-    ));
+-- Super admin policies (use is_super_admin() — NOT user_roles which causes recursion)
+CREATE POLICY "Super admins can view all quotes"
+    ON quotes FOR ALL
+    USING (public.is_super_admin());
 
 -- Add comment for documentation
 COMMENT ON TABLE quotes IS 'Stores saved HELOC quotes for users';

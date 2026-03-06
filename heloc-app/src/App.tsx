@@ -9,6 +9,7 @@ import { useLeadParser } from './hooks/useLeadParser';
 import { DEFAULT_INPUTS, DEFAULT_RATES } from './constants';
 import type { LoanInputs, RatesData } from './types';
 import { AuthProvider, useAuth } from './components/AuthProvider';
+import type { Tier } from './components/AuthProvider';
 import { Login } from './components/Login';
 import { AdminDashboard } from './components/AdminDashboard';
 import { LeadsTab } from './components/LeadsTab';
@@ -46,7 +47,7 @@ function SettingsTabs() {
 }
 
 function AppContent() {
-  const { session, role, signOut, loading } = useAuth();
+  const { session, role, signOut, loading, realTier, setDemoTier } = useAuth();
   const { tier, hasTier } = useTier();
   const [currentView, setCurrentView] = useState('quote');
   const [inputs, setInputs] = useState<LoanInputs>(DEFAULT_INPUTS);
@@ -115,6 +116,29 @@ function AppContent() {
           </button>
         </div>
         <div className="flex items-center space-x-4">
+          {(role === 'super_admin' || role === 'admin') && (
+            <div className="flex items-center space-x-2 mr-2 border-r pr-4 border-gray-200">
+              <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Demo:</span>
+              <select
+                className="text-xs border-transparent hover:border-gray-300 rounded bg-gray-100 hover:bg-white text-gray-700 font-medium py-1 px-2 cursor-pointer transition focus:ring-0 focus:border-blue-500 outline-none"
+                value={tier === realTier ? 'real' : tier ?? 'carbon'}
+                onChange={(e) => {
+                  if (e.target.value === 'real') {
+                    setDemoTier(null);
+                  } else {
+                    setDemoTier(e.target.value as Tier);
+                  }
+                }}
+              >
+                <option value="real">Real Tier ({realTier || 'carbon'})</option>
+                <option value="carbon">Carbon</option>
+                <option value="platinum">Platinum</option>
+                <option value="titanium">Titanium</option>
+                <option value="obsidian">Obsidian</option>
+                <option value="diamond">Diamond</option>
+              </select>
+            </div>
+          )}
           <span className="text-sm text-gray-500">
             {session.user.email}
             <span className="ml-1 text-xs opacity-60">
