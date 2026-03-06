@@ -477,6 +477,51 @@ footer { margin-top: 12px; padding: 12px 20px; background-color: var(--slate); c
 .ob-upload-preview img { border-radius:8px; border:1px solid #e2e8f0; object-fit:cover; }
 .ob-upload-preview .ob-upload-remove { background:none; border:none; color:#ef4444; font-size:16px; cursor:pointer; padding:2px 6px; border-radius:4px; }
 .ob-upload-preview .ob-upload-remove:hover { background:#fef2f2; }
+
+/* ===== ONE-CLICK EMAIL MODAL ===== */
+#email-send-modal { position:fixed; inset:0; z-index:60000; display:none; }
+#email-send-modal.active { display:flex; align-items:center; justify-content:center; }
+#email-send-modal .esm-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.5); }
+#email-send-modal .esm-card { position:relative; background:#fff; border-radius:16px; box-shadow:0 24px 80px rgba(0,0,0,0.25); width:520px; max-width:92vw; max-height:90vh; overflow-y:auto; animation:esm-slide-up 0.25s ease-out; }
+@keyframes esm-slide-up { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+.esm-header { display:flex; align-items:center; justify-content:space-between; padding:20px 24px 16px; border-bottom:1px solid #f1f5f9; }
+.esm-header h3 { font-family:var(--font-heading); font-size:16px; font-weight:800; color:#1e293b; margin:0; }
+.esm-close { background:none; border:none; font-size:20px; color:#94a3b8; cursor:pointer; padding:4px 8px; border-radius:6px; line-height:1; }
+.esm-close:hover { background:#f1f5f9; color:#475569; }
+.esm-body { padding:20px 24px; }
+.esm-preview { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:16px; text-align:center; position:relative; min-height:100px; }
+.esm-preview img { max-width:100%; max-height:200px; border-radius:6px; border:1px solid #e2e8f0; }
+.esm-preview .esm-loading { color:#94a3b8; font-size:12px; font-family:var(--font-heading); padding:40px 0; }
+.esm-to { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+.esm-to label { font-family:var(--font-heading); font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap; }
+.esm-to input { flex:1; border:1px solid #e2e8f0; border-radius:8px; padding:8px 12px; font-size:12px; font-family:var(--font-body); color:#1e293b; outline:none; }
+.esm-to input:focus { border-color:var(--accent-color); box-shadow:0 0 0 3px rgba(202,138,4,0.1); }
+.esm-options { display:flex; flex-direction:column; gap:10px; }
+.esm-option { display:flex; align-items:center; gap:14px; padding:14px 16px; border:1px solid #e2e8f0; border-radius:12px; cursor:pointer; transition:all 0.15s; background:#fff; }
+.esm-option:hover { border-color:var(--accent-color); background:#fffbf0; box-shadow:0 2px 8px rgba(202,138,4,0.08); }
+.esm-option:active { transform:scale(0.98); }
+.esm-option.disabled { opacity:0.45; pointer-events:none; }
+.esm-option .esm-icon { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.esm-option .esm-icon.outlook { background:linear-gradient(135deg,#0078d4,#005a9e); }
+.esm-option .esm-icon.html { background:linear-gradient(135deg,#10b981,#059669); }
+.esm-option .esm-icon.crm { background:linear-gradient(135deg,#8b5cf6,#7c3aed); }
+.esm-option .esm-text { flex:1; }
+.esm-option .esm-text h4 { font-family:var(--font-heading); font-size:13px; font-weight:700; color:#1e293b; margin:0; }
+.esm-option .esm-text p { font-size:10px; color:#64748b; margin:2px 0 0; line-height:1.4; }
+.esm-option .esm-arrow { color:#cbd5e1; font-size:16px; transition:transform 0.15s; }
+.esm-option:hover .esm-arrow { color:var(--accent-color); transform:translateX(2px); }
+.esm-status { margin-top:14px; padding:10px 14px; border-radius:8px; font-family:var(--font-heading); font-size:11px; display:none; }
+.esm-status.success { display:block; background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
+.esm-status.error { display:block; background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
+.esm-status.info { display:block; background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; }
+.esm-html-preview { margin-top:12px; display:none; }
+.esm-html-preview iframe { width:100%; height:320px; border:1px solid #e2e8f0; border-radius:8px; background:#fff; }
+.esm-html-actions { display:flex; gap:8px; margin-top:8px; }
+.esm-html-actions button { flex:1; padding:10px; border:none; border-radius:8px; font-family:var(--font-heading); font-size:11px; font-weight:700; cursor:pointer; transition:all 0.15s; }
+.esm-html-actions .esm-btn-copy { background:#10b981; color:white; }
+.esm-html-actions .esm-btn-copy:hover { background:#059669; }
+.esm-html-actions .esm-btn-back { background:#f1f5f9; color:#475569; }
+.esm-html-actions .esm-btn-back:hover { background:#e2e8f0; }
 .ob-score-ring { width:120px; height:120px; margin:0 auto 16px; position:relative; }
 .ob-score-ring svg { transform:rotate(-90deg); }
 .ob-score-ring .ob-ring-bg { fill:none; stroke:#e2e8f0; stroke-width:8; }
@@ -696,6 +741,7 @@ footer { border-top: 2px solid var(--accent-color); }
     <button class="toolbar-btn" onclick="toggleAdminPanel()" id="btn-toggle-admin">⚙️ Settings</button>
     <button class="toolbar-btn" onclick="captureAndCopy()" title="Screenshot &amp; Copy">📸 Copy</button>
     <button class="toolbar-btn" onclick="printPDF()">📄 PDF</button>
+    <button class="toolbar-btn" onclick="openEmailSendModal()" title="One-click email with quote" style="background:linear-gradient(135deg,#0078d4,#005a9e);">✉️ Email</button>
     <button class="toolbar-btn" id="btn-download-pdf" style="display:none; background: linear-gradient(135deg, #06b6d4, #0891b2);" onclick="exportBrandedPDF()">⬇ Download</button>
     <span class="autosave-indicator" id="autosave-status">✓ Saved</span>
     <button class="toolbar-btn-help" onclick="WalkthroughTour.restart()" title="Restart guided tour">❓ Tour</button>
@@ -703,6 +749,61 @@ footer { border-top: 2px solid var(--accent-color); }
     <button class="toolbar-btn-help" onclick="OnboardingWizard.reopen()" title="Re-run setup wizard" id="btn-rerun-setup" style="display:none;">🚀 Setup</button>
     <span id="toolbar-user-info" style="display:none; font-family: var(--font-heading); font-size: 9px; color: rgba(255,255,255,0.6); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
     <button class="toolbar-btn" id="btn-logout" style="display:none; background: #ef4444; font-size: 10px; padding: 5px 10px;" onclick="if(window.logoutUser) window.logoutUser()">Logout</button>
+</div>
+
+<!-- One-Click Email Send Modal -->
+<div id="email-send-modal">
+    <div class="esm-backdrop" onclick="closeEmailSendModal()"></div>
+    <div class="esm-card">
+        <div class="esm-header">
+            <h3>✉️ Send Quote via Email</h3>
+            <button class="esm-close" onclick="closeEmailSendModal()">&times;</button>
+        </div>
+        <div class="esm-body">
+            <div class="esm-preview" id="esm-preview">
+                <div class="esm-loading" id="esm-loading">📸 Capturing quote screenshot...</div>
+                <img id="esm-screenshot" style="display:none;" alt="Quote screenshot">
+            </div>
+            <div class="esm-to">
+                <label>To:</label>
+                <input type="email" id="esm-to-email" placeholder="client@email.com">
+            </div>
+            <div class="esm-options" id="esm-options">
+                <div class="esm-option" onclick="esmSendOutlook()">
+                    <div class="esm-icon outlook">📧</div>
+                    <div class="esm-text">
+                        <h4>Open in Outlook</h4>
+                        <p>Opens Outlook with template pre-filled. Screenshot copied to clipboard — paste with Ctrl+V.</p>
+                    </div>
+                    <span class="esm-arrow">&#8250;</span>
+                </div>
+                <div class="esm-option" onclick="esmShowRichHTML()">
+                    <div class="esm-icon html">🎨</div>
+                    <div class="esm-text">
+                        <h4>Rich HTML Email</h4>
+                        <p>Beautiful branded email with quote image inline. Copy the HTML to paste into any email client.</p>
+                    </div>
+                    <span class="esm-arrow">&#8250;</span>
+                </div>
+                <div class="esm-option" id="esm-crm-option" onclick="esmSendViaCRM()">
+                    <div class="esm-icon crm">🔗</div>
+                    <div class="esm-text">
+                        <h4 id="esm-crm-title">Send via CRM</h4>
+                        <p id="esm-crm-desc">Send directly through your connected CRM (Bonzo or GHL) with contact sync and tracking.</p>
+                    </div>
+                    <span class="esm-arrow">&#8250;</span>
+                </div>
+            </div>
+            <div class="esm-html-preview" id="esm-html-preview">
+                <iframe id="esm-html-iframe" sandbox="allow-same-origin"></iframe>
+                <div class="esm-html-actions">
+                    <button class="esm-btn-back" onclick="esmBackToOptions()">&#8249; Back</button>
+                    <button class="esm-btn-copy" onclick="esmCopyHTML()">📋 Copy HTML Email</button>
+                </div>
+            </div>
+            <div class="esm-status" id="esm-status"></div>
+        </div>
+    </div>
 </div>
 
 <!-- Interactive Demo Overlay -->
@@ -7661,6 +7762,326 @@ async function captureAndEmail() {
         notification.textContent = '⚠️ Screenshot failed';
         setTimeout(() => notification.remove(), 2000);
         showToast('Screenshot + email failed: ' + e.message, 'error');
+    }
+}
+
+// ===== ONE-CLICK EMAIL SEND MODAL =====
+var _esmScreenshotBlob = null;
+var _esmScreenshotDataUrl = null;
+
+async function openEmailSendModal() {
+    var modal = document.getElementById('email-send-modal');
+    var img = document.getElementById('esm-screenshot');
+    var loading = document.getElementById('esm-loading');
+    var toInput = document.getElementById('esm-to-email');
+    var statusEl = document.getElementById('esm-status');
+    var htmlPreview = document.getElementById('esm-html-preview');
+    var optionsEl = document.getElementById('esm-options');
+
+    // Reset state
+    img.style.display = 'none';
+    loading.style.display = 'block';
+    statusEl.className = 'esm-status';
+    statusEl.style.display = 'none';
+    htmlPreview.style.display = 'none';
+    optionsEl.style.display = 'flex';
+    _esmScreenshotBlob = null;
+    _esmScreenshotDataUrl = null;
+
+    // Pre-fill email from client-email field
+    var clientEmail = document.getElementById('client-email')?.value || '';
+    toInput.value = clientEmail;
+
+    // Detect CRM configuration
+    _esmDetectCRM();
+
+    // Show modal
+    modal.classList.add('active');
+
+    // Capture screenshot (email-optimized: 600px wide, JPEG for smaller file size)
+    try {
+        if (typeof html2canvas === 'undefined') {
+            loading.textContent = '⚠️ Screenshot library not loaded';
+            return;
+        }
+        var container = document.getElementById('proposal-container');
+        var origWidth = container.style.width;
+        container.style.width = '600px';
+        await new Promise(function(r) { setTimeout(r, 150); });
+
+        var canvas = await html2canvas(container, {
+            scale: 1.5,
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: '#ffffff',
+            windowWidth: 600,
+            width: 600,
+            height: container.scrollHeight,
+            scrollX: 0, scrollY: 0, x: 0, y: 0,
+            onclone: function(clonedDoc) {
+                var el = clonedDoc.getElementById('proposal-container');
+                if (el) { el.style.width = '600px'; el.style.maxWidth = '600px'; }
+            }
+        });
+        container.style.width = origWidth;
+
+        // Convert to JPEG for email-friendly size
+        _esmScreenshotDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        _esmScreenshotBlob = await new Promise(function(resolve) { canvas.toBlob(resolve, 'image/png'); });
+
+        img.src = _esmScreenshotDataUrl;
+        img.style.display = 'block';
+        loading.style.display = 'none';
+
+        // Copy to clipboard immediately so it's ready for Outlook paste
+        try {
+            await navigator.clipboard.write([new ClipboardItem({ 'image/png': _esmScreenshotBlob })]);
+        } catch(e) { /* Clipboard write may fail silently — that's OK */ }
+
+    } catch(e) {
+        loading.textContent = '⚠️ Screenshot failed: ' + e.message;
+        console.error('ESM screenshot error:', e);
+    }
+}
+
+function closeEmailSendModal() {
+    document.getElementById('email-send-modal').classList.remove('active');
+}
+
+function _esmDetectCRM() {
+    var ghlKey = document.getElementById('ghl-api-key')?.value;
+    var bonzoKey = document.getElementById('bonzo-api-key')?.value;
+    var crmOption = document.getElementById('esm-crm-option');
+    var crmTitle = document.getElementById('esm-crm-title');
+    var crmDesc = document.getElementById('esm-crm-desc');
+
+    if (ghlKey && bonzoKey) {
+        crmTitle.textContent = 'Send via CRM (GHL + Bonzo)';
+        crmDesc.textContent = 'Send through both connected CRMs with contact sync, tags, and tracking.';
+        crmOption.classList.remove('disabled');
+    } else if (ghlKey) {
+        crmTitle.textContent = 'Send via Go High Level';
+        crmDesc.textContent = 'Create/update contact, apply tags, add quote note, and send branded email through GHL.';
+        crmOption.classList.remove('disabled');
+    } else if (bonzoKey) {
+        crmTitle.textContent = 'Send via Bonzo';
+        crmDesc.textContent = 'Create/update contact in Bonzo with quote data, tags, and custom fields.';
+        crmOption.classList.remove('disabled');
+    } else {
+        crmTitle.textContent = 'Send via CRM';
+        crmDesc.textContent = 'No CRM configured. Set up GHL or Bonzo in Settings → Integrations to enable.';
+        crmOption.classList.add('disabled');
+    }
+}
+
+function _esmShowStatus(msg, type) {
+    var el = document.getElementById('esm-status');
+    el.textContent = msg;
+    el.className = 'esm-status ' + type;
+}
+
+function esmSendOutlook() {
+    var toEmail = document.getElementById('esm-to-email').value;
+    if (!toEmail) {
+        _esmShowStatus('Please enter the client email address.', 'error');
+        return;
+    }
+
+    // Build the email subject and body from template
+    var data = getEmailData();
+    var subject = 'Your Personalized HELOC Quote - ' + data.CLIENT_NAME;
+    var body = 'Hi ' + data.CLIENT_NAME + ',\n\n' +
+        'Thank you for your interest! I\'ve prepared a personalized HELOC quote based on your situation.\n\n' +
+        '📊 Quote Summary:\n' +
+        '• Property Value: ' + data.HOME_VALUE + '\n' +
+        '• Cash Available: ' + data.NET_CASH + '\n' +
+        '• Recommended Rate: ' + data.REC_RATE + '%\n' +
+        '• Monthly Payment: ' + data.REC_PAYMENT + '\n\n' +
+        '📸 Full quote screenshot is attached below — paste it with Ctrl+V if not already showing.\n\n';
+
+    if (data.QUOTE_LINK && !data.QUOTE_LINK.includes('[Generate')) {
+        body += '🔗 View your interactive quote online: ' + data.QUOTE_LINK + '\n\n';
+    }
+
+    body += 'Please review and let me know if you have any questions. I\'m happy to walk through the numbers with you.\n\n' +
+        'Best regards,\n' +
+        data.LO_NAME + '\n' +
+        data.LO_PHONE + '\n' +
+        data.LO_EMAIL;
+
+    // Re-copy screenshot to clipboard right before opening
+    if (_esmScreenshotBlob) {
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': _esmScreenshotBlob })]).catch(function(){});
+    }
+
+    window.open('mailto:' + toEmail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body));
+    _esmShowStatus('✅ Outlook opened! Paste the screenshot with Ctrl+V in the email body.', 'success');
+}
+
+function esmShowRichHTML() {
+    var toEmail = document.getElementById('esm-to-email').value;
+    if (!toEmail) {
+        _esmShowStatus('Please enter the client email address.', 'error');
+        return;
+    }
+
+    var data = getEmailData();
+    var loHeadshot = document.getElementById('lo-headshot-url')?.value || '';
+    var loLogo = document.getElementById('lo-logo-url')?.value || '';
+    var applyLink = document.getElementById('apply-link-url')?.value || '';
+    var quoteLink = data.QUOTE_LINK;
+    var hasQuoteLink = quoteLink && !quoteLink.includes('[Generate');
+
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>' +
+    '<body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">' +
+    '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f4;padding:20px 0;">' +
+    '<tr><td align="center">' +
+    '<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">' +
+
+    // Header
+    '<tr><td style="background:linear-gradient(135deg,#1e293b,#0f172a);padding:24px 30px;text-align:center;">' +
+    (loLogo ? '<img src="' + loLogo + '" alt="Logo" style="max-height:40px;margin-bottom:10px;"><br>' : '') +
+    '<h1 style="color:#ffffff;font-size:22px;margin:0;font-weight:800;">Your Personalized HELOC Quote</h1>' +
+    '<p style="color:rgba(255,255,255,0.7);font-size:13px;margin:6px 0 0;">Prepared exclusively for ' + data.CLIENT_NAME + '</p>' +
+    '</td></tr>' +
+
+    // Greeting
+    '<tr><td style="padding:28px 30px 0;">' +
+    '<p style="font-size:15px;color:#334155;margin:0 0 16px;line-height:1.6;">Hi ' + data.CLIENT_NAME + ',</p>' +
+    '<p style="font-size:14px;color:#475569;margin:0 0 20px;line-height:1.6;">Thank you for your interest! I\'ve prepared a personalized HELOC quote based on your property and financial situation. Here are the highlights:</p>' +
+    '</td></tr>' +
+
+    // Key Numbers
+    '<tr><td style="padding:0 30px;">' +
+    '<table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;overflow:hidden;">' +
+    '<tr>' +
+    '<td style="padding:16px 20px;text-align:center;width:50%;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">' +
+    '<div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Property Value</div>' +
+    '<div style="font-size:20px;font-weight:800;color:#1e293b;">' + data.HOME_VALUE + '</div>' +
+    '</td>' +
+    '<td style="padding:16px 20px;text-align:center;width:50%;border-bottom:1px solid #e2e8f0;">' +
+    '<div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Cash Available</div>' +
+    '<div style="font-size:20px;font-weight:800;color:#10b981;">' + data.NET_CASH + '</div>' +
+    '</td>' +
+    '</tr>' +
+    '<tr>' +
+    '<td style="padding:16px 20px;text-align:center;width:50%;border-right:1px solid #e2e8f0;">' +
+    '<div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Rate</div>' +
+    '<div style="font-size:20px;font-weight:800;color:#1e293b;">' + data.REC_RATE + '%</div>' +
+    '</td>' +
+    '<td style="padding:16px 20px;text-align:center;width:50%;">' +
+    '<div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Monthly Payment</div>' +
+    '<div style="font-size:20px;font-weight:800;color:#1e293b;">' + data.REC_PAYMENT + '</div>' +
+    '</td>' +
+    '</tr>' +
+    '</table>' +
+    '</td></tr>' +
+
+    // Screenshot image
+    '<tr><td style="padding:20px 30px;">' +
+    '<p style="font-size:12px;color:#94a3b8;text-align:center;margin:0 0 10px;text-transform:uppercase;letter-spacing:0.5px;">Full Quote Details</p>' +
+    (_esmScreenshotDataUrl ?
+        '<img src="' + _esmScreenshotDataUrl + '" alt="HELOC Quote" style="width:100%;border-radius:8px;border:1px solid #e2e8f0;">' :
+        '<p style="font-size:13px;color:#94a3b8;text-align:center;padding:40px;background:#f8fafc;border-radius:8px;border:1px dashed #e2e8f0;">[Quote screenshot]</p>') +
+    '</td></tr>' +
+
+    // CTA Buttons
+    '<tr><td style="padding:0 30px 24px;text-align:center;">' +
+    (hasQuoteLink ? '<a href="' + quoteLink + '" style="display:inline-block;background:#0ea5e9;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;margin:0 6px 8px;">📊 View Interactive Quote</a>' : '') +
+    (applyLink ? '<a href="' + applyLink + '" style="display:inline-block;background:#10b981;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;margin:0 6px 8px;">🚀 Start Application</a>' : '') +
+    '</td></tr>' +
+
+    // LO Footer
+    '<tr><td style="background:#f8fafc;padding:20px 30px;border-top:1px solid #e2e8f0;">' +
+    '<table width="100%" cellpadding="0" cellspacing="0">' +
+    '<tr>' +
+    (loHeadshot ? '<td width="60" style="vertical-align:top;padding-right:14px;"><img src="' + loHeadshot + '" alt="" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0;"></td>' : '') +
+    '<td style="vertical-align:top;">' +
+    '<div style="font-size:14px;font-weight:700;color:#1e293b;">' + data.LO_NAME + '</div>' +
+    '<div style="font-size:12px;color:#64748b;margin-top:2px;">' + (document.getElementById('lo-title')?.value || 'Loan Officer') + '</div>' +
+    '<div style="font-size:12px;color:#64748b;margin-top:4px;">' +
+    '📞 ' + data.LO_PHONE + ' &nbsp;|&nbsp; ✉️ ' + data.LO_EMAIL +
+    '</div>' +
+    '</td>' +
+    '</tr>' +
+    '</table>' +
+    '</td></tr>' +
+
+    // Legal
+    '<tr><td style="padding:14px 30px;background:#f1f5f9;text-align:center;">' +
+    '<p style="font-size:9px;color:#94a3b8;margin:0;line-height:1.5;">This quote is an estimate and does not represent a commitment to lend. All terms are subject to underwriting approval. NMLS #' + (document.getElementById('lo-nmls')?.value || '') + '</p>' +
+    '</td></tr>' +
+
+    '</table></td></tr></table></body></html>';
+
+    // Show preview
+    document.getElementById('esm-options').style.display = 'none';
+    var previewDiv = document.getElementById('esm-html-preview');
+    previewDiv.style.display = 'block';
+
+    var iframe = document.getElementById('esm-html-iframe');
+    iframe.srcdoc = html;
+
+    // Store the HTML for copying
+    window._esmRichHTML = html;
+    _esmShowStatus('Preview ready. Click "Copy HTML Email" to copy to clipboard.', 'info');
+}
+
+function esmBackToOptions() {
+    document.getElementById('esm-html-preview').style.display = 'none';
+    document.getElementById('esm-options').style.display = 'flex';
+    document.getElementById('esm-status').style.display = 'none';
+}
+
+async function esmCopyHTML() {
+    if (!window._esmRichHTML) return;
+    try {
+        // Copy as both HTML and plain text for maximum compatibility
+        var blob = new Blob([window._esmRichHTML], { type: 'text/html' });
+        var textBlob = new Blob([window._esmRichHTML], { type: 'text/plain' });
+        await navigator.clipboard.write([
+            new ClipboardItem({
+                'text/html': blob,
+                'text/plain': textBlob
+            })
+        ]);
+        _esmShowStatus('✅ Rich HTML email copied! Paste into your email client with Ctrl+V.', 'success');
+    } catch(e) {
+        // Fallback: copy as text
+        try {
+            await navigator.clipboard.writeText(window._esmRichHTML);
+            _esmShowStatus('✅ HTML source copied! Paste into your email client.', 'success');
+        } catch(e2) {
+            _esmShowStatus('⚠️ Could not copy. Try selecting the preview and copying manually.', 'error');
+        }
+    }
+}
+
+async function esmSendViaCRM() {
+    var toEmail = document.getElementById('esm-to-email').value;
+    if (!toEmail) {
+        _esmShowStatus('Please enter the client email address.', 'error');
+        return;
+    }
+
+    // Sync the client-email field so CRM functions can pick it up
+    var clientEmailField = document.getElementById('client-email');
+    if (clientEmailField) clientEmailField.value = toEmail;
+
+    var ghlKey = document.getElementById('ghl-api-key')?.value;
+    var bonzoKey = document.getElementById('bonzo-api-key')?.value;
+
+    closeEmailSendModal();
+
+    if (ghlKey && bonzoKey) {
+        // Both configured — send via both
+        showToast('Sending via GHL and Bonzo...', 'info', 3000);
+        try { await sendViaGHL(); } catch(e) { showToast('GHL send failed: ' + e.message, 'error'); }
+        try { await sendViaBonzo(); } catch(e) { showToast('Bonzo send failed: ' + e.message, 'error'); }
+    } else if (ghlKey) {
+        sendViaGHL();
+    } else if (bonzoKey) {
+        sendViaBonzo();
     }
 }
 
