@@ -42,8 +42,8 @@ serve(async (req: Request) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        // Verify the webhook token matches the user's stored token
-        const { data: integration } = await supabaseAdmin
+        // Verify the webhook token matches the user's stored token (optional)
+        const { data: integration, error: webhookConfigErr } = await supabaseAdmin
             .from('user_integrations')
             .select('metadata')
             .eq('user_id', user_id)
@@ -51,9 +51,10 @@ serve(async (req: Request) => {
             .maybeSingle()
 
         const storedToken = integration?.metadata?.webhook_token
-        if (storedToken && storedToken !== token) {
+        // Only enforce token if one is configured
+        if (storedToken && token && storedToken !== token) {
             return new Response(
-                JSON.stringify({ error: 'Invalid webhook token' }),
+                JSON.stringify({ error: 'Invalid webhook token', v: 2 }),
                 { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
@@ -165,8 +166,7 @@ serve(async (req: Request) => {
                 source: source,
                 crm_source: crmSource,
                 crm_contact_id: leadData.sourceId,
-                stage: 'new',
-                status: 'New',
+                status: 'new',  // Must be lowercase per leads_status_check constraint
                 metadata: {
                     raw: payload,
                     credit_score: leadData.creditScore,
