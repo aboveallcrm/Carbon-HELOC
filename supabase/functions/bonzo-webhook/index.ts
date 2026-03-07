@@ -69,7 +69,18 @@ serve(async (req: Request) => {
         }
 
         // Parse the incoming payload
-        const payload = await req.json()
+        const rawPayload = await req.json()
+
+        // Bonzo event hooks send { event, prospect: {...} } — unwrap if present
+        const payload = rawPayload.prospect || rawPayload
+        // Bonzo mortgage data may be nested under payload.mortgage
+        const mortgage = payload.mortgage || {}
+        // Bonzo custom fields may be an array of {key, value} objects
+        const customArr = Array.isArray(payload.custom) ? payload.custom : []
+        const customMap: Record<string, string> = {}
+        for (const cf of customArr) {
+            if (cf && cf.key) customMap[cf.key] = cf.value || ''
+        }
 
         // Normalize lead data from various CRM formats (GHL, Bonzo, LeadMailbox, Zapier, n8n)
         const leadData = {
@@ -78,13 +89,23 @@ serve(async (req: Request) => {
             email: payload.email || payload.emailAddress || payload.email_address || '',
             phone: payload.phone || payload.phoneNumber || payload.mobile || payload.homephone || payload.mobilephone || '',
             sourceId: payload.id || payload.contactId || payload.contact_id || null,
-            // Property & financial fields
-            creditScore: payload.credit_score || payload.creditScore || payload.credit_rating || payload.field_041 || '',
-            propertyAddress: payload.property_address || payload.propertyAddress || payload.address || payload.address1 ||
-                payload.mail_address || (payload.street ? [payload.street, payload.city, payload.state, payload.zip].filter(Boolean).join(', ') : '') || '',
-            homeValue: payload.home_value || payload.homeValue || payload.property_value || payload.field_006 || payload.field_007 || '',
-            mortgageBalance: payload.mortgage_balance || payload.mortgageBalance || payload.current_balance || payload.balance || payload.current_loan_amount || payload.field_044 || '',
-            cashOut: payload.cash_out_amount || payload.cashOut || payload.cash_out || payload.cash_needed || payload.field_036 || payload.field_039 || '',
+            // Property & financial fields — check top-level, mortgage nested object, and custom fields
+            creditScore: payload.credit_score || payload.creditScore || mortgage.credit_score
+                || customMap['credit_score'] || customMap['heloc_credit_score'] || customMap['Credit Score']
+                || payload.credit_rating || customMap['credit_rating'] || payload.field_041 || '',
+            propertyAddress: payload.property_address || payload.propertyAddress || mortgage.property_address
+                || payload.address || payload.address1 || payload.mail_address
+                || (payload.street ? [payload.street, payload.city, payload.state, payload.zip].filter(Boolean).join(', ') : '') || '',
+            homeValue: payload.home_value || payload.homeValue || payload.property_value || mortgage.property_value
+                || customMap['property_value'] || customMap['heloc_home_value']
+                || payload.field_006 || payload.field_007 || '',
+            mortgageBalance: payload.mortgage_balance || payload.mortgageBalance || mortgage.loan_amount
+                || payload.current_balance || payload.balance || payload.current_loan_amount
+                || customMap['mortgage_balance'] || customMap['heloc_mortgage_balance'] || customMap['Mortgage Balance']
+                || payload.field_044 || '',
+            cashOut: payload.cash_out_amount || payload.cashOut || payload.cash_out || mortgage.cash_out_amount
+                || customMap['cash_out_amount'] || customMap['heloc_cash_back']
+                || payload.cash_needed || payload.field_036 || payload.field_039 || '',
         }
 
         // Validate crm_source against allowed values

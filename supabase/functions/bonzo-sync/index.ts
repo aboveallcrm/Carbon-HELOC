@@ -117,6 +117,33 @@ serve(async (req: Request) => {
                 const phone = contact.phone || contact.phoneNumber || contact.mobile || ''
                 const bonzoId = contact.id || contact.contact_id || null
 
+                // Bonzo v3 may nest mortgage data under contact.mortgage or keep flat
+                const mortgage = contact.mortgage || {}
+                // Also check custom fields array — Bonzo returns [{key, value}] or {key: value}
+                const customArr = Array.isArray(contact.custom) ? contact.custom : []
+                const customMap: Record<string, string> = {}
+                for (const cf of customArr) {
+                    if (cf && cf.key) customMap[cf.key] = cf.value || ''
+                }
+
+                // Credit score: check mortgage data, top-level, custom fields
+                const creditScore = contact.credit_score || mortgage.credit_score
+                    || customMap['credit_score'] || customMap['heloc_credit_score']
+                    || customMap['Credit Score'] || customMap['credit_rating']
+                    || contact.credit_rating || ''
+
+                // Property/loan fields from mortgage data or top-level
+                const propertyValue = contact.property_value || mortgage.property_value
+                    || customMap['property_value'] || customMap['heloc_home_value'] || contact.home_value || ''
+                const propertyAddress = contact.property_address || contact.address || mortgage.property_address || ''
+                const mortgageBalance = contact.mortgage_balance || mortgage.loan_amount
+                    || customMap['mortgage_balance'] || customMap['heloc_mortgage_balance']
+                    || customMap['Mortgage Balance'] || contact.loan_amount || ''
+                const cashOutAmount = contact.cash_out_amount || mortgage.cash_out_amount
+                    || customMap['cash_out_amount'] || customMap['heloc_cash_back'] || ''
+                const loanType = contact.loan_type || mortgage.loan_type || ''
+                const propertyType = contact.property_type || mortgage.property_type || ''
+
                 // Skip contacts with no identifying info
                 if (!email && !phone && !firstName) {
                     skipped++
@@ -166,10 +193,13 @@ serve(async (req: Request) => {
                         ...existingMeta,
                         bonzo_contact_id: bonzoId || existingMeta.bonzo_contact_id,
                         last_bonzo_sync: new Date().toISOString(),
-                        credit_score: existingMeta.credit_score || contact.credit_score || '',
-                        property_address: existingMeta.property_address || contact.address || '',
-                        home_value: existingMeta.home_value || contact.home_value || '',
-                        mortgage_balance: existingMeta.mortgage_balance || contact.mortgage_balance || '',
+                        credit_score: existingMeta.credit_score || creditScore,
+                        property_address: existingMeta.property_address || propertyAddress,
+                        home_value: existingMeta.home_value || propertyValue,
+                        mortgage_balance: existingMeta.mortgage_balance || mortgageBalance,
+                        cash_out: existingMeta.cash_out || cashOutAmount,
+                        loan_type: existingMeta.loan_type || loanType,
+                        property_type: existingMeta.property_type || propertyType,
                     }
 
                     await supabaseAdmin
@@ -195,10 +225,13 @@ serve(async (req: Request) => {
                             metadata: {
                                 bonzo_contact_id: bonzoId,
                                 synced_at: new Date().toISOString(),
-                                credit_score: contact.credit_score || '',
-                                property_address: contact.address || '',
-                                home_value: contact.home_value || '',
-                                mortgage_balance: contact.mortgage_balance || '',
+                                credit_score: creditScore,
+                                property_address: propertyAddress,
+                                home_value: propertyValue,
+                                mortgage_balance: mortgageBalance,
+                                cash_out: cashOutAmount,
+                                loan_type: loanType,
+                                property_type: propertyType,
                             }
                         })
 
