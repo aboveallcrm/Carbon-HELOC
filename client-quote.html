@@ -839,8 +839,31 @@ body.theme-dark .rate-detail-item .rd-value { color: #e2e8f0; }
     window.submitApplication = function() {
         var n = document.getElementById('apply-name').value.trim(), e = document.getElementById('apply-email').value.trim(), p = document.getElementById('apply-phone').value.trim();
         if (!n || !e || !p) { showToast('Please fill in all required fields'); return; }
-        trackEvent('application_submitted', { code: code, name: n }); createConfetti(); closeApplyModal();
-        showToast('Application submitted! Your loan officer will contact you shortly.');
+        trackEvent('application_submitted', { code: code, name: n, email: e }); createConfetti(); closeApplyModal();
+
+        // Save application lead data via RPC (fire and forget)
+        // Uses SECURITY DEFINER function so anon clients can save lead data
+        if (sb && _userId) {
+            sb.rpc('submit_quote_application', {
+                p_user_id: _userId,
+                p_lead_id: _leadId || null,
+                p_name: n,
+                p_email: e,
+                p_phone: p,
+                p_quote_code: code
+            }).then(function() {});
+        }
+
+        // Redirect to LO's apply link if available
+        var applyUrl = window._loInfo && window._loInfo.applyLink;
+        if (applyUrl) {
+            // Ensure URL has protocol
+            if (!/^https?:\/\//i.test(applyUrl)) applyUrl = 'https://' + applyUrl;
+            showToast('Redirecting you to the application...');
+            setTimeout(function() { window.open(applyUrl, '_blank'); }, 1200);
+        } else {
+            showToast('Application submitted! Your loan officer will contact you shortly.');
+        }
     };
     window.submitQuestion = function() {
         var n = document.getElementById('contact-name').value.trim(), e = document.getElementById('contact-email').value.trim(), m = document.getElementById('contact-message').value.trim();
@@ -1086,7 +1109,7 @@ body.theme-dark .rate-detail-item .rd-value { color: #e2e8f0; }
             if (isOpen) {
                 panel.classList.add('open');
                 if (chatHistory.length === 0) {
-                    addMsg('assistant', "Hi " + esc(quoteData.clientName || 'there') + "! I'm **Ezra**, your AI quote assistant. I'm here to help you understand your HELOC quote and answer any questions.\n\nYou can ask me anything about your rate options, monthly payments, or the HELOC process. I can also give you a **guided tour** of your quote \u2014 just click the button above!");
+                    addMsg('assistant', "Hi " + esc(quoteData.clientName || 'there') + "! I'm **Ezra**, your personal HELOC advisor. I'm here to walk you through your quote and answer any questions you have.\n\nYou've got **$" + num(quoteData.cashBack) + "** in available equity — let me help you understand your options! I can give you a **guided tour** of your quote, or just ask me anything.");
                 }
                 trackEvent('chat_opened', { code: quoteCode });
                 setTimeout(function() { var inp = document.getElementById('eq-input'); if (inp) inp.focus(); }, 400);
