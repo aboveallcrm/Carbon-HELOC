@@ -14927,7 +14927,8 @@ Sent via Above All Carbon HELOC Tool`;
                 // 5. Fetch analytics counts per lead (quote_opened events)
                 var analyticsMap = {};
                 try {
-                    var leadIds = enriched.map(function (l) { return l.id; });
+                    var leadIds = enriched.map(function (l) { return l.id; }).filter(Boolean);
+                    if (leadIds.length === 0) throw new Error('no leads');
                     var { data: analyticsRows } = await sb.from('lead_analytics')
                         .select('lead_id, event_type, created_at')
                         .in('lead_id', leadIds)
@@ -14986,9 +14987,14 @@ Sent via Above All Carbon HELOC Tool`;
                     if (homeVal) detailParts.push('Value: $' + Number(homeVal).toLocaleString());
                     if (mortBal) detailParts.push('Mtg: $' + Number(mortBal).toLocaleString());
                     if (cashAmt) detailParts.push('Cash: $' + Number(cashAmt).toLocaleString());
-                    var detailLine = detailParts.length > 0
-                        ? '<div style="font-size:8px;color:rgba(255,255,255,0.4);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;" title="' + escapeAttr(detailParts.join(' | ') + (propAddr ? ' | ' + propAddr : '')) + '">' + escapeAttr(detailParts.join(' · ')) + '</div>'
-                        : '';
+                    var fullTooltip = detailParts.join(' | ') + (propAddr ? ' | ' + propAddr : '');
+                    var detailLine = '';
+                    if (detailParts.length > 0 || propAddr) {
+                        detailLine = '<div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px;" title="' + escapeAttr(fullTooltip) + '">' + escapeAttr(detailParts.join(' · ')) + '</div>';
+                        if (propAddr) {
+                            detailLine += '<div style="font-size:8px;color:rgba(255,255,255,0.35);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px;" title="' + escapeAttr(propAddr) + '">📍 ' + escapeAttr(propAddr) + '</div>';
+                        }
+                    }
 
                     // Analytics badge
                     var analytics = analyticsMap[l.id];
@@ -15016,7 +15022,7 @@ Sent via Above All Carbon HELOC Tool`;
 
                     return '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;" onmouseover="this.style.background=\'rgba(255,255,255,0.05)\'" onmouseout="this.style.background=\'none\'" onclick="loadLeadIntoForm(\'' + safeId + '\')">' +
                         '<td style="padding:8px 4px;text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="lead-checkbox" data-lead-id="' + safeId + '" onchange="onLeadCheckboxChange()" title="Select this lead"></td>' +
-                        '<td style="padding:8px 6px;color:white;font-size:10px;font-weight:600;">' + name + detailLine + '</td>' +
+                        '<td style="padding:8px 6px;color:white;font-size:10px;font-weight:600;min-width:240px;">' + name + detailLine + '</td>' +
                         '<td style="padding:8px 6px;color:rgba(255,255,255,0.7);font-size:10px;">' + email + '</td>' +
                         '<td style="padding:8px 6px;color:rgba(255,255,255,0.7);font-size:10px;">' + phone + '</td>' +
                         '<td style="padding:8px 6px;"><span style="background:' + srcColor + ';color:white;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);text-transform:uppercase;">' + src + '</span></td>' +
@@ -15068,7 +15074,8 @@ Sent via Above All Carbon HELOC Tool`;
             if (!sb || !userId || !leads || leads.length === 0) return;
 
             try {
-                var leadIds = leads.map(function (l) { return l.id; });
+                var leadIds = leads.map(function (l) { return l.id; }).filter(Boolean);
+                if (leadIds.length === 0) return;
                 var { data: events } = await sb.from('lead_analytics')
                     .select('lead_id, event_type')
                     .in('lead_id', leadIds);
