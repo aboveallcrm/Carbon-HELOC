@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const ALERT_TO_EMAIL = Deno.env.get("ALERT_TO_EMAIL") || "barraganmortgage@gmail.com";
@@ -15,6 +16,28 @@ serve(async (req: Request) => {
   }
 
   try {
+    // Auth: require valid JWT (authenticated user or service-role)
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Missing authorization" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Invalid or expired token" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (!RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY not configured");
     }
@@ -100,7 +123,7 @@ serve(async (req: Request) => {
 
     if (!resendResp.ok) {
       console.error("Resend API error:", resendData);
-      return new Response(JSON.stringify({ error: "Resend API error", details: resendData }), {
+      return new Response(JSON.stringify({ error: "Email delivery failed" }), {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -111,8 +134,8 @@ serve(async (req: Request) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("send-alert-email error:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    console.error("send-alert-email error:", err instanceof Error ? err.message : err);
+    return new Response(JSON.stringify({ error: "Internal error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

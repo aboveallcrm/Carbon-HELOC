@@ -6,6 +6,7 @@
 <title>Your HELOC Quote</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
+@property --gradient-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
 :root {
     --primary-color: #0f2b4c;
     --accent-color: #c5a059;
@@ -74,11 +75,21 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
 .header .subtitle { font-family: var(--font-heading); font-size: 13px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 4px; font-weight: 500; position: relative; }
 .header .lo-info { margin-top: 20px; font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.7; position: relative; }
 .header .lo-info strong { color: white; font-weight: 700; }
+/* Personalized Greeting Banner */
+.greeting-banner { background: linear-gradient(135deg, var(--highlight-bg), #fff8e6); padding: 18px 28px; text-align: center; border-bottom: 1px solid rgba(197,160,89,0.12); font-family: var(--font-heading); animation: greetSlideDown 0.6s 0.5s ease both; overflow: hidden; }
+.greeting-banner .greeting-text { font-size: 18px; font-weight: 700; color: var(--primary-color); }
+.greeting-banner .greeting-sub { font-size: 12px; color: var(--slate); opacity: 0.6; margin-top: 4px; font-weight: 500; }
+@keyframes greetSlideDown { from { opacity: 0; max-height: 0; padding: 0 28px; } to { opacity: 1; max-height: 100px; padding: 18px 28px; } }
+
+/* Header Property Watermark */
+.header-watermark { position: absolute; right: -20px; bottom: -10px; width: 220px; height: 220px; opacity: 0.04; pointer-events: none; z-index: 0; }
+.header h1, .header .subtitle, .header .lo-info { position: relative; z-index: 1; }
 
 /* Content Body */
 .body-content { padding: 36px 44px 40px; }
 .section { margin-bottom: 36px; }
-.section-title { font-family: var(--font-heading); font-size: 16px; color: var(--primary-color); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid transparent; border-image: linear-gradient(90deg, var(--accent-color), transparent) 1; position: relative; }
+.section-title { font-family: var(--font-heading); font-size: 17px; color: var(--primary-color); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid transparent; border-image: linear-gradient(90deg, var(--accent-color), transparent) 1; position: relative; display: flex; align-items: center; gap: 10px; }
+.section-title::before { content: attr(data-icon); font-size: 16px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--accent-color), var(--accent-light)); color: white; border-radius: 8px; flex-shrink: 0; box-shadow: 0 2px 8px rgba(197,160,89,0.25); }
 
 /* Client Grid */
 .client-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
@@ -96,10 +107,35 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
 .val-block.highlight { border: 2px solid var(--accent-color); background: linear-gradient(135deg, #fffbf0, #fff8e6); box-shadow: 0 4px 20px rgba(197,160,89,0.15); }
 .val-block.highlight .val-value { color: var(--accent-color); font-size: 24px; }
 .val-block.highlight:hover { box-shadow: 0 12px 36px rgba(197,160,89,0.2); }
+/* Micro-Interactions */
+.val-block:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 12px 32px rgba(15,43,76,0.1), 0 0 20px var(--accent-glow); }
+.val-block.highlight .val-value { animation: cash-pulse 2.5s ease-in-out infinite; }
+@keyframes cash-pulse { 0%, 100% { transform: scale(1); text-shadow: 0 0 30px rgba(197,160,89,0.15); } 50% { transform: scale(1.06); text-shadow: 0 0 40px rgba(197,160,89,0.35); } }
+.floating-bar button:active { transform: translateY(1px) scale(0.96) !important; box-shadow: 0 2px 8px rgba(197,160,89,0.3) !important; transition: transform 0.08s ease, box-shadow 0.08s ease; }
+.rec-item { transition: transform 0.2s ease; }
+.rec-item:hover { transform: translateY(-2px); }
+.rec-item:hover .rec-value { color: var(--accent-color); transition: color 0.3s ease; }
+
+/* Equity Donut Chart */
+.equity-chart-section { margin-bottom: 36px; text-align: center; }
+.equity-chart-wrap { display: flex; align-items: center; justify-content: center; gap: 36px; flex-wrap: wrap; }
+.equity-donut { width: 180px; height: 180px; border-radius: 50%; position: relative; flex-shrink: 0; transition: transform 0.3s ease; }
+.equity-donut:hover { transform: scale(1.04); }
+.equity-donut-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 100px; border-radius: 50%; background: var(--paper); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 2px 8px rgba(0,0,0,0.05); }
+.equity-donut-center .ed-label { font-family: var(--font-heading); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--slate); opacity: 0.5; font-weight: 700; }
+.equity-donut-center .ed-value { font-family: var(--font-heading); font-size: 16px; font-weight: 800; color: var(--accent-color); }
+.equity-legend { display: flex; flex-direction: column; gap: 12px; text-align: left; }
+.equity-legend-item { display: flex; align-items: center; gap: 10px; font-family: var(--font-body); font-size: 13px; color: var(--slate); }
+.equity-legend-swatch { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+.equity-legend-val { font-weight: 700; color: var(--primary-color); margin-left: auto; font-family: var(--font-heading); }
 
 /* Recommendation Box */
-.recommendation { background: linear-gradient(135deg, #fffdf7, var(--white)); border: 2px solid var(--accent-color); border-radius: 18px; padding: 36px 32px 30px; text-align: center; margin-bottom: 36px; position: relative; box-shadow: 0 8px 40px rgba(197,160,89,0.1); }
-.recommendation .cert-icon { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--accent-color), #d4af37); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 4px solid var(--paper); box-shadow: 0 4px 12px rgba(197,160,89,0.3); }
+.recommendation { background: linear-gradient(135deg, #fffdf7, var(--white)); border: none; border-radius: 18px; padding: 36px 32px 30px; text-align: center; margin-bottom: 36px; position: relative; box-shadow: 0 8px 40px rgba(197,160,89,0.1); z-index: 0; }
+.recommendation::before { content: ''; position: absolute; inset: -2px; border-radius: 20px; background: conic-gradient(from var(--gradient-angle, 0deg), var(--accent-dark), var(--accent-color), var(--accent-light), #d4af37, var(--accent-color), var(--accent-dark)); z-index: -2; animation: rotate-gradient 4s linear infinite; }
+.recommendation::after { content: ''; position: absolute; inset: 2px; border-radius: 16px; background: linear-gradient(135deg, #fffdf7, var(--white)); z-index: -1; }
+@keyframes rotate-gradient { to { --gradient-angle: 360deg; } }
+@keyframes shimmer-border { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
+.recommendation .cert-icon { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--accent-color), #d4af37); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 4px solid var(--paper); box-shadow: 0 4px 12px rgba(197,160,89,0.3); z-index: 1; }
 .recommendation h3 { font-family: var(--font-heading); color: var(--primary-color); font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 24px; }
 .rec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
 .rec-item { padding: 8px 0; }
@@ -139,6 +175,12 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
 .client-disclaimer { background: linear-gradient(135deg, #fef3c7, #fefce8); border: 1px solid #fcd34d; border-radius: 10px; padding: 14px 20px; margin: 16px 0 0; font-size: 11px; color: #92400e; text-align: center; line-height: 1.7; }
 .client-disclaimer strong { font-weight: 700; }
 
+/* Trust Badges */
+.trust-badges { display: flex; justify-content: center; align-items: center; gap: 24px; flex-wrap: wrap; padding: 20px 28px; background: linear-gradient(135deg, rgba(15,43,76,0.02), rgba(197,160,89,0.03)); border-top: 1px solid rgba(15,43,76,0.06); border-bottom: 1px solid rgba(15,43,76,0.06); }
+.trust-badge { display: flex; align-items: center; gap: 6px; font-family: var(--font-heading); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--slate); opacity: 0.55; transition: opacity 0.3s ease; }
+.trust-badge:hover { opacity: 0.85; }
+.trust-badge-icon { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, rgba(15,43,76,0.06), rgba(15,43,76,0.03)); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+
 /* Dark Footer */
 .quote-footer { margin-top: 0; padding: 24px 36px; background-color: var(--slate); color: #cbd5e1; font-size: 11px; }
 .footer-main { display: flex; gap: 20px; align-items: center; }
@@ -172,9 +214,71 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
 .stagger-children.visible > *:nth-child(5) { transition-delay: 0.24s; opacity: 1; transform: translateY(0); }
 .stagger-children.visible > *:nth-child(6) { transition-delay: 0.30s; opacity: 1; transform: translateY(0); }
 
+/* Progress Stepper */
+.progress-stepper { display: flex; align-items: center; justify-content: center; gap: 0; padding: 20px 0 28px; }
+.step { display: flex; align-items: center; gap: 8px; font-family: var(--font-heading); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #94a3b8; transition: color 0.4s ease; }
+.step.active { color: var(--primary-color); }
+.step.completed { color: var(--accent-color); }
+.step-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.4s ease; background: var(--white); font-family: var(--font-heading); font-weight: 800; }
+.step.active .step-dot { border-color: var(--accent-color); background: linear-gradient(135deg, var(--accent-color), var(--accent-light)); color: white; box-shadow: 0 0 12px rgba(197,160,89,0.3); }
+.step.completed .step-dot { border-color: var(--accent-color); background: var(--accent-color); color: white; }
+.step-line { width: 48px; height: 2px; background: #e2e8f0; margin: 0 8px; transition: background 0.4s ease; }
+.step-line.filled { background: var(--accent-color); }
+
 /* --- Page Entrance --- */
 .quote-page.entering { animation: pageEntrance 0.8s cubic-bezier(0.4,0,0.2,1) forwards; }
 @keyframes pageEntrance { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+/* Theme Toggle */
+.theme-toggle { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.7); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: all 0.3s ease; backdrop-filter: blur(8px); }
+.theme-toggle:hover { background: rgba(255,255,255,0.15); color: white; transform: rotate(20deg); }
+/* Full-Light Theme */
+body.theme-light { background: linear-gradient(160deg, #f1f5f9 0%, #e2e8f0 40%, #f8fafc 100%); }
+body.theme-light::before { background: radial-gradient(ellipse at 20% 50%, rgba(197,160,89,0.04) 0%, transparent 60%); }
+body.theme-light .quote-page { box-shadow: 0 20px 60px rgba(0,0,0,0.08), 0 0 0 1px rgba(15,43,76,0.08); }
+body.theme-light .floating-bar { background: rgba(255,255,255,0.95); box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(15,43,76,0.08); }
+body.theme-light .floating-bar button.secondary { background: rgba(15,43,76,0.06); border-color: rgba(15,43,76,0.12); color: var(--primary-color); }
+body.theme-light .theme-toggle { background: rgba(15,43,76,0.08); border-color: rgba(15,43,76,0.15); color: var(--accent-color); }
+/* Full-Dark Theme */
+body.theme-dark .quote-page { background: #1e293b; color: #e2e8f0; }
+body.theme-dark .body-content { color: #cbd5e1; }
+body.theme-dark .section-title { color: var(--accent-color); }
+body.theme-dark .section-title::before { box-shadow: 0 2px 8px rgba(197,160,89,0.4); }
+body.theme-dark .client-grid .item { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+body.theme-dark .client-grid .label { color: var(--accent-light); }
+body.theme-dark .client-grid .value { color: #e2e8f0; }
+body.theme-dark .val-block { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+body.theme-dark .val-block .val-label { color: #94a3b8; }
+body.theme-dark .val-block .val-value { color: #e2e8f0; }
+body.theme-dark .val-block.highlight { background: linear-gradient(135deg, rgba(197,160,89,0.1), rgba(197,160,89,0.05)); border-color: var(--accent-color); }
+body.theme-dark .recommendation::after { background: linear-gradient(135deg, rgba(30,41,59,0.98), #1e293b); }
+body.theme-dark .recommendation h3 { color: var(--accent-color); }
+body.theme-dark .rec-item .rec-label { color: #94a3b8; }
+body.theme-dark .rec-item .rec-value { color: #e2e8f0; }
+body.theme-dark .tier { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); }
+body.theme-dark .tier-header { background: linear-gradient(135deg, rgba(197,160,89,0.08), rgba(255,255,255,0.02)); color: var(--accent-color); }
+body.theme-dark .rate-table th { color: #94a3b8; border-color: rgba(255,255,255,0.06); }
+body.theme-dark .rate-table td { color: #cbd5e1; border-color: rgba(255,255,255,0.04); }
+body.theme-dark .rate-table tr.recommended { background: linear-gradient(135deg, rgba(197,160,89,0.1), rgba(197,160,89,0.05)); }
+body.theme-dark .rate-table tr.recommended td { color: var(--accent-color); }
+body.theme-dark .client-disclaimer { background: linear-gradient(135deg, rgba(250,204,21,0.08), rgba(250,204,21,0.03)); border-color: rgba(250,204,21,0.2); color: #fcd34d; }
+body.theme-dark .equity-donut-center { background: #1e293b; }
+body.theme-dark .equity-legend-item { color: #94a3b8; }
+body.theme-dark .equity-legend-val { color: #e2e8f0; }
+body.theme-dark .greeting-banner { background: linear-gradient(135deg, rgba(197,160,89,0.06), rgba(255,255,255,0.02)); border-color: rgba(197,160,89,0.1); }
+body.theme-dark .greeting-banner .greeting-text { color: #e2e8f0; }
+body.theme-dark .greeting-banner .greeting-sub { color: #94a3b8; }
+body.theme-dark .trust-badges { background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(197,160,89,0.02)); border-color: rgba(255,255,255,0.06); }
+body.theme-dark .trust-badge { color: #94a3b8; }
+body.theme-dark .trust-badge-icon { background: rgba(255,255,255,0.05); }
+body.theme-dark .progress-stepper .step { color: #64748b; }
+body.theme-dark .progress-stepper .step.active { color: var(--accent-color); }
+body.theme-dark .progress-stepper .step.completed { color: var(--accent-color); }
+body.theme-dark .step-dot { border-color: #475569; background: #334155; color: #94a3b8; }
+body.theme-dark .step-line { background: #334155; }
+body.theme-dark .rate-row-detail { background: rgba(197,160,89,0.05); }
+body.theme-dark .rate-detail-item .rd-label { color: #94a3b8; }
+body.theme-dark .rate-detail-item .rd-value { color: #e2e8f0; }
 
 /* --- Particle Canvas --- */
 #particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
@@ -274,6 +378,27 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
     .eq-panel { bottom: 0; right: 0; width: 100vw; max-width: 100vw; height: calc(100vh - 60px); max-height: calc(100vh - 60px); border-radius: 16px 16px 0 0; }
     .eq-chips { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
     .eq-chips::-webkit-scrollbar { display: none; }
+    /* Enhancement responsive overrides */
+    .section-title::before { width: 26px; height: 26px; font-size: 13px; border-radius: 6px; }
+    .section-title { gap: 8px; }
+    .header-watermark { width: 140px; height: 140px; right: -10px; bottom: -5px; }
+    .theme-toggle { width: 34px; height: 34px; font-size: 15px; top: 12px; right: 12px; }
+    .greeting-banner { padding: 14px 18px; }
+    .greeting-banner .greeting-text { font-size: 16px; }
+    .greeting-banner .greeting-sub { font-size: 11px; }
+    .progress-stepper { padding: 16px 0 20px; }
+    .step span:not(.step-dot) { font-size: 9px; letter-spacing: 0.5px; }
+    .step-dot { width: 24px; height: 24px; font-size: 10px; }
+    .step-line { width: 24px; }
+    .equity-chart-wrap { flex-direction: column; gap: 20px; }
+    .equity-donut { width: 150px; height: 150px; }
+    .equity-donut-center { width: 84px; height: 84px; }
+    .equity-legend-item { font-size: 12px; }
+    .trust-badges { gap: 12px; padding: 16px 18px; }
+    .trust-badge { font-size: 8px; gap: 4px; }
+    .trust-badge-icon { width: 22px; height: 22px; font-size: 11px; }
+    .recommendation::before { border-radius: 16px; }
+    .recommendation::after { border-radius: 12px; }
 }
 </style>
 </head>
@@ -355,26 +480,37 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
 <div id="content" class="quote-page entering" style="display:none;">
     <!-- Shimmer accent bar handled by CSS ::before -->
     <div class="header" id="sec-header">
+        <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Switch theme">&#9790;</button>
+        <svg class="header-watermark" viewBox="0 0 200 200" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M100 20L20 80V180H75V130H125V180H180V80L100 20Z"/><rect x="85" y="130" width="30" height="50"/><rect x="40" y="100" width="25" height="20" rx="2"/><rect x="135" y="100" width="25" height="20" rx="2"/><polygon points="100,10 15,75 25,75 100,20 175,75 185,75"/></svg>
         <h1 id="q-title">Your HELOC Proposal</h1>
         <div class="subtitle">Personalized Home Equity Line of Credit</div>
         <div class="lo-info" id="q-lo-info"></div>
     </div>
+    <div class="greeting-banner" id="greeting-banner"></div>
     <div class="body-content">
+        <div class="progress-stepper" id="progress-stepper">
+            <div class="step active" id="step-1"><span class="step-dot">1</span><span>Your Quote</span></div>
+            <div class="step-line" id="step-line-1"></div>
+            <div class="step" id="step-2"><span class="step-dot">2</span><span>Review</span></div>
+            <div class="step-line" id="step-line-2"></div>
+            <div class="step" id="step-3"><span class="step-dot">3</span><span>Apply</span></div>
+        </div>
         <div class="section reveal" id="sec-client">
-            <div class="section-title">Client Details</div>
+            <div class="section-title" data-icon="&#128100;">Client Details</div>
             <div class="client-grid stagger-children" id="q-client-grid"></div>
         </div>
         <div class="section reveal" id="sec-valuation">
-            <div class="section-title">Valuation &amp; Liquidity Summary</div>
+            <div class="section-title" data-icon="&#127968;">Valuation &amp; Liquidity Summary</div>
             <div class="val-blocks stagger-children" id="q-val-blocks"></div>
         </div>
+        <div class="equity-chart-section reveal" id="sec-equity-chart"></div>
         <div class="recommendation reveal" id="sec-recommendation">
             <div class="cert-icon">&#9733;</div>
             <h3>Recommended Option</h3>
             <div class="rec-grid stagger-children" id="q-rec-grid"></div>
         </div>
         <div class="section reveal" id="sec-rates">
-            <div class="section-title">Rate Options</div>
+            <div class="section-title" data-icon="&#128200;">Rate Options</div>
             <div id="q-tiers"></div>
         </div>
     </div>
@@ -386,6 +522,13 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
             underwriting guidelines. Rates and terms are subject to change without notice. Contact your loan officer for
             current rates and eligibility requirements.
         </div>
+    </div>
+    <div class="trust-badges reveal" id="trust-badges">
+        <div class="trust-badge"><span class="trust-badge-icon">&#128274;</span>Licensed Lender</div>
+        <div class="trust-badge"><span class="trust-badge-icon">&#9989;</span>Insured</div>
+        <div class="trust-badge"><span class="trust-badge-icon">&#127942;</span>BBB Accredited</div>
+        <div class="trust-badge"><span class="trust-badge-icon">&#128196;</span>NMLS Registered</div>
+        <div class="trust-badge"><span class="trust-badge-icon">&#128197;</span>Est. 2018</div>
     </div>
     <div class="quote-footer reveal" id="sec-footer"></div>
     <div class="footer-powered">Powered by Above All Carbon</div>
@@ -416,7 +559,7 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
         var link = res.data;
         if (link.expires_at && new Date(link.expires_at) < new Date()) { showError(); return; }
 
-        sb.from('quote_links').update({ view_count: (link.view_count || 0) + 1 }).eq('id', link.id).then(function(){});
+        sb.rpc('increment_quote_view', { p_code: code }).then(function(){});
         trackEvent('quote_opened', { code: code });
         renderQuote(link.quote_data, link.lo_info || {}, link.user_id, link.lead_id);
 
@@ -426,6 +569,7 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
             initScrollReveal();
             initCounters();
             initParticles();
+            initProgressStepper();
             // Initialize Ezra AI Chat (default on unless explicitly disabled)
             if (!link.quote_data.linkOptions || link.quote_data.linkOptions.showAiChat !== false) {
                 initEzraChat(link.quote_data, link.lo_info || {}, code);
@@ -495,6 +639,16 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
         if (lo.nmls) loHtml += '<div>NMLS# ' + esc(lo.nmls) + '</div>';
         document.getElementById('q-lo-info').innerHTML = loHtml;
 
+        // Personalized Greeting
+        var hour = new Date().getHours();
+        var timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+        var greetName = data.clientName ? data.clientName.split(' ')[0] : '';
+        var greetEl = document.getElementById('greeting-banner');
+        if (greetEl) {
+            greetEl.innerHTML = '<div class="greeting-text">' + esc(timeGreeting) + (greetName ? ', ' + esc(greetName) : '') + '! &#128075;</div>' +
+                '<div class="greeting-sub">Your personalized HELOC quote is ready for review</div>';
+        }
+
         // Dark footer
         var fHtml = '';
         if (lo.name) {
@@ -559,6 +713,42 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
         document.getElementById('q-val-blocks').innerHTML = valBlocks.map(function(b) {
             return '<div class="val-block' + (b.highlight ? ' highlight' : '') + '"><div class="val-label">' + esc(b.label) + '</div><div class="val-value">' + esc(b.value) + '</div></div>';
         }).join('');
+
+        // Equity Breakdown Chart
+        (function() {
+            var chartEl = document.getElementById('sec-equity-chart');
+            if (!chartEl) return;
+            var hv = parseFloat(String(data.homeValue || 0).replace(/[$,]/g, '')) || 0;
+            if (!hv) return;
+            var mb = parseFloat(String(data.mortgageBalance || 0).replace(/[$,]/g, '')) || 0;
+            var hp = parseFloat(String(data.helocPayoff || 0).replace(/[$,]/g, '')) || 0;
+            var cb = parseFloat(String(data.cashBack || 0).replace(/[$,]/g, '')) || 0;
+            var remaining = Math.max(0, hv - mb - hp - cb);
+            var pMortgage = (mb / hv) * 100, pHeloc = (hp / hv) * 100, pCash = (cb / hv) * 100;
+            var pRemaining = Math.max(0, 100 - pMortgage - pHeloc - pCash);
+            var gradientStops = [], pos = 0;
+            var segments = [
+                { pct: pMortgage, color: '#0f2b4c' },
+                { pct: pHeloc, color: '#64748b' },
+                { pct: pCash, color: '#c5a059' },
+                { pct: pRemaining, color: '#e2e8f0' }
+            ];
+            segments.forEach(function(s) {
+                if (s.pct > 0) { gradientStops.push(s.color + ' ' + pos + '%'); pos += s.pct; gradientStops.push(s.color + ' ' + pos + '%'); }
+            });
+            var cltvDisplay = data.cltv || (Math.round(((mb + hp) / hv) * 100) + '%');
+            var html = '<div class="section-title" data-icon="&#128202;">Equity Breakdown</div>';
+            html += '<div class="equity-chart-wrap">';
+            html += '<div class="equity-donut" style="background: conic-gradient(' + gradientStops.join(', ') + ');">';
+            html += '<div class="equity-donut-center"><span class="ed-label">CLTV</span><span class="ed-value">' + esc(cltvDisplay) + '</span></div>';
+            html += '</div><div class="equity-legend">';
+            if (mb) html += '<div class="equity-legend-item"><span class="equity-legend-swatch" style="background:#0f2b4c;"></span>Mortgage Balance<span class="equity-legend-val">$' + mb.toLocaleString() + '</span></div>';
+            if (hp) html += '<div class="equity-legend-item"><span class="equity-legend-swatch" style="background:#64748b;"></span>HELOC Payoff<span class="equity-legend-val">$' + hp.toLocaleString() + '</span></div>';
+            if (cb) html += '<div class="equity-legend-item"><span class="equity-legend-swatch" style="background:#c5a059;"></span>Cash Available<span class="equity-legend-val">$' + cb.toLocaleString() + '</span></div>';
+            html += '<div class="equity-legend-item"><span class="equity-legend-swatch" style="background:#e2e8f0;"></span>Remaining Equity<span class="equity-legend-val">$' + remaining.toLocaleString() + '</span></div>';
+            html += '</div></div>';
+            chartEl.innerHTML = html;
+        })();
 
         // Recommendation
         var recItems = [];
@@ -668,6 +858,27 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
     };
     window.downloadPDF = function() { trackEvent('pdf_download_clicked', { code: code }); window.print(); };
 
+    // Theme Toggle
+    window.toggleTheme = function() {
+        var body = document.body, btn = document.getElementById('theme-toggle');
+        var themes = ['', 'theme-light', 'theme-dark'];
+        var current = body.classList.contains('theme-light') ? 1 : body.classList.contains('theme-dark') ? 2 : 0;
+        var next = (current + 1) % 3;
+        body.classList.remove('theme-light', 'theme-dark');
+        if (themes[next]) body.classList.add(themes[next]);
+        var icons = ['\u263E', '\u2600', '\u2726'];
+        if (btn) btn.textContent = icons[next];
+        try { localStorage.setItem('cq-theme', themes[next]); } catch(e) {}
+    };
+    (function() {
+        try {
+            var saved = localStorage.getItem('cq-theme');
+            if (saved) document.body.classList.add(saved);
+            var btn = document.getElementById('theme-toggle');
+            if (btn) { var icons = { '': '\u263E', 'theme-light': '\u2600', 'theme-dark': '\u2726' }; btn.textContent = icons[saved] || '\u263E'; }
+        } catch(e) {}
+    })();
+
     function showToast(msg) {
         var t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block';
         setTimeout(function() { t.style.display = 'none'; }, 4000);
@@ -711,19 +922,25 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
                 var match = text.match(/^\$?([\d,]+)/);
                 if (!match) return;
                 var target = parseInt(match[1].replace(/,/g, '')), prefix = text.startsWith('$') ? '$' : '', suffix = text.replace(/^\$?[\d,]+/, '');
-                var start = null;
+                entry.target.textContent = prefix + '0' + suffix;
+                entry.target.style.transition = 'transform 0.1s ease';
+                var duration = 2000, start = null;
                 function step(ts) {
                     if (!start) start = ts;
-                    var p = Math.min((ts - start) / 1500, 1);
-                    var ease = 1 - Math.pow(1 - p, 4);
-                    entry.target.textContent = prefix + Math.round(ease * target).toLocaleString() + suffix;
+                    var p = Math.min((ts - start) / duration, 1);
+                    var ease = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
+                    var current = Math.round(ease * target);
+                    entry.target.textContent = prefix + current.toLocaleString() + suffix;
+                    if (p < 0.8) entry.target.style.transform = 'scale(' + (1 + (1 - p) * 0.04) + ')';
+                    else entry.target.style.transform = 'scale(1)';
                     if (p < 1) requestAnimationFrame(step);
+                    else entry.target.style.transform = '';
                 }
                 requestAnimationFrame(step);
                 obs.unobserve(entry.target);
             });
         }, { threshold: 0.5 });
-        document.querySelectorAll('.val-block .val-value').forEach(function(el, i) { el.id = el.id || ('vc-' + i); obs.observe(el); });
+        document.querySelectorAll('.val-block .val-value, .rec-item .rec-value').forEach(function(el, i) { el.id = el.id || ('vc-' + i); obs.observe(el); });
     }
 
     function initParticles() {
@@ -751,6 +968,41 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
             requestAnimationFrame(draw);
         }
         draw();
+    }
+
+    // ===== PROGRESS STEPPER =====
+    function initProgressStepper() {
+        if (!window.IntersectionObserver) return;
+        var sections = [
+            { ids: ['sec-client', 'sec-valuation'], step: 1 },
+            { ids: ['sec-recommendation', 'sec-rates'], step: 2 },
+            { ids: ['sec-footer'], step: 3 }
+        ];
+        var currentStep = 1;
+        function updateStepper(step) {
+            if (step === currentStep) return;
+            currentStep = step;
+            for (var i = 1; i <= 3; i++) {
+                var el = document.getElementById('step-' + i);
+                if (!el) continue;
+                el.classList.remove('active', 'completed');
+                if (i < step) el.classList.add('completed');
+                else if (i === step) el.classList.add('active');
+            }
+            for (var j = 1; j <= 2; j++) {
+                var line = document.getElementById('step-line-' + j);
+                if (line) { if (j < step) line.classList.add('filled'); else line.classList.remove('filled'); }
+            }
+        }
+        sections.forEach(function(sec) {
+            sec.ids.forEach(function(id) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) { if (entry.isIntersecting) updateStepper(sec.step); });
+                }, { threshold: 0.3 }).observe(el);
+            });
+        });
     }
 
     // ===== EZRA AI CHAT WIDGET =====

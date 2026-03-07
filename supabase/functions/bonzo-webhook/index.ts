@@ -128,13 +128,13 @@ serve(async (req: Request) => {
             if (emailMatch) existingLead = emailMatch
         }
         if (!existingLead && normalizedPhone && normalizedPhone.length >= 7) {
-            // Phone dedup: fetch recent leads and compare digits-only
+            // Phone dedup: fetch leads and compare digits-only
             const { data: phoneCandidates } = await supabaseAdmin
                 .from('leads')
                 .select('id, first_name, last_name, email, phone, metadata')
                 .eq('user_id', user_id)
                 .not('phone', 'is', null)
-                .limit(500)
+                .limit(2000)
             if (phoneCandidates) {
                 existingLead = phoneCandidates.find(
                     (l: any) => (l.phone || '').replace(/\D/g, '') === normalizedPhone

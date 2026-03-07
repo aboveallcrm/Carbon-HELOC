@@ -11,22 +11,88 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }
 
+function jsonResp(body: any, status = 200) {
+    return new Response(JSON.stringify(body), {
+        status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+}
+
+// Extract array of prospects from any Bonzo response shape
+function extractProspects(responseData: any): any[] {
+    if (!responseData) return []
+    // Laravel-style paginated: { data: [...] }
+    if (Array.isArray(responseData.data)) return responseData.data
+    // Keyed as prospects
+    if (Array.isArray(responseData.prospects)) return responseData.prospects
+    // Keyed as contacts (legacy)
+    if (Array.isArray(responseData.contacts)) return responseData.contacts
+    // Direct array
+    if (Array.isArray(responseData)) return responseData
+    // Single object wrapped
+    if (responseData.data && typeof responseData.data === 'object' && !Array.isArray(responseData.data)) {
+        // Could be { data: { prospects: [...] } }
+        if (Array.isArray(responseData.data.prospects)) return responseData.data.prospects
+        if (Array.isArray(responseData.data.data)) return responseData.data.data
+        // Single prospect in data
+        return [responseData.data]
+    }
+    return []
+}
+
+// Extract pagination info from any Bonzo response shape
+function extractPagination(responseData: any): { lastPage: number; total: number } {
+    // Laravel-style: { meta: { last_page, total }, links: { next } }
+    const meta = responseData?.meta || {}
+    const lastPage = meta.last_page || responseData?.last_page || responseData?.total_pages || 0
+    const total = meta.total || responseData?.total || 0
+    return { lastPage, total }
+}
+
+// Build custom fields map — handles both array [{key,value}] and flat object {key: value}
+function buildCustomMap(contact: any): Record<string, string> {
+    const map: Record<string, string> = {}
+    // Array format: [{key: 'credit_score', value: '740'}]
+    const customArr = contact.custom || contact.custom_fields || contact.customFields || []
+    if (Array.isArray(customArr)) {
+        for (const cf of customArr) {
+            if (cf && cf.key) map[cf.key] = String(cf.value || '')
+            if (cf && cf.name) map[cf.name] = String(cf.value || '')
+        }
+    }
+    // Flat object format: { custom: { credit_score: '740' } } or { custom_fields: { ... } }
+    if (customArr && typeof customArr === 'object' && !Array.isArray(customArr)) {
+        for (const [k, v] of Object.entries(customArr)) {
+            map[k] = String(v || '')
+        }
+    }
+    return map
+}
+
+// Extract a field trying multiple paths
+function pick(contact: any, mortgage: any, customMap: Record<string, string>, ...keys: string[]): string {
+    for (const k of keys) {
+        if (contact[k]) return String(contact[k])
+        if (mortgage[k]) return String(mortgage[k])
+        if (customMap[k]) return customMap[k]
+    }
+    return ''
+}
+
 serve(async (req: Request) => {
     if (req.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: corsHeaders })
     }
     if (req.method !== 'POST') {
-        return new Response(JSON.stringify({ error: 'Method not allowed' }),
-            { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        return jsonResp({ error: 'Method not allowed' }, 405)
     }
+
+    const logs: string[] = []
 
     try {
         // 1. Authenticate caller via JWT
         const authHeader = req.headers.get('Authorization')
-        if (!authHeader) {
-            return new Response(JSON.stringify({ error: 'Missing authorization header' }),
-                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-        }
+        if (!authHeader) return jsonResp({ error: 'Missing authorization header' }, 401)
 
         const supabaseAdmin = createClient(
             Deno.env.get('SUPABASE_URL') ?? '',
@@ -35,10 +101,7 @@ serve(async (req: Request) => {
 
         const token = authHeader.replace('Bearer ', '')
         const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
-        if (authError || !user) {
-            return new Response(JSON.stringify({ error: 'Invalid or expired token' }),
-                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-        }
+        if (authError || !user) return jsonResp({ error: 'Invalid or expired token' }, 401)
 
         const userId = user.id
 
@@ -49,7 +112,6 @@ serve(async (req: Request) => {
             .eq('user_id', userId)
             .in('provider', ['heloc_keys', 'heloc_settings'])
 
-        // Prefer JWT API key (apiKey2) over Xcode hash (apiKey)
         let bonzoApiKey = ''
         for (const row of (integrations || [])) {
             if (row.provider === 'heloc_keys') {
@@ -61,18 +123,18 @@ serve(async (req: Request) => {
         }
 
         if (!bonzoApiKey) {
-            return new Response(JSON.stringify({ error: 'No Bonzo API key configured. Go to Settings → Integrations → Bonzo and enter your API key.' }),
-                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+            return jsonResp({ error: 'No Bonzo API key configured. Go to Settings → Integrations → Bonzo and enter your API key.' }, 400)
         }
+
+        logs.push('API key found')
 
         // 3. Parse request body for optional filters
         const body = await req.json().catch(() => ({}))
         const syncAll = body.sync_all === true
         const maxLeads = body.max_leads || (syncAll ? 999999 : 100)
-        const perPage = 100 // Bonzo API max per page
+        const perPage = 100
 
         // 4. Fetch prospects from Bonzo API v3
-        // In v3, contacts are called "prospects": GET /v3/prospects
         const bonzoHeaders: Record<string, string> = {
             'Authorization': `Bearer ${bonzoApiKey}`,
             'Content-Type': 'application/json',
@@ -83,143 +145,175 @@ serve(async (req: Request) => {
         let bonzoError = null
         let currentPage = 1
         let hasMore = true
+        let rawResponseKeys = ''
+        let paginationInfo = ''
 
-        // Auto-paginate: fetch pages until we have enough or run out
         while (hasMore && contacts.length < maxLeads) {
             const listUrl = `${BONZO_API}/prospects?page=${currentPage}&per_page=${perPage}`
-            const listResp = await fetch(listUrl, {
-                method: 'GET',
-                headers: bonzoHeaders,
-            })
+            logs.push(`Fetching: ${listUrl}`)
+
+            const listResp = await fetch(listUrl, { method: 'GET', headers: bonzoHeaders })
 
             if (!listResp.ok) {
                 const errText = await listResp.text().catch(() => '')
-                bonzoError = `Bonzo API returned ${listResp.status}: ${errText.substring(0, 300)}`
+                bonzoError = `Bonzo API ${listResp.status}`
+                console.error(`Bonzo API error detail: ${errText.substring(0, 500)}`)
+                logs.push(`ERROR: ${bonzoError}`)
                 break
             }
 
             const listData = await listResp.json()
-            let pageContacts = listData.data || listData.prospects || listData || []
-            if (!Array.isArray(pageContacts)) pageContacts = [pageContacts]
+
+            // Log the response shape on first page for debugging
+            if (currentPage === 1) {
+                rawResponseKeys = Object.keys(listData || {}).join(', ')
+                logs.push(`Response keys: ${rawResponseKeys}`)
+                // Log sample of first item if present
+                const sample = extractProspects(listData)[0]
+                if (sample) {
+                    logs.push(`Sample prospect keys: ${Object.keys(sample).join(', ')}`)
+                    logs.push(`Sample name: ${sample.first_name || sample.firstName || sample.fname || '(none)'} ${sample.last_name || sample.lastName || ''}`)
+                    logs.push(`Sample email: ${sample.email || sample.emailAddress || '(none)'}`)
+                    logs.push(`Sample phone: ${sample.phone || sample.phoneNumber || sample.mobile || '(none)'}`)
+                }
+            }
+
+            const pageContacts = extractProspects(listData)
+            logs.push(`Page ${currentPage}: ${pageContacts.length} prospects`)
+
+            if (pageContacts.length === 0) {
+                // If first page returns 0, log the full response for debugging
+                if (currentPage === 1) {
+                    logs.push(`WARN: 0 prospects on page 1. Response keys: ${Object.keys(listData || {}).join(', ')}`)
+                }
+                hasMore = false
+                break
+            }
 
             contacts = contacts.concat(pageContacts)
 
-            // Check if there are more pages (v3 returns meta.last_page or links.next)
-            const lastPage = listData.meta?.last_page || listData.last_page || 1
-            if (currentPage >= lastPage || pageContacts.length < perPage) {
+            // Check pagination
+            const pg = extractPagination(listData)
+            paginationInfo = `lastPage=${pg.lastPage}, total=${pg.total}`
+
+            // Determine if there are more pages
+            if (pg.lastPage > 0 && currentPage >= pg.lastPage) {
                 hasMore = false
-            } else {
-                currentPage++
+            } else if (pageContacts.length < perPage) {
+                hasMore = false
+            } else if (pg.lastPage === 0 && !listData?.links?.next) {
+                // No pagination info and no next link — check if we got a full page
+                // If full page, assume there might be more
+                hasMore = pageContacts.length >= perPage
+            }
+
+            currentPage++
+
+            // Safety valve: max 50 pages (5000 contacts)
+            if (currentPage > 50) {
+                logs.push('WARN: Hit 50-page safety limit')
+                hasMore = false
             }
         }
 
-        // Trim to maxLeads if needed
+        logs.push(`Total fetched from Bonzo: ${contacts.length} (${currentPage - 1} pages)`)
+
         if (contacts.length > maxLeads) {
             contacts = contacts.slice(0, maxLeads)
         }
 
         if (bonzoError && contacts.length === 0) {
-            return new Response(JSON.stringify({ error: bonzoError }),
-                { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+            console.error('bonzo-sync 502:', bonzoError, logs)
+            return jsonResp({ error: 'Bonzo API connection failed. Check your API key.' }, 502)
         }
 
-        // 5. For each prospect, insert or update in leads table (same dedup logic as bonzo-webhook)
+        // 5. Pre-fetch all existing leads for in-memory dedup (avoids N+1 queries)
+        const { data: existingLeads } = await supabaseAdmin
+            .from('leads')
+            .select('id, first_name, last_name, email, phone, crm_contact_id, metadata')
+            .eq('user_id', userId)
+
+        // Build lookup indexes
+        const emailIndex = new Map<string, any>()
+        const phoneIndex = new Map<string, any>()
+        const bonzoIdIndex = new Map<string, any>()
+        for (const lead of (existingLeads || [])) {
+            if (lead.email) emailIndex.set(lead.email.toLowerCase().trim(), lead)
+            const digits = (lead.phone || '').replace(/\D/g, '')
+            if (digits.length >= 7) phoneIndex.set(digits, lead)
+            if (lead.crm_contact_id) bonzoIdIndex.set(lead.crm_contact_id, lead)
+        }
+        logs.push(`Pre-fetched ${(existingLeads || []).length} existing leads for dedup`)
+
         let imported = 0
         let updated = 0
         let skipped = 0
         const errors: string[] = []
+        const skipReasons: Record<string, number> = {}
 
         for (const contact of contacts) {
             try {
-                const firstName = contact.first_name || contact.firstName || contact.fname || ''
-                const lastName = contact.last_name || contact.lastName || contact.lname || ''
-                const email = (contact.email || contact.emailAddress || '').toLowerCase().trim()
-                const phone = contact.phone || contact.phoneNumber || contact.mobile || ''
-                const bonzoId = contact.id || contact.contact_id || null
+                const firstName = contact.first_name || contact.firstName || contact.fname || contact.name?.split(' ')[0] || ''
+                const lastName = contact.last_name || contact.lastName || contact.lname || contact.name?.split(' ').slice(1).join(' ') || ''
+                const email = (contact.email || contact.emailAddress || contact.email_address || '').toLowerCase().trim()
+                const phone = contact.phone || contact.phoneNumber || contact.phone_number || contact.mobile || contact.homephone || contact.cell || ''
+                const bonzoId = contact.id || contact.prospect_id || contact.contact_id || null
 
-                // Bonzo v3 may nest mortgage data under contact.mortgage or keep flat
                 const mortgage = contact.mortgage || {}
-                // Also check custom fields array — Bonzo returns [{key, value}] or {key: value}
-                const customArr = Array.isArray(contact.custom) ? contact.custom : []
-                const customMap: Record<string, string> = {}
-                for (const cf of customArr) {
-                    if (cf && cf.key) customMap[cf.key] = cf.value || ''
-                }
+                const customMap = buildCustomMap(contact)
 
-                // Credit score: check mortgage data, top-level, custom fields
-                const creditScore = contact.credit_score || mortgage.credit_score
-                    || customMap['credit_score'] || customMap['heloc_credit_score']
-                    || customMap['Credit Score'] || customMap['credit_rating']
-                    || contact.credit_rating || ''
+                const creditScore = pick(contact, mortgage, customMap, 'credit_score', 'creditScore', 'heloc_credit_score', 'Credit Score', 'credit_rating')
+                const propertyValue = pick(contact, mortgage, customMap, 'property_value', 'home_value', 'homeValue', 'heloc_home_value')
+                const propertyAddress = contact.property_address || contact.address || mortgage.property_address
+                    || (contact.street ? [contact.street, contact.city, contact.state, contact.zip].filter(Boolean).join(', ') : '') || ''
+                const mortgageBalance = pick(contact, mortgage, customMap, 'mortgage_balance', 'loan_amount', 'heloc_mortgage_balance', 'Mortgage Balance', 'current_balance')
+                const cashOutAmount = pick(contact, mortgage, customMap, 'cash_out_amount', 'cash_out', 'cashOut', 'heloc_cash_back', 'cash_needed')
+                const loanType = pick(contact, mortgage, customMap, 'loan_type', 'loanType')
+                const propertyType = pick(contact, mortgage, customMap, 'property_type', 'propertyType')
 
-                // Property/loan fields from mortgage data or top-level
-                const propertyValue = contact.property_value || mortgage.property_value
-                    || customMap['property_value'] || customMap['heloc_home_value'] || contact.home_value || ''
-                const propertyAddress = contact.property_address || contact.address || mortgage.property_address || ''
-                const mortgageBalance = contact.mortgage_balance || mortgage.loan_amount
-                    || customMap['mortgage_balance'] || customMap['heloc_mortgage_balance']
-                    || customMap['Mortgage Balance'] || contact.loan_amount || ''
-                const cashOutAmount = contact.cash_out_amount || mortgage.cash_out_amount
-                    || customMap['cash_out_amount'] || customMap['heloc_cash_back'] || ''
-                const loanType = contact.loan_type || mortgage.loan_type || ''
-                const propertyType = contact.property_type || mortgage.property_type || ''
-
-                // Skip contacts with no identifying info
-                if (!email && !phone && !firstName) {
+                // Only skip if absolutely no identifying info at all
+                if (!email && !phone && !firstName && !lastName) {
+                    const reason = 'no_identity'
+                    skipReasons[reason] = (skipReasons[reason] || 0) + 1
                     skipped++
                     continue
                 }
 
-                // Dedup by email
+                // In-memory dedup: email → phone → bonzo ID
                 const normalizedPhone = (phone || '').replace(/\D/g, '')
                 let existingLead = null
 
-                if (email) {
-                    const { data: emailMatch } = await supabaseAdmin
-                        .from('leads')
-                        .select('id, first_name, last_name, email, phone, metadata')
-                        .eq('user_id', userId)
-                        .ilike('email', email)
-                        .limit(1)
-                        .maybeSingle()
-                    if (emailMatch) existingLead = emailMatch
-                }
-
-                // Dedup by phone if no email match
+                if (email) existingLead = emailIndex.get(email) || null
                 if (!existingLead && normalizedPhone && normalizedPhone.length >= 7) {
-                    const { data: phoneCandidates } = await supabaseAdmin
-                        .from('leads')
-                        .select('id, first_name, last_name, email, phone, metadata')
-                        .eq('user_id', userId)
-                        .not('phone', 'is', null)
-                        .limit(500)
-                    if (phoneCandidates) {
-                        existingLead = phoneCandidates.find(
-                            (l: any) => (l.phone || '').replace(/\D/g, '') === normalizedPhone
-                        ) || null
-                    }
+                    existingLead = phoneIndex.get(normalizedPhone) || null
+                }
+                if (!existingLead && bonzoId) {
+                    existingLead = bonzoIdIndex.get(String(bonzoId)) || null
                 }
 
                 if (existingLead) {
-                    // Update existing lead with any missing fields
                     const updates: Record<string, any> = {}
                     if (!existingLead.first_name && firstName) updates.first_name = firstName
                     if (!existingLead.last_name && lastName) updates.last_name = lastName
                     if (!existingLead.email && email) updates.email = email
                     if (!existingLead.phone && phone) updates.phone = phone
+                    if (bonzoId && !existingLead.metadata?.bonzo_contact_id) {
+                        updates.crm_contact_id = String(bonzoId)
+                    }
 
                     const existingMeta = existingLead.metadata || {}
                     updates.metadata = {
                         ...existingMeta,
                         bonzo_contact_id: bonzoId || existingMeta.bonzo_contact_id,
                         last_bonzo_sync: new Date().toISOString(),
-                        credit_score: existingMeta.credit_score || creditScore,
-                        property_address: existingMeta.property_address || propertyAddress,
-                        home_value: existingMeta.home_value || propertyValue,
-                        mortgage_balance: existingMeta.mortgage_balance || mortgageBalance,
-                        cash_out: existingMeta.cash_out || cashOutAmount,
-                        loan_type: existingMeta.loan_type || loanType,
-                        property_type: existingMeta.property_type || propertyType,
+                        // Use new value if existing is empty/falsy
+                        credit_score: existingMeta.credit_score || creditScore || '',
+                        property_address: existingMeta.property_address || propertyAddress || '',
+                        home_value: existingMeta.home_value || propertyValue || '',
+                        mortgage_balance: existingMeta.mortgage_balance || mortgageBalance || '',
+                        cash_out: existingMeta.cash_out || cashOutAmount || '',
+                        loan_type: existingMeta.loan_type || loanType || '',
+                        property_type: existingMeta.property_type || propertyType || '',
                     }
 
                     await supabaseAdmin
@@ -229,18 +323,17 @@ serve(async (req: Request) => {
 
                     updated++
                 } else {
-                    // Insert new lead
                     const { error: insertErr } = await supabaseAdmin
                         .from('leads')
                         .insert({
                             user_id: userId,
                             first_name: firstName,
                             last_name: lastName,
-                            email: email,
-                            phone: phone,
+                            email: email || null,
+                            phone: phone || null,
                             source: 'bonzo',
                             crm_source: 'bonzo',
-                            crm_contact_id: bonzoId,
+                            crm_contact_id: bonzoId ? String(bonzoId) : null,
                             status: 'new',
                             metadata: {
                                 bonzo_contact_id: bonzoId,
@@ -256,33 +349,33 @@ serve(async (req: Request) => {
                         })
 
                     if (insertErr) {
-                        errors.push(`${firstName} ${lastName} (${email}): ${insertErr.message}`)
+                        errors.push(`${firstName} ${lastName} (${email || phone || bonzoId}): ${insertErr.message}`)
                     } else {
                         imported++
                     }
                 }
             } catch (contactErr) {
-                errors.push(`Contact processing error: ${contactErr instanceof Error ? contactErr.message : String(contactErr)}`)
+                errors.push(`Processing error: ${contactErr instanceof Error ? contactErr.message : String(contactErr)}`)
             }
         }
 
-        return new Response(JSON.stringify({
+        return jsonResp({
             success: true,
             imported,
             updated,
             skipped,
             total_from_bonzo: contacts.length,
-            pages_fetched: currentPage,
-            errors: errors.length > 0 ? errors.slice(0, 10) : undefined,
-        }), {
-            status: 200,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            pages_fetched: currentPage - 1,
+            pagination: paginationInfo,
+            response_keys: rawResponseKeys,
+            skip_reasons: Object.keys(skipReasons).length > 0 ? skipReasons : undefined,
+            errors: errors.length > 0 ? errors.slice(0, 20) : undefined,
+            logs: logs,
         })
 
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
-        console.error('bonzo-sync error:', message)
-        return new Response(JSON.stringify({ error: message }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        console.error('bonzo-sync error:', message, logs)
+        return jsonResp({ error: 'Sync failed. Please try again.' }, 500)
     }
 })

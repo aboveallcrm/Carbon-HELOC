@@ -1,6 +1,7 @@
 /**
  * Deal Radar - Edge Function
- * Scans for equity opportunities
+ * Scans leads for HELOC equity opportunities using metadata
+ * (home_value, mortgage_balance, credit_score)
  */
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
@@ -11,19 +12,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+function jsonResp(body: any, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const { action, loanOfficerId } = await req.json();
-
-    if (!loanOfficerId) {
-      return new Response(
-        JSON.stringify({ error: 'loanOfficerId required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Authenticate caller via JWT
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return jsonResp({ error: 'Missing authorization header' }, 401);
     }
 
     const supabaseClient = createClient(
@@ -32,140 +37,128 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    let result;
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    if (authError || !user) {
+      return jsonResp({ error: 'Invalid or expired token' }, 401);
+    }
+
+    const { action } = await req.json();
+    const userId = user.id;
 
     switch (action) {
       case 'full_scan':
-        result = await runFullScan(supabaseClient, loanOfficerId);
-        break;
+        return jsonResp(await runFullScan(supabaseClient, userId));
       case 'get_dashboard':
-        result = await getDashboard(supabaseClient, loanOfficerId);
-        break;
+        return jsonResp(await getDashboard(supabaseClient, userId));
       default:
-        result = { error: 'Unknown action' };
+        return jsonResp({ error: 'Unknown action. Use full_scan or get_dashboard.' }, 400);
     }
-
-    return new Response(
-      JSON.stringify(result),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
   } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.error('deal-radar error:', error instanceof Error ? error.message : error);
+    return jsonResp({ error: 'Internal error' }, 500);
   }
 });
 
-async function runFullScan(supabaseClient: any, loanOfficerId: string) {
+interface Opportunity {
+  lead_id: string;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  home_value: number;
+  mortgage_balance: number;
+  credit_score: number;
+  tappable_equity: number;
+  cltv: number;
+  estimated_rate: number;
+  strategy: string;
+}
+
+async function runFullScan(supabaseClient: any, userId: string) {
   const startTime = Date.now();
-  
-  // Get borrowers with properties
-  const { data: borrowers, error } = await supabaseClient
-    .from('borrowers')
-    .select(`
-      id,
-      first_name,
-      last_name,
-      credit_score,
-      properties (
-        id,
-        estimated_value
-      ),
-      mortgages (
-        loan_balance,
-        lien_position
-      )
-    `)
-    .eq('loan_officer_id', loanOfficerId)
-    .eq('status', 'active');
 
-  if (error) throw error;
+  // Fetch all leads with mortgage metadata
+  const { data: leads, error } = await supabaseClient
+    .from('leads')
+    .select('id, first_name, last_name, email, phone, metadata, status')
+    .eq('user_id', userId);
 
-  let opportunitiesFound = 0;
-  let totalTappableEquity = 0;
+  if (error) throw new Error('Failed to fetch leads');
 
-  // Clear old opportunities
-  await supabaseClient
-    .from('deal_radar')
-    .delete()
-    .eq('loan_officer_id', loanOfficerId)
-    .eq('status', 'new');
+  const opportunities: Opportunity[] = [];
 
-  // Analyze each borrower
-  for (const borrower of borrowers || []) {
-    const property = borrower.properties?.[0];
-    if (!property?.estimated_value) continue;
+  for (const lead of (leads || [])) {
+    const meta = lead.metadata || {};
 
-    const activeMortgages = (borrower.mortgages || []).filter((m: any) => m.loan_balance > 0);
-    const totalLiens = activeMortgages.reduce((sum: number, m: any) => sum + m.loan_balance, 0);
-    
-    const maxTotalLoans = property.estimated_value * 0.85;
-    const tappableEquity = Math.max(0, maxTotalLoans - totalLiens);
-    
-    if (tappableEquity >= 25000) {
-      const cltv = ((totalLiens + tappableEquity) / property.estimated_value) * 100;
-      
-      await supabaseClient.from('deal_radar').insert({
-        borrower_id: borrower.id,
-        property_id: property.id,
-        loan_officer_id: loanOfficerId,
-        opportunity_type: 'heloc',
-        tappable_equity: tappableEquity,
-        current_combined_ltv: cltv,
-        estimated_rate: estimateRate(borrower.credit_score || 700, cltv),
-        suggested_strategy: `Recommend ${formatCurrency(tappableEquity)} HELOC for debt consolidation or emergency fund`,
-        confidence_score: 0.85,
-        qualification_status: 'qualified'
-      });
-      
-      opportunitiesFound++;
-      totalTappableEquity += tappableEquity;
-    }
+    // Parse numeric values from metadata (stored as strings)
+    const homeValue = parseFloat(meta.home_value || meta.property_value || '0');
+    const mortgageBalance = parseFloat(meta.mortgage_balance || meta.loan_amount || '0');
+    const creditScore = parseInt(meta.credit_score || '0', 10);
+
+    // Skip leads without enough property data
+    if (!homeValue || homeValue < 50000) continue;
+
+    // Calculate tappable equity (85% CLTV max)
+    const maxLoanAmount = homeValue * 0.85;
+    const tappableEquity = Math.max(0, maxLoanAmount - mortgageBalance);
+
+    // Only flag opportunities >= $25k
+    if (tappableEquity < 25000) continue;
+
+    const cltv = homeValue > 0
+      ? ((mortgageBalance + tappableEquity) / homeValue) * 100
+      : 0;
+
+    opportunities.push({
+      lead_id: lead.id,
+      first_name: lead.first_name || '',
+      last_name: lead.last_name || '',
+      email: lead.email,
+      phone: lead.phone,
+      home_value: homeValue,
+      mortgage_balance: mortgageBalance,
+      credit_score: creditScore,
+      tappable_equity: tappableEquity,
+      cltv: Math.round(cltv * 100) / 100,
+      estimated_rate: estimateRate(creditScore || 700, cltv),
+      strategy: `Recommend ${formatCurrency(tappableEquity)} HELOC — ${
+        tappableEquity > 100000 ? 'major renovation or investment' :
+        tappableEquity > 50000 ? 'debt consolidation or home improvement' :
+        'emergency fund or small project'
+      }`,
+    });
   }
 
-  // Log scan
-  await supabaseClient.from('deal_radar_scans').insert({
-    loan_officer_id: loanOfficerId,
-    scan_type: 'full',
-    borrowers_scanned: borrowers?.length || 0,
-    opportunities_found: opportunitiesFound,
-    total_tappable_equity: totalTappableEquity,
-    scan_duration_ms: Date.now() - startTime
-  });
+  // Sort by tappable equity descending
+  opportunities.sort((a, b) => b.tappable_equity - a.tappable_equity);
+
+  const totalTappableEquity = opportunities.reduce((s, o) => s + o.tappable_equity, 0);
 
   return {
     success: true,
-    borrowersScanned: borrowers?.length || 0,
-    opportunitiesFound,
-    totalTappableEquity
+    leads_scanned: leads?.length || 0,
+    opportunities_found: opportunities.length,
+    total_tappable_equity: totalTappableEquity,
+    scan_duration_ms: Date.now() - startTime,
+    opportunities: opportunities.slice(0, 50),
   };
 }
 
-async function getDashboard(supabaseClient: any, loanOfficerId: string) {
-  const { data: opportunities } = await supabaseClient
-    .from('deal_radar')
-    .select('*')
-    .eq('loan_officer_id', loanOfficerId)
-    .eq('status', 'new')
-    .gt('expires_at', new Date().toISOString());
-
-  const byType: Record<string, number> = {};
-  opportunities?.forEach((o: any) => {
-    byType[o.opportunity_type] = (byType[o.opportunity_type] || 0) + 1;
-  });
+async function getDashboard(supabaseClient: any, userId: string) {
+  // Run a lightweight scan and return summary
+  const result = await runFullScan(supabaseClient, userId);
 
   return {
-    total_opportunities: opportunities?.length || 0,
-    total_tappable_equity: opportunities?.reduce((s: number, o: any) => s + (o.tappable_equity || 0), 0) || 0,
-    by_type: byType,
-    top_opportunities: opportunities?.slice(0, 5).map((o: any) => ({
-      id: o.id,
-      type: o.opportunity_type,
+    total_opportunities: result.opportunities_found,
+    total_tappable_equity: result.total_tappable_equity,
+    top_opportunities: result.opportunities.slice(0, 5).map((o: Opportunity) => ({
+      lead_id: o.lead_id,
+      name: `${o.first_name} ${o.last_name}`.trim(),
       equity: o.tappable_equity,
-      confidence: o.confidence_score
-    })) || []
+      rate: o.estimated_rate,
+      strategy: o.strategy,
+    })),
   };
 }
 

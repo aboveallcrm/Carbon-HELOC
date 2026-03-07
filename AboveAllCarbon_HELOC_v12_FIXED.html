@@ -165,11 +165,12 @@
 
         .data-block {
             flex: 1;
-            padding: 8px;
+            padding: 12px;
             background: var(--white);
-            border-radius: 4px;
+            border-radius: 8px;
             text-align: center;
             border: 1px solid #e0e0e0;
+            transition: all var(--transition);
         }
 
         .data-block.highlight {
@@ -188,7 +189,7 @@
 
         .block-value {
             font-family: var(--font-heading);
-            font-size: 16px;
+            font-size: 18px;
             color: var(--primary-color);
             font-weight: 800;
         }
@@ -245,6 +246,7 @@
             font-weight: 800;
             border-top: 1px solid var(--accent-color);
             border-bottom: 1px solid var(--accent-color);
+            box-shadow: 0 0 8px var(--accent-glow);
         }
 
         .highlight-row td:first-child {
@@ -260,27 +262,28 @@
         .certificate-box {
             background: var(--white);
             border: 2px solid var(--accent-color);
-            border-radius: 8px;
-            padding: 12px;
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
             margin: 12px 0;
             text-align: center;
             position: relative;
+            box-shadow: 0 4px 20px rgba(197, 160, 89, 0.12);
         }
 
         .cert-icon {
             position: absolute;
-            top: -12px;
+            top: -14px;
             left: 50%;
             transform: translateX(-50%);
             background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
             color: white;
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 14px;
             border: 2px solid var(--paper);
         }
 
@@ -311,7 +314,7 @@
 
         .snapshot-container {
             border: 1px solid #ddd;
-            border-radius: 6px;
+            border-radius: var(--radius-md);
             overflow: hidden;
             background: var(--white);
             margin-bottom: 12px;
@@ -320,7 +323,7 @@
         .snapshot-row {
             display: flex;
             justify-content: space-between;
-            padding: 6px 12px;
+            padding: 8px 14px;
             border-bottom: 1px solid #eee;
             align-items: center;
         }
@@ -333,7 +336,8 @@
             background: var(--primary-color);
             color: white;
             border-bottom: none;
-            padding: 10px 12px;
+            padding: 10px 14px;
+            border-radius: 0 0 var(--radius-md) var(--radius-md);
         }
 
         .snap-label {
@@ -363,11 +367,11 @@
 
         .analysis-box {
             margin-top: 8px;
-            border-radius: 5px;
-            padding: 8px;
+            border-radius: 8px;
+            padding: 12px;
             display: none;
             margin-bottom: 10px;
-            font-size: 9px;
+            font-size: 10px;
         }
 
         .analysis-box.visible {
@@ -1178,7 +1182,7 @@
             color: #10b981;
             padding: 4px 8px;
             background: rgba(16, 185, 129, 0.2);
-            border-radius: 4px;
+            border-radius: 12px;
         }
 
         .autosave-indicator.saving {
@@ -1457,25 +1461,15 @@
             #print-selection-dialog {
                 display: none !important;
             }
-        }
 
-        @media (max-width: 768px) {
-            .client-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .matrix-container {
-                flex-direction: column;
-            }
-
-            #floating-toolbar {
-                right: 10px;
-                top: 10px;
-                max-width: 95%;
-            }
-
-            .content-body {
-                padding: 15px 20px;
+            #walkthrough-overlay,
+            #walkthrough-spotlight,
+            #walkthrough-tooltip,
+            #id-overlay,
+            #id-narrator,
+            #ob-overlay,
+            #ob-completeness-badge {
+                display: none !important;
             }
         }
 
@@ -2141,15 +2135,6 @@
             }
         }
 
-        @media print {
-
-            #walkthrough-overlay,
-            #walkthrough-spotlight,
-            #walkthrough-tooltip {
-                display: none !important;
-            }
-        }
-
         /* ===== INTERACTIVE DEMO ===== */
         #id-overlay {
             position: fixed;
@@ -2402,14 +2387,6 @@
             100% {
                 transform: scale(2.5);
                 opacity: 0;
-            }
-        }
-
-        @media print {
-
-            #id-overlay,
-            #id-narrator {
-                display: none !important;
             }
         }
 
@@ -4018,14 +3995,6 @@
             }
         }
 
-        @media print {
-
-            #ob-overlay,
-            #ob-completeness-badge {
-                display: none !important;
-            }
-        }
-
         /* ===== UI POLISH (March 2026) ===== */
 
         /* --- Leads Tab: Pipeline Tiles --- */
@@ -4051,7 +4020,7 @@
 
         /* --- Leads Tab: Table --- */
         #leads-table {
-            border-spacing: 0;
+            border-spacing: 0 2px !important;
         }
 
         #leads-table thead tr {
@@ -4059,18 +4028,24 @@
         }
 
         #leads-table thead th {
-            font-size: 9px !important;
-            letter-spacing: 1.2px;
-            padding: 10px 8px !important;
+            font-family: var(--font-heading) !important;
+            font-size: 8px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            color: var(--accent-color) !important;
+            padding: 12px 6px !important;
+            border-bottom: 2px solid rgba(197,160,89,0.15) !important;
+            background: rgba(0,0,0,0.1);
         }
 
         #leads-table tbody tr {
-            transition: background var(--transition);
+            transition: all 0.2s ease !important;
             border-radius: var(--radius-sm);
         }
 
         #leads-table tbody tr:hover {
-            background: rgba(197, 160, 89, 0.06) !important;
+            background: linear-gradient(90deg, rgba(197,160,89,0.08), rgba(197,160,89,0.03)) !important;
+            box-shadow: inset 3px 0 0 var(--accent-color);
         }
 
         #leads-table tbody tr:nth-child(even) {
@@ -4133,20 +4108,9 @@
             outline: none;
         }
 
-        /* --- Proposal: Valuation Blocks --- */
-        .data-block {
-            border-radius: 8px;
-            padding: 12px;
-            transition: all var(--transition);
-        }
-
         .data-block:hover {
             transform: translateY(-1px);
             box-shadow: var(--shadow-sm);
-        }
-
-        .block-value {
-            font-size: 18px;
         }
 
         /* --- Proposal: Matrix Columns --- */
@@ -4159,45 +4123,6 @@
 
         .matrix-container>div:nth-child(2) {
             background: rgba(0, 0, 0, 0.015);
-        }
-
-        .highlight-row td {
-            box-shadow: 0 0 8px var(--accent-glow);
-        }
-
-        /* --- Proposal: Certificate Box --- */
-        .certificate-box {
-            border-radius: var(--radius-md);
-            padding: 16px 20px;
-            box-shadow: 0 4px 20px rgba(197, 160, 89, 0.12);
-        }
-
-        .cert-icon {
-            width: 28px;
-            height: 28px;
-            font-size: 14px;
-            top: -14px;
-        }
-
-        /* --- Proposal: Payment Snapshot --- */
-        .snapshot-container {
-            border-radius: var(--radius-md);
-        }
-
-        .snapshot-row {
-            padding: 8px 14px;
-        }
-
-        .snapshot-row.final {
-            padding: 10px 14px;
-            border-radius: 0 0 var(--radius-md) var(--radius-md);
-        }
-
-        /* --- Proposal: Analysis Boxes --- */
-        .analysis-box {
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 10px;
         }
 
         #break-even-container {
@@ -4247,10 +4172,6 @@
 
         .toolbar-btn:active {
             transform: translateY(0) scale(0.97);
-        }
-
-        .autosave-indicator {
-            border-radius: 12px;
         }
 
         /* --- Toast Notifications --- */
@@ -4312,6 +4233,20 @@
 
         /* --- Mobile: 768px --- */
         @media (max-width: 768px) {
+            .client-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .matrix-container {
+                flex-direction: column;
+            }
+
+            #floating-toolbar {
+                right: 10px;
+                top: 10px;
+                max-width: 95%;
+            }
+
             .settings-tabs {
                 gap: 4px;
             }
@@ -4557,28 +4492,6 @@
             transform: translateX(2px);
         }
         #quotes-list > div[data-quote-id]:hover::after { opacity: 1; }
-
-        /* ===== ENHANCED LEADS TABLE ===== */
-        #leads-table {
-            border-spacing: 0 2px !important;
-        }
-        #leads-table thead th {
-            font-family: var(--font-heading) !important;
-            font-size: 8px !important;
-            text-transform: uppercase !important;
-            letter-spacing: 1px !important;
-            color: var(--accent-color) !important;
-            padding: 12px 6px !important;
-            border-bottom: 2px solid rgba(197,160,89,0.15) !important;
-            background: rgba(0,0,0,0.1);
-        }
-        #leads-table tbody tr {
-            transition: all 0.2s ease !important;
-        }
-        #leads-table tbody tr:hover {
-            background: linear-gradient(90deg, rgba(197,160,89,0.08), rgba(197,160,89,0.03)) !important;
-            box-shadow: inset 3px 0 0 var(--accent-color);
-        }
 
         /* ===== COOLER BUTTONS ===== */
         .control-section .btn {
@@ -12048,28 +11961,7 @@ Generate the sales strategy and phone script now.`;
                 let imageBase64 = null;
                 if (typeof html2canvas !== 'undefined') {
                     statusDiv.innerHTML = '<div style="font-size:24px;margin-bottom:10px;">📸</div>Capturing quote image...';
-                    const container = document.getElementById('proposal-container');
-                    const origW = container.style.width;
-                    container.style.width = '950px';
-                    await new Promise(r => setTimeout(r, 100));
-                    const canvas = await html2canvas(container, {
-                        scale: 1.5,
-                        useCORS: true,
-                        allowTaint: false,
-                        backgroundColor: '#ffffff',
-                        windowWidth: 950,
-                        width: 950,
-                        height: container.scrollHeight,
-                        scrollX: 0,
-                        scrollY: 0,
-                        x: 0,
-                        y: 0,
-                        onclone: function (clonedDoc) {
-                            var el = clonedDoc.getElementById('proposal-container');
-                            if (el) { el.style.width = '950px'; el.style.maxWidth = '950px'; }
-                        }
-                    });
-                    container.style.width = origW;
+                    var canvas = await captureProposal({ scale: 1.5 });
                     imageBase64 = canvas.toDataURL('image/jpeg', 0.85);
                 }
 
@@ -13361,40 +13253,47 @@ Sent via Above All Carbon HELOC Tool`;
         }
 
         // ===== SCREENSHOT & PDF =====
+
+        /**
+         * Capture proposal container as a canvas via html2canvas.
+         * @param {object} [opts] - { width: 950, scale: 2, settle: 100 }
+         * @returns {Promise<HTMLCanvasElement>}
+         */
+        async function captureProposal(opts) {
+            opts = opts || {};
+            var captureWidth = opts.width || 950;
+            var scale = opts.scale || 2;
+            var settle = opts.settle || 100;
+            if (typeof html2canvas === 'undefined') throw new Error('html2canvas not loaded');
+            var container = document.getElementById('proposal-container');
+            var origWidth = container.style.width;
+            container.style.width = captureWidth + 'px';
+            await new Promise(function(r) { setTimeout(r, settle); });
+            var canvas = await html2canvas(container, {
+                scale: scale,
+                useCORS: true,
+                allowTaint: false,
+                backgroundColor: '#ffffff',
+                windowWidth: captureWidth,
+                width: captureWidth,
+                height: container.scrollHeight,
+                scrollX: 0, scrollY: 0, x: 0, y: 0,
+                onclone: function(clonedDoc) {
+                    var el = clonedDoc.getElementById('proposal-container');
+                    if (el) { el.style.width = captureWidth + 'px'; el.style.maxWidth = captureWidth + 'px'; }
+                }
+            });
+            container.style.width = origWidth;
+            return canvas;
+        }
+
         async function captureAndCopy() {
             const notification = document.createElement('div');
             notification.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#10b981;color:white;padding:20px 30px;border-radius:10px;z-index:10000;font-family:var(--font-heading);font-size:13px;box-shadow:0 8px 32px rgba(0,0,0,0.3);';
             notification.textContent = '📸 Capturing...';
             document.body.appendChild(notification);
             try {
-                if (typeof html2canvas === 'undefined') {
-                    notification.textContent = '⚠️ html2canvas not loaded';
-                    setTimeout(() => notification.remove(), 2000);
-                    return;
-                }
-                const container = document.getElementById('proposal-container');
-                // Lock width for consistent capture regardless of viewport
-                const origWidth = container.style.width;
-                container.style.width = '950px';
-                await new Promise(r => setTimeout(r, 100)); // let reflow settle
-                const canvas = await html2canvas(container, {
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: false,
-                    backgroundColor: '#ffffff',
-                    windowWidth: 950,
-                    width: 950,
-                    height: container.scrollHeight,
-                    scrollX: 0,
-                    scrollY: 0,
-                    x: 0,
-                    y: 0,
-                    onclone: function (clonedDoc) {
-                        var el = clonedDoc.getElementById('proposal-container');
-                        if (el) { el.style.width = '950px'; el.style.maxWidth = '950px'; }
-                    }
-                });
-                container.style.width = origWidth; // restore
+                const canvas = await captureProposal();
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
                 try {
                     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
@@ -13479,7 +13378,6 @@ Sent via Above All Carbon HELOC Tool`;
                 return;
             }
             showToast('Generating branded PDF...', 'info');
-            const container = document.getElementById('proposal-container');
 
             // Apply PDF-specific visibility rules based on the toggles
             const pdfHiddenEls = [];
@@ -13496,20 +13394,8 @@ Sent via Above All Carbon HELOC Tool`;
                 if (aiBlock) { aiBlock.classList.add('print-exclude'); pdfHiddenEls.push(aiBlock); }
             }
 
-            const origWidth = container.style.width;
-            container.style.width = '950px';
-            await new Promise(r => setTimeout(r, 150));
             try {
-                const canvas = await html2canvas(container, {
-                    scale: 2, useCORS: true, allowTaint: false, backgroundColor: '#ffffff',
-                    windowWidth: 950, width: 950, height: container.scrollHeight,
-                    scrollX: 0, scrollY: 0, x: 0, y: 0,
-                    onclone: function (clonedDoc) {
-                        var el = clonedDoc.getElementById('proposal-container');
-                        if (el) { el.style.width = '950px'; el.style.maxWidth = '950px'; }
-                    }
-                });
-                container.style.width = origWidth;
+                const canvas = await captureProposal({ settle: 150 });
                 pdfHiddenEls.forEach(el => el.classList.remove('print-exclude'));
 
                 const imgData = canvas.toDataURL('image/jpeg', 0.92);
@@ -13571,33 +13457,7 @@ Sent via Above All Carbon HELOC Tool`;
             notification.textContent = '📸 Capturing & preparing email...';
             document.body.appendChild(notification);
             try {
-                if (typeof html2canvas === 'undefined') {
-                    notification.textContent = '⚠️ html2canvas not loaded';
-                    setTimeout(() => notification.remove(), 2000);
-                    return;
-                }
-                const container = document.getElementById('proposal-container');
-                const origWidth = container.style.width;
-                container.style.width = '950px';
-                await new Promise(r => setTimeout(r, 100));
-                const canvas = await html2canvas(container, {
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: false,
-                    backgroundColor: '#ffffff',
-                    windowWidth: 950,
-                    width: 950,
-                    height: container.scrollHeight,
-                    scrollX: 0,
-                    scrollY: 0,
-                    x: 0,
-                    y: 0,
-                    onclone: function (clonedDoc) {
-                        var el = clonedDoc.getElementById('proposal-container');
-                        if (el) { el.style.width = '950px'; el.style.maxWidth = '950px'; }
-                    }
-                });
-                container.style.width = origWidth;
+                const canvas = await captureProposal();
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
 
                 // Build rich HTML with embedded screenshot and copy to clipboard
@@ -13685,30 +13545,7 @@ Sent via Above All Carbon HELOC Tool`;
 
             // Capture screenshot (email-optimized: 600px wide, JPEG for smaller file size)
             try {
-                if (typeof html2canvas === 'undefined') {
-                    loading.textContent = '⚠️ Screenshot library not loaded';
-                    return;
-                }
-                var container = document.getElementById('proposal-container');
-                var origWidth = container.style.width;
-                container.style.width = '600px';
-                await new Promise(function (r) { setTimeout(r, 150); });
-
-                var canvas = await html2canvas(container, {
-                    scale: 1.5,
-                    useCORS: true,
-                    allowTaint: false,
-                    backgroundColor: '#ffffff',
-                    windowWidth: 600,
-                    width: 600,
-                    height: container.scrollHeight,
-                    scrollX: 0, scrollY: 0, x: 0, y: 0,
-                    onclone: function (clonedDoc) {
-                        var el = clonedDoc.getElementById('proposal-container');
-                        if (el) { el.style.width = '600px'; el.style.maxWidth = '600px'; }
-                    }
-                });
-                container.style.width = origWidth;
+                var canvas = await captureProposal({ width: 600, scale: 1.5, settle: 150 });
 
                 // Convert to JPEG for email-friendly size
                 _esmScreenshotDataUrl = canvas.toDataURL('image/jpeg', 0.85);
