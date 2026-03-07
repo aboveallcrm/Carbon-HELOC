@@ -10,6 +10,7 @@
     --primary-color: #0f2b4c;
     --accent-color: #c5a059;
     --accent-dark: #a68543;
+    --accent-light: #d4b872;
     --header-bg: #0f2b4c;
     --font-color: #1e293b;
     --slate: #1e293b;
@@ -22,349 +23,280 @@
     --green: #10b981;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: var(--font-body); background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f2b4c 100%); color: var(--font-color); min-height: 100vh; -webkit-font-smoothing: antialiased; padding: 16px; line-height: 1.3; }
+body { font-family: var(--font-body); background: linear-gradient(160deg, #0a1628 0%, #132240 40%, #0f2b4c 70%, #0d2340 100%); color: var(--font-color); min-height: 100vh; -webkit-font-smoothing: antialiased; padding: 40px 20px 80px; line-height: 1.5; }
+body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 50%, rgba(197,160,89,0.05) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(99,102,241,0.03) 0%, transparent 50%); pointer-events: none; z-index: 0; }
 
 /* Floating Action Bar */
-.floating-bar {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(30, 41, 59, 0.98);
-    backdrop-filter: blur(10px);
-    padding: 12px 20px;
-    border-radius: 50px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(197, 160, 89, 0.2);
-    display: flex;
-    gap: 10px;
-    z-index: 1000;
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 95vw;
-}
-.floating-bar button {
-    background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 25px;
-    font-family: var(--font-heading);
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-}
-.floating-bar button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4);
-}
-.floating-bar button.secondary {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-}
-.floating-bar button.secondary:hover {
-    background: rgba(255,255,255,0.2);
-}
-
-/* Interactive Elements */
-.interactive-card {
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-.interactive-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(15, 43, 76, 0.15);
-}
-.rate-row {
-    transition: all 0.2s ease;
-}
-.rate-row:hover {
-    background: rgba(197, 160, 89, 0.05);
-}
-.rate-row.selected {
-    background: var(--highlight-bg);
-    border-left: 3px solid var(--accent-color);
-}
+.floating-bar { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px) saturate(1.4); padding: 14px 28px; border-radius: 60px; box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(197,160,89,0.15), inset 0 1px 0 rgba(255,255,255,0.05); display: flex; gap: 12px; z-index: 1000; flex-wrap: wrap; justify-content: center; max-width: 95vw; animation: floatBarIn 0.6s 1.5s ease both; }
+@keyframes floatBarIn { from { opacity: 0; transform: translateX(-50%) translateY(30px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+.floating-bar button { background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: white; border: none; padding: 12px 24px; border-radius: 30px; font-family: var(--font-heading); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; cursor: pointer; transition: all 0.25s ease; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+.floating-bar button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(197,160,89,0.5); }
+.floating-bar button.secondary { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); }
+.floating-bar button.secondary:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.3); }
 
 /* Modal Styles */
-.modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 2000;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-}
-.modal-overlay.visible {
-    display: flex;
-}
-.modal-box {
-    background: linear-gradient(135deg, #1e293b, #0f172a);
-    border: 1px solid rgba(197, 160, 89, 0.3);
-    border-radius: 16px;
-    padding: 28px;
-    max-width: 420px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
-}
-.modal-box h3 {
-    color: var(--accent-color);
-    font-family: var(--font-heading);
-    margin: 0 0 16px 0;
-    font-size: 16px;
-}
-.modal-box input, .modal-box textarea {
-    width: 100%;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 8px;
-    padding: 12px;
-    color: white;
-    font-family: var(--font-body);
-    font-size: 13px;
-    margin-bottom: 12px;
-}
-.modal-box input:focus, .modal-box textarea:focus {
-    outline: none;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
-}
-
-/* Calculator Widget */
-.calc-widget {
-    background: linear-gradient(135deg, rgba(197,160,89,0.1), rgba(166,133,67,0.05));
-    border: 1px solid rgba(197,160,89,0.2);
-    border-radius: 12px;
-    padding: 16px;
-    margin: 16px 0;
-}
-.calc-widget h4 {
-    color: var(--accent-color);
-    font-family: var(--font-heading);
-    font-size: 11px;
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-.calc-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.calc-row:last-child {
-    border-bottom: none;
-}
-.calc-label {
-    font-size: 12px;
-    color: rgba(255,255,255,0.7);
-}
-.calc-value {
-    font-family: var(--font-heading);
-    font-size: 14px;
-    font-weight: 700;
-    color: white;
-}
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+.modal-overlay.visible { display: flex; animation: modalFadeIn 0.3s ease; }
+@keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-box { background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid rgba(197,160,89,0.25); border-radius: 20px; padding: 32px; max-width: 480px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 60px rgba(197,160,89,0.05); animation: modalSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes modalSlideIn { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.modal-box h3 { color: var(--accent-color); font-family: var(--font-heading); margin: 0 0 16px 0; font-size: 20px; font-weight: 800; }
+.modal-box input, .modal-box textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 14px 16px; color: white; font-family: var(--font-body); font-size: 14px; margin-bottom: 14px; transition: border-color 0.2s, box-shadow 0.2s; }
+.modal-box input:focus, .modal-box textarea:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(197,160,89,0.12); }
 
 /* Savings Badge */
-.savings-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: 700;
-    animation: pulse 2s infinite;
-}
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-/* Tooltip */
-.tooltip {
-    position: relative;
-}
-.tooltip::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1e293b;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 11px;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.2s ease;
-    margin-bottom: 6px;
-    border: 1px solid rgba(255,255,255,0.1);
-}
-.tooltip:hover::after {
-    opacity: 1;
-}
+.savings-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
 
 /* Confetti Animation */
-.confetti {
-    position: fixed;
-    width: 10px;
-    height: 10px;
-    background: var(--accent-color);
-    position: absolute;
-    animation: confetti-fall 3s ease-out forwards;
-}
-@keyframes confetti-fall {
-    0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-}
+.confetti { position: fixed; width: 10px; height: 10px; background: var(--accent-color); animation: confetti-fall 3s ease-out forwards; }
+@keyframes confetti-fall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
 
 /* Loading & Error */
-.loading { display: flex; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; gap: 16px; }
-.loading .spinner { width: 48px; height: 48px; border: 4px solid var(--accent-glow); border-top-color: var(--accent-color); border-radius: 50%; animation: spin 0.8s linear infinite; }
+.loading { display: flex; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; gap: 24px; }
+.loading .spinner { width: 56px; height: 56px; border: 3px solid rgba(197,160,89,0.15); border-top-color: var(--accent-color); border-radius: 50%; animation: spin 0.8s linear infinite; }
+.loading div:last-child { color: rgba(148,163,184,0.8); font-family: var(--font-heading); font-size: 12px; text-transform: uppercase; letter-spacing: 3px; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.error-page { text-align: center; padding: 60px 20px; }
-.error-page h1 { color: var(--accent-color); font-family: var(--font-heading); font-size: 24px; margin-bottom: 12px; }
-.error-page p { color: #64748b; font-size: 14px; }
+.error-page { text-align: center; padding: 80px 24px; }
+.error-page h1 { color: var(--accent-color); font-family: var(--font-heading); font-size: 28px; margin-bottom: 16px; }
+.error-page p { color: #94a3b8; font-size: 16px; line-height: 1.7; }
 
 /* Main Layout */
-.quote-page { max-width: 600px; margin: 0 auto; background: var(--paper); border-radius: 0 0 6px 6px; box-shadow: 0 30px 60px rgba(15,43,76,0.12), 0 0 0 1px rgba(15,43,76,0.04); overflow: hidden; border-top: 6px solid var(--accent-color); }
+.quote-page { max-width: 860px; margin: 0 auto; background: var(--paper); border-radius: 20px; box-shadow: 0 40px 80px rgba(0,0,0,0.25), 0 0 0 1px rgba(15,43,76,0.06), 0 0 100px rgba(197,160,89,0.05); overflow: hidden; position: relative; z-index: 1; }
+.quote-page::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, var(--accent-dark), var(--accent-color), var(--accent-light, #d4b872), var(--accent-color), var(--accent-dark)); background-size: 200% 100%; animation: shimmer-bar 4s linear infinite; }
+@keyframes shimmer-bar { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
-/* Premium Header */
-.header { background: var(--header-bg); color: white; padding: 24px 28px; text-align: center; border-bottom: 4px solid var(--accent-color); }
-.header h1 { font-family: var(--font-heading); font-size: 22px; font-weight: 800; color: var(--accent-color); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
-.header .subtitle { font-family: var(--font-heading); font-size: 10px; color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
-.header .lo-info { margin-top: 14px; font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.6; }
-.header .lo-info strong { color: white; }
+/* Premium Header — Hero Style */
+.header { background: linear-gradient(160deg, #0a1628 0%, var(--header-bg) 50%, #132240 100%); color: white; padding: 48px 44px 40px; text-align: center; position: relative; overflow: hidden; }
+.header::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 50% 100%, rgba(197,160,89,0.08) 0%, transparent 50%); pointer-events: none; }
+.header::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(197,160,89,0.4), transparent); }
+.header h1 { font-family: var(--font-heading); font-size: 32px; font-weight: 900; color: var(--accent-color); text-transform: uppercase; letter-spacing: 3px; margin-bottom: 8px; position: relative; }
+.header .subtitle { font-family: var(--font-heading); font-size: 13px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 4px; font-weight: 500; position: relative; }
+.header .lo-info { margin-top: 20px; font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.7; position: relative; }
+.header .lo-info strong { color: white; font-weight: 700; }
 
 /* Content Body */
-.body-content { padding: 22px 28px 28px; }
-
-/* Section Headers */
-.section { margin-bottom: 22px; }
-.section-title { font-family: var(--font-heading); font-size: 14px; color: var(--primary-color); text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 12px; border-bottom: 1px solid var(--accent-color); padding-bottom: 6px; }
+.body-content { padding: 36px 44px 40px; }
+.section { margin-bottom: 36px; }
+.section-title { font-family: var(--font-heading); font-size: 16px; color: var(--primary-color); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid transparent; border-image: linear-gradient(90deg, var(--accent-color), transparent) 1; position: relative; }
 
 /* Client Grid */
-.client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.client-grid .item { }
-.client-grid .label { font-family: var(--font-heading); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--slate); opacity: 0.6; font-weight: 700; margin-bottom: 3px; }
-.client-grid .value { font-family: var(--font-body); font-size: 13px; color: var(--primary-color); font-weight: 600; }
+.client-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.client-grid .item { background: rgba(15,43,76,0.03); border-radius: 12px; padding: 16px 18px; border: 1px solid rgba(15,43,76,0.06); transition: all 0.3s ease; }
+.client-grid .item:hover { background: rgba(15,43,76,0.05); transform: translateY(-1px); }
+.client-grid .label { font-family: var(--font-heading); font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--accent-dark); font-weight: 700; margin-bottom: 6px; }
+.client-grid .value { font-family: var(--font-body); font-size: 15px; color: var(--primary-color); font-weight: 600; }
 
 /* Valuation Blocks */
-.val-blocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
-.val-block { background: var(--white); border-radius: 8px; padding: 14px; text-align: center; border: 1px solid rgba(15,43,76,0.06); }
-.val-block .val-label { font-family: var(--font-heading); font-size: 7px; text-transform: uppercase; letter-spacing: 1px; color: var(--slate); opacity: 0.6; margin-bottom: 4px; font-weight: 700; }
-.val-block .val-value { font-family: var(--font-heading); font-size: 17px; font-weight: 800; color: var(--primary-color); }
-.val-block.highlight { border: 2px solid var(--accent-color); background: var(--highlight-bg); }
-.val-block.highlight .val-value { color: var(--accent-color); }
+.val-blocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
+.val-block { background: var(--white); border-radius: 14px; padding: 22px 18px; text-align: center; border: 1px solid rgba(15,43,76,0.06); transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1); box-shadow: 0 2px 8px rgba(15,43,76,0.04); }
+.val-block:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(15,43,76,0.1); }
+.val-block .val-label { font-family: var(--font-heading); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--slate); opacity: 0.5; margin-bottom: 8px; font-weight: 700; }
+.val-block .val-value { font-family: var(--font-heading); font-size: 22px; font-weight: 800; color: var(--primary-color); }
+.val-block.highlight { border: 2px solid var(--accent-color); background: linear-gradient(135deg, #fffbf0, #fff8e6); box-shadow: 0 4px 20px rgba(197,160,89,0.15); }
+.val-block.highlight .val-value { color: var(--accent-color); font-size: 24px; }
+.val-block.highlight:hover { box-shadow: 0 12px 36px rgba(197,160,89,0.2); }
 
-/* Recommendation / Certificate Box */
-.recommendation { background: var(--white); border: 2px solid var(--accent-color); border-radius: 8px; padding: 20px 24px; text-align: center; margin-bottom: 22px; position: relative; }
-.recommendation .cert-icon { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 3px solid var(--paper); }
-.recommendation h3 { font-family: var(--font-heading); color: var(--primary-color); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; }
-.rec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-.rec-item { }
-.rec-item .rec-label { font-family: var(--font-heading); font-size: 7px; text-transform: uppercase; letter-spacing: 1px; color: var(--slate); opacity: 0.6; font-weight: 700; }
-.rec-item .rec-value { font-family: var(--font-heading); font-size: 18px; font-weight: 800; color: var(--primary-color); }
-.rec-item.final .rec-value { color: var(--accent-color); font-size: 20px; }
+/* Recommendation Box */
+.recommendation { background: linear-gradient(135deg, #fffdf7, var(--white)); border: 2px solid var(--accent-color); border-radius: 18px; padding: 36px 32px 30px; text-align: center; margin-bottom: 36px; position: relative; box-shadow: 0 8px 40px rgba(197,160,89,0.1); }
+.recommendation .cert-icon { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--accent-color), #d4af37); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 4px solid var(--paper); box-shadow: 0 4px 12px rgba(197,160,89,0.3); }
+.recommendation h3 { font-family: var(--font-heading); color: var(--primary-color); font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 2.5px; margin-bottom: 24px; }
+.rec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.rec-item { padding: 8px 0; }
+.rec-item .rec-label { font-family: var(--font-heading); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--slate); opacity: 0.5; font-weight: 700; margin-bottom: 4px; }
+.rec-item .rec-value { font-family: var(--font-heading); font-size: 24px; font-weight: 800; color: var(--primary-color); }
+.rec-item.final .rec-value { color: var(--accent-color); font-size: 28px; text-shadow: 0 0 30px rgba(197,160,89,0.15); }
 
 /* Rate Matrix */
-.tier { margin-bottom: 14px; }
-.tier-header { font-family: var(--font-heading); font-size: 10px; font-weight: 800; color: var(--primary-color); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; padding: 8px 12px; background: var(--highlight-bg); border-radius: 6px; display: flex; justify-content: space-between; border-left: 3px solid var(--accent-color); }
-.tier-header .pts { font-size: 9px; color: var(--accent-color); font-weight: 700; }
-.rate-table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--font-body); }
-.rate-table th { text-align: left; padding: 8px 12px; font-family: var(--font-heading); color: var(--slate); font-size: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; border-bottom: 1px solid rgba(15,43,76,0.1); opacity: 0.6; }
-.rate-table td { padding: 10px 12px; border-bottom: 1px solid rgba(15,43,76,0.05); color: var(--font-color); font-weight: 500; }
-.rate-table tr.recommended { background: var(--highlight-bg); }
-.rate-table tr.recommended td { color: var(--primary-color); font-weight: 800; border-top: 1px solid var(--accent-color); border-bottom: 1px solid var(--accent-color); }
-.rate-table tr.recommended td:first-child { border-left: 1px solid var(--accent-color); border-radius: 4px 0 0 4px; }
-.rate-table tr.recommended td:last-child { border-right: 1px solid var(--accent-color); border-radius: 0 4px 4px 0; }
-.rec-badge { display: inline-block; background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: white; font-family: var(--font-heading); font-size: 7px; font-weight: 800; padding: 2px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle; text-transform: uppercase; letter-spacing: 0.5px; }
+.tier { margin-bottom: 20px; background: var(--white); border-radius: 14px; overflow: hidden; border: 1px solid rgba(15,43,76,0.06); box-shadow: 0 2px 12px rgba(15,43,76,0.04); transition: all 0.3s ease; }
+.tier:hover { box-shadow: 0 6px 24px rgba(15,43,76,0.08); }
+.tier-header { font-family: var(--font-heading); font-size: 12px; font-weight: 800; color: var(--primary-color); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0; padding: 14px 20px; background: linear-gradient(135deg, var(--highlight-bg), #fff8e6); display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--accent-color); }
+.tier-header .pts { font-size: 11px; color: var(--accent-color); font-weight: 700; }
+.rate-table { width: 100%; border-collapse: collapse; font-size: 14px; font-family: var(--font-body); }
+.rate-table th { text-align: left; padding: 12px 20px; font-family: var(--font-heading); color: var(--slate); font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 700; border-bottom: 1px solid rgba(15,43,76,0.08); opacity: 0.5; }
+.rate-table td { padding: 14px 20px; border-bottom: 1px solid rgba(15,43,76,0.04); color: var(--font-color); font-weight: 500; }
+.rate-table tr.recommended { background: linear-gradient(135deg, #fffbf0, #fff8e6); animation: recGlow 3s ease-in-out infinite; }
+.rate-table tr.recommended td { color: var(--primary-color); font-weight: 800; font-size: 15px; border-top: 2px solid var(--accent-color); border-bottom: 2px solid var(--accent-color); }
+.rate-table tr.recommended td:first-child { border-left: 2px solid var(--accent-color); border-radius: 6px 0 0 6px; }
+.rate-table tr.recommended td:last-child { border-right: 2px solid var(--accent-color); border-radius: 0 6px 6px 0; }
+.rec-badge { display: inline-block; background: linear-gradient(135deg, var(--accent-color), #d4af37); color: white; font-family: var(--font-heading); font-size: 9px; font-weight: 800; padding: 3px 10px; border-radius: 12px; margin-left: 8px; vertical-align: middle; text-transform: uppercase; letter-spacing: 0.8px; box-shadow: 0 2px 8px rgba(197,160,89,0.3); }
+
+/* Rate Row Click Expansion */
+.rate-table tr { cursor: pointer; transition: background 0.25s ease; }
+.rate-table tr:hover:not(.recommended):not(.rate-detail-tr) { background: rgba(197,160,89,0.05); }
+.rate-detail-tr td { padding: 0 !important; border: none !important; }
+.rate-row-detail { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease; background: rgba(197,160,89,0.03); font-size: 13px; color: var(--slate); padding: 0 20px; }
+.rate-row-detail.expanded { max-height: 200px; padding: 16px 20px; border-bottom: 1px solid rgba(197,160,89,0.1); }
+.rate-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.rate-detail-item .rd-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--slate); opacity: 0.5; font-weight: 700; }
+.rate-detail-item .rd-value { font-weight: 700; color: var(--primary-color); font-size: 15px; }
+@keyframes recGlow { 0%, 100% { box-shadow: inset 0 0 0 rgba(197,160,89,0); } 50% { box-shadow: inset 0 0 24px rgba(197,160,89,0.06); } }
 
 /* CTA */
-.cta-section { text-align: center; padding: 28px 24px 32px; background: var(--header-bg); border-radius: 0 0 6px 6px; }
-.cta-section h3 { font-family: var(--font-heading); color: white; font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
-.cta-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-.cta-btn { display: inline-block; padding: 11px 28px; border-radius: 50px; font-family: var(--font-heading); font-weight: 800; font-size: 10px; text-decoration: none; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border: none; }
-.cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
-.cta-btn.primary { background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: white; }
-.cta-btn.secondary { background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.25); }
-.cta-btn.secondary:hover { background: rgba(255,255,255,0.2); }
+/* CTA section removed — actions handled by floating bar */
 
-/* Disclosure Banner — matches main tool */
-.client-disclaimer { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 6px; padding: 10px 16px; margin: 12px 0 0; font-size: 9px; color: #92400e; text-align: center; line-height: 1.6; }
+/* Disclosure */
+.client-disclaimer { background: linear-gradient(135deg, #fef3c7, #fefce8); border: 1px solid #fcd34d; border-radius: 10px; padding: 14px 20px; margin: 16px 0 0; font-size: 11px; color: #92400e; text-align: center; line-height: 1.7; }
 .client-disclaimer strong { font-weight: 700; }
 
-/* Dark Footer — matches main tool exactly */
-.quote-footer { margin-top: 0; padding: 14px 24px; background-color: var(--slate); color: #cbd5e1; font-size: 9px; }
-.footer-main { display: flex; gap: 14px; align-items: center; }
-.footer-headshot { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--accent-color); object-fit: cover; flex-shrink: 0; background: #ccc; }
-.footer-avatar-fallback { width: 55px; height: 55px; border-radius: 50%; border: 2px solid var(--accent-color); background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: white; display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 800; font-size: 18px; flex-shrink: 0; }
-.footer-info { flex-grow: 1; line-height: 1.5; }
-.footer-name { font-family: var(--font-heading); font-weight: 800; color: var(--accent-color); font-size: 13px; display: block; margin-bottom: 2px; }
-.footer-stars { margin-top: 3px; color: #fde047; font-weight: 700; font-size: 8px; }
-.company-logo-footer { height: 40px; max-width: 120px; object-fit: contain; flex-shrink: 0; background: white; padding: 4px; border-radius: 2px; }
-.footer-legal { display: flex; gap: 10px; align-items: flex-start; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 10px; font-size: 7px; line-height: 1.4; color: #94a3b8; }
-.footer-legal .ehl-icon { height: 22px; flex-shrink: 0; background: white; padding: 2px; border-radius: 2px; }
+/* Dark Footer */
+.quote-footer { margin-top: 0; padding: 24px 36px; background-color: var(--slate); color: #cbd5e1; font-size: 11px; }
+.footer-main { display: flex; gap: 20px; align-items: center; }
+.footer-headshot { width: 68px; height: 68px; border-radius: 50%; border: 3px solid var(--accent-color); object-fit: cover; flex-shrink: 0; background: #ccc; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+.footer-avatar-fallback { width: 68px; height: 68px; border-radius: 50%; border: 3px solid var(--accent-color); background: linear-gradient(135deg, var(--accent-color), #d4af37); color: white; display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 800; font-size: 22px; flex-shrink: 0; box-shadow: 0 4px 16px rgba(197,160,89,0.3); }
+.footer-info { flex-grow: 1; line-height: 1.6; }
+.footer-name { font-family: var(--font-heading); font-weight: 800; color: var(--accent-color); font-size: 16px; display: block; margin-bottom: 4px; }
+.footer-stars { margin-top: 4px; color: #fde047; font-weight: 700; font-size: 10px; }
+.company-logo-footer { height: 48px; max-width: 140px; object-fit: contain; flex-shrink: 0; background: white; padding: 6px; border-radius: 4px; }
+.footer-legal { display: flex; gap: 12px; align-items: flex-start; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px; margin-top: 14px; font-size: 9px; line-height: 1.5; color: #94a3b8; }
+.footer-legal .ehl-icon { height: 28px; flex-shrink: 0; background: white; padding: 3px; border-radius: 3px; }
+.proprietary-notice { text-align: center; padding: 8px 28px; background: rgba(254,226,226,0.8); border: 1px solid #fca5a5; border-radius: 6px; margin-top: 10px; font-size: 8px; color: #991b1b; font-family: var(--font-body); }
+.footer-powered { text-align: center; padding: 14px; font-size: 10px; color: rgba(148,163,184,0.7); font-family: var(--font-heading); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; background: transparent; border-radius: 0 0 20px 20px; }
 
-/* Proprietary Notice */
-.proprietary-notice { text-align: center; padding: 6px 24px; background: #fee2e2; border: 1px solid #fca5a5; border-radius: 4px; margin-top: 8px; font-size: 7px; color: #991b1b; font-family: var(--font-body); }
+/* --- Scroll Progress Bar --- */
+.scroll-progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--accent-color), #d4af37, var(--accent-color)); z-index: 1500; transition: width 0.1s linear; box-shadow: 0 0 8px rgba(197,160,89,0.5); }
 
-/* Powered footer */
-.footer-powered { text-align: center; padding: 10px; font-size: 8px; color: #cbd5e1; font-family: var(--font-heading); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; background: var(--paper); }
+/* --- Scroll Reveal Animations --- */
+.reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1), transform 0.7s cubic-bezier(0.4,0,0.2,1); }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+/* Stagger Children Animation */
+.stagger-children > * { opacity: 0; transform: translateY(16px); transition: opacity 0.45s ease, transform 0.45s ease; }
+.stagger-children.visible > *:nth-child(1) { transition-delay: 0s; opacity: 1; transform: translateY(0); }
+.stagger-children.visible > *:nth-child(2) { transition-delay: 0.06s; opacity: 1; transform: translateY(0); }
+.stagger-children.visible > *:nth-child(3) { transition-delay: 0.12s; opacity: 1; transform: translateY(0); }
+.stagger-children.visible > *:nth-child(4) { transition-delay: 0.18s; opacity: 1; transform: translateY(0); }
+.stagger-children.visible > *:nth-child(5) { transition-delay: 0.24s; opacity: 1; transform: translateY(0); }
+.stagger-children.visible > *:nth-child(6) { transition-delay: 0.30s; opacity: 1; transform: translateY(0); }
+
+/* --- Page Entrance --- */
+.quote-page.entering { animation: pageEntrance 0.8s cubic-bezier(0.4,0,0.2,1) forwards; }
+@keyframes pageEntrance { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+/* --- Particle Canvas --- */
+#particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+
+/* ===== Ezra AI Chat Widget ===== */
+.eq-orb { position: fixed; bottom: 90px; right: 20px; width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer; background: linear-gradient(135deg, #c5a059, #d4af37, #c5a059); color: #1e293b; font-size: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(212,175,55,0.4), 0 0 60px rgba(212,175,55,0.15), 0 8px 32px rgba(0,0,0,0.3); transition: all 0.3s cubic-bezier(0.4,0,0.2,1); z-index: 1100; }
+.eq-orb:hover { transform: translateY(-3px) scale(1.08); box-shadow: 0 0 30px rgba(212,175,55,0.6), 0 12px 40px rgba(0,0,0,0.35); }
+.eq-orb-ring { position: absolute; inset: -4px; border-radius: 50%; border: 2px solid rgba(212,175,55,0.4); animation: eq-pulse 2.5s ease-in-out infinite; pointer-events: none; }
+@keyframes eq-pulse { 0%, 100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.15); opacity: 0; } }
+@keyframes eq-bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.eq-panel { position: fixed; bottom: 90px; right: 20px; width: 380px; max-width: calc(100vw - 40px); height: 520px; max-height: calc(100vh - 140px); background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 16px; border: 1px solid rgba(197,160,89,0.25); box-shadow: 0 0 40px rgba(197,160,89,0.12), 0 25px 50px rgba(0,0,0,0.5); display: none; flex-direction: column; overflow: hidden; z-index: 1200; }
+.eq-panel.open { display: flex; animation: eq-in 0.35s cubic-bezier(0.4,0,0.2,1); }
+@keyframes eq-in { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.eq-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid rgba(197,160,89,0.25); }
+.eq-header-left { display: flex; align-items: center; gap: 8px; }
+.eq-avatar { width: 32px; height: 32px; background: linear-gradient(135deg, #c5a059, #d4af37); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #1e293b; font-weight: 700; box-shadow: 0 0 10px rgba(212,175,55,0.3); }
+.eq-title { font-family: var(--font-heading); font-weight: 700; font-size: 14px; letter-spacing: 2px; color: #c5a059; }
+.eq-subtitle { font-size: 10px; color: #94a3b8; }
+.eq-close { width: 28px; height: 28px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #94a3b8; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.eq-close:hover { background: rgba(255,255,255,0.12); color: white; }
+.eq-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.eq-chip { background: rgba(197,160,89,0.1); border: 1px solid rgba(197,160,89,0.2); color: #c5a059; padding: 6px 12px; border-radius: 20px; font-size: 10px; font-family: var(--font-heading); font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.eq-chip:hover { background: rgba(197,160,89,0.2); border-color: #c5a059; transform: translateY(-1px); }
+.eq-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: thin; scrollbar-color: rgba(197,160,89,0.3) transparent; }
+.eq-msg { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 12px; line-height: 1.6; animation: eq-msg-in 0.3s ease; word-wrap: break-word; }
+@keyframes eq-msg-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.eq-msg.assistant { align-self: flex-start; background: rgba(197,160,89,0.1); border: 1px solid rgba(197,160,89,0.15); color: #e2e8f0; border-bottom-left-radius: 4px; }
+.eq-msg.user { align-self: flex-end; background: linear-gradient(135deg, #c5a059, #a68543); color: #0f172a; font-weight: 500; border-bottom-right-radius: 4px; }
+.eq-msg strong { color: #d4af37; }
+.eq-msg ul, .eq-msg ol { margin: 4px 0 4px 16px; }
+.eq-typing { display: none; gap: 4px; padding: 10px 14px; align-self: flex-start; }
+.eq-typing.active { display: flex; }
+.eq-dot { width: 6px; height: 6px; border-radius: 50%; background: #c5a059; opacity: 0.4; animation: eq-dot 1.4s ease-in-out infinite; }
+.eq-dot:nth-child(2) { animation-delay: 0.2s; }
+.eq-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes eq-dot { 0%, 80%, 100% { transform: scale(0.8); opacity: 0.4; } 40% { transform: scale(1.2); opacity: 1; } }
+.eq-input-area { padding: 10px 14px; border-top: 1px solid rgba(197,160,89,0.15); display: flex; gap: 8px; align-items: flex-end; }
+.eq-input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 12px; color: white; font-size: 12px; font-family: var(--font-body); resize: none; max-height: 80px; outline: none; }
+.eq-input:focus { border-color: rgba(197,160,89,0.4); }
+.eq-input::placeholder { color: #64748b; }
+.eq-send { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #c5a059, #a68543); border: none; color: #0f172a; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; font-size: 16px; }
+.eq-send:hover { transform: scale(1.05); box-shadow: 0 0 12px rgba(197,160,89,0.4); }
+.eq-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+/* Tour Highlight */
+.eq-tour-hl { position: fixed; z-index: 1050; border: 2px solid #c5a059; border-radius: 10px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.6), 0 0 30px rgba(197,160,89,0.3); transition: all 0.5s cubic-bezier(0.4,0,0.2,1); pointer-events: none; display: none; }
+.eq-tour-dots { display: flex; gap: 4px; justify-content: center; padding: 6px 0 2px; }
+.eq-tour-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: all 0.3s; }
+.eq-tour-dot.active { background: #c5a059; width: 18px; border-radius: 3px; }
+
+/* Tablet */
+@media (max-width: 900px) {
+    body { padding: 20px 12px 80px; }
+    .header { padding: 36px 28px 32px; }
+    .header h1 { font-size: 26px; letter-spacing: 2px; }
+    .body-content { padding: 28px 28px 32px; }
+    .client-grid { grid-template-columns: 1fr 1fr; }
+    .rec-grid { grid-template-columns: repeat(4, 1fr); }
+}
 
 /* Mobile */
 @media (max-width: 600px) {
-    body { padding: 10px; }
-    .quote-page { border-radius: 0; }
-    .header { padding: 24px 20px; }
-    .body-content { padding: 20px 16px 24px; }
-    .client-grid { grid-template-columns: 1fr; }
-    .val-blocks { grid-template-columns: 1fr 1fr; }
-    .rec-grid { grid-template-columns: 1fr 1fr; }
-    .rec-item .rec-value { font-size: 15px; }
-    .header h1 { font-size: 18px; }
-    .quote-footer { padding: 12px 16px; }
-    .footer-main { gap: 10px; }
-    .footer-headshot, .footer-avatar-fallback { width: 40px; height: 40px; }
-    .footer-name { font-size: 11px; }
-    .company-logo-footer { height: 30px; max-width: 80px; }
-    .footer-legal { font-size: 6px; gap: 6px; }
-    .cta-section { padding: 24px 16px; }
-    .proprietary-notice { padding: 6px 16px; }
+    body { padding: 0; }
+    .quote-page { border-radius: 0; max-width: 100%; }
+    .quote-page::before { border-radius: 0; }
+    .header { padding: 32px 20px 28px; }
+    .header h1 { font-size: 22px; letter-spacing: 1.5px; }
+    .header .subtitle { font-size: 11px; letter-spacing: 2px; }
+    .body-content { padding: 24px 18px 28px; }
+    .section { margin-bottom: 28px; }
+    .section-title { font-size: 14px; margin-bottom: 16px; }
+    .client-grid { grid-template-columns: 1fr; gap: 12px; }
+    .client-grid .item { padding: 12px 14px; }
+    .val-blocks { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .val-block { padding: 16px 12px; border-radius: 10px; }
+    .val-block .val-value { font-size: 18px; }
+    .val-block.highlight .val-value { font-size: 20px; }
+    .recommendation { padding: 28px 18px 22px; border-radius: 14px; }
+    .rec-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .rec-item .rec-value { font-size: 20px; }
+    .rec-item.final .rec-value { font-size: 22px; }
+    .tier { border-radius: 10px; }
+    .tier-header { padding: 12px 16px; font-size: 11px; }
+    .rate-table { font-size: 13px; }
+    .rate-table th { padding: 10px 14px; font-size: 9px; }
+    .rate-table td { padding: 12px 14px; }
+    .quote-footer { padding: 18px 18px; }
+    .footer-main { gap: 12px; }
+    .footer-headshot, .footer-avatar-fallback { width: 52px; height: 52px; font-size: 18px; }
+    .footer-name { font-size: 14px; }
+    .company-logo-footer { height: 36px; max-width: 100px; }
+    .footer-legal { font-size: 7px; gap: 8px; }
+    .client-disclaimer { font-size: 10px; padding: 12px 16px; }
+    .proprietary-notice { padding: 6px 16px; font-size: 7px; }
+    .floating-bar { padding: 10px 16px; gap: 8px; bottom: 16px; }
+    .floating-bar button { padding: 10px 16px; font-size: 10px; }
+    .eq-orb { bottom: 80px; right: 10px; width: 46px; height: 46px; font-size: 18px; }
+    .eq-panel { bottom: 0; right: 0; width: 100vw; max-width: 100vw; height: calc(100vh - 60px); max-height: calc(100vh - 60px); border-radius: 16px 16px 0 0; }
+    .eq-chips { overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+    .eq-chips::-webkit-scrollbar { display: none; }
 }
 </style>
 </head>
 <body>
 
+<!-- Scroll Progress -->
+<div class="scroll-progress" id="scroll-progress" style="width: 0%;"></div>
+
+<!-- Particle Background -->
+<canvas id="particle-canvas"></canvas>
+
 <!-- Floating Action Bar -->
 <div class="floating-bar" id="floating-bar" style="display: none;">
-    <button onclick="openApplyModal()">🚀 Apply Now</button>
-    <button class="secondary" onclick="openContactModal()">💬 Ask Question</button>
-    <button class="secondary" onclick="downloadPDF()">📄 Save PDF</button>
-    <button class="secondary" onclick="shareQuote()">🔗 Share</button>
+    <button onclick="openApplyModal()">&#10024; Apply Now</button>
+    <button class="secondary" id="btn-ask" onclick="askQuestion()">&#9679; Ask Question</button>
+    <button class="secondary" onclick="downloadPDF()">&#128196; Save PDF</button>
+    <button class="secondary" onclick="shareQuote()">&#128279; Share</button>
 </div>
 
 <!-- Apply Modal -->
 <div id="apply-modal" class="modal-overlay" onclick="if(event.target===this)closeApplyModal()">
     <div class="modal-box">
-        <h3>🚀 Start Your Application</h3>
+        <h3>Start Your Application</h3>
         <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 16px;">Ready to move forward? Fill out your details and we'll get started immediately.</p>
         <input type="text" id="apply-name" placeholder="Your Full Name">
         <input type="email" id="apply-email" placeholder="Email Address">
@@ -380,7 +312,7 @@ body { font-family: var(--font-body); background: linear-gradient(135deg, #0f172
 <!-- Contact Modal -->
 <div id="contact-modal" class="modal-overlay" onclick="if(event.target===this)closeContactModal()">
     <div class="modal-box">
-        <h3>💬 Ask a Question</h3>
+        <h3>Ask a Question</h3>
         <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 16px;">Have questions about your quote? Send a message to your loan officer.</p>
         <input type="text" id="contact-name" placeholder="Your Name">
         <input type="email" id="contact-email" placeholder="Email Address">
@@ -395,24 +327,24 @@ body { font-family: var(--font-body); background: linear-gradient(135deg, #0f172
 <!-- Share Modal -->
 <div id="share-modal" class="modal-overlay" onclick="if(event.target===this)closeShareModal()">
     <div class="modal-box">
-        <h3>🔗 Share Your Quote</h3>
+        <h3>Share Your Quote</h3>
         <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 16px;">Share this quote with your partner, advisor, or family member.</p>
         <input type="text" id="share-url" readonly style="background: rgba(0,0,0,0.3); color: #a78bfa;">
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0;">
-            <button onclick="shareVia('email')" style="background: #ea4335; color: white; border: none; padding: 10px; border-radius: 8px; font-family: var(--font-heading); font-size: 10px; cursor: pointer;">📧 Email</button>
-            <button onclick="shareVia('sms')" style="background: #34d399; color: #0f172a; border: none; padding: 10px; border-radius: 8px; font-family: var(--font-heading); font-size: 10px; cursor: pointer;">💬 SMS</button>
-            <button onclick="shareVia('copy')" style="background: #6366f1; color: white; border: none; padding: 10px; border-radius: 8px; font-family: var(--font-heading); font-size: 10px; cursor: pointer;">📋 Copy</button>
+            <button onclick="shareVia('email')" style="background: #ea4335; color: white; border: none; padding: 10px; border-radius: 8px; font-family: var(--font-heading); font-size: 10px; cursor: pointer;">Email</button>
+            <button onclick="shareVia('sms')" style="background: #34d399; color: #0f172a; border: none; padding: 10px; border-radius: 8px; font-family: var(--font-heading); font-size: 10px; cursor: pointer;">SMS</button>
+            <button onclick="shareVia('copy')" style="background: #6366f1; color: white; border: none; padding: 10px; border-radius: 8px; font-family: var(--font-heading); font-size: 10px; cursor: pointer;">Copy</button>
         </div>
         <button onclick="closeShareModal()" style="width: 100%; background: rgba(255,255,255,0.1); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer;">Close</button>
     </div>
 </div>
 
 <!-- Toast Notification -->
-<div id="toast" style="display: none; position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 14px 20px; border-radius: 10px; font-family: var(--font-heading); font-size: 12px; font-weight: 600; box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 3000; animation: slideIn 0.3s ease;"></div>
+<div id="toast" style="display: none; position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 14px 20px; border-radius: 10px; font-family: var(--font-heading); font-size: 12px; font-weight: 600; box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 3000;"></div>
 
 <div id="loading" class="loading">
     <div class="spinner"></div>
-    <div style="color: #64748b; font-family: var(--font-heading); font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Loading your quote...</div>
+    <div>Loading your quote...</div>
 </div>
 
 <div id="error" class="error-page" style="display:none;">
@@ -420,49 +352,34 @@ body { font-family: var(--font-body); background: linear-gradient(135deg, #0f172
     <p>This quote link may have expired or is invalid.<br>Please contact your loan officer for a new quote.</p>
 </div>
 
-<div id="content" class="quote-page" style="display:none;">
-    <!-- Premium Header -->
+<div id="content" class="quote-page entering" style="display:none;">
+    <!-- Shimmer accent bar handled by CSS ::before -->
     <div class="header" id="sec-header">
         <h1 id="q-title">Your HELOC Proposal</h1>
         <div class="subtitle">Personalized Home Equity Line of Credit</div>
         <div class="lo-info" id="q-lo-info"></div>
     </div>
-
     <div class="body-content">
-        <!-- Client Info -->
-        <div class="section" id="sec-client">
+        <div class="section reveal" id="sec-client">
             <div class="section-title">Client Details</div>
-            <div class="client-grid" id="q-client-grid"></div>
+            <div class="client-grid stagger-children" id="q-client-grid"></div>
         </div>
-
-        <!-- Valuation -->
-        <div class="section" id="sec-valuation">
+        <div class="section reveal" id="sec-valuation">
             <div class="section-title">Valuation &amp; Liquidity Summary</div>
-            <div class="val-blocks" id="q-val-blocks"></div>
+            <div class="val-blocks stagger-children" id="q-val-blocks"></div>
         </div>
-
-        <!-- Recommendation -->
-        <div class="recommendation" id="sec-recommendation">
-            <div class="cert-icon">★</div>
+        <div class="recommendation reveal" id="sec-recommendation">
+            <div class="cert-icon">&#9733;</div>
             <h3>Recommended Option</h3>
-            <div class="rec-grid" id="q-rec-grid"></div>
+            <div class="rec-grid stagger-children" id="q-rec-grid"></div>
         </div>
-
-        <!-- Rate Matrix -->
-        <div class="section" id="sec-rates">
+        <div class="section reveal" id="sec-rates">
             <div class="section-title">Rate Options</div>
             <div id="q-tiers"></div>
         </div>
     </div>
-
-    <!-- CTA -->
-    <div class="cta-section" id="sec-cta">
-        <h3>Ready to Move Forward?</h3>
-        <div class="cta-buttons" id="q-cta-buttons"></div>
-    </div>
-
-    <!-- Disclosure Banner -->
-    <div class="body-content" style="padding-top:0; padding-bottom:0;">
+    <!-- CTA handled by floating action bar -->
+    <div class="body-content reveal" style="padding-top:0; padding-bottom:0;">
         <div class="client-disclaimer" id="client-disclaimer">
             <strong>&#9888;&#65039; IMPORTANT DISCLOSURE:</strong> This quote is for informational purposes only and does not
             constitute a commitment to lend. All loan programs are subject to credit approval, income verification, and
@@ -470,13 +387,14 @@ body { font-family: var(--font-body); background: linear-gradient(135deg, #0f172
             current rates and eligibility requirements.
         </div>
     </div>
-
-    <!-- Dark Footer (matches main tool) -->
-    <div class="quote-footer" id="sec-footer"></div>
-
-    <!-- Powered -->
+    <div class="quote-footer reveal" id="sec-footer"></div>
     <div class="footer-powered">Powered by Above All Carbon</div>
 </div>
+
+<!-- Ezra Chat Widget (injected by JS) -->
+<div id="eq-root"></div>
+<!-- Tour Highlight Overlay -->
+<div id="eq-tour-hl" class="eq-tour-hl"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -484,88 +402,86 @@ body { font-family: var(--font-body); background: linear-gradient(135deg, #0f172
     var SUPABASE_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co';
     var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6emFidmZ6dXhocGRjb3dndmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjgwNTYsImV4cCI6MjA4NDc0NDA1Nn0.tFliE-x2Tz9ET3A38R4y7eSo6bUu-bYY47XkWeX1xHY';
     var TRACK_URL = SUPABASE_URL + '/functions/v1/track-quote-view';
+    var CHAT_URL = SUPABASE_URL + '/functions/v1/quote-chat';
 
     var params = new URLSearchParams(window.location.search);
     var code = params.get('id') || params.get('code');
 
-    if (!code) {
-        showError();
-        return;
-    }
+    if (!code) { showError(); return; }
 
     var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Fetch quote data by code
     sb.from('quote_links').select('*').eq('code', code).maybeSingle().then(function(res) {
-        if (res.error || !res.data) {
-            showError();
-            return;
-        }
+        if (res.error || !res.data) { showError(); return; }
         var link = res.data;
+        if (link.expires_at && new Date(link.expires_at) < new Date()) { showError(); return; }
 
-        // Check expiry
-        if (link.expires_at && new Date(link.expires_at) < new Date()) {
-            showError();
-            return;
-        }
-
-        // Increment view count (fire and forget)
         sb.from('quote_links').update({ view_count: (link.view_count || 0) + 1 }).eq('id', link.id).then(function(){});
-
-        // Track quote opened
         trackEvent('quote_opened', { code: code });
-
-        // Render the quote
         renderQuote(link.quote_data, link.lo_info || {}, link.user_id, link.lead_id);
+
+        // Initialize visual enhancements
+        setTimeout(function() {
+            initScrollProgress();
+            initScrollReveal();
+            initCounters();
+            initParticles();
+            // Initialize Ezra AI Chat (default on unless explicitly disabled)
+            if (!link.quote_data.linkOptions || link.quote_data.linkOptions.showAiChat !== false) {
+                initEzraChat(link.quote_data, link.lo_info || {}, code);
+            }
+        }, 300);
 
         // Track time on page
         var startTime = Date.now();
         window.addEventListener('beforeunload', function() {
-            var duration = Math.round((Date.now() - startTime) / 1000);
-            trackEvent('time_on_page', { duration_sec: duration, code: code });
+            trackEvent('time_on_page', { duration_sec: Math.round((Date.now() - startTime) / 1000), code: code });
         });
 
-        // Track section views via Intersection Observer
+        // Track section views
         if (window.IntersectionObserver) {
-            var sections = document.querySelectorAll('[id^="sec-"]');
             var viewedSections = {};
-            var observer = new IntersectionObserver(function(entries) {
+            new IntersectionObserver(function(entries) {
                 entries.forEach(function(entry) {
                     if (entry.isIntersecting && !viewedSections[entry.target.id]) {
                         viewedSections[entry.target.id] = true;
                         trackEvent('section_viewed', { section: entry.target.id, code: code });
                     }
                 });
-            }, { threshold: 0.5 });
-            sections.forEach(function(sec) { observer.observe(sec); });
+            }, { threshold: 0.5 }).observe && document.querySelectorAll('[id^="sec-"]').forEach(function(sec) {
+                new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting && !viewedSections[entry.target.id]) {
+                            viewedSections[entry.target.id] = true;
+                            trackEvent('section_viewed', { section: entry.target.id, code: code });
+                        }
+                    });
+                }, { threshold: 0.5 }).observe(sec);
+            });
         }
     });
 
-    // -- Tracking --
-    var _userId = null;
-    var _leadId = null;
-
-    function trackEvent(eventType, eventData) {
+    // ===== TRACKING =====
+    var _userId = null, _leadId = null;
+    function trackEvent(type, data) {
         if (!_userId) return;
-        var url = TRACK_URL + '?lead_id=' + (_leadId || 'none') + '&user_id=' + _userId + '&event=' + eventType;
-        if (eventType === 'time_on_page' && navigator.sendBeacon) {
-            navigator.sendBeacon(url + '&duration=' + (eventData.duration_sec || 0));
+        var url = TRACK_URL + '?lead_id=' + (_leadId || 'none') + '&user_id=' + _userId + '&event=' + type;
+        if (type === 'time_on_page' && navigator.sendBeacon) {
+            navigator.sendBeacon(url + '&duration=' + (data.duration_sec || 0));
         } else {
-            fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(eventData)
-            }).catch(function(){});
+            fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).catch(function(){});
         }
     }
 
-    // -- Rendering --
+    // ===== RENDERING =====
     function renderQuote(data, lo, userId, leadId) {
         _userId = userId;
         _leadId = leadId;
 
         document.getElementById('loading').style.display = 'none';
-        document.getElementById('content').style.display = 'block';
+        var content = document.getElementById('content');
+        content.style.display = 'block';
+        content.classList.add('entering');
         document.getElementById('floating-bar').style.display = 'flex';
 
         // Title
@@ -578,23 +494,18 @@ body { font-family: var(--font-body); background: linear-gradient(135deg, #0f172
         if (lo.name) loHtml += '<div>Prepared by: <strong>' + esc(lo.name) + '</strong></div>';
         if (lo.nmls) loHtml += '<div>NMLS# ' + esc(lo.nmls) + '</div>';
         document.getElementById('q-lo-info').innerHTML = loHtml;
-        // Dark footer matching main tool
-        var fHtml = '';
 
-        // LO card section
+        // Dark footer
+        var fHtml = '';
         if (lo.name) {
             var initials = lo.name.split(' ').map(function(n){ return n.charAt(0).toUpperCase(); }).join('').substring(0, 2);
             fHtml += '<div class="footer-main">';
-
-            // Headshot
             if (lo.headshot) {
                 fHtml += '<img src="' + esc(lo.headshot) + '" alt="' + esc(lo.name) + '" class="footer-headshot" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">';
                 fHtml += '<div class="footer-avatar-fallback" style="display:none;">' + initials + '</div>';
             } else {
                 fHtml += '<div class="footer-avatar-fallback">' + initials + '</div>';
             }
-
-            // Info
             fHtml += '<div class="footer-info">';
             fHtml += '<span class="footer-name">' + esc(lo.name) + '</span>';
             if (lo.title) fHtml += esc(lo.title) + '<br>';
@@ -609,17 +520,10 @@ body { font-family: var(--font-body); background: linear-gradient(135deg, #0f172
             if (lo.website) fHtml += esc(lo.website);
             if (lo.googleRating) fHtml += '<div class="footer-stars">&#9733;&#9733;&#9733;&#9733;&#9733; ' + esc(lo.googleRating) + ' Google Rating</div>';
             fHtml += '</div>';
-
-            // Company logo
-            if (lo.logo) {
-                fHtml += '<img src="' + esc(lo.logo) + '" alt="' + esc(lo.company || 'Company') + '" class="company-logo-footer" onerror="this.style.display=\'none\';">';
-            }
+            if (lo.logo) fHtml += '<img src="' + esc(lo.logo) + '" alt="' + esc(lo.company || 'Company') + '" class="company-logo-footer" onerror="this.style.display=\'none\';">';
             fHtml += '</div>';
         }
-
-        // Legal section with EHL icon
         fHtml += '<div class="footer-legal">';
-        // Equal Housing Lender logo
         fHtml += '<img src="https://assets.cdn.filesafe.space/eVB3bUDr8bdQfRu6ae03/media/693bb403ed957f64da26426c.jpg" class="ehl-icon" alt="Equal Housing Lender">';
         fHtml += '<div>';
         if (lo.company) {
@@ -631,10 +535,7 @@ body { font-family: var(--font-body); background: linear-gradient(135deg, #0f172
         if (lo.address) fHtml += esc(lo.address) + '<br>';
         fHtml += 'Equal Housing Lender. All loan programs subject to credit approval. Rates, terms, and conditions are subject to change without notice. This is not a commitment to lend. Licensed by the California Department of Financial Protection and Innovation under the California Residential Mortgage Lending Act.';
         fHtml += '</div></div>';
-
-        // Proprietary notice
         fHtml += '<div class="proprietary-notice">PROPRIETARY TOOL NOTICE: This Above All Carbon HELOC Quote Tool is proprietary software owned by Above All CRM / ' + esc(lo.company || 'West Capital Lending') + '. Unauthorized copying, distribution, modification, or reverse engineering is strictly prohibited. &copy; 2024-2026 Above All CRM. All rights reserved.</div>';
-
         document.getElementById('sec-footer').innerHTML = fHtml;
 
         // Client Grid
@@ -669,7 +570,9 @@ body { font-family: var(--font-body); background: linear-gradient(135deg, #0f172
             return '<div class="rec-item' + (r.final ? ' final' : '') + '"><div class="rec-label">' + esc(r.label) + '</div><div class="rec-value">' + esc(r.value) + '</div></div>';
         }).join('');
 
-        // Rate Tiers
+        // Rate Tiers with expandable rows
+        var recPayment = parseFloat((data.payment || '').replace(/[$,\/mo]/g, '')) || 0;
+        var loanAmt = parseFloat((data.totalLoan || data.cashBack || '').toString().replace(/[$,]/g, '')) || 0;
         var tiersHtml = '';
         if (data.tiers && data.tiers.length > 0) {
             data.tiers.forEach(function(tier) {
@@ -677,29 +580,36 @@ body { font-family: var(--font-body); background: linear-gradient(135deg, #0f172
                 tiersHtml += '<table class="rate-table"><thead><tr><th>Term</th><th>Rate</th><th>Payment</th></tr></thead><tbody>';
                 Object.entries(tier.rates).forEach(function(e) {
                     var isRec = data.rate && e[1].rate && e[1].rate.replace('%','') === data.rate;
-                    tiersHtml += '<tr' + (isRec ? ' class="recommended"' : '') + '><td>' + esc(e[0]) + '</td><td>' + esc(e[1].rate) + (isRec ? '<span class="rec-badge">REC</span>' : '') + '</td><td>' + esc(e[1].payment) + '</td></tr>';
+                    var rateVal = parseFloat((e[1].rate || '').replace('%','')) || 0;
+                    var payVal = parseFloat((e[1].payment || '').replace(/[$,\/mo]/g, '')) || 0;
+                    var termYrs = parseInt(e[0]) || 10;
+                    var totalInterest = Math.max(0, Math.round((payVal * termYrs * 12) - loanAmt));
+                    var annualCost = Math.round(payVal * 12);
+                    var vsDiff = Math.round(Math.abs(payVal - recPayment));
+                    var vsLabel = isRec ? 'This is recommended' : (payVal > recPayment ? '$' + vsDiff + '/mo more' : '$' + vsDiff + '/mo less');
+
+                    tiersHtml += '<tr' + (isRec ? ' class="recommended"' : '') + ' onclick="toggleRateDetail(this)">';
+                    tiersHtml += '<td>' + esc(e[0]) + '</td><td>' + esc(e[1].rate) + (isRec ? '<span class="rec-badge">REC</span>' : '') + '</td><td>' + esc(e[1].payment) + '</td></tr>';
+                    tiersHtml += '<tr class="rate-detail-tr"><td colspan="3"><div class="rate-row-detail"><div class="rate-detail-grid">';
+                    tiersHtml += '<div class="rate-detail-item"><div class="rd-label">Total Interest</div><div class="rd-value">$' + totalInterest.toLocaleString() + '</div></div>';
+                    tiersHtml += '<div class="rate-detail-item"><div class="rd-label">Annual Cost</div><div class="rd-value">$' + annualCost.toLocaleString() + '/yr</div></div>';
+                    tiersHtml += '<div class="rate-detail-item"><div class="rd-label">Daily Rate Cost</div><div class="rd-value">$' + ((rateVal / 100 / 365) * loanAmt).toFixed(2) + '/day</div></div>';
+                    tiersHtml += '<div class="rate-detail-item"><div class="rd-label">vs Recommended</div><div class="rd-value">' + vsLabel + '</div></div>';
+                    tiersHtml += '</div></div></td></tr>';
                 });
                 tiersHtml += '</tbody></table></div>';
             });
         }
         document.getElementById('q-tiers').innerHTML = tiersHtml;
 
-        // CTA Buttons
-        var ctaHtml = '';
-        if (lo.applyLink) {
-            ctaHtml += '<a href="' + esc(lo.applyLink) + '" class="cta-btn primary" onclick="trackCTA(\'apply\')" target="_blank">Start Application</a>';
-        }
-        if (lo.calendarLink) {
-            ctaHtml += '<a href="' + esc(lo.calendarLink) + '" class="cta-btn secondary" onclick="trackCTA(\'schedule\')" target="_blank">Schedule a Call</a>';
-        }
-        if (lo.phone) {
-            ctaHtml += '<a href="tel:' + esc(lo.phone) + '" class="cta-btn secondary" onclick="trackCTA(\'call\')">Call Now</a>';
-        }
-        if (lo.email) {
-            ctaHtml += '<a href="mailto:' + esc(lo.email) + '" class="cta-btn secondary" onclick="trackCTA(\'email\')">Email</a>';
-        }
-        if (!ctaHtml) ctaHtml = '<div style="color:rgba(255,255,255,0.5);font-size:12px;font-family:var(--font-heading);">Contact your loan officer for next steps.</div>';
-        document.getElementById('q-cta-buttons').innerHTML = ctaHtml;
+        // CTA handled by floating action bar — wire buttons with LO data
+        window._loInfo = lo;
+
+        // Apply scroll reveal classes
+        ['sec-client', 'sec-valuation', 'sec-recommendation', 'sec-rates'].forEach(function(id, i) {
+            var el = document.getElementById(id);
+            if (el) { el.classList.add('reveal'); if (i > 0) el.classList.add('reveal-delay-' + Math.min(i, 3)); }
+        });
     }
 
     function showError() {
@@ -707,150 +617,333 @@ body { font-family: var(--font-body); background: linear-gradient(135deg, #0f172
         document.getElementById('error').style.display = 'block';
     }
 
-    // CTA click tracking
-    window.trackCTA = function(buttonName) {
-        trackEvent('button_clicked', { button_name: buttonName, code: code });
+    // ===== INTERACTIVE FEATURES =====
+    window.trackCTA = function(btn) { trackEvent('button_clicked', { button_name: btn, code: code }); };
+
+    window.toggleRateDetail = function(row) {
+        var next = row.nextElementSibling;
+        if (!next) return;
+        var detail = next.querySelector('.rate-row-detail');
+        if (!detail) return;
+        document.querySelectorAll('.rate-row-detail.expanded').forEach(function(el) { if (el !== detail) el.classList.remove('expanded'); });
+        detail.classList.toggle('expanded');
+        if (detail.classList.contains('expanded')) trackEvent('rate_detail_viewed', { code: code });
     };
 
-    // -- Interactive Features --
-    
-    // Show floating bar after quote loads
-    setTimeout(function() {
-        document.getElementById('floating-bar').style.display = 'flex';
-    }, 1500);
-    
+    setTimeout(function() { document.getElementById('floating-bar').style.display = 'flex'; }, 1500);
+
     // Modal Functions
-    window.openApplyModal = function() {
-        document.getElementById('apply-modal').classList.add('visible');
-        trackEvent('modal_opened', { modal: 'apply', code: code });
+    window.openApplyModal = function() { document.getElementById('apply-modal').classList.add('visible'); trackEvent('modal_opened', { modal: 'apply', code: code }); };
+    window.closeApplyModal = function() { document.getElementById('apply-modal').classList.remove('visible'); };
+    window.openContactModal = function() { document.getElementById('contact-modal').classList.add('visible'); trackEvent('modal_opened', { modal: 'contact', code: code }); };
+    window.closeContactModal = function() { document.getElementById('contact-modal').classList.remove('visible'); };
+    window.openShareModal = function() { document.getElementById('share-url').value = window.location.href; document.getElementById('share-modal').classList.add('visible'); trackEvent('modal_opened', { modal: 'share', code: code }); };
+    window.closeShareModal = function() { document.getElementById('share-modal').classList.remove('visible'); };
+    // Ask Question — prefer Ezra chat if available, else fall back to contact modal
+    window.askQuestion = function() {
+        var orb = document.getElementById('eq-orb');
+        if (orb && typeof window.eqToggle === 'function') { window.eqToggle(); }
+        else { openContactModal(); }
     };
-    window.closeApplyModal = function() {
-        document.getElementById('apply-modal').classList.remove('visible');
+
+    window.submitApplication = function() {
+        var n = document.getElementById('apply-name').value.trim(), e = document.getElementById('apply-email').value.trim(), p = document.getElementById('apply-phone').value.trim();
+        if (!n || !e || !p) { showToast('Please fill in all required fields'); return; }
+        trackEvent('application_submitted', { code: code, name: n }); createConfetti(); closeApplyModal();
+        showToast('Application submitted! Your loan officer will contact you shortly.');
     };
-    window.openContactModal = function() {
-        document.getElementById('contact-modal').classList.add('visible');
-        trackEvent('modal_opened', { modal: 'contact', code: code });
+    window.submitQuestion = function() {
+        var n = document.getElementById('contact-name').value.trim(), e = document.getElementById('contact-email').value.trim(), m = document.getElementById('contact-message').value.trim();
+        if (!n || !e || !m) { showToast('Please fill in all fields'); return; }
+        trackEvent('question_submitted', { code: code, name: n }); closeContactModal();
+        showToast('Message sent! Your loan officer will respond shortly.');
     };
-    window.closeContactModal = function() {
-        document.getElementById('contact-modal').classList.remove('visible');
-    };
-    window.openShareModal = function() {
-        document.getElementById('share-url').value = window.location.href;
-        document.getElementById('share-modal').classList.add('visible');
-        trackEvent('modal_opened', { modal: 'share', code: code });
-    };
-    window.closeShareModal = function() {
-        document.getElementById('share-modal').classList.remove('visible');
-    };
-    
-    // Submit Application
-    window.submitApplication = async function() {
-        var name = document.getElementById('apply-name').value.trim();
-        var email = document.getElementById('apply-email').value.trim();
-        var phone = document.getElementById('apply-phone').value.trim();
-        var message = document.getElementById('apply-message').value.trim();
-        
-        if (!name || !email || !phone) {
-            showToast('Please fill in all required fields');
-            return;
-        }
-        
-        trackEvent('application_submitted', { 
-            code: code, 
-            has_message: !!message,
-            name: name 
-        });
-        
-        // Create confetti effect
-        createConfetti();
-        
-        closeApplyModal();
-        showToast('🎉 Application submitted! Your loan officer will contact you shortly.');
-        
-        // In a real implementation, you would send this to your backend
-        console.log('Application:', { name, email, phone, message, quoteCode: code });
-    };
-    
-    // Submit Question
-    window.submitQuestion = async function() {
-        var name = document.getElementById('contact-name').value.trim();
-        var email = document.getElementById('contact-email').value.trim();
-        var message = document.getElementById('contact-message').value.trim();
-        
-        if (!name || !email || !message) {
-            showToast('Please fill in all fields');
-            return;
-        }
-        
-        trackEvent('question_submitted', { 
-            code: code, 
-            name: name,
-            message_length: message.length
-        });
-        
-        closeContactModal();
-        showToast('✅ Message sent! Your loan officer will respond shortly.');
-    };
-    
-    // Share Functions
-    window.shareQuote = function() {
-        openShareModal();
-    };
+    window.shareQuote = function() { openShareModal(); };
     window.shareVia = function(method) {
         var url = window.location.href;
-        var title = 'My HELOC Quote';
-        
-        switch(method) {
-            case 'email':
-                window.open('mailto:?subject=' + encodeURIComponent(title) + '&body=' + encodeURIComponent('Check out my HELOC quote: ' + url));
-                break;
-            case 'sms':
-                window.open('sms:?body=' + encodeURIComponent('Check out my HELOC quote: ' + url));
-                break;
-            case 'copy':
-                navigator.clipboard.writeText(url).then(function() {
-                    showToast('✅ Link copied to clipboard!');
-                });
-                break;
-        }
+        if (method === 'email') window.open('mailto:?subject=My HELOC Quote&body=' + encodeURIComponent('Check out my HELOC quote: ' + url));
+        else if (method === 'sms') window.open('sms:?body=' + encodeURIComponent('Check out my HELOC quote: ' + url));
+        else if (method === 'copy') navigator.clipboard.writeText(url).then(function() { showToast('Link copied to clipboard!'); });
         trackEvent('share_clicked', { method: method, code: code });
     };
-    
-    // Download PDF
-    window.downloadPDF = function() {
-        trackEvent('pdf_download_clicked', { code: code });
-        window.print();
-    };
-    
-    // Toast Notification
-    function showToast(message) {
-        var toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.style.display = 'block';
-        setTimeout(function() {
-            toast.style.display = 'none';
-        }, 4000);
+    window.downloadPDF = function() { trackEvent('pdf_download_clicked', { code: code }); window.print(); };
+
+    function showToast(msg) {
+        var t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block';
+        setTimeout(function() { t.style.display = 'none'; }, 4000);
     }
-    window.showToast = showToast;
-    
-    // Confetti Effect
     function createConfetti() {
         var colors = ['#c5a059', '#10b981', '#3b82f6', '#f59e0b', '#ec4899'];
         for (var i = 0; i < 50; i++) {
-            var confetti = document.createElement('div');
-            confetti.className = 'confetti';
-            confetti.style.left = Math.random() * 100 + 'vw';
-            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.animationDelay = Math.random() * 0.5 + 's';
-            confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
-            document.body.appendChild(confetti);
-            setTimeout(function() { confetti.remove(); }, 3000);
+            var c = document.createElement('div'); c.className = 'confetti';
+            c.style.left = Math.random() * 100 + 'vw'; c.style.background = colors[Math.floor(Math.random() * colors.length)];
+            c.style.animationDelay = Math.random() * 0.5 + 's'; c.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+            document.body.appendChild(c); setTimeout(function() { c.remove(); }, 3000);
         }
+    }
+
+    // ===== VISUAL ENHANCEMENTS =====
+    function initScrollProgress() {
+        var bar = document.getElementById('scroll-progress');
+        if (!bar) return;
+        window.addEventListener('scroll', function() {
+            var pct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+            bar.style.width = Math.min(pct, 100) + '%';
+        }, { passive: true });
+    }
+
+    function initScrollReveal() {
+        if (!window.IntersectionObserver) return;
+        var obs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        document.querySelectorAll('.reveal, .stagger-children').forEach(function(el) { obs.observe(el); });
+    }
+
+    function initCounters() {
+        if (!window.IntersectionObserver) return;
+        var counted = {};
+        var obs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (!entry.isIntersecting || counted[entry.target.id]) return;
+                counted[entry.target.id] = true;
+                var text = entry.target.textContent;
+                var match = text.match(/^\$?([\d,]+)/);
+                if (!match) return;
+                var target = parseInt(match[1].replace(/,/g, '')), prefix = text.startsWith('$') ? '$' : '', suffix = text.replace(/^\$?[\d,]+/, '');
+                var start = null;
+                function step(ts) {
+                    if (!start) start = ts;
+                    var p = Math.min((ts - start) / 1500, 1);
+                    var ease = 1 - Math.pow(1 - p, 4);
+                    entry.target.textContent = prefix + Math.round(ease * target).toLocaleString() + suffix;
+                    if (p < 1) requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+                obs.unobserve(entry.target);
+            });
+        }, { threshold: 0.5 });
+        document.querySelectorAll('.val-block .val-value').forEach(function(el, i) { el.id = el.id || ('vc-' + i); obs.observe(el); });
+    }
+
+    function initParticles() {
+        var canvas = document.getElementById('particle-canvas');
+        if (!canvas) return;
+        var ctx = canvas.getContext('2d'), particles = [];
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resize(); window.addEventListener('resize', resize);
+        for (var i = 0; i < 25; i++) {
+            particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, size: Math.random() * 2 + 0.5,
+                speedY: -Math.random() * 0.3 - 0.1, speedX: (Math.random() - 0.5) * 0.2, opacity: Math.random() * 0.4 + 0.1,
+                flickerSpeed: Math.random() * 0.02 + 0.005, flickerPhase: Math.random() * Math.PI * 2 });
+        }
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            var t = Date.now() * 0.001;
+            particles.forEach(function(p) {
+                p.x += p.speedX; p.y += p.speedY;
+                if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
+                if (p.x < -10) p.x = canvas.width + 10; if (p.x > canvas.width + 10) p.x = -10;
+                var flicker = (Math.sin(t * p.flickerSpeed * 100 + p.flickerPhase) + 1) / 2;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(212, 175, 55, ' + (p.opacity * (0.5 + flicker * 0.5)) + ')'; ctx.fill();
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
+    }
+
+    // ===== EZRA AI CHAT WIDGET =====
+    function initEzraChat(quoteData, loInfo, quoteCode) {
+        var chatHistory = [], isOpen = false, isSending = false, tourActive = false, tourStep = 0;
+        var loName = loInfo.name || 'your loan officer';
+
+        var defaultChips = [
+            'Walk me through my quote',
+            'Why is this rate good for me?',
+            'How does a HELOC work?',
+            'Compare my rate options',
+            'What happens after I apply?'
+        ];
+
+        var tourSteps = [
+            { target: '#sec-client', label: 'Your Details',
+              text: "Let's start with your details. This quote was prepared for **" + esc(quoteData.clientName || 'you') + "** with a credit score of **" + esc(quoteData.creditScore || 'N/A') + "**. Your loan officer has tailored these options specifically for your profile." },
+            { target: '#sec-valuation', label: 'Your Equity',
+              text: "Here's your equity position. Your home is valued at **$" + num(quoteData.homeValue) + "** with a mortgage balance of **$" + num(quoteData.mortgageBalance) + "**. That gives you **$" + num(quoteData.cashBack) + "** in accessible cash through a HELOC." },
+            { target: '#sec-recommendation', label: 'Recommended Option',
+              text: "This is the option your loan officer recommends. At **" + esc(quoteData.rate) + "%** for **" + esc(quoteData.term) + " years**, your monthly payment would be **" + esc(quoteData.payment) + "**. This balances the best rate with manageable payments." },
+            { target: '#sec-rates', label: 'All Rate Options',
+              text: "Here you can see all available rate options across different tiers and terms. Each tier has different origination points which affect your upfront cost vs ongoing rate. **Click any row** to see detailed breakdowns." },
+            { target: '#sec-footer', label: 'Next Steps',
+              text: "Ready to move forward? Use the **Apply Now** button at the bottom of your screen to start your application, or schedule a call with **" + esc(loName) + "** to discuss any questions. There's no obligation \u2014 it's just the next step to explore your options." }
+        ];
+
+        // Build chat widget HTML
+        var root = document.getElementById('eq-root');
+        if (!root) return;
+        root.innerHTML =
+            '<button class="eq-orb" id="eq-orb" onclick="eqToggle()"><span style="font-size:20px;filter:drop-shadow(0 0 4px rgba(212,175,55,0.6));">&#10022;</span><span class="eq-orb-ring"></span></button>' +
+            '<div class="eq-panel" id="eq-panel">' +
+                '<div class="eq-header"><div class="eq-header-left"><div class="eq-avatar">&#10022;</div><div><div class="eq-title">EZRA</div><div class="eq-subtitle">Your Quote Assistant</div></div></div><button class="eq-close" onclick="eqToggle()">&times;</button></div>' +
+                '<div class="eq-chips" id="eq-chips"></div>' +
+                '<div class="eq-messages" id="eq-messages"></div>' +
+                '<div class="eq-typing" id="eq-typing"><span class="eq-dot"></span><span class="eq-dot"></span><span class="eq-dot"></span></div>' +
+                '<div class="eq-input-area"><textarea id="eq-input" class="eq-input" placeholder="Ask about your quote..." rows="1"></textarea><button class="eq-send" id="eq-send" onclick="eqSend()" disabled>&#9654;</button></div>' +
+            '</div>';
+
+        renderChips(['Take a guided tour'].concat(defaultChips));
+
+        // Input handling
+        var inputEl = document.getElementById('eq-input'), sendBtn = document.getElementById('eq-send');
+        inputEl.addEventListener('input', function() {
+            sendBtn.disabled = !this.value.trim();
+            this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+        });
+        inputEl.addEventListener('keydown', function(ev) {
+            if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); if (this.value.trim()) eqSend(); }
+        });
+
+        function renderChips(chips) {
+            var el = document.getElementById('eq-chips');
+            if (!el) return;
+            el.innerHTML = chips.map(function(c) {
+                return '<button class="eq-chip" onclick="eqChip(\'' + c.replace(/'/g, "\\'") + '\')">' + esc(c) + '</button>';
+            }).join('');
+        }
+
+        function addMsg(role, text) {
+            var el = document.getElementById('eq-messages');
+            if (!el) return;
+            var div = document.createElement('div');
+            div.className = 'eq-msg ' + role;
+            div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>').replace(/^- (.+)/gm, '&bull; $1');
+            el.appendChild(div);
+            el.scrollTop = el.scrollHeight;
+            chatHistory.push({ role: role, content: text });
+            if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+        }
+
+        function showTyping() { var t = document.getElementById('eq-typing'); if (t) t.classList.add('active'); }
+        function hideTyping() { var t = document.getElementById('eq-typing'); if (t) t.classList.remove('active'); }
+
+        // Global handlers
+        window.eqToggle = function() {
+            var panel = document.getElementById('eq-panel');
+            isOpen = !isOpen;
+            if (isOpen) {
+                panel.classList.add('open');
+                if (chatHistory.length === 0) {
+                    addMsg('assistant', "Hi " + esc(quoteData.clientName || 'there') + "! I'm **Ezra**, your AI quote assistant. I'm here to help you understand your HELOC quote and answer any questions.\n\nYou can ask me anything about your rate options, monthly payments, or the HELOC process. I can also give you a **guided tour** of your quote \u2014 just click the button above!");
+                }
+                trackEvent('chat_opened', { code: quoteCode });
+                setTimeout(function() { var inp = document.getElementById('eq-input'); if (inp) inp.focus(); }, 400);
+            } else {
+                panel.classList.remove('open');
+                if (tourActive) endTour();
+            }
+        };
+
+        window.eqChip = function(text) {
+            if (text === 'Take a guided tour') { startTour(); return; }
+            if (text === 'Next step' || text === 'Finish tour') { advanceTour(); return; }
+            if (text === 'End tour') { endTour(); addMsg('assistant', "Tour ended. Feel free to ask me anything about your quote!"); renderChips(['Take a guided tour'].concat(defaultChips)); return; }
+            if (text === 'Start my application') { window.openApplyModal(); return; }
+            if (text === 'Schedule a call' && loInfo.calendarLink) { window.open(loInfo.calendarLink, '_blank'); return; }
+            document.getElementById('eq-input').value = text;
+            document.getElementById('eq-input').dispatchEvent(new Event('input'));
+            eqSend();
+        };
+
+        window.eqSend = function() {
+            var inp = document.getElementById('eq-input');
+            if (!inp || !inp.value.trim() || isSending) return;
+            var msg = inp.value.trim();
+            inp.value = ''; inp.style.height = 'auto'; document.getElementById('eq-send').disabled = true;
+            addMsg('user', msg); showTyping(); isSending = true;
+            trackEvent('chat_message_sent', { code: quoteCode, len: msg.length });
+
+            fetch(CHAT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quoteCode: quoteCode, message: msg, conversationHistory: chatHistory.slice(-10) })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                hideTyping(); isSending = false;
+                if (data.error) {
+                    addMsg('assistant', "I apologize, but I encountered an issue. " + (data.error === 'Rate limited. Please try again later.' ? "You've reached the daily message limit." : data.error) + " Please contact " + esc(loName) + (loInfo.phone ? " at " + esc(loInfo.phone) : "") + " directly.");
+                } else {
+                    addMsg('assistant', data.text || 'I received your message but had trouble generating a response. Please try again.');
+                    if (data.remainingMessages !== undefined && data.remainingMessages <= 5) {
+                        addMsg('assistant', "**Note:** You have " + data.remainingMessages + " messages remaining today.");
+                    }
+                }
+            })
+            .catch(function() {
+                hideTyping(); isSending = false;
+                addMsg('assistant', "I'm having trouble connecting right now. Please try again in a moment, or contact " + esc(loName) + (loInfo.phone ? " at " + esc(loInfo.phone) : "") + " directly.");
+            });
+        };
+
+        // ===== GUIDED TOUR ENGINE =====
+        function startTour() {
+            tourActive = true; tourStep = 0;
+            addMsg('assistant', "Let's walk through your quote together! I'll highlight each section and explain what it means for you.\n\n**Step 1 of " + tourSteps.length + "**: " + tourSteps[0].label);
+            renderChips(['Next step', 'End tour']);
+            highlightSection(tourSteps[0].target);
+            setTimeout(function() { addMsg('assistant', tourSteps[0].text); }, 600);
+            trackEvent('guided_tour_started', { code: quoteCode });
+        }
+
+        function advanceTour() {
+            tourStep++;
+            if (tourStep >= tourSteps.length) {
+                endTour();
+                addMsg('assistant', "That's the complete tour of your quote! Do you have any questions about what we covered?\n\nWhen you're ready, you can **start your application** or **schedule a call** with " + esc(loName) + ".");
+                renderChips(['Start my application', 'Schedule a call', 'I have a question', 'Compare my rate options']);
+                trackEvent('guided_tour_completed', { code: quoteCode });
+                return;
+            }
+            var step = tourSteps[tourStep];
+            addMsg('assistant', "**Step " + (tourStep + 1) + " of " + tourSteps.length + "**: " + step.label);
+            highlightSection(step.target);
+            renderChips(tourStep < tourSteps.length - 1 ? ['Next step', 'End tour'] : ['Finish tour']);
+            setTimeout(function() { addMsg('assistant', step.text); }, 500);
+        }
+
+        function endTour() {
+            tourActive = false; tourStep = 0;
+            var hl = document.getElementById('eq-tour-hl');
+            if (hl) hl.style.display = 'none';
+        }
+
+        function highlightSection(selector) {
+            var target = document.querySelector(selector);
+            var hl = document.getElementById('eq-tour-hl');
+            if (!target || !hl) return;
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(function() {
+                var rect = target.getBoundingClientRect();
+                hl.style.display = 'block';
+                hl.style.top = (rect.top - 8) + 'px';
+                hl.style.left = (rect.left - 8) + 'px';
+                hl.style.width = (rect.width + 16) + 'px';
+                hl.style.height = (rect.height + 16) + 'px';
+            }, 400);
+        }
+
+        // Auto-bounce orb after 5 seconds
+        setTimeout(function() {
+            var orb = document.getElementById('eq-orb');
+            if (orb && !isOpen) { orb.style.animation = 'eq-bounce 0.5s ease'; setTimeout(function() { orb.style.animation = ''; }, 600); }
+        }, 5000);
     }
 
     function esc(s) { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
     function num(v) { return Number(v).toLocaleString(); }
 })();
 </script>
+
 </body>
 </html>
