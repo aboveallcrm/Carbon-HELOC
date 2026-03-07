@@ -12261,11 +12261,13 @@ Sent via Above All Carbon HELOC Tool`;
 
                 // Update lead record with quote URL + sent timestamp
                 if (leadId) {
-                    await sb.from('leads').update({
-                        quote_url: shortUrl,
-                        quote_sent_at: new Date().toISOString(),
-                        status: 'quoted'
-                    }).eq('id', leadId).catch(function () { });
+                    try {
+                        await sb.from('leads').update({
+                            quote_url: shortUrl,
+                            quote_sent_at: new Date().toISOString(),
+                            status: 'quoted'
+                        }).eq('id', leadId);
+                    } catch (_) { /* ignore lead update failure */ }
                 }
 
                 // Display the short link
