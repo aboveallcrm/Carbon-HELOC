@@ -7200,10 +7200,12 @@ Best regards,
 
         // ===== INTEGRATION ACCESS (role + tier based subsection visibility) =====
         function applyIntegrationAccess(role, tier) {
-            if (role === 'super_admin') return; // Super admin sees everything
+            // In demo mode, apply tier restrictions even for super_admin
+            if (role === 'super_admin' && !_demoTierOverride) return;
 
+            var effectiveTier = _demoTierOverride || tier;
             var tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
-            var level = tiers.indexOf(tier || 'carbon');
+            var level = tiers.indexOf(effectiveTier || 'carbon');
             if (level === -1) level = 0;
 
             // Start by hiding ALL integration subsections
@@ -7276,7 +7278,7 @@ Best regards,
                 intSection.appendChild(teaser);
             }
 
-            console.log('Integration access applied: tier=' + tier + ' (level ' + level + '), role=' + role);
+            console.log('Integration access applied: tier=' + effectiveTier + ' (level ' + level + '), role=' + role + ((_demoTierOverride) ? ' [DEMO]' : ''));
         }
 
         // ===== UPGRADE MODAL =====
@@ -7474,6 +7476,39 @@ Best regards,
         // ===== TIER-BASED FEATURE GATING =====
         var _demoTierOverride = null; // Set by demo tier selector (super_admin only)
 
+        // ===== DEMO TAB VISIBILITY — restricts visible tabs when "Demo As..." is active =====
+        function applyDemoTabVisibility() {
+            if (!_demoTierOverride) {
+                // Restore full super_admin tab access
+                applyRoleAccess(window.currentUserRole || 'super_admin');
+                return;
+            }
+            var tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
+            var level = tiers.indexOf(_demoTierOverride);
+
+            // Define what a regular "user" role at each tier would see
+            // All tiers: client, quotes, rates, lo, leads (leads shows upgrade overlay if locked)
+            // All tiers see integrations tab (content gated by applyIntegrationAccess)
+            // Obsidian+ (>=3): + whitelabel
+            // Parser, email, superadmin are role-only — hidden during all demo tiers
+            var demoTabs = ['client', 'quotes', 'rates', 'lo', 'integrations', 'leads'];
+            if (level >= 3) demoTabs.push('whitelabel');
+
+            document.querySelectorAll('.settings-tab').forEach(function(tab) {
+                var onclick = tab.getAttribute('onclick') || '';
+                var match = onclick.match(/switchTab\('(\w+)'\)/);
+                if (match) {
+                    tab.style.display = demoTabs.includes(match[1]) ? '' : 'none';
+                }
+            });
+
+            // If the currently active tab is now hidden, switch to Client tab
+            var activeTab = document.querySelector('.settings-tab.active');
+            if (activeTab && activeTab.style.display === 'none') {
+                switchTab('client');
+            }
+        }
+
         function applyTierAccess(tier) {
             const tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
             // If super_admin has a demo tier override active, use that; otherwise full access
@@ -7623,18 +7658,44 @@ Best regards,
                 urlShortenerSection.style.display = level >= 2 ? '' : 'none';
             }
 
-            // Integration subsections — tier lock/unlock badges for super_admin "View As" mode
-            // (non-super_admin visibility handled by applyIntegrationAccess with tier gating)
+            // Integration subsections — tier-based visibility
             if (window.currentUserRole === 'super_admin') {
-                // Radar, AI status (titanium+)
-                if (level >= 1) { unlockSubsection('int-radar'); } else { lockSubsection('int-radar', 'titanium'); }
-                if (level >= 1) { unlockSubsection('int-ai'); } else { lockSubsection('int-ai', 'titanium'); }
-                // GHL, CRM/Bonzo/FUB, outbound webhooks (platinum+)
-                if (level >= 2) { unlockSubsection('int-ghl'); } else { lockSubsection('int-ghl', 'platinum'); }
-                if (level >= 2) { unlockSubsection('int-crm'); } else { lockSubsection('int-crm', 'platinum'); }
-                if (level >= 2) { unlockSubsection('int-webhooks'); } else { lockSubsection('int-webhooks', 'platinum'); }
-                // n8n (obsidian+)
-                if (level >= 3) { unlockSubsection('int-n8n'); } else { lockSubsection('int-n8n', 'obsidian'); }
+                if (_demoTierOverride) {
+                    // Demo mode: use full hide/show (like real users) instead of badges
+                    // Clear any existing lock badges first
+                    ['int-ghl', 'int-n8n', 'int-radar', 'int-ai', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks'].forEach(function(id) {
+                        unlockSubsection(id);
+                    });
+                    applyIntegrationAccess(window.currentUserRole, effectiveTier);
+                } else {
+                    // Normal super_admin view: show all sections, add tier lock badges for preview
+                    // First restore all sections to visible (undo any demo hiding)
+                    ['int-ghl', 'int-n8n', 'int-radar', 'int-ai', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks'].forEach(function(id) {
+                        var el = document.getElementById(id);
+                        if (el) el.style.display = '';
+                        unlockSubsection(id);
+                    });
+                    var actLog = document.getElementById('webhook-activity-log');
+                    if (actLog && actLog.parentElement) actLog.parentElement.style.display = '';
+                    var saveB = document.querySelector('#integrations-section > button[onclick="saveIntegrations()"]');
+                    if (saveB) saveB.style.display = '';
+                    // Remove any integration teaser left from demo mode
+                    var intSec = document.getElementById('integrations-section');
+                    var oldTeaser = intSec ? intSec.querySelector('.integration-teaser') : null;
+                    if (oldTeaser) oldTeaser.remove();
+                }
+            }
+
+            // Bonzo sync button in Leads tab — hide if below Platinum during demo
+            var bonzoSyncBtn = document.getElementById('bonzo-sync-btn');
+            if (bonzoSyncBtn) {
+                if (_demoTierOverride) {
+                    bonzoSyncBtn.style.display = level >= 2 ? '' : 'none';
+                } else if (window.currentUserRole === 'super_admin') {
+                    // Restore: show if keys exist
+                    var bk = (document.getElementById('bonzo-api-key') || {}).value || (document.getElementById('bonzo-api-key-2') || {}).value || '';
+                    if (bk) bonzoSyncBtn.style.display = '';
+                }
             }
 
             // Lender Parser section unlock (platinum+)
@@ -7724,6 +7785,7 @@ Best regards,
                     demoSelect.onchange = function () {
                         _demoTierOverride = this.value || null;
                         applyTierAccess(window.currentUserTier || 'diamond');
+                        applyDemoTabVisibility();
                         if (_demoTierOverride) {
                             showToast('Previewing as ' + _demoTierOverride.toUpperCase() + ' tier', 'info', 2000);
                         } else {
