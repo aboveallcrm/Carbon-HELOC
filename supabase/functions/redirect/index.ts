@@ -70,7 +70,7 @@ serve(async (req: Request) => {
     const clickResult = await sb.from("clicks").insert({
       link_id: link.id,
       ip_hash: ipHash,
-      ip_address: ip,
+      ip_address: ip.replace(/\.\d+$/, '.xxx'),
       user_agent: ua.substring(0, 500),
       referer: (req.headers.get("referer") || "").substring(0, 500),
       device_type: deviceType,
@@ -107,7 +107,8 @@ serve(async (req: Request) => {
       },
     })
   } catch (e) {
-    return new Response(JSON.stringify({ error: e.message, stack: e.stack }), {
+    console.error('Redirect error:', e.message);
+    return new Response(JSON.stringify({ error: 'Internal error' }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     })

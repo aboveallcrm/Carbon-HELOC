@@ -2,8 +2,6 @@ import { initDB, saveQuote, resetQuoteId, setQuoteId } from './supabase-quotes.j
 import { checkSession, logout, getEffectiveUser, stopImpersonation, impersonateUser, captureGoogleProviderToken } from './auth.js';
 import { supabase, clearUserCache } from './supabase-client.js';
 
-console.log("Loading Main Integration Module...");
-
 try {
     // Authentication Check - redirects to login.html if not authenticated
     const user = await checkSession();
@@ -19,11 +17,6 @@ try {
 
     // Check for impersonation (super_admin viewing as another user)
     const effectiveUser = await getEffectiveUser(user);
-
-    console.log('User from getCurrentUser:', user);
-    console.log('User role from getCurrentUser:', user?.role);
-    console.log('Effective user:', effectiveUser);
-    console.log('Effective user role:', effectiveUser?.role);
 
     // Expose user info globally for role-based access
     window.currentUserRole = effectiveUser.role || 'user';
@@ -145,14 +138,12 @@ try {
         } else if (event === 'TOKEN_REFRESHED') {
             // Clear cache so next API call picks up fresh token
             clearUserCache();
-            console.log('Auth token refreshed');
+            // Token refreshed — cache cleared
         }
     });
 
     // Signal to inline scripts that auth is ready (use effective user for role-based UI)
     window.dispatchEvent(new CustomEvent('auth-ready', { detail: { role: effectiveUser.role, email: effectiveUser.email, tier: effectiveUser.tier || 'carbon' } }));
-
-    console.log("Auth ready — role:", effectiveUser.role, effectiveUser.isImpersonated ? '(impersonating)' : '');
 
 } catch (e) {
     console.error("Integration module error:", e);

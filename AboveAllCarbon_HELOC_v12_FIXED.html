@@ -22,7 +22,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;700;800&family=Inter:wght@400;600;700&display=swap"
         rel="stylesheet">
     <style>
         :root {
@@ -47,6 +47,10 @@
             --transition: 0.2s ease;
             --gap: 12px;
             --accent-glow: rgba(197, 160, 89, 0.15);
+            --bg-card: #111827;
+            --border-color: rgba(255, 255, 255, 0.12);
+            --text-primary: #e2e8f0;
+            --text-secondary: rgba(255, 255, 255, 0.6);
         }
 
         * {
@@ -55,7 +59,8 @@
 
         body {
             font-family: var(--font-body);
-            background-color: #eef2f6;
+            background: linear-gradient(145deg, #e8ecf1 0%, #dfe4eb 50%, #e2e7ee 100%);
+            background-attachment: fixed;
             margin: 0;
             padding: 20px;
             color: var(--font-color);
@@ -67,10 +72,11 @@
             max-width: 950px;
             margin: 0 auto;
             background-color: var(--paper);
-            box-shadow: 0 30px 60px rgba(15, 43, 76, 0.15), 0 0 0 1px rgba(15, 43, 76, 0.04);
+            box-shadow: 0 30px 80px rgba(15, 43, 76, 0.2), 0 10px 30px rgba(0,0,0,0.08), 0 0 0 1px rgba(15, 43, 76, 0.04);
             position: relative;
             overflow: hidden;
-            border-top: 6px solid var(--accent-color);
+            border-top: 6px solid transparent;
+            border-image: linear-gradient(90deg, var(--accent-dark), var(--accent-color), var(--accent-dark)) 1;
             border-radius: 0 0 var(--radius-sm) var(--radius-sm);
         }
 
@@ -89,7 +95,10 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             margin: 0;
-            color: var(--accent-color);
+            background: linear-gradient(135deg, #d4a843, var(--accent-color), #e8c56a, var(--accent-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .header-subtitle {
@@ -4449,50 +4458,268 @@
 
         /* ===== ENHANCED SCROLLBARS ===== */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb { background: rgba(197,160,89,0.3); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(197,160,89,0.5); }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.15); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, rgba(197,160,89,0.4), rgba(197,160,89,0.2)); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, rgba(197,160,89,0.6), rgba(197,160,89,0.3)); }
+
+        /* ===== PREMIUM ADMIN PANEL GRADIENT ===== */
+        #admin-panel {
+            background: linear-gradient(145deg, #0f172a 0%, #1a1f3a 40%, #0f2b4c 100%) !important;
+            border: 1px solid rgba(197,160,89,0.12) !important;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+        }
+
+        /* ===== COOLER CONTROL SECTIONS ===== */
+        .control-section {
+            background: linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%) !important;
+            border: 1px solid rgba(255,255,255,0.08) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.06);
+            position: relative;
+            overflow: hidden;
+        }
+        .control-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(197,160,89,0.3), transparent);
+        }
+
+        /* ===== COOLER TABS ===== */
+        .settings-tabs {
+            gap: 5px !important;
+            padding-bottom: 14px !important;
+            border-bottom: 1px solid rgba(197,160,89,0.1) !important;
+        }
+        .settings-tab {
+            padding: 10px 18px !important;
+            background: rgba(255,255,255,0.04) !important;
+            border: 1px solid rgba(255,255,255,0.06) !important;
+            border-radius: 8px !important;
+            font-size: 10px !important;
+            letter-spacing: 0.8px !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            position: relative;
+            overflow: hidden;
+        }
+        .settings-tab::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(197,160,89,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+        .settings-tab:hover {
+            background: rgba(255,255,255,0.08) !important;
+            border-color: rgba(197,160,89,0.2) !important;
+            color: white !important;
+            transform: translateY(-1px);
+        }
+        .settings-tab:hover::before { opacity: 1; }
+        .settings-tab.active {
+            background: linear-gradient(135deg, var(--accent-color), #d4a843) !important;
+            border-color: transparent !important;
+            box-shadow: 0 4px 15px rgba(197,160,89,0.35), 0 0 20px rgba(197,160,89,0.1) !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .settings-tab.active::before { opacity: 0; }
 
         /* ===== ENHANCED QUOTE CARDS ===== */
         #quotes-list > div[data-quote-id] {
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 8px;
-            margin-bottom: 6px;
-            padding: 10px 12px;
-            transition: all 0.2s ease;
-            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.06) !important;
+            border-radius: 10px !important;
+            margin-bottom: 6px !important;
+            padding: 12px 14px !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            background: linear-gradient(145deg, rgba(0,0,0,0.25), rgba(0,0,0,0.15)) !important;
+            position: relative;
+            overflow: hidden;
+        }
+        #quotes-list > div[data-quote-id]::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--accent-color), transparent);
+            opacity: 0;
+            transition: opacity 0.25s;
         }
         #quotes-list > div[data-quote-id]:hover {
-            border-color: rgba(197,160,89,0.3);
-            background: rgba(197,160,89,0.05);
-            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            border-color: rgba(197,160,89,0.25) !important;
+            background: linear-gradient(145deg, rgba(197,160,89,0.08), rgba(0,0,0,0.2)) !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25), 0 0 0 1px rgba(197,160,89,0.1) !important;
+            transform: translateX(2px);
         }
+        #quotes-list > div[data-quote-id]:hover::after { opacity: 1; }
 
         /* ===== ENHANCED LEADS TABLE ===== */
+        #leads-table {
+            border-spacing: 0 2px !important;
+        }
         #leads-table thead th {
-            font-family: var(--font-heading);
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: rgba(255,255,255,0.5);
-            padding: 10px 6px;
-            border-bottom: 2px solid rgba(197,160,89,0.2);
+            font-family: var(--font-heading) !important;
+            font-size: 8px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            color: var(--accent-color) !important;
+            padding: 12px 6px !important;
+            border-bottom: 2px solid rgba(197,160,89,0.15) !important;
+            background: rgba(0,0,0,0.1);
         }
         #leads-table tbody tr {
-            transition: background 0.15s ease;
+            transition: all 0.2s ease !important;
         }
         #leads-table tbody tr:hover {
-            background: rgba(197,160,89,0.06) !important;
+            background: linear-gradient(90deg, rgba(197,160,89,0.08), rgba(197,160,89,0.03)) !important;
+            box-shadow: inset 3px 0 0 var(--accent-color);
         }
 
-        /* ===== ENHANCED BUTTONS ===== */
+        /* ===== COOLER BUTTONS ===== */
         .control-section .btn {
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25) !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            border-radius: 8px !important;
+            position: relative;
+            overflow: hidden;
+        }
+        .control-section .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.2s;
         }
         .control-section .btn:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            filter: brightness(1.1);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.35) !important;
+            transform: translateY(-2px) !important;
+            filter: brightness(1.15) !important;
+        }
+        .control-section .btn:hover::before { opacity: 1; }
+        .control-section .btn:active {
+            transform: translateY(0) scale(0.97) !important;
+        }
+
+        /* ===== PREMIUM TOOLBAR BUTTONS ===== */
+        .toolbar-btn {
+            background: linear-gradient(135deg, var(--accent-color), #d4a843, var(--accent-dark)) !important;
+            box-shadow: 0 2px 10px rgba(197,160,89,0.3) !important;
+            border-radius: 8px !important;
+            transition: all 0.25s !important;
+        }
+        .toolbar-btn:hover {
+            box-shadow: 0 4px 20px rgba(197,160,89,0.4) !important;
+            transform: scale(1.05) translateY(-1px) !important;
+        }
+
+        /* ===== ENHANCED BULK ACTION BAR ===== */
+        .bulk-action-bar {
+            background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(220,38,38,0.08)) !important;
+            border: 1px solid rgba(239,68,68,0.25) !important;
+            border-radius: 10px !important;
+            box-shadow: 0 4px 15px rgba(239,68,68,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        /* ===== COOLER SEARCH INPUTS ===== */
+        .section-search {
+            background: rgba(0,0,0,0.35) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-radius: 8px !important;
+            transition: all 0.25s !important;
+        }
+        .section-search:focus {
+            border-color: var(--accent-color) !important;
+            box-shadow: 0 0 0 3px rgba(197,160,89,0.12), 0 2px 10px rgba(0,0,0,0.2) !important;
+            background: rgba(0,0,0,0.45) !important;
+        }
+
+        /* ===== SOURCE BADGES GLOW ===== */
+        #leads-table td span[style*="border-radius:10px"] {
+            box-shadow: 0 1px 6px rgba(0,0,0,0.2);
+            transition: box-shadow 0.2s;
+        }
+        #leads-table tr:hover td span[style*="border-radius:10px"] {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        /* ===== PREMIUM CLOUD EXPORT BUTTONS ===== */
+        .cloud-export-btn {
+            border-radius: 8px !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .cloud-export-btn:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+            transform: translateY(-2px) !important;
+        }
+
+        /* ===== STATUS BADGE ENHANCEMENT ===== */
+        #quotes-list select[style*="border-radius:3px"] {
+            border-radius: 6px !important;
+            padding: 2px 6px !important;
+            font-weight: 700 !important;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            transition: box-shadow 0.2s;
+        }
+
+        /* ===== SMOOTH PAGE TRANSITIONS ===== */
+        .settings-content.active {
+            animation: fadeSlideIn 0.3s ease-out;
+        }
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== PREMIUM HEADER ENHANCEMENT ===== */
+        .premium-header {
+            background: linear-gradient(145deg, var(--header-bg) 0%, #0a1f38 50%, #0f2b4c 100%) !important;
+            border-bottom: 4px solid transparent !important;
+            border-image: linear-gradient(90deg, transparent, var(--accent-color), transparent) 1 !important;
+            position: relative;
+        }
+        .premium-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(197,160,89,0.4), transparent);
+        }
+
+        /* ===== TOAST ENHANCEMENTS ===== */
+        #toast-container > div {
+            backdrop-filter: blur(12px);
+            border-radius: 10px !important;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3) !important;
+        }
+
+        /* ===== CHECKBOX ENHANCEMENT ===== */
+        .lead-checkbox, .quote-checkbox {
+            accent-color: var(--accent-color) !important;
+            cursor: pointer !important;
+            transition: transform 0.15s !important;
+        }
+        .lead-checkbox:hover, .quote-checkbox:hover {
+            transform: scale(1.2);
+        }
+
+        /* ===== PIPELINE CARDS GLOW ===== */
+        .pipeline-card {
+            transition: all 0.25s !important;
+        }
+        .pipeline-card:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3) !important;
         }
     </style>
 </head>
@@ -4961,7 +5188,7 @@
                     <button class="btn"
                         style="background: linear-gradient(135deg, #ef4444, #dc2626); font-size: 9px; padding: 5px 12px;"
                         onclick="deleteDuplicateQuotes()">🗑 Delete Duplicates</button>
-                    <input type="text" id="quotes-search" class="section-search" placeholder="Search client name..." oninput="filterQuotesSearch(this.value)">
+                    <input type="text" id="quotes-search" class="section-search" placeholder="Search client name..." oninput="debouncedFilterQuotes(this.value)">
                     <button class="cloud-export-btn" style="background:linear-gradient(135deg,#4285f4,#1a73e8);" onclick="saveQuotesToGoogleDrive()" title="Export to Google Drive">
                         <svg width="12" height="12" viewBox="0 0 87.3 78" fill="white"><path d="M6.6 66.85L3.3 61.35 29.15 17.4h6.6L6.6 66.85zM43.65 25.05L29.15 49.8h29L43.65 25.05zM58.15 49.8L87.3 49.8 72.8 25.05 58.15 49.8z"/></svg>
                         Google Drive
@@ -5198,7 +5425,7 @@
                     <button class="btn"
                         style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); font-size: 9px; padding: 5px 12px;"
                         onclick="exportLeadsCSV()">📥 Export CSV <span class="help-tip" style="margin-left:2px;">?<span class="help-tip-text">Download all your leads as a CSV spreadsheet file. Opens in Excel, Google Sheets, or any spreadsheet app.</span></span></button>
-                    <input type="text" id="leads-search" class="section-search" placeholder="Search name, email, phone..." oninput="filterLeadsSearch(this.value)">
+                    <input type="text" id="leads-search" class="section-search" placeholder="Search name, email, phone..." oninput="debouncedFilterLeads(this.value)">
                     <span class="help-tip" style="margin-right:-2px;">?<span class="help-tip-text">Filter leads by status (Quoted, New, Contacted, etc.) or by source (Bonzo, GHL, Manual, CSV, etc.). Use both dropdowns together to narrow your view.</span></span>
                     <select id="leads-filter-status" onchange="loadUserLeads()"
                         style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 4px 8px; font-family: var(--font-heading); font-size: 9px;">
@@ -5472,27 +5699,27 @@
                     Profile</h4>
                 <div class="input-group">
                     <div class="input-field"><label>Name</label><input type="text" id="lo-name" value="Eddie Barragan"
-                            oninput="updateProfile()"></div>
+                            oninput="debouncedUpdateProfile()"></div>
                     <div class="input-field"><label>Title</label><input type="text" id="lo-title"
-                            value="Executive Branch Manager" oninput="updateProfile()"></div>
+                            value="Executive Branch Manager" oninput="debouncedUpdateProfile()"></div>
                     <div class="input-field"><label>NMLS # <span class="help-tip">?<span class="help-tip-text">Your Nationwide Mortgage Licensing System number. This appears on quotes, PDFs, and email footers for compliance.</span></span></label><input type="text" id="lo-nmls" value="1828140"
-                            oninput="updateProfile()"></div>
+                            oninput="debouncedUpdateProfile()"></div>
                     <div class="input-field"><label>DRE #</label><input type="text" id="lo-dre" value="2227951"
-                            oninput="updateProfile()"></div>
+                            oninput="debouncedUpdateProfile()"></div>
                 </div>
                 <div class="input-group" style="margin-top:8px;">
                     <div class="input-field"><label>Phone</label><input type="text" id="lo-phone" value="(949) 795-2419"
-                            oninput="updateProfile()"></div>
+                            oninput="debouncedUpdateProfile()"></div>
                     <div class="input-field"><label>Email</label><input type="text" id="lo-email"
-                            value="Eddie@WestCapitalLending.com" oninput="updateProfile()"></div>
+                            value="Eddie@WestCapitalLending.com" oninput="debouncedUpdateProfile()"></div>
                     <div class="input-field"><label>Website</label><input type="text" id="lo-website"
-                            value="helocwitheddie.com" oninput="updateProfile()"></div>
+                            value="helocwitheddie.com" oninput="debouncedUpdateProfile()"></div>
                 </div>
                 <div class="input-group" style="margin-top:8px;">
                     <div class="input-field" style="flex: 2;"><label>Headshot URL <span class="help-tip">?<span class="help-tip-text">Direct URL to your professional headshot. Used on PDFs, emails, and the quote presentation. Click Upload to add an image from your device.</span></span></label>
                         <div style="display:flex;gap:6px;"><input type="text" id="lo-headshot-url"
                                 value="https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/693bb3fdeac0a8d6852417e6.jpg"
-                                oninput="updateProfile()" style="flex:1;"><button type="button" class="btn"
+                                oninput="debouncedUpdateProfile()" style="flex:1;"><button type="button" class="btn"
                                 style="background:rgba(255,255,255,0.1);font-size:9px;padding:6px 12px;white-space:nowrap;"
                                 onclick="uploadSettingsImage('lo-headshot-url','headshotUrl')">📷 Upload</button></div>
                     </div>
@@ -5543,20 +5770,20 @@
                     Company Settings</h4>
                 <div class="input-group">
                     <div class="input-field"><label>Company Name</label><input type="text" id="lo-company"
-                            value="West Capital Lending" oninput="updateProfile()"></div>
+                            value="West Capital Lending" oninput="debouncedUpdateProfile()"></div>
                     <div class="input-field"><label>Co NMLS</label><input type="text" id="co-nmls" value="1566096"
-                            oninput="updateProfile()"></div>
+                            oninput="debouncedUpdateProfile()"></div>
                     <div class="input-field"><label>Co DRE</label><input type="text" id="co-dre" value="02022356"
-                            oninput="updateProfile()"></div>
+                            oninput="debouncedUpdateProfile()"></div>
                 </div>
                 <div class="input-group" style="margin-top:8px;">
                     <div class="input-field" style="flex: 2;"><label>Office Address</label><input type="text"
                             id="lo-address" value="17911 Von Karman Ave Suite 400, Irvine, CA 92614"
-                            oninput="updateProfile()"></div>
+                            oninput="debouncedUpdateProfile()"></div>
                     <div class="input-field"><label>Logo URL</label>
                         <div style="display:flex;gap:6px;"><input type="text" id="lo-logo-url"
                                 value="https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/696029737cc1b904fa792d8c.png"
-                                oninput="updateProfile()" style="flex:1;"><button type="button" class="btn"
+                                oninput="debouncedUpdateProfile()" style="flex:1;"><button type="button" class="btn"
                                 style="background:rgba(255,255,255,0.1);font-size:9px;padding:6px 12px;white-space:nowrap;"
                                 onclick="uploadSettingsImage('lo-logo-url','logoUrl')">📷 Upload</button></div>
                     </div>
@@ -5573,9 +5800,9 @@
                     White Label Branding</h4>
                 <div class="input-group">
                     <div class="input-field" style="flex: 2;"><label>Lender Name (Header)</label><input type="text"
-                            id="wl-lender-name" value="West Capital HELOC Proposal" oninput="applyWhiteLabel()"></div>
+                            id="wl-lender-name" value="West Capital HELOC Proposal" oninput="debouncedApplyWhiteLabel()"></div>
                     <div class="input-field"><label>Tagline</label><input type="text" id="wl-tagline"
-                            value="Unlock Your Wealth Without Selling" oninput="applyWhiteLabel()"></div>
+                            value="Unlock Your Wealth Without Selling" oninput="debouncedApplyWhiteLabel()"></div>
                 </div>
                 <h5
                     style="font-family: var(--font-heading); font-size: 10px; color: rgba(255,255,255,0.8); margin: 15px 0 10px 0; text-transform: uppercase;">
@@ -5593,9 +5820,9 @@
                 <div class="input-group" style="margin-top: 10px;">
                     <div class="input-field"><label>Apply Link URL <span class="help-tip">?<span class="help-tip-text">The URL where clients can start their HELOC application. This link is embedded in quotes, emails, and the "Apply Now" button.</span></span></label><input type="text" id="wl-apply-link"
                             value="https://heloc.westcapitallending.com/account/heloc/register?referrer=1748723f-4b74-4399-a79c-4cc2a4c8da20"
-                            oninput="applyWhiteLabel()"></div>
+                            oninput="debouncedApplyWhiteLabel()"></div>
                     <div class="input-field"><label>Apply Link Text</label><input type="text" id="wl-apply-text"
-                            value="heloc.westcapitallending.com" oninput="applyWhiteLabel()"></div>
+                            value="heloc.westcapitallending.com" oninput="debouncedApplyWhiteLabel()"></div>
                 </div>
                 <div class="quick-actions">
                     <button class="btn" style="background: #0f2b4c;" onclick="loadPreset('westcap')">West Cap
@@ -6885,7 +7112,7 @@ Best regards,
 
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="./js/link-shortener-universal.js"></script>
+    <script defer src="./js/link-shortener-universal.js"></script>
     <script>
         // ===== GLOBALS =====
         let isInterestOnly = false;
@@ -6898,6 +7125,10 @@ Best regards,
         }
         const debouncedUpdateQuote = debounce(() => updateQuote(), 150);
         const debouncedAutoSave = debounce(() => autoSave(), 500);
+        const debouncedUpdateProfile = debounce(() => updateProfile(), 120);
+        const debouncedApplyWhiteLabel = debounce(() => applyWhiteLabel(), 120);
+        const debouncedFilterLeads = debounce((q) => filterLeadsSearch(q), 100);
+        const debouncedFilterQuotes = debounce((q) => filterQuotesSearch(q), 100);
 
         // Toast notification system
         function showToast(message, type, duration) {
@@ -10961,7 +11192,7 @@ Best regards,
             const recTier = document.getElementById('rec-tier-select').value;
             const recTerm = parseInt(document.getElementById('rec-term-select').value);
 
-            document.querySelectorAll('table tr').forEach(row => row.classList.remove('highlight-row'));
+            document.querySelectorAll('.heloc-table tr, #proposal-container table tr').forEach(row => row.classList.remove('highlight-row'));
             const targetTable = document.getElementById(recTier + '-table');
             if (targetTable) {
                 const targetRow = targetTable.querySelector('tr[data-term="' + recTerm + '"]');
@@ -12442,16 +12673,21 @@ Sent via Above All Carbon HELOC Tool`;
             }
         }
 
+        var _ensureQuoteLinkPending = null;
         async function ensureQuoteLink() {
             if (window._lastGeneratedQuoteLink) return window._lastGeneratedQuoteLink;
-            // Auto-generate the client link
-            await generateClientLink();
-            // After generateClientLink completes, it sets window._lastGeneratedQuoteLink
-            if (window._lastGeneratedQuoteLink) {
-                updateQuoteSMS();
-                return window._lastGeneratedQuoteLink;
-            }
-            return null;
+            // Prevent concurrent duplicate link creation
+            if (_ensureQuoteLinkPending) return _ensureQuoteLinkPending;
+            _ensureQuoteLinkPending = (async function() {
+                try {
+                    await generateClientLink();
+                    if (window._lastGeneratedQuoteLink) updateQuoteSMS();
+                    return window._lastGeneratedQuoteLink || null;
+                } finally {
+                    _ensureQuoteLinkPending = null;
+                }
+            })();
+            return _ensureQuoteLinkPending;
         }
 
         function copyQuoteSMS() {
@@ -12967,7 +13203,7 @@ Sent via Above All Carbon HELOC Tool`;
 
             const log = (msg) => {
                 const line = document.createElement('div');
-                line.innerHTML = msg;
+                line.textContent = msg.replace(/[<>]/g, '');
                 statusLog.appendChild(line);
             };
 
@@ -13678,56 +13914,6 @@ Sent via Above All Carbon HELOC Tool`;
         }
 
         // AI Provider configurations
-        const AI_PROVIDERS = {
-            openai: {
-                name: 'OpenAI',
-                url: 'https://api.openai.com/v1/chat/completions',
-                models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-3.5-turbo'],
-                keyPlaceholder: 'sk-xxxxxxxx'
-            },
-            gemini: {
-                name: 'Google Gemini',
-                url: 'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent',
-                models: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-1.0-pro'],
-                keyPlaceholder: 'AIzaSy...'
-            },
-            anthropic: {
-                name: 'Anthropic Claude',
-                url: 'https://api.anthropic.com/v1/messages',
-                models: ['claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022', 'claude-3-opus-20240229'],
-                keyPlaceholder: 'sk-ant-xxxxxxxx'
-            },
-            deepseek: {
-                name: 'DeepSeek',
-                url: 'https://api.deepseek.com/v1/chat/completions',
-                models: ['deepseek-chat', 'deepseek-reasoner'],
-                keyPlaceholder: 'sk-xxxxxxxx'
-            },
-            groq: {
-                name: 'Groq',
-                url: 'https://api.groq.com/openai/v1/chat/completions',
-                models: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768', 'gemma2-9b-it'],
-                keyPlaceholder: 'gsk_xxxxxxxx'
-            },
-            grok: {
-                name: 'xAI Grok',
-                url: 'https://api.x.ai/v1/chat/completions',
-                models: ['grok-2', 'grok-2-mini', 'grok-beta'],
-                keyPlaceholder: 'xai-xxxxxxxx'
-            },
-            custom: {
-                name: 'Custom',
-                url: '',
-                models: ['custom-model'],
-                keyPlaceholder: 'your-api-key'
-            }
-        };
-
-        function updateAIProvider() {
-            // AI config is now fully managed per-user in Super Admin panel and stored in DB.
-            // This function is kept as a no-op for backward compatibility.
-        }
-
         // ===== WEBHOOK & CRM FUNCTIONS =====
 
         const SUPABASE_FUNCTIONS_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1';
@@ -13929,8 +14115,8 @@ Sent via Above All Carbon HELOC Tool`;
         }
 
         function escapeAttr(str) {
-            if (!str) return '';
-            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            if (str == null) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
 
         function updateOutboundWebhook(id, field, value) {
@@ -14799,11 +14985,26 @@ Sent via Above All Carbon HELOC Tool`;
             const sourceFilterEl = document.getElementById('leads-filter-source');
             const sourceFilter = sourceFilterEl ? sourceFilterEl.value : 'all';
 
-            // Show Bonzo sync button if key is in any input field
+            // Show Bonzo sync button if key is in any input field OR stored in cloud
             var _bsb = document.getElementById('bonzo-sync-btn');
             if (_bsb && _bsb.style.display === 'none') {
                 var _bk = (document.getElementById('bonzo-api-key') || {}).value || (document.getElementById('bonzo-api-key-2') || {}).value || (document.getElementById('keys-bonzo-api') || {}).value || '';
-                if (_bk) _bsb.style.display = '';
+                if (_bk) { _bsb.style.display = ''; }
+                else if (sb && userId && !window._bonzoKeyChecked) {
+                    // Check cloud-stored keys once
+                    window._bonzoKeyChecked = true;
+                    sb.from('user_integrations').select('metadata').eq('user_id', userId).in('provider', ['heloc_keys', 'heloc_settings']).then(function(res) {
+                        if (res.data) {
+                            for (var r of res.data) {
+                                var m = r.metadata || {};
+                                if (m.bonzo_api_key_2 || m.bonzo_api_key || (m.bonzo && (m.bonzo.apiKey2 || m.bonzo.apiKey))) {
+                                    if (_bsb) _bsb.style.display = '';
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                }
             }
 
             if (!sb || !userId) {
@@ -14821,7 +15022,7 @@ Sent via Above All Carbon HELOC Tool`;
                     .select('*')
                     .eq('user_id', userId)
                     .order('created_at', { ascending: false })
-                    .limit(200);
+                    .limit(1000);
 
                 if (error) throw error;
 
@@ -15325,13 +15526,45 @@ Sent via Above All Carbon HELOC Tool`;
 
                 if (!resp.ok) {
                     showToast('Bonzo sync error: ' + (data.error || 'Unknown'), 'error');
+                    if (data.logs) console.warn('Bonzo sync logs:', data.logs);
                     return;
                 }
 
-                var msg = '✅ Bonzo Sync — ' + (data.imported || 0) + ' new, ' + (data.updated || 0) + ' updated';
+                var msg = (data.imported || 0) + ' new, ' + (data.updated || 0) + ' updated';
                 if (data.skipped > 0) msg += ', ' + data.skipped + ' skipped';
-                msg += ' (' + (data.total_from_bonzo || 0) + ' from Bonzo, ' + (data.pages_fetched || 1) + ' pg)';
-                showToast(msg, 'success', 6000);
+                msg += ' (' + (data.total_from_bonzo || 0) + ' from Bonzo, ' + (data.pages_fetched || 0) + ' pg)';
+                showToast(msg, 'success', 8000);
+
+                // Log diagnostics
+                if (data.logs) {
+                    console.group('Bonzo Sync Diagnostics');
+                    data.logs.forEach(function(l) { console.log(l); });
+                    if (data.response_keys) console.log('Response keys:', data.response_keys);
+                    if (data.pagination) console.log('Pagination:', data.pagination);
+                    if (data.skip_reasons) console.log('Skip reasons:', data.skip_reasons);
+                    if (data.errors) console.warn('Errors:', data.errors);
+                    console.groupEnd();
+                }
+
+                // Show sync log panel for super_admin
+                if (window.currentUserRole === 'super_admin' && data.logs && data.logs.length > 0) {
+                    var logHtml = '<div style="max-height:300px;overflow-y:auto;font-family:monospace;font-size:10px;line-height:1.6;color:#e2e8f0;background:rgba(0,0,0,0.4);border-radius:8px;padding:12px;margin-top:8px;">';
+                    data.logs.forEach(function(l) {
+                        var color = l.includes('ERROR') ? '#ef4444' : l.includes('WARN') ? '#f59e0b' : l.includes('Sample') ? '#60a5fa' : 'rgba(255,255,255,0.6)';
+                        logHtml += '<div style="color:' + color + ';">' + escapeAttr(l) + '</div>';
+                    });
+                    if (data.errors && data.errors.length > 0) {
+                        logHtml += '<div style="color:#ef4444;margin-top:6px;font-weight:bold;">Insert Errors:</div>';
+                        data.errors.forEach(function(e) { logHtml += '<div style="color:#fca5a5;">' + escapeAttr(e) + '</div>'; });
+                    }
+                    logHtml += '</div>';
+                    var logPanel = document.createElement('div');
+                    logPanel.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;max-width:90vw;background:#1e293b;border:1px solid rgba(197,160,89,0.3);border-radius:12px;padding:20px;z-index:100000;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+                    logPanel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><span style="font-family:var(--font-heading);font-size:12px;color:var(--accent-color);font-weight:700;">BONZO SYNC LOG</span><button onclick="this.parentElement.parentElement.remove()" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:18px;cursor:pointer;">&times;</button></div>' +
+                        '<div style="font-family:var(--font-heading);font-size:10px;color:rgba(255,255,255,0.7);margin-bottom:8px;">' + (data.imported||0) + ' imported | ' + (data.updated||0) + ' updated | ' + (data.skipped||0) + ' skipped | ' + (data.total_from_bonzo||0) + ' total from Bonzo</div>' +
+                        logHtml;
+                    document.body.appendChild(logPanel);
+                }
 
                 loadUserLeads();
 
@@ -15579,8 +15812,8 @@ Sent via Above All Carbon HELOC Tool`;
                 return;
             }
             rows.forEach(function(row) {
-                var cells = row.querySelectorAll('td');
-                if (cells.length < 4) { row.style.display = ''; return; }
+                var cells = row.cells; // HTMLCollection — no DOM query needed
+                if (!cells || cells.length < 4) { row.style.display = ''; return; }
                 // cells[0]=checkbox, cells[1]=Name, cells[2]=Email, cells[3]=Phone
                 var text = (cells[1].textContent + ' ' + cells[2].textContent + ' ' + cells[3].textContent).toLowerCase();
                 row.style.display = text.indexOf(q) >= 0 ? '' : 'none';
@@ -15724,33 +15957,29 @@ Sent via Above All Carbon HELOC Tool`;
         }
 
         // ===== CLOUD EXPORT (Google Drive & OneDrive) =====
-        function _buildQuotesCSVBlob() {
-            return new Promise(async function(resolve, reject) {
-                var sb = window._supabase;
-                var userId = window.currentUserId;
-                if (!sb || !userId) { reject(new Error('Not logged in')); return; }
-                try {
-                    var result = await sb.from('quotes').select('id, quote_data, status, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(500);
-                    if (result.error) throw result.error;
-                    var quotes = result.data;
-                    if (!quotes || quotes.length === 0) { reject(new Error('No quotes to export')); return; }
-                    var headers = ['Client Name','Home Value','Cash Out','Rec Rate','Rec Payment','Status','Date Created'];
-                    var rows = quotes.map(function(q) {
-                        var d = q.quote_data || {};
-                        var date = q.created_at ? new Date(q.created_at).toLocaleDateString() : '';
-                        return [d.clientName || 'Unnamed', d.homeValue || '', d.netCash || '', d.recRate || '', d.recPayment || '', q.status || 'new', date]
-                            .map(function(v) { var s = String(v).replace(/"/g, '""'); return s.indexOf(',') >= 0 || s.indexOf('"') >= 0 ? '"' + s + '"' : s; })
-                            .join(',');
-                    });
-                    var csv = headers.join(',') + '\n' + rows.join('\n');
-                    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                    var fileName = 'quotes_export_' + new Date().toISOString().split('T')[0] + '.csv';
-                    resolve({ blob: blob, fileName: fileName });
-                } catch (e) { reject(e); }
+        async function _buildQuotesCSVBlob() {
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) throw new Error('Not logged in');
+            var result = await sb.from('quotes').select('id, quote_data, status, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(500);
+            if (result.error) throw result.error;
+            var quotes = result.data;
+            if (!quotes || quotes.length === 0) throw new Error('No quotes to export');
+            var headers = ['Client Name','Home Value','Cash Out','Rec Rate','Rec Payment','Status','Date Created'];
+            var rows = quotes.map(function(q) {
+                var d = q.quote_data || {};
+                var date = q.created_at ? new Date(q.created_at).toLocaleDateString() : '';
+                return [d.clientName || 'Unnamed', d.homeValue || '', d.netCash || '', d.recRate || '', d.recPayment || '', q.status || 'new', date]
+                    .map(function(v) { var s = String(v).replace(/"/g, '""'); return s.indexOf(',') >= 0 || s.indexOf('"') >= 0 ? '"' + s + '"' : s; })
+                    .join(',');
             });
+            var csv = headers.join(',') + '\n' + rows.join('\n');
+            var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            var fileName = 'quotes_export_' + new Date().toISOString().split('T')[0] + '.csv';
+            return { blob: blob, fileName: fileName };
         }
 
-        async function saveQuotesToGoogleDrive() {
+        async function _exportQuotesToCloud(cloudUrl, cloudName) {
             try {
                 showToast('Preparing quotes export...', 'info', 2000);
                 var result = await _buildQuotesCSVBlob();
@@ -15759,28 +15988,14 @@ Sent via Above All Carbon HELOC Tool`;
                 a.download = result.fileName;
                 a.click();
                 URL.revokeObjectURL(a.href);
-                window.open('https://drive.google.com/drive/my-drive', '_blank');
-                showToast('CSV downloaded! Google Drive opened — drag the file to upload.', 'success', 5000);
+                window.open(cloudUrl, '_blank');
+                showToast('CSV downloaded! ' + cloudName + ' opened — drag the file to upload.', 'success', 5000);
             } catch (e) {
-                showToast('Export error: ' + e.message, 'error');
+                showToast('Export error: ' + escapeAttr(e.message), 'error');
             }
         }
-
-        async function saveQuotesToOneDrive() {
-            try {
-                showToast('Preparing quotes export...', 'info', 2000);
-                var result = await _buildQuotesCSVBlob();
-                var a = document.createElement('a');
-                a.href = URL.createObjectURL(result.blob);
-                a.download = result.fileName;
-                a.click();
-                URL.revokeObjectURL(a.href);
-                window.open('https://onedrive.live.com/', '_blank');
-                showToast('CSV downloaded! OneDrive opened — drag the file to upload.', 'success', 5000);
-            } catch (e) {
-                showToast('Export error: ' + e.message, 'error');
-            }
-        }
+        function saveQuotesToGoogleDrive() { return _exportQuotesToCloud('https://drive.google.com/drive/my-drive', 'Google Drive'); }
+        function saveQuotesToOneDrive() { return _exportQuotesToCloud('https://onedrive.live.com/', 'OneDrive'); }
 
     </script>
     <script type="module" src="./js/main.js"></script>

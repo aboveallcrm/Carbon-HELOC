@@ -30,14 +30,8 @@ export async function getCurrentUser() {
         console.warn('Profile fetch error:', profileError.message);
     }
 
-    console.log('Auth user role:', user.role);
-    console.log('Profile role:', profile?.role);
-    console.log('Profile data:', profile);
-
     // Merge profile over user, with profile taking precedence
     _cachedUser = { ...user, ...(profile || {}) };
-    
-    console.log('Merged role:', _cachedUser.role);
     
     return _cachedUser;
 }
