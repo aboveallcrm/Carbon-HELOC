@@ -2757,6 +2757,80 @@
             color: rgba(255, 255, 255, 0.3);
         }
 
+        /* ===== HELP TOOLTIPS ===== */
+        .help-tip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.45);
+            font-size: 9px;
+            font-weight: 700;
+            font-family: var(--font-heading);
+            cursor: pointer;
+            position: relative;
+            margin-left: 4px;
+            vertical-align: middle;
+            transition: all 0.2s;
+            border: 1px solid rgba(255,255,255,0.08);
+            flex-shrink: 0;
+        }
+        .help-tip:hover {
+            background: var(--accent-color);
+            color: #0f172a;
+            border-color: var(--accent-color);
+        }
+        .help-tip .help-tip-text {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: rgba(255,255,255,0.9);
+            border: 1px solid var(--accent-color);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 10px;
+            font-weight: 400;
+            font-family: var(--font-body);
+            line-height: 1.5;
+            width: 240px;
+            text-transform: none;
+            letter-spacing: 0;
+            z-index: 99999;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            pointer-events: none;
+        }
+        .help-tip .help-tip-text::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--accent-color);
+        }
+        .help-tip:hover .help-tip-text,
+        .help-tip.active .help-tip-text {
+            display: block;
+        }
+        @media (max-width: 768px) {
+            .help-tip .help-tip-text {
+                left: auto;
+                right: -10px;
+                transform: none;
+            }
+            .help-tip .help-tip-text::after {
+                left: auto;
+                right: 14px;
+                transform: none;
+            }
+        }
+
         /* ===== SEARCH BAR ===== */
         .section-search {
             flex: 1;
@@ -4679,11 +4753,11 @@
                 <div class="input-group">
                     <div class="input-field" style="flex: 2;"><label>Client Name</label><input type="text"
                             id="in-client-name" placeholder="Enter Client Name"></div>
-                    <div class="input-field"><label>Credit Score</label><input type="text" id="in-client-credit"
+                    <div class="input-field"><label>Credit Score <span class="help-tip">?<span class="help-tip-text">The client's FICO score. Affects tier eligibility and rate pricing. Leave blank if unknown — it won't appear on the quote.</span></span></label><input type="text" id="in-client-credit"
                             placeholder="740"></div>
                     <div class="input-field"
                         style="background: rgba(197,160,89,0.2); border-radius: 5px; padding: 4px;">
-                        <label style="color: var(--accent-color);">Cash Back to Client ($)</label>
+                        <label style="color: var(--accent-color);">Cash Back to Client ($) <span class="help-tip">?<span class="help-tip-text">The net amount the client receives after fees. This is the main number clients care about — it drives the total loan amount calculation.</span></span></label>
                         <input type="number" id="in-net-cash" value="200000"
                             style="font-weight: 700; color: var(--accent-color); border-color: var(--accent-color);">
                     </div>
@@ -4698,9 +4772,9 @@
                             <option>Primary Residence</option>
                             <option>Investment Property</option>
                         </select></div>
-                    <div class="input-field"><label>Home Value ($)</label><input type="number" id="in-home-value"
+                    <div class="input-field"><label>Home Value ($) <span class="help-tip">?<span class="help-tip-text">Current appraised or estimated market value of the property. Used to calculate CLTV (Combined Loan-to-Value) and tappable equity.</span></span></label><input type="number" id="in-home-value"
                             value="750000"></div>
-                    <div class="input-field"><label>1st Mortgage ($)</label><input type="number"
+                    <div class="input-field"><label>1st Mortgage ($) <span class="help-tip">?<span class="help-tip-text">The remaining balance on the client's primary mortgage. Combined with the HELOC amount to determine total liens and CLTV ratio.</span></span></label><input type="number"
                             id="in-mortgage-balance" value="0"></div>
                 </div>
             </div>
@@ -4713,11 +4787,11 @@
                 <div style="display: flex; gap: 25px; flex-wrap: wrap; align-items: center;">
                     <div class="toggle-container">
                         <div class="toggle-switch" id="toggle-interest-only" onclick="toggleSwitch(this)"></div><span
-                            class="toggle-label">Interest Only</span>
+                            class="toggle-label">Interest Only <span class="help-tip">?<span class="help-tip-text">Shows interest-only payment amounts instead of fully amortized (P&I). Useful for clients who want the lowest possible monthly payment.</span></span></span>
                     </div>
                     <div class="toggle-container">
                         <div class="toggle-switch" id="toggle-show-variable" onclick="toggleSwitch(this)"></div><span
-                            class="toggle-label">Show Variable Rates</span>
+                            class="toggle-label">Show Variable Rates <span class="help-tip">?<span class="help-tip-text">Adds a variable rate column to the quote table. Great for showing clients how rates could adjust after the fixed period ends.</span></span></span>
                     </div>
                     <div class="toggle-container">
                         <div class="toggle-switch active" id="toggle-show-recommendation" onclick="toggleSwitch(this)">
@@ -4738,7 +4812,7 @@
                 style="background: rgba(249,115,22,0.1); border-color: #f97316;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <h4 style="font-family: var(--font-heading); color: #fb923c; margin:0; font-size: 11px;">💳 Debt
-                        Consolidation</h4>
+                        Consolidation <span class="help-tip">?<span class="help-tip-text">Add existing debts (credit cards, auto loans, etc.) that the HELOC will pay off. The quote shows total monthly savings from consolidation.</span></span></h4>
                     <button class="btn btn-add" onclick="addDebtRow()">+ Add Debt</button>
                 </div>
                 <div id="debt-input-container"></div>
@@ -4751,7 +4825,7 @@
             <div id="refi-section" class="control-section"
                 style="background: rgba(59,130,246,0.1); border-color: #3b82f6;">
                 <h4 style="font-family: var(--font-heading); color: #60a5fa; margin:0 0 8px 0; font-size: 11px;">🔄
-                    Existing HELOC Payoff</h4>
+                    Existing HELOC Payoff <span class="help-tip">?<span class="help-tip-text">If the client already has a HELOC being refinanced, enter it here. The quote will show a side-by-side comparison of old vs new terms.</span></span></h4>
                 <div class="input-group">
                     <div class="input-field"><label>Payoff Amount ($)</label><input type="number" id="in-refi-balance"
                             value="0"></div>
@@ -4772,13 +4846,13 @@
             <div class="control-section"
                 style="background: linear-gradient(135deg, rgba(197,160,89,0.2), rgba(166,133,67,0.2)); border-color: var(--accent-color);">
                 <div class="input-group" style="align-items: center;">
-                    <div class="input-field"><label style="color: var(--accent-color);">Rec. Tier</label><select
+                    <div class="input-field"><label style="color: var(--accent-color);">Rec. Tier <span class="help-tip">?<span class="help-tip-text">Your recommended pricing tier. The quote highlights this tier in gold so the client sees which option you suggest.</span></span></label><select
                             id="rec-tier-select" style="border-color: var(--accent-color);">
                             <option value="t1">Tier 1</option>
                             <option value="t2" selected>Tier 2</option>
                             <option value="t3">Tier 3</option>
                         </select></div>
-                    <div class="input-field"><label style="color: var(--accent-color);">Rec. Term</label><select
+                    <div class="input-field"><label style="color: var(--accent-color);">Rec. Term <span class="help-tip">?<span class="help-tip-text">Your recommended loan term. Shorter terms = lower rate but higher payment. The quote highlights this term for the client.</span></span></label><select
                             id="rec-term-select" style="border-color: var(--accent-color);">
                             <option value="30">30-Year</option>
                             <option value="20" selected>20-Year</option>
@@ -4789,7 +4863,7 @@
                         <label
                             style="display: flex; align-items: center; cursor: pointer; font-family: var(--font-heading); font-size: 9px; text-transform: uppercase; font-weight: 700; color: white;"><input
                                 type="checkbox" id="chk-show-break"
-                                style="width: auto; margin-right: 6px;">Break-Even</label>
+                                style="width: auto; margin-right: 6px;">Break-Even <span class="help-tip">?<span class="help-tip-text">Shows how many months until the origination fees are offset by interest savings. Helps clients see the long-term value.</span></span></label>
                         <label
                             style="display: flex; align-items: center; cursor: pointer; font-family: var(--font-heading); font-size: 9px; text-transform: uppercase; font-weight: 700; color: white;"><input
                                 type="checkbox" id="chk-show-ai" style="width: auto; margin-right: 6px;">AI
@@ -4804,7 +4878,7 @@
             <!-- OUTPUt CONTROLS (Link & PDF) -->
             <div class="control-section" style="background: rgba(6,182,212,0.1); border-color: #06b6d4;">
                 <h4 style="font-family: var(--font-heading); color: #06b6d4; margin: 0 0 12px 0; font-size: 11px;">📄
-                    Presentation Output Controls</h4>
+                    Presentation Output Controls <span class="help-tip">?<span class="help-tip-text">Control what appears on the client-facing link vs the PDF export. Client Link = the web page they see. PDF = the downloaded document.</span></span></h4>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: start;">
                     <div>
                         <strong style="color:white;font-size:10px;display:block;margin-bottom:8px;">🔗 Client Link
@@ -4896,6 +4970,7 @@
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14.5 15L9 9.5l5.5-5.5L20 9.5 14.5 15zM3 15l5.5-5.5L14 15H3z"/></svg>
                         OneDrive
                     </button>
+                    <span class="help-tip" style="margin-right:-2px;">?<span class="help-tip-text">Filter your saved quotes by status (New, Sent, Follow-Up, Closed) or by date range. Combine both filters to narrow results.</span></span>
                     <select id="quotes-filter-status" onchange="loadUserQuotes()"
                         style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 4px 8px; font-family: var(--font-heading); font-size: 9px;">
                         <option value="all">All Status</option>
@@ -5096,12 +5171,12 @@
                         onclick="loadUserLeads()">🔄 Refresh</button>
                     <button class="btn" id="bonzo-sync-btn"
                         style="background: linear-gradient(135deg, #f59e0b, #d97706); font-size: 9px; padding: 5px 12px; display: none;"
-                        onclick="syncFromBonzo()">🟠 Sync Bonzo</button>
+                        onclick="syncFromBonzo()">🟠 Sync Bonzo <span class="help-tip" style="margin-left:2px;">?<span class="help-tip-text">Pull leads from your Bonzo CRM into this app. You can choose how many to sync (50, 200, or ALL). Duplicates are automatically skipped.</span></span></button>
                     <div style="position:relative;display:inline-block;">
                         <button class="btn"
                             style="background: linear-gradient(135deg, #ef4444, #dc2626); font-size: 9px; padding: 5px 12px;"
                             onclick="document.getElementById('cleanup-dropdown').style.display = document.getElementById('cleanup-dropdown').style.display === 'block' ? 'none' : 'block'">🧹
-                            Clean Up ▾</button>
+                            Clean Up ▾ <span class="help-tip" style="margin-left:2px;">?<span class="help-tip-text">Remove junk leads automatically. "Delete Unknowns" removes leads with no name AND no email. "Delete Duplicates" keeps the newest lead per email and removes older copies.</span></span></button>
                         <div id="cleanup-dropdown"
                             style="display:none;position:absolute;top:100%;left:0;margin-top:4px;background:#1e293b;border:1px solid rgba(255,255,255,0.15);border-radius:6px;z-index:100;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,0.5);">
                             <button
@@ -5122,8 +5197,9 @@
                     </div>
                     <button class="btn"
                         style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); font-size: 9px; padding: 5px 12px;"
-                        onclick="exportLeadsCSV()">📥 Export CSV</button>
+                        onclick="exportLeadsCSV()">📥 Export CSV <span class="help-tip" style="margin-left:2px;">?<span class="help-tip-text">Download all your leads as a CSV spreadsheet file. Opens in Excel, Google Sheets, or any spreadsheet app.</span></span></button>
                     <input type="text" id="leads-search" class="section-search" placeholder="Search name, email, phone..." oninput="filterLeadsSearch(this.value)">
+                    <span class="help-tip" style="margin-right:-2px;">?<span class="help-tip-text">Filter leads by status (Quoted, New, Contacted, etc.) or by source (Bonzo, GHL, Manual, CSV, etc.). Use both dropdowns together to narrow your view.</span></span>
                     <select id="leads-filter-status" onchange="loadUserLeads()"
                         style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 4px 8px; font-family: var(--font-heading); font-size: 9px;">
                         <option value="all">All Status</option>
@@ -5233,7 +5309,7 @@
                                     Views</th>
                                 <th
                                     style="text-align: center; padding: 8px 6px; color: var(--accent-color); font-family: var(--font-heading); font-size: 9px; text-transform: uppercase;">
-                                    DNC</th>
+                                    DNC <span class="help-tip">?<span class="help-tip-text">Do Not Contact flag. Toggle to prevent any outbound CRM sends (calls, texts, emails) to this lead. Required for TCPA compliance.</span></span></th>
                                 <th
                                     style="text-align: center; padding: 8px 6px; color: var(--accent-color); font-family: var(--font-heading); font-size: 9px; text-transform: uppercase;">
                                 </th>
@@ -5259,7 +5335,7 @@
                         Configuration</h4>
                     <div class="toggle-container">
                         <div class="toggle-switch" id="toggle-manual-rates" onclick="toggleManualRates(this)"></div>
-                        <span class="toggle-label">Manual Rate Entry</span>
+                        <span class="toggle-label">Manual Rate Entry <span class="help-tip">?<span class="help-tip-text">Toggle ON to type exact rates. Toggle OFF to use dropdown selectors for quick rate entry. Manual is best for precise rate sheets.</span></span></span>
                     </div>
                 </div>
                 <p style="font-size: 9px; color: rgba(255,255,255,0.6); margin: 0 0 10px 0;">Enable manual entry to type
@@ -5399,7 +5475,7 @@
                             oninput="updateProfile()"></div>
                     <div class="input-field"><label>Title</label><input type="text" id="lo-title"
                             value="Executive Branch Manager" oninput="updateProfile()"></div>
-                    <div class="input-field"><label>NMLS #</label><input type="text" id="lo-nmls" value="1828140"
+                    <div class="input-field"><label>NMLS # <span class="help-tip">?<span class="help-tip-text">Your Nationwide Mortgage Licensing System number. This appears on quotes, PDFs, and email footers for compliance.</span></span></label><input type="text" id="lo-nmls" value="1828140"
                             oninput="updateProfile()"></div>
                     <div class="input-field"><label>DRE #</label><input type="text" id="lo-dre" value="2227951"
                             oninput="updateProfile()"></div>
@@ -5413,7 +5489,7 @@
                             value="helocwitheddie.com" oninput="updateProfile()"></div>
                 </div>
                 <div class="input-group" style="margin-top:8px;">
-                    <div class="input-field" style="flex: 2;"><label>Headshot URL</label>
+                    <div class="input-field" style="flex: 2;"><label>Headshot URL <span class="help-tip">?<span class="help-tip-text">Direct URL to your professional headshot. Used on PDFs, emails, and the quote presentation. Click Upload to add an image from your device.</span></span></label>
                         <div style="display:flex;gap:6px;"><input type="text" id="lo-headshot-url"
                                 value="https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/693bb3fdeac0a8d6852417e6.jpg"
                                 oninput="updateProfile()" style="flex:1;"><button type="button" class="btn"
@@ -5515,7 +5591,7 @@
                             value="#1e293b" onchange="applyWhiteLabel()"></div>
                 </div>
                 <div class="input-group" style="margin-top: 10px;">
-                    <div class="input-field"><label>Apply Link URL</label><input type="text" id="wl-apply-link"
+                    <div class="input-field"><label>Apply Link URL <span class="help-tip">?<span class="help-tip-text">The URL where clients can start their HELOC application. This link is embedded in quotes, emails, and the "Apply Now" button.</span></span></label><input type="text" id="wl-apply-link"
                             value="https://heloc.westcapitallending.com/account/heloc/register?referrer=1748723f-4b74-4399-a79c-4cc2a4c8da20"
                             oninput="applyWhiteLabel()"></div>
                     <div class="input-field"><label>Apply Link Text</label><input type="text" id="wl-apply-text"
@@ -5781,9 +5857,9 @@ Best regards,
                     <h5 style="font-family: var(--font-heading); font-size: 10px; color: #10b981; margin: 0 0 10px 0;">
                         🟢 GoHighLevel (GHL)</h5>
                     <div class="input-group">
-                        <div class="input-field" style="flex: 2;"><label>API Key (Private Integration)</label><input
+                        <div class="input-field" style="flex: 2;"><label>API Key (Private Integration) <span class="help-tip">?<span class="help-tip-text">Found in GHL → Settings → Integrations → Private Integrations. Starts with "pit-". Needed to push leads and contacts to GHL.</span></span></label><input
                                 type="password" id="ghl-api-key" placeholder="pit-xxxxxxxx-xxxx-xxxx"></div>
-                        <div class="input-field"><label>Location ID</label><input type="password" id="ghl-location-id"
+                        <div class="input-field"><label>Location ID <span class="help-tip">?<span class="help-tip-text">Your GHL sub-account location ID. Found in the URL when inside your GHL sub-account (the long string after /location/).</span></span></label><input type="password" id="ghl-location-id"
                                 placeholder="xxxxxxxx"></div>
                     </div>
                     <div class="input-group" style="margin-top: 8px;">
@@ -5793,9 +5869,9 @@ Best regards,
                                 id="ghl-from-email" placeholder="eddie@westcapitallending.com"></div>
                     </div>
                     <div class="input-group" style="margin-top: 8px;">
-                        <div class="input-field"><label>Pipeline ID</label><input type="password" id="ghl-pipeline-id"
+                        <div class="input-field"><label>Pipeline ID <span class="help-tip">?<span class="help-tip-text">Found in GHL → Opportunities → Pipeline settings. Copy from the pipeline URL. Leads pushed to GHL will land in this pipeline.</span></span></label><input type="password" id="ghl-pipeline-id"
                                 placeholder="pipeline_id"></div>
-                        <div class="input-field"><label>Stage ID (first stage)</label><input type="password"
+                        <div class="input-field"><label>Stage ID (first stage) <span class="help-tip">?<span class="help-tip-text">The ID of the pipeline stage where new leads should be placed. Found in your GHL pipeline stage URL.</span></span></label><input type="password"
                                 id="ghl-stage-id" placeholder="stage_id"></div>
                     </div>
                     <div class="input-group" style="margin-top: 8px;">
@@ -5820,9 +5896,9 @@ Best regards,
                     <h5 style="font-family: var(--font-heading); font-size: 10px; color: #f97316; margin: 0 0 10px 0;">
                         🟠 n8n Workflow Automation</h5>
                     <div class="input-group">
-                        <div class="input-field" style="flex: 2;"><label>Webhook URL</label><input type="password"
+                        <div class="input-field" style="flex: 2;"><label>Webhook URL <span class="help-tip">?<span class="help-tip-text">Your n8n webhook trigger URL. Create a Webhook node in n8n, copy the Production URL, and paste it here. Events like new quotes or leads will POST here.</span></span></label><input type="password"
                                 id="n8n-webhook-url" placeholder="https://your-n8n.com/webhook/..."></div>
-                        <div class="input-field"><label>Auth Header</label><input type="password" id="n8n-auth"
+                        <div class="input-field"><label>Auth Header <span class="help-tip">?<span class="help-tip-text">Optional Bearer token or API key for securing your n8n webhook. Add the same value in your n8n Webhook node's Header Auth settings.</span></span></label><input type="password" id="n8n-auth"
                                 placeholder="Bearer token or API key"></div>
                     </div>
                     <button class="btn" style="background: #f97316; margin-top: 10px;" onclick="testN8NConnection()">🔗
@@ -5917,16 +5993,16 @@ Best regards,
                             style="font-family: var(--font-heading); font-size: 9px; color: #fb923c; margin: 0 0 8px 0;">
                             🟠 Bonzo CRM (Two-Way Sync)</h6>
                         <div class="input-group">
-                            <div class="input-field" style="flex: 2;"><label>Bonzo Xcode</label><input type="password"
+                            <div class="input-field" style="flex: 2;"><label>Bonzo Xcode <span class="help-tip">?<span class="help-tip-text">Your Bonzo Xcode key. Found in Bonzo → Settings → API / Integrations → Xcode. This is NOT the same as the API Key — both are required.</span></span></label><input type="password"
                                     id="bonzo-api-key" placeholder="Your Bonzo Xcode key"></div>
-                            <div class="input-field" style="flex: 2;"><label>Bonzo API Key</label><input type="password"
+                            <div class="input-field" style="flex: 2;"><label>Bonzo API Key <span class="help-tip">?<span class="help-tip-text">Your Bonzo API Key (separate from Xcode). Found on the same settings page but in a different section. Used for the "Sync Bonzo" bulk import in My Leads.</span></span></label><input type="password"
                                     id="bonzo-api-key-2" placeholder="Your Bonzo API key (different from Xcode)">
                             </div>
                         </div>
                         <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 4px 0 0 0;">Find your <b style="color:#fb923c;">Xcode</b> in Bonzo → Settings → API / Integrations → Xcode. The <b style="color:#fb923c;">API Key</b> is a separate key from the same page. Both are required for full sync.</p>
                         <div class="input-group" style="margin-top: 8px;">
                             <div class="input-field" style="flex: 2;">
-                                <label>Bonzo Inbound Webhook URL</label>
+                                <label>Bonzo Inbound Webhook URL <span class="help-tip">?<span class="help-tip-text">Copy this URL and paste it into Bonzo → Settings → Webhooks. When Bonzo triggers an event (new lead, status change), it sends data here automatically.</span></span></label>
                                 <input type="text" id="bonzo-inbound-url" readonly
                                     style="font-size: 9px; background: rgba(0,0,0,0.3); border-color: rgba(251,146,60,0.3); color: #fb923c; cursor: text;"
                                     placeholder="Loading...">
@@ -5949,7 +6025,7 @@ Best regards,
                             style="font-family: var(--font-heading); font-size: 9px; color: #38bdf8; margin: 0 0 8px 0;">
                             🔵 Follow Up Boss (Optional)</h6>
                         <div class="input-group">
-                            <div class="input-field" style="flex: 2;"><label>FUB API Key</label><input type="password"
+                            <div class="input-field" style="flex: 2;"><label>FUB API Key <span class="help-tip">?<span class="help-tip-text">Your Follow Up Boss API key. Found in FUB → Admin → API. Enables two-way lead sync with Follow Up Boss CRM.</span></span></label><input type="password"
                                     id="fub-api-key" placeholder="Your Follow Up Boss API key"></div>
                         </div>
                         <button class="btn" style="background: #38bdf8; margin-top: 8px;"
@@ -5961,7 +6037,7 @@ Best regards,
                 <div id="int-webhooks"
                     style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(34,197,94,0.3);">
                     <h5 style="font-family: var(--font-heading); font-size: 10px; color: #22c55e; margin: 0 0 6px 0;">⬆️
-                        Outbound Webhooks</h5>
+                        Outbound Webhooks <span class="help-tip">?<span class="help-tip-text">Outbound webhooks send data FROM this app to external services when things happen (new quote saved, lead received). Add URLs from Zapier, Make, or custom APIs.</span></span></h5>
                     <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 0 0 10px 0;">When events happen (new
                         quote, lead received), automatically POST data to these URLs. Use for Zapier, Make, custom APIs,
                         etc.</p>
@@ -7485,6 +7561,19 @@ Best regards,
                     aiBtn.setAttribute('onclick', 'generateAIStrategyKBOnly()');
                 }
                 if (aiCheckbox) { aiCheckbox.disabled = false; }
+            }
+
+            // AI Chat on client links — Titanium+ (level >= 1)
+            var aiChatCheckbox = document.getElementById('chk-link-ai-chat');
+            if (aiChatCheckbox) {
+                if (level >= 1) {
+                    aiChatCheckbox.disabled = false;
+                    if (aiChatCheckbox.parentElement) { aiChatCheckbox.parentElement.style.opacity = ''; aiChatCheckbox.parentElement.title = ''; }
+                } else {
+                    aiChatCheckbox.disabled = true;
+                    aiChatCheckbox.checked = false;
+                    if (aiChatCheckbox.parentElement) { aiChatCheckbox.parentElement.style.opacity = '0.4'; aiChatCheckbox.parentElement.title = 'Upgrade to Titanium to enable AI chat on client quotes'; }
+                }
             }
 
             // ---- TITANIUM+ (level >= 1): Debt Consolidation, Refi Comparison, Break-Even ----
@@ -15402,6 +15491,20 @@ Sent via Above All Carbon HELOC Tool`;
         }
 
         // ===== SEARCH FILTERING =====
+        // ===== HELP TOOLTIP CLICK TOGGLE (for mobile) =====
+        document.addEventListener('click', function(e) {
+            var tip = e.target.closest('.help-tip');
+            if (tip) {
+                e.stopPropagation();
+                // Close all other open tooltips
+                document.querySelectorAll('.help-tip.active').forEach(function(t) { if (t !== tip) t.classList.remove('active'); });
+                tip.classList.toggle('active');
+            } else {
+                // Close all tooltips when clicking elsewhere
+                document.querySelectorAll('.help-tip.active').forEach(function(t) { t.classList.remove('active'); });
+            }
+        });
+
         function filterLeadsSearch(query) {
             var tbody = document.getElementById('leads-tbody');
             if (!tbody) return;
