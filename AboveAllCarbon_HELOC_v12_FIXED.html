@@ -439,6 +439,129 @@
             color: var(--slate);
         }
 
+        /* ===== SEND QUOTE SECTION ===== */
+        .send-quote-section {
+            margin: 14px 0 10px;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(6,182,212,0.06));
+            border: 1px solid rgba(16,185,129,0.2);
+            border-radius: 10px;
+        }
+        .send-quote-section h3 {
+            font-family: var(--font-heading);
+            font-size: 11px;
+            font-weight: 800;
+            color: #10b981;
+            margin: 0 0 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .send-quote-preview {
+            position: relative;
+            margin-bottom: 10px;
+        }
+        .send-quote-preview textarea {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #6ee7b7;
+            border-radius: 6px;
+            padding: 8px 10px;
+            padding-right: 50px;
+            font-family: var(--font-heading);
+            font-size: 9px;
+            resize: none;
+            line-height: 1.4;
+            box-sizing: border-box;
+        }
+        .send-quote-charcount {
+            position: absolute;
+            bottom: 6px;
+            right: 10px;
+            font-family: var(--font-heading);
+            font-size: 8px;
+            color: rgba(255,255,255,0.35);
+        }
+        .send-quote-charcount.over { color: #ef4444; font-weight: 700; }
+        .send-quote-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .send-quote-actions button {
+            font-family: var(--font-heading);
+            font-size: 8px;
+            font-weight: 700;
+            padding: 5px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: opacity 0.2s, transform 0.15s;
+            position: relative;
+        }
+        .send-quote-actions button:hover { opacity: 0.85; transform: translateY(-1px); }
+        .send-quote-actions button:active { transform: translateY(0); }
+        .sq-btn-copy { background: #10b981; }
+        .sq-btn-bonzo { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .sq-btn-ghl { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .sq-btn-email { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .sq-btn-locked {
+            opacity: 0.4 !important;
+            cursor: not-allowed !important;
+        }
+        .sq-btn-locked .sq-lock-icon {
+            display: inline-block;
+            margin-right: 3px;
+            font-size: 8px;
+        }
+        .sq-btn-locked .sq-tier-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-size: 6px;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+        #send-quote-status {
+            margin-top: 8px;
+            font-family: var(--font-heading);
+            font-size: 8px;
+        }
+        /* Email sub-menu dropdown */
+        .sq-email-dropdown {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            margin-bottom: 4px;
+            background: #1e293b;
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 6px;
+            padding: 4px;
+            z-index: 50;
+            min-width: 120px;
+        }
+        .sq-email-dropdown.show { display: block; }
+        .sq-email-dropdown button {
+            display: block;
+            width: 100%;
+            background: transparent;
+            color: #93c5fd;
+            font-size: 8px;
+            padding: 5px 8px;
+            border: none;
+            border-radius: 4px;
+            text-align: left;
+            cursor: pointer;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .sq-email-dropdown button:hover { background: rgba(59,130,246,0.15); }
+
         .refi-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -1216,6 +1339,15 @@
                 font-size: 6px;
                 margin-top: 2px;
             }
+
+            .send-quote-section {
+                margin: 8px 0 6px;
+                padding: 10px 12px;
+            }
+            .send-quote-section h3 { font-size: 9px; margin-bottom: 6px; }
+            .send-quote-preview textarea { font-size: 8px; padding: 6px 8px; }
+            .send-quote-actions { gap: 4px; }
+            .send-quote-actions button { font-size: 7px; padding: 4px 10px; }
 
             footer {
                 margin-top: 6px;
@@ -2609,6 +2741,77 @@
             background: rgba(255, 255, 255, 0.1);
             color: rgba(255, 255, 255, 0.3);
         }
+
+        /* ===== SEARCH BAR ===== */
+        .section-search {
+            flex: 1;
+            max-width: 200px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            padding: 5px 10px 5px 28px;
+            color: white;
+            font-family: var(--font-heading);
+            font-size: 9px;
+            outline: none;
+            transition: border-color 0.2s;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.3)' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 8px center;
+        }
+        .section-search:focus { border-color: var(--accent-color); }
+        .section-search::placeholder { color: rgba(255,255,255,0.3); }
+
+        /* ===== BULK ACTION BAR ===== */
+        .bulk-action-bar {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(220,38,38,0.15));
+            border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 8px;
+            padding: 8px 14px;
+            margin-bottom: 10px;
+            font-family: var(--font-heading);
+            font-size: 10px;
+            color: white;
+            animation: bulkBarSlideIn 0.2s ease-out;
+        }
+        .bulk-action-bar.visible { display: flex; }
+        @keyframes bulkBarSlideIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .bulk-action-bar .bulk-count { color: #f87171; font-weight: 700; margin-right: 4px; }
+
+        /* ===== CHECKBOX STYLING ===== */
+        .lead-checkbox, .quote-checkbox {
+            width: 14px !important;
+            height: 14px;
+            cursor: pointer;
+            accent-color: var(--accent-color);
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        /* ===== CLOUD EXPORT BUTTONS ===== */
+        .cloud-export-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 12px;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 9px;
+            color: white;
+            transition: all var(--transition);
+        }
+        .cloud-export-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 
         /* ===== TIER-LOCKED TAB OVERLAY ===== */
         .tab-upgrade-overlay {
@@ -4562,6 +4765,15 @@
                     <button class="btn"
                         style="background: linear-gradient(135deg, #ef4444, #dc2626); font-size: 9px; padding: 5px 12px;"
                         onclick="deleteDuplicateQuotes()">🗑 Delete Duplicates</button>
+                    <input type="text" id="quotes-search" class="section-search" placeholder="Search client name..." oninput="filterQuotesSearch(this.value)">
+                    <button class="cloud-export-btn" style="background:linear-gradient(135deg,#4285f4,#1a73e8);" onclick="saveQuotesToGoogleDrive()" title="Export to Google Drive">
+                        <svg width="12" height="12" viewBox="0 0 87.3 78" fill="white"><path d="M6.6 66.85L3.3 61.35 29.15 17.4h6.6L6.6 66.85zM43.65 25.05L29.15 49.8h29L43.65 25.05zM58.15 49.8L87.3 49.8 72.8 25.05 58.15 49.8z"/></svg>
+                        Google Drive
+                    </button>
+                    <button class="cloud-export-btn" style="background:linear-gradient(135deg,#0078d4,#005a9e);" onclick="saveQuotesToOneDrive()" title="Export to OneDrive">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M14.5 15L9 9.5l5.5-5.5L20 9.5 14.5 15zM3 15l5.5-5.5L14 15H3z"/></svg>
+                        OneDrive
+                    </button>
                     <select id="quotes-filter-status" onchange="loadUserQuotes()"
                         style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 4px 8px; font-family: var(--font-heading); font-size: 9px;">
                         <option value="all">All Status</option>
@@ -4580,6 +4792,14 @@
                     </select>
                     <span id="quotes-count"
                         style="font-family: var(--font-heading); font-size: 9px; color: rgba(255,255,255,0.5);"></span>
+                    <label style="display:flex;align-items:center;gap:4px;font-family:var(--font-heading);font-size:8px;color:rgba(255,255,255,0.5);cursor:pointer;margin-left:4px;">
+                        <input type="checkbox" id="quotes-select-all" class="quote-checkbox" onchange="toggleAllQuotes(this.checked)"> Select All
+                    </label>
+                </div>
+                <div id="quotes-bulk-bar" class="bulk-action-bar">
+                    <span><span class="bulk-count" id="quotes-selected-count">0</span> quote(s) selected</span>
+                    <button class="btn" style="background:linear-gradient(135deg,#ef4444,#dc2626);font-size:8px;padding:4px 10px;" onclick="bulkDeleteQuotes()">🗑 Delete Selected</button>
+                    <button class="btn" style="background:rgba(255,255,255,0.1);font-size:8px;padding:4px 10px;color:rgba(255,255,255,0.7);" onclick="clearQuoteSelection()">✕ Clear</button>
                 </div>
                 <div id="quotes-list" style="max-height: 400px; overflow-y: auto;">
                     <div
@@ -4781,6 +5001,7 @@
                     <button class="btn"
                         style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); font-size: 9px; padding: 5px 12px;"
                         onclick="exportLeadsCSV()">📥 Export CSV</button>
+                    <input type="text" id="leads-search" class="section-search" placeholder="Search name, email, phone..." oninput="filterLeadsSearch(this.value)">
                     <select id="leads-filter-status" onchange="loadUserLeads()"
                         style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 4px 8px; font-family: var(--font-heading); font-size: 9px;">
                         <option value="all">All Status</option>
@@ -4807,6 +5028,12 @@
                     </select>
                     <span id="leads-count"
                         style="font-family: var(--font-heading); font-size: 9px; color: rgba(255,255,255,0.5);"></span>
+                </div>
+
+                <div id="leads-bulk-bar" class="bulk-action-bar">
+                    <span><span class="bulk-count" id="leads-selected-count">0</span> lead(s) selected</span>
+                    <button class="btn" style="background:linear-gradient(135deg,#ef4444,#dc2626);font-size:8px;padding:4px 10px;" onclick="bulkDeleteLeads()">🗑 Delete Selected</button>
+                    <button class="btn" style="background:rgba(255,255,255,0.1);font-size:8px;padding:4px 10px;color:rgba(255,255,255,0.7);" onclick="clearLeadSelection()">✕ Clear</button>
                 </div>
 
                 <!-- Add Lead Panel (inline, hidden by default) -->
@@ -4855,6 +5082,9 @@
                         style="width: 100%; border-collapse: collapse; font-size: 10px; font-family: var(--font-body);">
                         <thead>
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.15);">
+                                <th style="text-align:center;padding:8px 4px;width:30px;">
+                                    <input type="checkbox" class="lead-checkbox" id="leads-select-all" onchange="toggleAllLeads(this.checked)" title="Select all">
+                                </th>
                                 <th
                                     style="text-align: left; padding: 8px 6px; color: var(--accent-color); font-family: var(--font-heading); font-size: 9px; text-transform: uppercase;">
                                     Name</th>
@@ -4889,7 +5119,7 @@
                         </thead>
                         <tbody id="leads-tbody">
                             <tr>
-                                <td colspan="10"
+                                <td colspan="11"
                                     style="padding: 20px; text-align: center; color: rgba(255,255,255,0.4);">Click
                                     "Refresh" to load leads</td>
                             </tr>
@@ -6390,6 +6620,29 @@ Best regards,
                     target="_blank" class="btn-apply" id="apply-btn">🚀 Start Your Application</a>
                 <span class="cta-link-text" id="apply-link-text">heloc.westcapitallending.com</span>
             </div>
+
+            <!-- SEND THIS QUOTE SECTION -->
+            <div id="send-quote-section" class="send-quote-section">
+                <h3>Send This Quote</h3>
+                <div class="send-quote-preview">
+                    <textarea id="send-quote-sms" rows="2" readonly></textarea>
+                    <span class="send-quote-charcount"><span id="sms-char-count">0</span>/160</span>
+                </div>
+                <div class="send-quote-actions">
+                    <button class="sq-btn-copy" onclick="copyQuoteSMS()">📋 Copy</button>
+                    <button class="sq-btn-bonzo" id="sq-btn-bonzo" onclick="sendQuoteViaBonzo()">📲 Send via Bonzo</button>
+                    <button class="sq-btn-ghl" id="sq-btn-ghl" onclick="sendQuoteViaGHL()">📲 Send via GHL</button>
+                    <button class="sq-btn-email" id="sq-btn-email" onclick="toggleQuoteEmailMenu(event)" style="position:relative;">
+                        📧 Email Quote
+                        <div class="sq-email-dropdown" id="sq-email-dropdown">
+                            <button onclick="sendQuoteViaOutlook(event)">📨 Outlook</button>
+                            <button onclick="sendQuoteViaGmailDirect(event)">📧 Gmail</button>
+                            <button onclick="copyQuoteEmailHTML(event)">📋 Copy HTML</button>
+                        </div>
+                    </button>
+                </div>
+                <div id="send-quote-status"></div>
+            </div>
         </div>
 
         <div class="client-disclaimer" id="client-disclaimer">
@@ -7315,6 +7568,9 @@ Best regards,
             } else if (wlTabBtn) {
                 wlTabBtn.classList.remove('tier-locked');
             }
+
+            // Send Quote section tier gating
+            applyQuoteSendTierGating();
 
             console.log('Tier access applied:', tier, '(level ' + level + ')');
         }
@@ -10504,6 +10760,9 @@ Best regards,
             document.getElementById('out-debt-heloc-pay').innerText = fmtCurrency(recPaymentData.pmt);
             document.getElementById('out-net-savings').innerText = fmtCurrency(totalDebtPay - recPaymentData.pmt);
 
+            // Update Send Quote SMS preview
+            updateQuoteSMS();
+
             // Fire outbound webhooks (debounced — waits 2s after last keystroke)
             clearTimeout(_webhookDebounceTimer);
             _webhookDebounceTimer = setTimeout(() => {
@@ -11132,7 +11391,8 @@ Generate the sales strategy and phone script now.`;
                 (applyLink ? '<a href="' + applyLink + '" style="display:inline-block;background:#10b981;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:14px;font-weight:700;margin:0 6px 8px;">🚀 Start Application</a>' : '') +
                 calendarBtn +
                 '</td></tr>' +
-                // LO Footer
+                // LO Footer (skipped for Outlook — user's email client appends its own signature)
+                (opts.skipSignature ? '' :
                 '<tr><td style="background:#f8fafc;padding:20px 30px;border-top:1px solid #e2e8f0;">' +
                 '<table width="100%" cellpadding="0" cellspacing="0"><tr>' +
                 (loHeadshot ? '<td width="60" style="vertical-align:top;padding-right:14px;"><img src="' + loHeadshot + '" alt="" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0;"></td>' : '') +
@@ -11141,7 +11401,7 @@ Generate the sales strategy and phone script now.`;
                 '<div style="font-size:12px;color:#64748b;margin-top:2px;">' + (document.getElementById('lo-title')?.value || 'Loan Officer') + '</div>' +
                 '<div style="font-size:12px;color:#64748b;margin-top:4px;">📞 ' + data.LO_PHONE + ' &nbsp;|&nbsp; ✉️ ' + data.LO_EMAIL + '</div>' +
                 '</td></tr></table>' +
-                '</td></tr>' +
+                '</td></tr>') +
                 // Legal + tracking pixel
                 '<tr><td style="padding:14px 30px;background:#f1f5f9;text-align:center;">' +
                 '<p style="font-size:9px;color:#94a3b8;margin:0;line-height:1.5;">This quote is an estimate and does not represent a commitment to lend. All terms are subject to underwriting approval. NMLS #' + (document.getElementById('lo-nmls')?.value || '') + '</p>' +
@@ -11196,7 +11456,7 @@ Generate the sales strategy and phone script now.`;
         async function sendViaOutlook() {
             const prepared = checkTemplateBeforeSend();
             if (!prepared) return;
-            var html = buildRichEmailHTML();
+            var html = buildRichEmailHTML({ skipSignature: true });
             await copyRichHTMLToClipboard(html);
             window.open('mailto:' + prepared.to + '?subject=' + encodeURIComponent(prepared.subject));
             showToast('Rich HTML email copied! Paste into Outlook with Ctrl+V.', 'info', 5000);
@@ -11758,6 +12018,9 @@ Sent via Above All Carbon HELOC Tool`;
                     smsSection.style.display = '';
                 }
 
+                // Update Send Quote section SMS preview with new link
+                updateQuoteSMS();
+
                 showToast(shortLinkId ? 'Link generated, shortened & copied!' : 'Client link generated and copied!', 'success');
 
                 // Fire outbound webhooks
@@ -11873,6 +12136,289 @@ Sent via Above All Carbon HELOC Tool`;
                 showToast('SMS sent via Bonzo!', 'success');
             } catch (e) {
                 showToast('Bonzo SMS error: ' + e.message, 'error');
+            }
+        }
+
+        // ===== SEND THIS QUOTE — SECTION FUNCTIONS =====
+        function updateQuoteSMS() {
+            var textarea = document.getElementById('send-quote-sms');
+            var charCount = document.getElementById('sms-char-count');
+            if (!textarea || !charCount) return;
+
+            var firstName = (document.getElementById('in-client-name').value || '').split(' ')[0] || 'there';
+            var payment = document.getElementById('snap-payment')?.innerText || '$0';
+            var rate = document.getElementById('snap-rate')?.innerText || '0';
+            var loName = document.getElementById('lo-name')?.value || 'Your Loan Officer';
+            var link = window._lastGeneratedQuoteLink || '';
+
+            var sms;
+            if (link) {
+                sms = 'Hi ' + firstName + ', your HELOC quote is ready — ' + payment + '/mo at ' + rate + '%. View: ' + link + ' — ' + loName;
+            } else {
+                sms = 'Hi ' + firstName + ', your HELOC quote is ready — ' + payment + '/mo at ' + rate + '%. — ' + loName + ' [link generates on send]';
+            }
+
+            textarea.value = sms;
+            var len = sms.length;
+            charCount.innerText = len;
+            var wrapper = charCount.parentElement;
+            if (wrapper) {
+                wrapper.classList.toggle('over', len > 160);
+            }
+        }
+
+        async function ensureQuoteLink() {
+            if (window._lastGeneratedQuoteLink) return window._lastGeneratedQuoteLink;
+            // Auto-generate the client link
+            await generateClientLink();
+            // After generateClientLink completes, it sets window._lastGeneratedQuoteLink
+            if (window._lastGeneratedQuoteLink) {
+                updateQuoteSMS();
+                return window._lastGeneratedQuoteLink;
+            }
+            return null;
+        }
+
+        function copyQuoteSMS() {
+            var textarea = document.getElementById('send-quote-sms');
+            if (!textarea || !textarea.value) { showToast('No SMS text to copy yet.', 'warning'); return; }
+
+            // If no link yet, generate one first then copy
+            if (!window._lastGeneratedQuoteLink) {
+                showToast('Generating quote link...', 'info');
+                ensureQuoteLink().then(function(link) {
+                    if (link) {
+                        navigator.clipboard.writeText(document.getElementById('send-quote-sms').value).then(function() {
+                            showToast('SMS copied with link!', 'success');
+                        });
+                    } else {
+                        // Copy anyway without link
+                        navigator.clipboard.writeText(textarea.value).then(function() {
+                            showToast('SMS copied (no link — generate one in Client Link section).', 'warning');
+                        });
+                    }
+                });
+                return;
+            }
+
+            navigator.clipboard.writeText(textarea.value).then(function() {
+                showToast('SMS text copied!', 'success');
+            });
+        }
+
+        async function sendQuoteViaBonzo() {
+            // Tier gate: Platinum+ required
+            var tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
+            var level = tiers.indexOf(window.currentUserTier || 'carbon');
+            if (level < 2 && window.currentUserRole !== 'super_admin') {
+                showUpgradeModal();
+                return;
+            }
+
+            var statusDiv = document.getElementById('send-quote-status');
+
+            // Ensure we have a quote link
+            statusDiv.innerHTML = '<span style="color:#a78bfa;">Preparing quote link...</span>';
+            var link = await ensureQuoteLink();
+            if (!link) { statusDiv.innerHTML = '<span style="color:#ef4444;">Could not generate quote link.</span>'; return; }
+
+            var smsText = document.getElementById('send-quote-sms').value;
+            var contactPhone = document.getElementById('client-phone')?.value || '';
+            var contactEmail = document.getElementById('client-email')?.value || '';
+            var contactName = document.getElementById('in-client-name')?.value || '';
+
+            if (!contactPhone) { showToast('Enter client phone number in the Email/Share tab first.', 'warning'); statusDiv.innerHTML = ''; return; }
+
+            // DNC check
+            statusDiv.innerHTML = '<span style="color:#fbbf24;">Checking DNC status...</span>';
+            var dncClear = await DNCProtection.checkBeforeSend(contactEmail, contactPhone, contactName, 'bonzo');
+            if (!dncClear) { statusDiv.innerHTML = '<span style="color:#ef4444;">Blocked — contact is on DNC list.</span>'; return; }
+
+            statusDiv.innerHTML = '<span style="color:#a78bfa;">Sending via Bonzo...</span>';
+            var teamId = document.getElementById('bonzo-team-id')?.value || '';
+
+            try {
+                var nameParts = contactName.split(' ');
+                var contactPayload = {
+                    first_name: nameParts[0] || '',
+                    last_name: nameParts.slice(1).join(' ') || '',
+                    email: contactEmail,
+                    phone: contactPhone
+                };
+                if (teamId) contactPayload.team_id = teamId;
+
+                var createResult = await _bonzoProxy('create_contact', { payload: contactPayload });
+                var bonzoContactId = createResult.data?.id || createResult.id;
+                if (!bonzoContactId) throw new Error('Could not create contact in Bonzo');
+
+                await _bonzoProxy('send_sms', { contactId: bonzoContactId, payload: { message: smsText } });
+                statusDiv.innerHTML = '<span style="color:#10b981;">✅ SMS sent via Bonzo!</span>';
+                showToast('Quote SMS sent via Bonzo!', 'success');
+                setTimeout(function() { statusDiv.innerHTML = ''; }, 4000);
+            } catch (e) {
+                statusDiv.innerHTML = '<span style="color:#ef4444;">Bonzo error: ' + e.message + '</span>';
+                showToast('Bonzo SMS error: ' + e.message, 'error');
+            }
+        }
+
+        async function sendQuoteViaGHL() {
+            // Tier gate: Platinum+ required
+            var tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
+            var level = tiers.indexOf(window.currentUserTier || 'carbon');
+            if (level < 2 && window.currentUserRole !== 'super_admin') {
+                showUpgradeModal();
+                return;
+            }
+
+            var statusDiv = document.getElementById('send-quote-status');
+
+            // Ensure we have a quote link
+            statusDiv.innerHTML = '<span style="color:#f97316;">Preparing quote link...</span>';
+            var link = await ensureQuoteLink();
+            if (!link) { statusDiv.innerHTML = '<span style="color:#ef4444;">Could not generate quote link.</span>'; return; }
+
+            var smsText = document.getElementById('send-quote-sms').value;
+            var apiKey = document.getElementById('ghl-api-key')?.value || '';
+            var locationId = document.getElementById('ghl-location-id')?.value || '';
+            var contactPhone = document.getElementById('client-phone')?.value || '';
+            var contactEmail = document.getElementById('client-email')?.value || '';
+            var contactName = document.getElementById('in-client-name')?.value || '';
+
+            if (!apiKey || !locationId) { showToast('Configure GHL API Key and Location ID in Integrations tab first.', 'warning'); statusDiv.innerHTML = ''; return; }
+            if (!contactPhone) { showToast('Enter client phone number in the Email/Share tab first.', 'warning'); statusDiv.innerHTML = ''; return; }
+
+            // DNC check
+            statusDiv.innerHTML = '<span style="color:#fbbf24;">Checking DNC status...</span>';
+            var dncClear = await DNCProtection.checkBeforeSend(contactEmail, contactPhone, contactName, 'ghl');
+            if (!dncClear) { statusDiv.innerHTML = '<span style="color:#ef4444;">Blocked — contact is on DNC list.</span>'; return; }
+
+            statusDiv.innerHTML = '<span style="color:#f97316;">Sending via GHL...</span>';
+            var GHL_API = 'https://services.leadconnectorhq.com';
+            var headers = { 'Authorization': 'Bearer ' + apiKey, 'Version': '2021-07-28', 'Content-Type': 'application/json' };
+
+            try {
+                var searchResp = await fetch(GHL_API + '/contacts/?locationId=' + locationId + '&query=' + encodeURIComponent(contactPhone), { method: 'GET', headers: headers });
+                var searchData = await searchResp.json();
+                var contactId;
+                if (searchData.contacts && searchData.contacts.length > 0) {
+                    contactId = searchData.contacts[0].id;
+                } else {
+                    var nameParts = contactName.split(' ');
+                    var createResp = await fetch(GHL_API + '/contacts/', {
+                        method: 'POST', headers: headers,
+                        body: JSON.stringify({ locationId: locationId, firstName: nameParts[0] || '', lastName: nameParts.slice(1).join(' ') || '', phone: contactPhone, email: contactEmail, source: 'HELOC Quote Tool' })
+                    });
+                    var createData = await createResp.json();
+                    contactId = createData.contact?.id;
+                }
+                if (!contactId) throw new Error('Could not find or create contact in GHL');
+
+                var smsResp = await fetch(GHL_API + '/conversations/messages', {
+                    method: 'POST', headers: headers,
+                    body: JSON.stringify({ type: 'SMS', contactId: contactId, message: smsText })
+                });
+                if (!smsResp.ok) {
+                    var errData = await smsResp.json().catch(function() { return {}; });
+                    throw new Error(errData.message || 'SMS send failed (HTTP ' + smsResp.status + ')');
+                }
+                statusDiv.innerHTML = '<span style="color:#10b981;">✅ SMS sent via GHL!</span>';
+                showToast('Quote SMS sent via GHL!', 'success');
+                setTimeout(function() { statusDiv.innerHTML = ''; }, 4000);
+            } catch (e) {
+                statusDiv.innerHTML = '<span style="color:#ef4444;">GHL error: ' + e.message + '</span>';
+                showToast('GHL SMS error: ' + e.message, 'error');
+            }
+        }
+
+        function toggleQuoteEmailMenu(e) {
+            // Tier gate: Titanium+ required for email
+            var tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
+            var level = tiers.indexOf(window.currentUserTier || 'carbon');
+            if (level < 1 && window.currentUserRole !== 'super_admin') {
+                showUpgradeModal();
+                return;
+            }
+            e.stopPropagation();
+            var dropdown = document.getElementById('sq-email-dropdown');
+            if (dropdown) dropdown.classList.toggle('show');
+            // Close on next outside click
+            setTimeout(function() {
+                document.addEventListener('click', function closeDropdown() {
+                    if (dropdown) dropdown.classList.remove('show');
+                    document.removeEventListener('click', closeDropdown);
+                }, { once: true });
+            }, 10);
+        }
+
+        async function sendQuoteViaOutlook(e) {
+            if (e) e.stopPropagation();
+            document.getElementById('sq-email-dropdown')?.classList.remove('show');
+            var link = await ensureQuoteLink();
+            var html = buildRichEmailHTML({ skipSignature: true });
+            await copyRichHTMLToClipboard(html);
+            var to = document.getElementById('client-email')?.value || '';
+            var clientName = document.getElementById('in-client-name')?.value || 'Client';
+            window.open('mailto:' + to + '?subject=' + encodeURIComponent('Your Personalized HELOC Quote — ' + clientName));
+            showToast('Rich email copied! Paste into Outlook with Ctrl+V.', 'info', 5000);
+        }
+
+        async function sendQuoteViaGmailDirect(e) {
+            if (e) e.stopPropagation();
+            document.getElementById('sq-email-dropdown')?.classList.remove('show');
+            var link = await ensureQuoteLink();
+            var html = buildRichEmailHTML();
+            await copyRichHTMLToClipboard(html);
+            var to = document.getElementById('client-email')?.value || '';
+            var clientName = document.getElementById('in-client-name')?.value || 'Client';
+            window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(to) + '&su=' + encodeURIComponent('Your Personalized HELOC Quote — ' + clientName));
+            showToast('Rich email copied! Paste into Gmail with Ctrl+V.', 'info', 5000);
+        }
+
+        async function copyQuoteEmailHTML(e) {
+            if (e) e.stopPropagation();
+            document.getElementById('sq-email-dropdown')?.classList.remove('show');
+            await ensureQuoteLink();
+            var html = buildRichEmailHTML();
+            var ok = await copyRichHTMLToClipboard(html);
+            if (ok) showToast('Rich HTML email copied! Paste with Ctrl+V.', 'success');
+            else showToast('Copy failed — try the Email tab instead.', 'error');
+        }
+
+        // Apply tier gating to Send Quote buttons
+        function applyQuoteSendTierGating() {
+            var tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
+            var level = tiers.indexOf(window.currentUserTier || 'carbon');
+            if (window.currentUserRole === 'super_admin') level = 4;
+
+            var bonzoBtn = document.getElementById('sq-btn-bonzo');
+            var ghlBtn = document.getElementById('sq-btn-ghl');
+            var emailBtn = document.getElementById('sq-btn-email');
+
+            // Platinum+ for CRM sends
+            [bonzoBtn, ghlBtn].forEach(function(btn) {
+                if (!btn) return;
+                if (level < 2) {
+                    btn.classList.add('sq-btn-locked');
+                    if (!btn.querySelector('.sq-lock-icon')) {
+                        btn.innerHTML = '<span class="sq-lock-icon">🔒</span>' + btn.textContent.trim() + '<span class="sq-tier-badge">PLATINUM</span>';
+                    }
+                } else {
+                    btn.classList.remove('sq-btn-locked');
+                }
+            });
+
+            // Titanium+ for email
+            if (emailBtn) {
+                if (level < 1) {
+                    emailBtn.classList.add('sq-btn-locked');
+                    if (!emailBtn.querySelector('.sq-lock-icon')) {
+                        var dropdown = emailBtn.querySelector('.sq-email-dropdown');
+                        var dropdownHTML = dropdown ? dropdown.outerHTML : '';
+                        emailBtn.innerHTML = '<span class="sq-lock-icon">🔒</span>Email Quote<span class="sq-tier-badge">TITANIUM</span>' + dropdownHTML;
+                    }
+                } else {
+                    emailBtn.classList.remove('sq-btn-locked');
+                }
             }
         }
 
@@ -12707,7 +13253,7 @@ Sent via Above All Carbon HELOC Tool`;
             var toEmail = document.getElementById('esm-to-email').value;
             if (!toEmail) { _esmShowStatus('Please enter the client email address.', 'error'); return; }
             var subject = processTemplate(document.getElementById('email-subject').value);
-            var html = buildRichEmailHTML({ screenshotDataUrl: _esmScreenshotDataUrl });
+            var html = buildRichEmailHTML({ screenshotDataUrl: _esmScreenshotDataUrl, skipSignature: true });
             await copyRichHTMLToClipboard(html);
             window.open('mailto:' + toEmail + '?subject=' + encodeURIComponent(subject));
             _esmShowStatus('✅ Rich HTML copied! Paste into Outlook with Ctrl+V.', 'success');
@@ -13655,7 +14201,10 @@ Sent via Above All Carbon HELOC Tool`;
                     var stLabel = qStatus === 'follow_up' ? 'Follow Up' : qStatus.charAt(0).toUpperCase() + qStatus.slice(1);
                     var ageBadge = _quoteAgeBadge(q.created_at, qStatus);
 
-                    return '<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:6px;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor=\'var(--accent-color)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.1)\'" onclick="loadQuoteIntoForm(\'' + q.id + '\')">' +
+                    return '<div data-quote-id="' + q.id + '" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:6px;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor=\'var(--accent-color)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.1)\'" onclick="loadQuoteIntoForm(\'' + q.id + '\')">' +
+                        '<div style="display:flex;align-items:flex-start;gap:8px;">' +
+                        '<input type="checkbox" class="quote-checkbox" data-quote-id="' + q.id + '" onclick="event.stopPropagation()" onchange="onQuoteCheckboxChange()" style="margin-top:4px;" title="Select this quote">' +
+                        '<div style="flex:1;">' +
                         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">' +
                         '<div style="display:flex;align-items:center;gap:6px;">' +
                         '<span style="font-family:var(--font-heading);font-size:11px;color:white;font-weight:600;">' + name + '</span>' +
@@ -13678,8 +14227,19 @@ Sent via Above All Carbon HELOC Tool`;
                         '<span>Rate: ' + rate + '%</span>' +
                         '<span>Pmt: ' + payment + '</span>' +
                         '</div>' +
+                        '</div>' +
+                        '</div>' +
                         '</div>';
                 }).join('');
+
+                // Reset quote checkbox selection state
+                var qSelectAll = document.getElementById('quotes-select-all');
+                if (qSelectAll) { qSelectAll.checked = false; qSelectAll.indeterminate = false; }
+                var qBulkBar = document.getElementById('quotes-bulk-bar');
+                if (qBulkBar) qBulkBar.classList.remove('visible');
+                // Re-apply search filter if active
+                var qSearchVal = (document.getElementById('quotes-search') || {}).value;
+                if (qSearchVal) filterQuotesSearch(qSearchVal);
             } catch (e) {
                 console.error('Error loading quotes:', e);
                 listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#f87171;font-family:var(--font-heading);font-size:10px;">Error loading quotes: ' + e.message + '</div>';
@@ -13972,12 +14532,12 @@ Sent via Above All Carbon HELOC Tool`;
             }
 
             if (!sb || !userId) {
-                if (tbody) tbody.innerHTML = '<tr><td colspan="10" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">Log in to see your leads</td></tr>';
+                if (tbody) tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">Log in to see your leads</td></tr>';
                 updateDashboard([], 0);
                 return;
             }
 
-            tbody.innerHTML = '<tr><td colspan="10" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);">Loading...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);">Loading...</td></tr>';
 
             try {
                 // 1. Fetch leads for this user
@@ -14008,7 +14568,7 @@ Sent via Above All Carbon HELOC Tool`;
                 }
 
                 if (!leads || leads.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="10" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">No leads yet. Add one manually or connect your CRM webhook.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">No leads yet. Add one manually or connect your CRM webhook.</td></tr>';
                     if (countEl) countEl.innerText = '0 leads';
                     updateDashboard([], 0);
                     return;
@@ -14045,7 +14605,7 @@ Sent via Above All Carbon HELOC Tool`;
                 if (countEl) countEl.innerText = enriched.length + ' lead' + (enriched.length !== 1 ? 's' : '');
 
                 if (enriched.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="10" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">No leads match this filter.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">No leads match this filter.</td></tr>';
                     return;
                 }
 
@@ -14142,6 +14702,7 @@ Sent via Above All Carbon HELOC Tool`;
                         '</select>';
 
                     return '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;" onmouseover="this.style.background=\'rgba(255,255,255,0.05)\'" onmouseout="this.style.background=\'none\'" onclick="loadLeadIntoForm(\'' + safeId + '\')">' +
+                        '<td style="padding:8px 4px;text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="lead-checkbox" data-lead-id="' + safeId + '" onchange="onLeadCheckboxChange()" title="Select this lead"></td>' +
                         '<td style="padding:8px 6px;color:white;font-size:10px;font-weight:600;">' + name + detailLine + '</td>' +
                         '<td style="padding:8px 6px;color:rgba(255,255,255,0.7);font-size:10px;">' + email + '</td>' +
                         '<td style="padding:8px 6px;color:rgba(255,255,255,0.7);font-size:10px;">' + phone + '</td>' +
@@ -14155,9 +14716,18 @@ Sent via Above All Carbon HELOC Tool`;
                         '</tr>';
                 }).join('');
 
+                // Reset checkbox selection state
+                var selectAllCb = document.getElementById('leads-select-all');
+                if (selectAllCb) { selectAllCb.checked = false; selectAllCb.indeterminate = false; }
+                var bulkBar = document.getElementById('leads-bulk-bar');
+                if (bulkBar) bulkBar.classList.remove('visible');
+                // Re-apply search filter if active
+                var searchVal = (document.getElementById('leads-search') || {}).value;
+                if (searchVal) filterLeadsSearch(searchVal);
+
             } catch (e) {
                 console.error('Error loading leads:', e);
-                tbody.innerHTML = '<tr><td colspan="10" style="padding:20px;text-align:center;color:#f87171;font-family:var(--font-heading);font-size:10px;">Error loading leads: ' + e.message + '</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:#f87171;font-family:var(--font-heading);font-size:10px;">Error loading leads: ' + e.message + '</td></tr>';
             }
         }
 
@@ -14713,6 +15283,220 @@ Sent via Above All Carbon HELOC Tool`;
                 if (emailPrefEl) emailPrefEl.value = emailPref;
             } catch (e) {
                 console.log('Could not load notification prefs:', e.message);
+            }
+        }
+
+        // ===== SEARCH FILTERING =====
+        function filterLeadsSearch(query) {
+            var tbody = document.getElementById('leads-tbody');
+            if (!tbody) return;
+            var rows = tbody.querySelectorAll('tr');
+            var q = (query || '').toLowerCase().trim();
+            if (!q) {
+                rows.forEach(function(r) { r.style.display = ''; });
+                return;
+            }
+            rows.forEach(function(row) {
+                var cells = row.querySelectorAll('td');
+                if (cells.length < 4) { row.style.display = ''; return; }
+                // cells[0]=checkbox, cells[1]=Name, cells[2]=Email, cells[3]=Phone
+                var text = (cells[1].textContent + ' ' + cells[2].textContent + ' ' + cells[3].textContent).toLowerCase();
+                row.style.display = text.indexOf(q) >= 0 ? '' : 'none';
+            });
+        }
+
+        function filterQuotesSearch(query) {
+            var list = document.getElementById('quotes-list');
+            if (!list) return;
+            var cards = list.querySelectorAll('[data-quote-id]');
+            var q = (query || '').toLowerCase().trim();
+            if (!q) {
+                cards.forEach(function(c) { c.style.display = ''; });
+                return;
+            }
+            cards.forEach(function(card) {
+                card.style.display = card.textContent.toLowerCase().indexOf(q) >= 0 ? '' : 'none';
+            });
+        }
+
+        // ===== LEADS CHECKBOX SELECTION =====
+        function toggleAllLeads(checked) {
+            var checkboxes = document.querySelectorAll('#leads-tbody .lead-checkbox');
+            checkboxes.forEach(function(cb) {
+                var row = cb.closest('tr');
+                if (row && row.style.display !== 'none') cb.checked = checked;
+            });
+            updateLeadsBulkBar();
+        }
+
+        function onLeadCheckboxChange() {
+            updateLeadsBulkBar();
+            var all = document.querySelectorAll('#leads-tbody .lead-checkbox');
+            var checked = document.querySelectorAll('#leads-tbody .lead-checkbox:checked');
+            var selectAll = document.getElementById('leads-select-all');
+            if (selectAll) {
+                selectAll.checked = all.length > 0 && all.length === checked.length;
+                selectAll.indeterminate = checked.length > 0 && checked.length < all.length;
+            }
+        }
+
+        function updateLeadsBulkBar() {
+            var checked = document.querySelectorAll('#leads-tbody .lead-checkbox:checked');
+            var bar = document.getElementById('leads-bulk-bar');
+            var countEl = document.getElementById('leads-selected-count');
+            if (bar) {
+                if (checked.length > 0) {
+                    bar.classList.add('visible');
+                    if (countEl) countEl.textContent = checked.length;
+                } else {
+                    bar.classList.remove('visible');
+                }
+            }
+        }
+
+        function clearLeadSelection() {
+            document.querySelectorAll('#leads-tbody .lead-checkbox, #leads-select-all').forEach(function(cb) { cb.checked = false; cb.indeterminate = false; });
+            updateLeadsBulkBar();
+        }
+
+        async function bulkDeleteLeads() {
+            var checked = document.querySelectorAll('#leads-tbody .lead-checkbox:checked');
+            if (checked.length === 0) { showToast('No leads selected', 'warning'); return; }
+            if (!confirm('Delete ' + checked.length + ' selected lead' + (checked.length !== 1 ? 's' : '') + '? This cannot be undone.')) return;
+            var sb = window._supabase;
+            if (!sb) return;
+            var ids = [];
+            checked.forEach(function(cb) { ids.push(cb.getAttribute('data-lead-id')); });
+            try {
+                for (var i = 0; i < ids.length; i += 20) {
+                    var batch = ids.slice(i, i + 20);
+                    var result = await sb.from('leads').delete().in('id', batch);
+                    if (result.error) throw result.error;
+                }
+                showToast(ids.length + ' lead' + (ids.length !== 1 ? 's' : '') + ' deleted', 'success');
+                loadUserLeads();
+            } catch (e) {
+                showToast('Error deleting leads: ' + e.message, 'error');
+            }
+        }
+
+        // ===== QUOTES CHECKBOX SELECTION =====
+        function toggleAllQuotes(checked) {
+            var checkboxes = document.querySelectorAll('#quotes-list .quote-checkbox');
+            checkboxes.forEach(function(cb) {
+                var card = cb.closest('[data-quote-id]');
+                if (card && card.style.display !== 'none') cb.checked = checked;
+            });
+            updateQuotesBulkBar();
+        }
+
+        function onQuoteCheckboxChange() {
+            updateQuotesBulkBar();
+            var all = document.querySelectorAll('#quotes-list .quote-checkbox');
+            var checked = document.querySelectorAll('#quotes-list .quote-checkbox:checked');
+            var selectAll = document.getElementById('quotes-select-all');
+            if (selectAll) {
+                selectAll.checked = all.length > 0 && all.length === checked.length;
+                selectAll.indeterminate = checked.length > 0 && checked.length < all.length;
+            }
+        }
+
+        function updateQuotesBulkBar() {
+            var checked = document.querySelectorAll('#quotes-list .quote-checkbox:checked');
+            var bar = document.getElementById('quotes-bulk-bar');
+            var countEl = document.getElementById('quotes-selected-count');
+            if (bar) {
+                if (checked.length > 0) {
+                    bar.classList.add('visible');
+                    if (countEl) countEl.textContent = checked.length;
+                } else {
+                    bar.classList.remove('visible');
+                }
+            }
+        }
+
+        function clearQuoteSelection() {
+            document.querySelectorAll('#quotes-list .quote-checkbox, #quotes-select-all').forEach(function(cb) { cb.checked = false; cb.indeterminate = false; });
+            updateQuotesBulkBar();
+        }
+
+        async function bulkDeleteQuotes() {
+            var checked = document.querySelectorAll('#quotes-list .quote-checkbox:checked');
+            if (checked.length === 0) { showToast('No quotes selected', 'warning'); return; }
+            if (!confirm('Delete ' + checked.length + ' selected quote' + (checked.length !== 1 ? 's' : '') + '? This cannot be undone.')) return;
+            var sb = window._supabase;
+            if (!sb) return;
+            var ids = [];
+            checked.forEach(function(cb) { ids.push(cb.getAttribute('data-quote-id')); });
+            try {
+                for (var i = 0; i < ids.length; i += 20) {
+                    var batch = ids.slice(i, i + 20);
+                    var result = await sb.from('quotes').delete().in('id', batch);
+                    if (result.error) throw result.error;
+                }
+                showToast(ids.length + ' quote' + (ids.length !== 1 ? 's' : '') + ' deleted', 'success');
+                loadUserQuotes();
+            } catch (e) {
+                showToast('Error deleting quotes: ' + e.message, 'error');
+            }
+        }
+
+        // ===== CLOUD EXPORT (Google Drive & OneDrive) =====
+        function _buildQuotesCSVBlob() {
+            return new Promise(async function(resolve, reject) {
+                var sb = window._supabase;
+                var userId = window.currentUserId;
+                if (!sb || !userId) { reject(new Error('Not logged in')); return; }
+                try {
+                    var result = await sb.from('quotes').select('id, quote_data, status, created_at').eq('user_id', userId).order('created_at', { ascending: false }).limit(500);
+                    if (result.error) throw result.error;
+                    var quotes = result.data;
+                    if (!quotes || quotes.length === 0) { reject(new Error('No quotes to export')); return; }
+                    var headers = ['Client Name','Home Value','Cash Out','Rec Rate','Rec Payment','Status','Date Created'];
+                    var rows = quotes.map(function(q) {
+                        var d = q.quote_data || {};
+                        var date = q.created_at ? new Date(q.created_at).toLocaleDateString() : '';
+                        return [d.clientName || 'Unnamed', d.homeValue || '', d.netCash || '', d.recRate || '', d.recPayment || '', q.status || 'new', date]
+                            .map(function(v) { var s = String(v).replace(/"/g, '""'); return s.indexOf(',') >= 0 || s.indexOf('"') >= 0 ? '"' + s + '"' : s; })
+                            .join(',');
+                    });
+                    var csv = headers.join(',') + '\n' + rows.join('\n');
+                    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                    var fileName = 'quotes_export_' + new Date().toISOString().split('T')[0] + '.csv';
+                    resolve({ blob: blob, fileName: fileName });
+                } catch (e) { reject(e); }
+            });
+        }
+
+        async function saveQuotesToGoogleDrive() {
+            try {
+                showToast('Preparing quotes export...', 'info', 2000);
+                var result = await _buildQuotesCSVBlob();
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(result.blob);
+                a.download = result.fileName;
+                a.click();
+                URL.revokeObjectURL(a.href);
+                window.open('https://drive.google.com/drive/my-drive', '_blank');
+                showToast('CSV downloaded! Google Drive opened — drag the file to upload.', 'success', 5000);
+            } catch (e) {
+                showToast('Export error: ' + e.message, 'error');
+            }
+        }
+
+        async function saveQuotesToOneDrive() {
+            try {
+                showToast('Preparing quotes export...', 'info', 2000);
+                var result = await _buildQuotesCSVBlob();
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(result.blob);
+                a.download = result.fileName;
+                a.click();
+                URL.revokeObjectURL(a.href);
+                window.open('https://onedrive.live.com/', '_blank');
+                showToast('CSV downloaded! OneDrive opened — drag the file to upload.', 'success', 5000);
+            } catch (e) {
+                showToast('Export error: ' + e.message, 'error');
             }
         }
 
