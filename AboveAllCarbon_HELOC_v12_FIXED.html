@@ -4,8 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Above All Carbon HELOC Quote Tool</title>
+    <title>Above All Carbon HELOC Quote Tool | Professional HELOC Calculator & CRM</title>
+    <meta name="description" content="Professional HELOC quote builder with multi-tier rate matrices, CRM integration, lead management, and AI-powered loan strategies. Built for mortgage loan officers.">
+    <meta name="keywords" content="HELOC calculator, home equity line of credit, mortgage quote tool, loan officer CRM, rate matrix, HELOC proposal, debt consolidation, refinance comparison">
+    <meta name="author" content="Above All Carbon">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Above All Carbon HELOC Quote Tool">
+    <meta property="og:description" content="Generate professional HELOC proposals with multi-tier pricing, lead tracking, and CRM integration.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://aboveallcrm.com">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Above All Carbon HELOC Quote Tool">
+    <meta name="twitter:description" content="Professional HELOC calculator with CRM integration for mortgage loan officers.">
+    <meta name="theme-color" content="#0f2b4c">
+    <link rel="canonical" href="https://aboveallcrm.com">
     <!-- Stripe disabled until backend is configured -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
@@ -4298,6 +4313,113 @@
                 flex-direction: column;
             }
         }
+
+        /* ===== DARK THEME DROPDOWNS (global fix) ===== */
+        select,
+        .control-section select,
+        #quotes-filter-status,
+        #quotes-filter-date,
+        #leads-filter-status,
+        #leads-filter-source {
+            background-color: #1e293b !important;
+            color: #e2e8f0 !important;
+            border: 1px solid rgba(255,255,255,0.18) !important;
+            border-radius: 6px !important;
+            padding: 5px 10px !important;
+            font-family: var(--font-heading) !important;
+            font-size: 10px !important;
+            cursor: pointer;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 8px center !important;
+            padding-right: 24px !important;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        select:hover,
+        .control-section select:hover {
+            border-color: var(--accent-color) !important;
+        }
+        select:focus,
+        .control-section select:focus {
+            border-color: var(--accent-color) !important;
+            box-shadow: 0 0 0 3px var(--accent-glow) !important;
+            outline: none;
+        }
+        select option,
+        .control-section select option {
+            background-color: #1e293b !important;
+            color: #e2e8f0 !important;
+            padding: 8px 10px !important;
+            font-family: var(--font-heading);
+            font-size: 11px;
+        }
+        select option:checked,
+        .control-section select option:checked {
+            background-color: #334155 !important;
+            color: var(--accent-color) !important;
+        }
+        select option:hover {
+            background-color: #334155 !important;
+        }
+        /* Exclude the proposal section selects (light theme) */
+        .input-field select {
+            background-color: rgba(15, 23, 42, 0.8) !important;
+        }
+        .input-field select option {
+            background-color: #0f172a !important;
+            color: #e2e8f0 !important;
+        }
+
+        /* ===== ENHANCED SCROLLBARS ===== */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: rgba(197,160,89,0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(197,160,89,0.5); }
+
+        /* ===== ENHANCED QUOTE CARDS ===== */
+        #quotes-list > div[data-quote-id] {
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            padding: 10px 12px;
+            transition: all 0.2s ease;
+            background: rgba(0,0,0,0.2);
+        }
+        #quotes-list > div[data-quote-id]:hover {
+            border-color: rgba(197,160,89,0.3);
+            background: rgba(197,160,89,0.05);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+        }
+
+        /* ===== ENHANCED LEADS TABLE ===== */
+        #leads-table thead th {
+            font-family: var(--font-heading);
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.5);
+            padding: 10px 6px;
+            border-bottom: 2px solid rgba(197,160,89,0.2);
+        }
+        #leads-table tbody tr {
+            transition: background 0.15s ease;
+        }
+        #leads-table tbody tr:hover {
+            background: rgba(197,160,89,0.06) !important;
+        }
+
+        /* ===== ENHANCED BUTTONS ===== */
+        .control-section .btn {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+        }
+        .control-section .btn:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            filter: brightness(1.1);
+        }
     </style>
 </head>
 
@@ -6655,7 +6777,7 @@ Best regards,
         <footer>
             <div class="footer-main">
                 <img src="https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/693bb3fdeac0a8d6852417e6.jpg"
-                    alt="Loan Officer" class="footer-headshot" id="footer-img">
+                    alt="Loan Officer" class="footer-headshot" id="footer-img" loading="lazy">
                 <div class="footer-info">
                     <span class="footer-name" id="footer-name">Eddie Barragan</span>
                     <span id="footer-title">Executive Branch Manager</span><br>
@@ -6666,11 +6788,11 @@ Best regards,
                     <div class="footer-stars">★★★★★ 5.0 Google Rating</div>
                 </div>
                 <img src="https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/696029737cc1b904fa792d8c.png"
-                    alt="Company Logo" class="company-logo-footer" id="company-logo-footer">
+                    alt="Company Logo" class="company-logo-footer" id="company-logo-footer" loading="lazy">
             </div>
             <div class="footer-legal">
                 <img src="https://assets.cdn.filesafe.space/eVB3bUDr8bdQfRu6ae03/media/693bb403ed957f64da26426c.jpg"
-                    class="ehl-logo" alt="Equal Housing Lender">
+                    class="ehl-logo" alt="Equal Housing Lender" loading="lazy">
                 <div><strong id="footer-company">West Capital Lending</strong> | NMLS# <span
                         id="footer-co-nmls">1566096</span> | DRE# <span id="footer-co-dre">02022356</span><br><span
                         id="footer-address">17911 Von Karman Ave Suite 400, Irvine, CA 92614</span><br><br>Equal Housing
@@ -6685,8 +6807,8 @@ Best regards,
         </footer>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="./js/link-shortener-universal.js"></script>
     <script>
         // ===== GLOBALS =====
@@ -7093,7 +7215,7 @@ Best regards,
                     tagline: 'Get Started',
                     pitch: 'Replace your spreadsheet. Look like a pro.',
                     price: 297,
-                    tools: ['Carbon HELOC', 'Carbon Refinance Architect'],
+                    tools: ['HELOC Quote Builder', 'Refinance Architect'],
                     features: [
                         { name: 'HELOC quote builder — 3 tier pricing', has: true },
                         { name: 'Refinance Architect — refi analysis', has: true },
@@ -7111,7 +7233,7 @@ Best regards,
                     pitch: 'Stop losing leads. Start closing them.',
                     price: 597,
                     timeSaved: 'Save 30+ min/day',
-                    tools: ['Everything in Carbon'],
+                    tools: ['HELOC + Refi Tools', 'Everything in Carbon'],
                     features: [
                         { name: 'Everything in Carbon', has: true },
                         { name: 'Leads pipeline — track every borrower', has: true, isNew: true },
@@ -7128,7 +7250,7 @@ Best regards,
                     pitch: 'Every minute saved is another client you can call.',
                     price: 797,
                     timeSaved: 'Save 2+ hours/day',
-                    tools: ['Everything in Titanium'],
+                    tools: ['HELOC + Refi Tools', 'Everything in Titanium'],
                     features: [
                         { name: 'Everything in Titanium', has: true },
                         { name: 'Paste Rates — import Figure in seconds', has: true, isNew: true },
@@ -7144,7 +7266,7 @@ Best regards,
                     pitch: 'Make it yours. Scale it.',
                     price: 1297,
                     timeSaved: 'Unlimited AI',
-                    tools: ['Everything in Platinum'],
+                    tools: ['HELOC + Refi Tools', 'Everything in Platinum'],
                     features: [
                         { name: 'Everything in Platinum', has: true },
                         { name: 'White label — your logo & colors', has: true, isNew: true },
@@ -7158,7 +7280,7 @@ Best regards,
                     tagline: 'All Access',
                     pitch: 'Everything. No limits. Ever.',
                     price: 1999,
-                    tools: ['Everything in Obsidian'],
+                    tools: ['HELOC + Refi Tools', 'Everything in Obsidian'],
                     features: [
                         { name: 'Everything in Obsidian', has: true },
                         { name: 'Admin dashboard', has: true, isNew: true },
@@ -15014,57 +15136,50 @@ Sent via Above All Carbon HELOC Tool`;
             var sb = window._supabase;
             if (!sb) { showToast('Not authenticated', 'error'); return; }
 
+            // Ask how many leads to sync
+            var choice = prompt('How many Bonzo leads to sync?\n\n• Enter a number (e.g. 50, 200, 500)\n• Enter "all" to sync ALL leads\n• Leave blank for default (100)', '');
+            if (choice === null) return; // cancelled
+
+            var syncAll = false;
+            var maxLeads = 100;
+            choice = (choice || '').trim().toLowerCase();
+            if (choice === 'all' || choice === 'all leads') {
+                syncAll = true;
+                maxLeads = 999999;
+            } else if (choice && !isNaN(parseInt(choice))) {
+                maxLeads = parseInt(choice);
+                if (maxLeads < 1) maxLeads = 100;
+            }
+
             var btn = document.getElementById('bonzo-sync-btn');
             var origText = btn ? btn.innerHTML : '';
-            if (btn) { btn.innerHTML = '⏳ Syncing...'; btn.disabled = true; }
+            if (btn) { btn.innerHTML = '⏳ Syncing' + (syncAll ? ' ALL' : ' ' + maxLeads) + '...'; btn.disabled = true; }
 
             try {
                 var session = (await sb.auth.getSession()).data.session;
                 if (!session?.access_token) { showToast('Session expired — please log in again.', 'error'); return; }
 
-                var page = 1;
-                var totalImported = 0, totalUpdated = 0, totalSkipped = 0;
-                var hasMore = true;
+                var resp = await fetch(SUPABASE_FUNCTIONS_URL + '/bonzo-sync', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + session.access_token,
+                    },
+                    body: JSON.stringify({ sync_all: syncAll, max_leads: maxLeads }),
+                });
 
-                while (hasMore) {
-                    if (btn) btn.innerHTML = '⏳ Syncing page ' + page + '...';
+                var data = await resp.json();
 
-                    var resp = await fetch(SUPABASE_FUNCTIONS_URL + '/bonzo-sync', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + session.access_token,
-                        },
-                        body: JSON.stringify({ page: page, per_page: 100 }),
-                    });
-
-                    var data = await resp.json();
-
-                    if (!resp.ok) {
-                        showToast('Bonzo sync error: ' + (data.error || 'Unknown'), 'error');
-                        break;
-                    }
-
-                    totalImported += data.imported || 0;
-                    totalUpdated += data.updated || 0;
-                    totalSkipped += data.skipped || 0;
-
-                    // Stop if this page returned fewer than 100 contacts (last page)
-                    if ((data.total_from_bonzo || 0) < 100) {
-                        hasMore = false;
-                    } else {
-                        page++;
-                    }
-
-                    // Safety: max 20 pages (2000 contacts)
-                    if (page > 20) { hasMore = false; }
+                if (!resp.ok) {
+                    showToast('Bonzo sync error: ' + (data.error || 'Unknown'), 'error');
+                    return;
                 }
 
-                var msg = '✅ Bonzo Sync Complete — ' + totalImported + ' new, ' + totalUpdated + ' updated';
-                if (totalSkipped > 0) msg += ', ' + totalSkipped + ' skipped';
-                showToast(msg, 'success', 5000);
+                var msg = '✅ Bonzo Sync — ' + (data.imported || 0) + ' new, ' + (data.updated || 0) + ' updated';
+                if (data.skipped > 0) msg += ', ' + data.skipped + ' skipped';
+                msg += ' (' + (data.total_from_bonzo || 0) + ' from Bonzo, ' + (data.pages_fetched || 1) + ' pg)';
+                showToast(msg, 'success', 6000);
 
-                // Refresh the leads list
                 loadUserLeads();
 
             } catch (err) {
@@ -15503,7 +15618,7 @@ Sent via Above All Carbon HELOC Tool`;
     </script>
     <script type="module" src="./js/main.js"></script>
     <!-- Ezra AI Loan Structuring Assistant -->
-    <script src="./js/ezra-chat.js"></script>
+    <script defer src="./js/ezra-chat.js"></script>
 </body>
 
 </html>

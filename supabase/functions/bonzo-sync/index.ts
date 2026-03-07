@@ -67,8 +67,9 @@ serve(async (req: Request) => {
 
         // 3. Parse request body for optional filters
         const body = await req.json().catch(() => ({}))
-        const page = body.page || 1
-        const perPage = body.per_page || 100
+        const syncAll = body.sync_all === true
+        const maxLeads = body.max_leads || (syncAll ? 999999 : 100)
+        const perPage = 100 // Bonzo API max per page
 
         // 4. Fetch prospects from Bonzo API v3
         // In v3, contacts are called "prospects": GET /v3/prospects
@@ -80,25 +81,44 @@ serve(async (req: Request) => {
 
         let contacts: any[] = []
         let bonzoError = null
+        let currentPage = 1
+        let hasMore = true
 
-        // GET /v3/prospects with pagination
-        const listUrl = `${BONZO_API}/prospects?page=${page}&per_page=${perPage}`
-        const listResp = await fetch(listUrl, {
-            method: 'GET',
-            headers: bonzoHeaders,
-        })
+        // Auto-paginate: fetch pages until we have enough or run out
+        while (hasMore && contacts.length < maxLeads) {
+            const listUrl = `${BONZO_API}/prospects?page=${currentPage}&per_page=${perPage}`
+            const listResp = await fetch(listUrl, {
+                method: 'GET',
+                headers: bonzoHeaders,
+            })
 
-        if (listResp.ok) {
+            if (!listResp.ok) {
+                const errText = await listResp.text().catch(() => '')
+                bonzoError = `Bonzo API returned ${listResp.status}: ${errText.substring(0, 300)}`
+                break
+            }
+
             const listData = await listResp.json()
-            // v3 typically returns { data: [...] } or the array directly
-            contacts = listData.data || listData.prospects || listData || []
-            if (!Array.isArray(contacts)) contacts = [contacts]
-        } else {
-            const errText = await listResp.text().catch(() => '')
-            bonzoError = `Bonzo API returned ${listResp.status}: ${errText.substring(0, 300)}`
+            let pageContacts = listData.data || listData.prospects || listData || []
+            if (!Array.isArray(pageContacts)) pageContacts = [pageContacts]
+
+            contacts = contacts.concat(pageContacts)
+
+            // Check if there are more pages (v3 returns meta.last_page or links.next)
+            const lastPage = listData.meta?.last_page || listData.last_page || 1
+            if (currentPage >= lastPage || pageContacts.length < perPage) {
+                hasMore = false
+            } else {
+                currentPage++
+            }
         }
 
-        if (bonzoError) {
+        // Trim to maxLeads if needed
+        if (contacts.length > maxLeads) {
+            contacts = contacts.slice(0, maxLeads)
+        }
+
+        if (bonzoError && contacts.length === 0) {
             return new Response(JSON.stringify({ error: bonzoError }),
                 { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
@@ -252,6 +272,7 @@ serve(async (req: Request) => {
             updated,
             skipped,
             total_from_bonzo: contacts.length,
+            pages_fetched: currentPage,
             errors: errors.length > 0 ? errors.slice(0, 10) : undefined,
         }), {
             status: 200,
