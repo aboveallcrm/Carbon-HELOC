@@ -4721,6 +4721,7 @@
         <button class="toolbar-btn" id="btn-download-pdf"
             style="display:none; background: linear-gradient(135deg, #06b6d4, #0891b2);" onclick="exportBrandedPDF()">⬇
             Download</button>
+        <button class="toolbar-btn" id="btn-notif-bell" onclick="toggleNotifPanel()" title="Quote view alerts" style="position:relative; background: transparent; border: 1px solid rgba(255,255,255,0.15); font-size: 14px; padding: 5px 10px;">🔔<span id="notif-badge" style="display:none; position:absolute; top:-4px; right:-4px; background:#ef4444; color:white; font-size:9px; font-weight:800; min-width:16px; height:16px; border-radius:8px; display:none; align-items:center; justify-content:center; font-family:var(--font-heading);">0</span></button>
         <span class="autosave-indicator" id="autosave-status">✓ Saved</span>
         <button class="toolbar-btn-help" onclick="WalkthroughTour.restart()" title="Restart guided tour">❓ Tour</button>
         <button class="toolbar-btn-help" onclick="InteractiveDemo.start()" title="Watch interactive demo">🎬
@@ -4732,6 +4733,15 @@
         <button class="toolbar-btn" id="btn-logout"
             style="display:none; background: #ef4444; font-size: 10px; padding: 5px 10px;"
             onclick="if(window.logoutUser) window.logoutUser()">Logout</button>
+    </div>
+
+    <!-- Quote View Notification Panel -->
+    <div id="notif-panel" style="display:none; position:fixed; top:56px; right:20px; width:360px; max-height:420px; background:linear-gradient(135deg,#1e293b,#0f172a); border:1px solid rgba(197,160,89,0.25); border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,0.5); z-index:100001; overflow:hidden; font-family:var(--font-body);">
+        <div style="padding:14px 18px; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:space-between;">
+            <span style="font-family:var(--font-heading); font-size:13px; font-weight:800; color:var(--accent); text-transform:uppercase; letter-spacing:1px;">🔔 Quote Views</span>
+            <button onclick="markAllNotifsSeen()" style="background:none; border:none; color:rgba(255,255,255,0.4); font-size:10px; cursor:pointer; font-family:var(--font-heading);">Mark all read</button>
+        </div>
+        <div id="notif-list" style="overflow-y:auto; max-height:360px; padding:8px 0;"></div>
     </div>
 
     <!-- One-Click Email Send Modal -->
@@ -9931,6 +9941,8 @@ Best regards,
             loadUserQuotes();
             loadUserLeads();
             loadNotifPrefs();
+            // Start polling for quote view notifications
+            initQuoteViewNotifications();
             // Auto-load users only for the verified Super Admin account
             if (isTrueSuperAdmin()) {
                 setTimeout(() => loadAllUsers(), 500);
@@ -15630,6 +15642,130 @@ Sent via Above All Carbon HELOC Tool`;
                 console.log('Could not load notification prefs:', e.message);
             }
         }
+
+        // ===== QUOTE VIEW NOTIFICATIONS =====
+        var _notifPollTimer = null;
+        var _lastNotifCheck = null;
+
+        async function initQuoteViewNotifications() {
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) return;
+
+            // Initial fetch
+            await fetchQuoteViewNotifs();
+
+            // Poll every 30 seconds
+            _notifPollTimer = setInterval(fetchQuoteViewNotifs, 30000);
+        }
+
+        async function fetchQuoteViewNotifs() {
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) return;
+
+            try {
+                var { data: notifs, error } = await sb
+                    .from('quote_view_notifications')
+                    .select('id, client_name, device, seen, created_at, quote_code, lead_id')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: false })
+                    .limit(20);
+
+                if (error || !notifs) return;
+
+                var unseen = notifs.filter(function(n) { return !n.seen; });
+                var badge = document.getElementById('notif-badge');
+                if (badge) {
+                    if (unseen.length > 0) {
+                        badge.style.display = 'flex';
+                        badge.textContent = unseen.length > 9 ? '9+' : unseen.length;
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+
+                // Show toast for brand-new notifications (created in last 35 seconds)
+                var now = Date.now();
+                unseen.forEach(function(n) {
+                    var age = now - new Date(n.created_at).getTime();
+                    if (age < 35000 && (!_lastNotifCheck || new Date(n.created_at) > _lastNotifCheck)) {
+                        var name = n.client_name || 'A client';
+                        var device = n.device === 'mobile' ? '📱' : '💻';
+                        showToast(device + ' ' + name + ' just opened your quote!', 'info');
+                    }
+                });
+                _lastNotifCheck = new Date();
+
+                // Render the notification panel list
+                renderNotifList(notifs);
+            } catch (e) {
+                console.log('Notif fetch error:', e.message);
+            }
+        }
+
+        function renderNotifList(notifs) {
+            var list = document.getElementById('notif-list');
+            if (!list) return;
+
+            if (!notifs || notifs.length === 0) {
+                list.innerHTML = '<div style="padding:24px; text-align:center; color:rgba(255,255,255,0.3); font-size:12px;">No quote views yet</div>';
+                return;
+            }
+
+            list.innerHTML = notifs.map(function(n) {
+                var name = n.client_name || 'Unknown Client';
+                var device = n.device === 'mobile' ? '📱 Mobile' : '💻 Desktop';
+                var time = timeAgo(new Date(n.created_at));
+                var unseenDot = n.seen ? '' : '<span style="width:8px;height:8px;border-radius:50%;background:#10b981;flex-shrink:0;"></span>';
+                var leadClick = n.lead_id ? ' onclick="toggleNotifPanel(); loadLeadIntoForm(\'' + n.lead_id + '\')"' : '';
+                var cursor = n.lead_id ? 'cursor:pointer;' : '';
+                return '<div style="padding:10px 18px; border-bottom:1px solid rgba(255,255,255,0.04); display:flex; align-items:center; gap:10px; ' + cursor + '"' + leadClick + '>' +
+                    unseenDot +
+                    '<div style="flex:1; min-width:0;">' +
+                        '<div style="font-size:12px; font-weight:600; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + escapeHtml(name) + '</div>' +
+                        '<div style="font-size:10px; color:rgba(255,255,255,0.4);">' + device + ' · ' + time + '</div>' +
+                    '</div>' +
+                    (n.lead_id ? '<span style="font-size:9px; color:var(--accent); font-family:var(--font-heading); font-weight:700;">VIEW →</span>' : '') +
+                '</div>';
+            }).join('');
+        }
+
+        function timeAgo(date) {
+            var seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+            if (seconds < 60) return 'just now';
+            var minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return minutes + 'm ago';
+            var hours = Math.floor(minutes / 60);
+            if (hours < 24) return hours + 'h ago';
+            var days = Math.floor(hours / 24);
+            return days + 'd ago';
+        }
+
+        window.toggleNotifPanel = function() {
+            var panel = document.getElementById('notif-panel');
+            if (!panel) return;
+            var isOpen = panel.style.display !== 'none';
+            panel.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) fetchQuoteViewNotifs();
+        };
+
+        window.markAllNotifsSeen = async function() {
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) return;
+            await sb.from('quote_view_notifications').update({ seen: true }).eq('user_id', userId).eq('seen', false);
+            await fetchQuoteViewNotifs();
+        };
+
+        // Close notif panel when clicking outside
+        document.addEventListener('click', function(e) {
+            var panel = document.getElementById('notif-panel');
+            var bell = document.getElementById('btn-notif-bell');
+            if (panel && panel.style.display !== 'none' && !panel.contains(e.target) && !bell.contains(e.target)) {
+                panel.style.display = 'none';
+            }
+        });
 
         // ===== SEARCH FILTERING =====
         // ===== HELP TOOLTIP CLICK TOGGLE (for mobile) =====

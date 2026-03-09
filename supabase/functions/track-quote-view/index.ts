@@ -98,6 +98,37 @@ serve(async (req: Request) => {
             user_agent: userAgent.substring(0, 500) // truncate long UAs
         })
 
+        // Send real-time notification to LO when quote is opened
+        if (event === 'quote_opened' && user_id && lead_id && lead_id !== 'none') {
+            try {
+                // Look up client name from leads or quote_links
+                let clientName = ''
+                const { data: lead } = await supabaseAdmin
+                    .from('leads')
+                    .select('first_name, last_name, email')
+                    .eq('id', lead_id)
+                    .maybeSingle()
+
+                if (lead) {
+                    clientName = [lead.first_name, lead.last_name].filter(Boolean).join(' ') || lead.email || ''
+                }
+
+                // Get quote code from URL params if available
+                const quoteCode = url.searchParams.get('code') || eventData.code || ''
+
+                await supabaseAdmin.from('quote_view_notifications').insert({
+                    user_id,
+                    lead_id,
+                    quote_code: quoteCode,
+                    client_name: clientName,
+                    device: isMobile ? 'mobile' : 'desktop'
+                })
+            } catch (notifErr) {
+                // Don't fail the whole request if notification insert fails
+                console.error('Notification insert error:', notifErr)
+            }
+        }
+
         // For GET requests (tracking pixel), return 1x1 pixel image
         if (req.method === 'GET') {
             return new Response(PIXEL_BYTES, {
