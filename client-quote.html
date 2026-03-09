@@ -2077,8 +2077,15 @@
         }
 
         @keyframes urgencyPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
-            50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+            }
         }
 
         .pvf-urgency-bar .dot {
@@ -2090,8 +2097,17 @@
         }
 
         @keyframes dotPulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.8); }
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.8);
+            }
         }
 
         /* Social Proof */
@@ -2128,8 +2144,13 @@
             margin-left: -10px;
         }
 
-        .pvf-avatar-item:first-child { margin-left: 0; }
-        .pvf-avatar-item:last-child { background: #64748b; }
+        .pvf-avatar-item:first-child {
+            margin-left: 0;
+        }
+
+        .pvf-avatar-item:last-child {
+            background: #64748b;
+        }
 
         .pvf-social-text {
             font-size: 13px;
@@ -2181,7 +2202,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: 
+            background:
                 radial-gradient(circle at 30% 70%, rgba(197, 160, 89, 0.2) 0%, transparent 50%),
                 radial-gradient(circle at 70% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 40%);
         }
@@ -2190,15 +2211,20 @@
             position: absolute;
             inset: 0;
             opacity: 0.1;
-            background-image: 
+            background-image:
                 repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(197, 160, 89, 0.1) 35px, rgba(197, 160, 89, 0.1) 70px),
-                repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(255,255,255,0.05) 35px, rgba(255,255,255,0.05) 70px);
+                repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(255, 255, 255, 0.05) 35px, rgba(255, 255, 255, 0.05) 70px);
             animation: patternMove 20s linear infinite;
         }
 
         @keyframes patternMove {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(70px, 70px); }
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(70px, 70px);
+            }
         }
 
         /* LO Presence */
@@ -2266,13 +2292,13 @@
             font-size: 14px;
             font-weight: 700;
             color: white;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .pvf-lo-title {
             font-size: 11px;
             color: rgba(255, 255, 255, 0.8);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         /* Video Caption */
@@ -2324,7 +2350,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 
+            box-shadow:
                 0 8px 32px rgba(197, 160, 89, 0.5),
                 0 0 0 16px rgba(197, 160, 89, 0.1),
                 0 0 0 32px rgba(197, 160, 89, 0.05);
@@ -2334,14 +2360,17 @@
         }
 
         @keyframes playPulse {
-            0%, 100% { 
-                box-shadow: 
+
+            0%,
+            100% {
+                box-shadow:
                     0 8px 32px rgba(197, 160, 89, 0.5),
                     0 0 0 16px rgba(197, 160, 89, 0.1),
                     0 0 0 32px rgba(197, 160, 89, 0.05);
             }
-            50% { 
-                box-shadow: 
+
+            50% {
+                box-shadow:
                     0 12px 40px rgba(197, 160, 89, 0.6),
                     0 0 0 20px rgba(197, 160, 89, 0.15),
                     0 0 0 40px rgba(197, 160, 89, 0.08);
@@ -2350,7 +2379,7 @@
 
         .pvf-play-btn:hover {
             transform: scale(1.1);
-            box-shadow: 
+            box-shadow:
                 0 12px 40px rgba(197, 160, 89, 0.7),
                 0 0 0 24px rgba(197, 160, 89, 0.2),
                 0 0 0 48px rgba(197, 160, 89, 0.1);
@@ -2365,15 +2394,22 @@
         }
 
         @keyframes pvfPulseRing {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(1.5); opacity: 0; }
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
         }
 
         .pvf-play-icon {
             color: white;
             font-size: 32px;
             margin-left: 4px;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
         }
 
         .pvf-play-label {
@@ -2388,7 +2424,7 @@
             color: white;
             text-transform: uppercase;
             letter-spacing: 2px;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
         }
 
         /* Duration Badge */
@@ -2419,8 +2455,15 @@
         }
 
         @keyframes recordPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
         }
 
         /* Video Player & Progress */
@@ -2453,7 +2496,7 @@
             height: 12px;
             background: white;
             border-radius: 50%;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         /* Funnel Stage */
@@ -2467,8 +2510,15 @@
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .pvf-funnel-header {
@@ -2665,7 +2715,9 @@
             margin-bottom: 6px;
         }
 
-        .pvf-savings-row:last-child { margin-bottom: 0; }
+        .pvf-savings-row:last-child {
+            margin-bottom: 0;
+        }
 
         .pvf-savings-label {
             font-size: 11px;
@@ -2753,8 +2805,15 @@
         }
 
         @keyframes videoFadeIn {
-            from { opacity: 0; transform: scale(0.98); }
-            to { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .fake-video-player {
@@ -3127,7 +3186,8 @@
                 left: 12px;
             }
 
-            .pvf-lo-avatar, .pvf-lo-avatar-fallback {
+            .pvf-lo-avatar,
+            .pvf-lo-avatar-fallback {
                 width: 40px;
                 height: 40px;
                 font-size: 14px;
@@ -3222,489 +3282,830 @@
             }
         }
 
-/* === SALES PSYCHOLOGY SECTIONS === */
-.savings-compare { background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 1px solid rgba(16,185,129,0.15); border-radius: 16px; padding: 28px 32px; margin-bottom: 36px; }
-.savings-compare .sc-title { font-family: var(--font-heading); font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary-color); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-.savings-compare .sc-title span { font-size: 20px; }
-.sc-bars { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
-.sc-bar-row { display: flex; align-items: center; gap: 14px; }
-.sc-bar-label { font-family: var(--font-heading); font-size: 11px; font-weight: 700; color: var(--slate); min-width: 110px; text-align: right; }
-.sc-bar-track { flex: 1; height: 32px; border-radius: 8px; background: rgba(15,43,76,0.06); position: relative; overflow: hidden; }
-.sc-bar-fill { height: 100%; border-radius: 8px; display: flex; align-items: center; padding: 0 12px; font-family: var(--font-heading); font-size: 13px; font-weight: 800; color: white; transition: width 1.5s cubic-bezier(0.4,0,0.2,1); width: 0; }
-.sc-bar-fill.heloc { background: linear-gradient(135deg, #10b981, #059669); }
-.sc-bar-fill.credit { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.sc-bar-fill.personal { background: linear-gradient(135deg, #f59e0b, #d97706); }
-.sc-savings-box { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; padding: 16px; background: white; border-radius: 12px; border: 2px solid rgba(16,185,129,0.2); }
-.sc-savings-item { text-align: center; }
-.sc-savings-item .sc-big { font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: #059669; }
-.sc-savings-item .sc-sub { font-family: var(--font-body); font-size: 11px; color: var(--slate); opacity: 0.6; margin-top: 2px; }
+        /* === SALES PSYCHOLOGY SECTIONS === */
+        .savings-compare {
+            background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            border-radius: 16px;
+            padding: 28px 32px;
+            margin-bottom: 36px;
+        }
 
-.social-proof { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 24px 0; margin-bottom: 36px; }
-.sp-item { text-align: center; padding: 16px 12px; background: rgba(15,43,76,0.03); border-radius: 12px; border: 1px solid rgba(15,43,76,0.06); transition: transform 0.3s ease; }
-.sp-item:hover { transform: translateY(-2px); }
-.sp-item .sp-number { font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: var(--primary-color); }
-.sp-item .sp-label { font-family: var(--font-body); font-size: 11px; color: var(--slate); opacity: 0.6; margin-top: 4px; line-height: 1.4; }
+        .savings-compare .sc-title {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.funds-carousel { margin-bottom: 36px; position: relative; overflow: hidden; border-radius: 16px; background: linear-gradient(135deg, var(--primary-color), #132240); padding: 0; color: white; min-height: 160px; }
-.funds-carousel::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 80% 20%, rgba(197,160,89,0.1) 0%, transparent 60%); pointer-events: none; }
-.fc-slide { position: absolute; inset: 0; padding: 32px; display: flex; align-items: center; gap: 20px; opacity: 0; transform: translateX(40px); transition: opacity 0.5s ease, transform 0.5s ease; pointer-events: none; }
-.fc-slide.active { opacity: 1; transform: translateX(0); pointer-events: auto; position: relative; }
-.fc-icon { font-size: 40px; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); }
-.fc-text { flex: 1; }
-.fc-text .fc-headline { font-family: var(--font-heading); font-size: 18px; font-weight: 800; margin-bottom: 6px; line-height: 1.3; }
-.fc-text .fc-sub { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.5; }
-.fc-dots { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
-.fc-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s ease; }
-.fc-dot.active { background: var(--accent-color); transform: scale(1.3); }
-.fc-cta { display: inline-block; margin-top: 12px; background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: #0f172a; padding: 8px 20px; border-radius: 20px; font-family: var(--font-heading); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; cursor: pointer; border: none; transition: transform 0.2s, box-shadow 0.2s; }
-.fc-cta:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(197,160,89,0.4); }
+        .savings-compare .sc-title span {
+            font-size: 20px;
+        }
 
-.urgency-banner { position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(135deg, #0f2b4c, #1e3a5f); color: white; padding: 10px 20px; text-align: center; z-index: 1200; transform: translateY(-100%); transition: transform 0.5s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
-.urgency-banner.visible { transform: translateY(0); }
-.urgency-banner .ub-text { font-family: var(--font-heading); font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
-.urgency-banner .ub-countdown { display: inline-flex; gap: 6px; }
-.urgency-banner .ub-unit { background: rgba(197,160,89,0.2); border: 1px solid rgba(197,160,89,0.3); border-radius: 6px; padding: 4px 8px; min-width: 40px; text-align: center; }
-.urgency-banner .ub-num { font-family: var(--font-heading); font-size: 16px; font-weight: 900; color: var(--accent-color); display: block; }
-.urgency-banner .ub-lbl { font-size: 8px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; }
-.urgency-banner .ub-btn { background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: #0f172a; border: none; padding: 8px 18px; border-radius: 20px; font-family: var(--font-heading); font-size: 11px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; animation: pulse 2s infinite; }
+        .sc-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
 
-.daily-cost-badge { margin-top: 6px; font-family: var(--font-body); font-size: 12px; color: var(--accent-dark); font-weight: 600; opacity: 0.8; }
-.daily-cost-badge .dcb-amount { font-weight: 800; color: #059669; }
+        .sc-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
 
-@media (max-width: 600px) {
-    .social-proof { grid-template-columns: 1fr; gap: 10px; }
-    .sc-bar-row { flex-direction: column; align-items: stretch; gap: 4px; }
-    .sc-bar-label { text-align: left; min-width: unset; }
-    .sc-savings-box { flex-direction: column; gap: 12px; }
-    .funds-carousel { min-height: 180px; }
-    .fc-slide { padding: 24px 20px; flex-direction: column; text-align: center; }
-    .fc-icon { font-size: 32px; }
-    .fc-text .fc-headline { font-size: 15px; }
-    .urgency-banner { padding: 8px 12px; gap: 8px; }
-    .urgency-banner .ub-text { font-size: 10px; }
-    .rec-grid { grid-template-columns: repeat(2, 1fr) !important; }
-}
+        .sc-bar-label {
+            font-family: var(--font-heading);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--slate);
+            min-width: 110px;
+            text-align: right;
+        }
 
-/* =============================================
+        .sc-bar-track {
+            flex: 1;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(15, 43, 76, 0.06);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sc-bar-fill {
+            height: 100%;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-family: var(--font-heading);
+            font-size: 13px;
+            font-weight: 800;
+            color: white;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0;
+        }
+
+        .sc-bar-fill.heloc {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .sc-bar-fill.credit {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .sc-bar-fill.personal {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .sc-savings-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            padding: 16px;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .sc-savings-item {
+            text-align: center;
+        }
+
+        .sc-savings-item .sc-big {
+            font-family: var(--font-heading);
+            font-size: 28px;
+            font-weight: 900;
+            color: #059669;
+        }
+
+        .sc-savings-item .sc-sub {
+            font-family: var(--font-body);
+            font-size: 11px;
+            color: var(--slate);
+            opacity: 0.6;
+            margin-top: 2px;
+        }
+
+        .social-proof {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            padding: 24px 0;
+            margin-bottom: 36px;
+        }
+
+        .sp-item {
+            text-align: center;
+            padding: 16px 12px;
+            background: rgba(15, 43, 76, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(15, 43, 76, 0.06);
+            transition: transform 0.3s ease;
+        }
+
+        .sp-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .sp-item .sp-number {
+            font-family: var(--font-heading);
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--primary-color);
+        }
+
+        .sp-item .sp-label {
+            font-family: var(--font-body);
+            font-size: 11px;
+            color: var(--slate);
+            opacity: 0.6;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        .funds-carousel {
+            margin-bottom: 36px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary-color), #132240);
+            padding: 0;
+            color: white;
+            min-height: 160px;
+        }
+
+        .funds-carousel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 80% 20%, rgba(197, 160, 89, 0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .fc-slide {
+            position: absolute;
+            inset: 0;
+            padding: 32px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            opacity: 0;
+            transform: translateX(40px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            pointer-events: none;
+        }
+
+        .fc-slide.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+            position: relative;
+        }
+
+        .fc-icon {
+            font-size: 40px;
+            flex-shrink: 0;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        .fc-text {
+            flex: 1;
+        }
+
+        .fc-text .fc-headline {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .fc-text .fc-sub {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
+        }
+
+        .fc-dots {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .fc-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .fc-dot.active {
+            background: var(--accent-color);
+            transform: scale(1.3);
+        }
+
+        .fc-cta {
+            display: inline-block;
+            margin-top: 12px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            color: #0f172a;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-family: var(--font-heading);
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .fc-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(197, 160, 89, 0.4);
+        }
+
+        .urgency-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #0f2b4c, #1e3a5f);
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            z-index: 1200;
+            transform: translateY(-100%);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .urgency-banner.visible {
+            transform: translateY(0);
+        }
+
+        .urgency-banner .ub-text {
+            font-family: var(--font-heading);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .urgency-banner .ub-countdown {
+            display: inline-flex;
+            gap: 6px;
+        }
+
+        .urgency-banner .ub-unit {
+            background: rgba(197, 160, 89, 0.2);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            border-radius: 6px;
+            padding: 4px 8px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .urgency-banner .ub-num {
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 900;
+            color: var(--accent-color);
+            display: block;
+        }
+
+        .urgency-banner .ub-lbl {
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+        }
+
+        .urgency-banner .ub-btn {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            color: #0f172a;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-family: var(--font-heading);
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: pulse 2s infinite;
+        }
+
+        .daily-cost-badge {
+            margin-top: 6px;
+            font-family: var(--font-body);
+            font-size: 12px;
+            color: var(--accent-dark);
+            font-weight: 600;
+            opacity: 0.8;
+        }
+
+        .daily-cost-badge .dcb-amount {
+            font-weight: 800;
+            color: #059669;
+        }
+
+        @media (max-width: 600px) {
+            .social-proof {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .sc-bar-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 4px;
+            }
+
+            .sc-bar-label {
+                text-align: left;
+                min-width: unset;
+            }
+
+            .sc-savings-box {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .funds-carousel {
+                min-height: 180px;
+            }
+
+            .fc-slide {
+                padding: 24px 20px;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .fc-icon {
+                font-size: 32px;
+            }
+
+            .fc-text .fc-headline {
+                font-size: 15px;
+            }
+
+            .urgency-banner {
+                padding: 8px 12px;
+                gap: 8px;
+            }
+
+            .urgency-banner .ub-text {
+                font-size: 10px;
+            }
+
+            .rec-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        /* =============================================
    PRINT / SAVE TO PDF OPTIMIZATION
    ============================================= */
-@media print {
-    /* --- Page Setup --- */
-    @page {
-        size: letter;
-        margin: 0.5in 0.45in;
-    }
-
-    /* --- Global Resets --- */
-    *, *::before, *::after {
-        animation: none !important;
-        transition: none !important;
-        box-shadow: none !important;
-        text-shadow: none !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-        color-adjust: exact !important;
-    }
-
-    body {
-        background: white !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        min-height: auto !important;
-        -webkit-font-smoothing: auto !important;
-    }
-
-    body::before {
-        display: none !important;
-    }
-
-    /* --- Hide Non-Content Elements --- */
-    #urgency-banner,
-    #scroll-progress,
-    #particle-canvas,
-    #floating-bar,
-    .floating-bar,
-    #apply-modal,
-    #contact-modal,
-    #share-modal,
-    .modal-overlay,
-    #toast,
-    #eq-root,
-    .eq-orb,
-    .eq-panel,
-    #eq-tour-hl,
-    .theme-toggle,
-    .ub-btn,
-    .pvf-play-trigger,
-    .pvf-play-btn,
-    .pvf-pulse-ring,
-    .pvf-play-label,
-    .pvf-duration-badge,
-    #video-frame-wrapper,
-    #pvf-funnel-stage,
-    .fc-dots,
-    .fc-cta,
-    .confetti,
-    .pvf-video-pattern {
-        display: none !important;
-    }
-
-    /* --- Quote Page Container --- */
-    .quote-page {
-        max-width: 100% !important;
-        width: 100% !important;
-        margin: 0 !important;
-        border-radius: 0 !important;
-        overflow: visible !important;
-        background: white !important;
-    }
-
-    .quote-page::before {
-        /* Keep the gold top bar but no animation */
-        height: 4px !important;
-        background: linear-gradient(90deg, var(--accent-dark), var(--accent-color), var(--accent-light)) !important;
-        background-size: 100% 100% !important;
-    }
-
-    .quote-page.entering {
-        animation: none !important;
-        opacity: 1 !important;
-        transform: none !important;
-    }
-
-    /* --- Force All Reveal Sections Visible --- */
-    .reveal,
-    .reveal.visible,
-    .reveal-delay-1,
-    .reveal-delay-2,
-    .reveal-delay-3,
-    .stagger-children > * {
-        opacity: 1 !important;
-        transform: none !important;
-        transition: none !important;
-    }
-
-    /* --- Header --- */
-    .header {
-        background: var(--primary-color) !important;
-        padding: 28px 32px 24px !important;
-        border-radius: 0 !important;
-    }
-
-    .header::before,
-    .header::after {
-        display: none !important;
-    }
-
-    .header-watermark {
-        display: none !important;
-    }
-
-    .header h1 {
-        font-size: 22px !important;
-    }
-
-    /* --- Sections --- */
-    .section {
-        margin-bottom: 20px !important;
-        page-break-inside: avoid;
-        break-inside: avoid;
-    }
-
-    .section-title {
-        font-size: 14px !important;
-        margin-bottom: 12px !important;
-        padding-bottom: 6px !important;
-    }
-
-    .section-title::before {
-        width: 24px !important;
-        height: 24px !important;
-        font-size: 12px !important;
-    }
-
-    /* --- Client Details Grid --- */
-    .client-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 8px !important;
-    }
-
-    .client-grid .item {
-        padding: 8px 10px !important;
-    }
-
-    .client-grid .label {
-        font-size: 8px !important;
-    }
-
-    .client-grid .value {
-        font-size: 13px !important;
-    }
-
-    /* --- Valuation Blocks --- */
-    .val-blocks {
-        gap: 8px !important;
-    }
-
-    .val-block {
-        padding: 10px !important;
-    }
-
-    .val-label {
-        font-size: 8px !important;
-    }
-
-    .val-value {
-        font-size: 16px !important;
-    }
-
-    .highlight .val-value {
-        font-size: 18px !important;
-    }
-
-    /* --- Equity Donut Chart --- */
-    .equity-chart-wrap {
-        gap: 20px !important;
-    }
-
-    .equity-donut {
-        width: 140px !important;
-        height: 140px !important;
-        flex-shrink: 0 !important;
-    }
-
-    .equity-donut-center {
-        width: 80px !important;
-        height: 80px !important;
-    }
-
-    /* --- Social Proof --- */
-    .social-proof {
-        gap: 12px !important;
-    }
-
-    .sp-number {
-        font-size: 22px !important;
-    }
-
-    .sp-label {
-        font-size: 10px !important;
-    }
-
-    /* --- Recommendation Box --- */
-    .recommendation {
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-        border: 2px solid var(--accent-color) !important;
-        padding: 20px !important;
-    }
-
-    .recommendation::before,
-    .recommendation::after {
-        display: none !important;
-    }
-
-    .rec-grid {
-        gap: 10px !important;
-    }
-
-    .rec-label {
-        font-size: 8px !important;
-    }
-
-    .rec-value {
-        font-size: 18px !important;
-    }
-
-    /* --- Savings Comparison --- */
-    .savings-compare {
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-        border: 1px solid #d1fae5 !important;
-    }
-
-    .sc-bar-fill {
-        transition: none !important;
-    }
-
-    /* --- Funds Carousel --- */
-    .funds-carousel {
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-        min-height: auto !important;
-        padding: 16px 20px !important;
-    }
-
-    .fc-slide {
-        position: relative !important;
-        opacity: 1 !important;
-        transform: none !important;
-    }
-
-    /* Show only the active slide */
-    .fc-slide:not(.active) {
-        display: none !important;
-    }
-
-    /* --- Rate Matrix / Tiers --- */
-    #sec-rates {
-        page-break-before: auto;
-    }
-
-    .tier {
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-        margin-bottom: 12px !important;
-        border: 1px solid #e2e8f0 !important;
-        border-radius: 8px !important;
-    }
-
-    .tier-header {
-        padding: 8px 14px !important;
-        font-size: 12px !important;
-    }
-
-    .rate-table th {
-        font-size: 9px !important;
-        padding: 6px 10px !important;
-    }
-
-    .rate-table td {
-        font-size: 12px !important;
-        padding: 8px 10px !important;
-    }
-
-    tr.recommended td {
-        background: #fffbf0 !important;
-        border-color: var(--accent-color) !important;
-    }
-
-    .rate-row-detail {
-        max-height: none !important;
-        overflow: visible !important;
-    }
-
-    .rate-detail-grid {
-        gap: 6px !important;
-    }
-
-    .rd-label {
-        font-size: 8px !important;
-    }
-
-    .rd-value {
-        font-size: 11px !important;
-    }
-
-    /* --- Video Section (hide interactive, keep static info) --- */
-    #sec-personal-video {
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-    }
-
-    .pvf-video-thumbnail {
-        min-height: auto !important;
-        padding: 20px !important;
-    }
-
-    .pvf-video-thumbnail::before {
-        display: none !important;
-    }
-
-    /* --- Progress Stepper --- */
-    .progress-stepper {
-        margin: 16px 0 !important;
-    }
-
-    .step-dot {
-        width: 22px !important;
-        height: 22px !important;
-        font-size: 10px !important;
-    }
-
-    .step-label {
-        font-size: 9px !important;
-    }
-
-    /* --- Greeting Banner --- */
-    #greeting-banner {
-        padding: 10px 16px !important;
-        font-size: 13px !important;
-    }
-
-    /* --- Disclaimer --- */
-    #client-disclaimer {
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-        font-size: 9px !important;
-        padding: 10px 14px !important;
-    }
-
-    /* --- Trust Badges --- */
-    #trust-badges {
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-    }
-
-    .trust-badge {
-        opacity: 0.7 !important;
-        font-size: 10px !important;
-    }
-
-    /* --- Footer --- */
-    .quote-footer {
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-        background: var(--slate) !important;
-        padding: 16px 24px !important;
-    }
-
-    .footer-headshot {
-        width: 52px !important;
-        height: 52px !important;
-    }
-
-    .footer-name {
-        font-size: 14px !important;
-    }
-
-    .footer-legal {
-        font-size: 8px !important;
-    }
-
-    .proprietary-notice {
-        font-size: 7px !important;
-        padding: 4px 8px !important;
-    }
-
-    /* --- Links: show URL after link text --- */
-    a[href]:not([href^="#"])::after {
-        content: " (" attr(href) ")";
-        font-size: 9px;
-        color: #64748b;
-        font-weight: 400;
-    }
-
-    /* --- Padding for inner content --- */
-    .quote-page > div:not(.header):not(.quote-footer):not(#sec-personal-video) {
-        padding-left: 28px !important;
-        padding-right: 28px !important;
-    }
-
-    /* --- Savings Badge: stop pulse --- */
-    .savings-badge {
-        transform: none !important;
-    }
-
-    /* --- Cert Icon on Recommendation --- */
-    .cert-icon {
-        position: static !important;
-        display: inline-block !important;
-        margin-bottom: 8px !important;
-    }
-}
+        @media print {
+
+            /* --- Page Setup --- */
+            @page {
+                size: letter;
+                margin: 0.5in 0.45in;
+            }
+
+            /* --- Global Resets --- */
+            *,
+            *::before,
+            *::after {
+                animation: none !important;
+                transition: none !important;
+                box-shadow: none !important;
+                text-shadow: none !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                min-height: auto !important;
+                -webkit-font-smoothing: auto !important;
+            }
+
+            body::before {
+                display: none !important;
+            }
+
+            /* --- Hide Non-Content Elements --- */
+            #urgency-banner,
+            #scroll-progress,
+            #particle-canvas,
+            #floating-bar,
+            .floating-bar,
+            #apply-modal,
+            #contact-modal,
+            #share-modal,
+            .modal-overlay,
+            #toast,
+            #eq-root,
+            .eq-orb,
+            .eq-panel,
+            #eq-tour-hl,
+            .theme-toggle,
+            .ub-btn,
+            .pvf-play-trigger,
+            .pvf-play-btn,
+            .pvf-pulse-ring,
+            .pvf-play-label,
+            .pvf-duration-badge,
+            #video-frame-wrapper,
+            #pvf-funnel-stage,
+            .fc-dots,
+            .fc-cta,
+            .confetti,
+            .pvf-video-pattern {
+                display: none !important;
+            }
+
+            /* --- Quote Page Container --- */
+            .quote-page {
+                max-width: 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                overflow: visible !important;
+                background: white !important;
+            }
+
+            .quote-page::before {
+                /* Keep the gold top bar but no animation */
+                height: 4px !important;
+                background: linear-gradient(90deg, var(--accent-dark), var(--accent-color), var(--accent-light)) !important;
+                background-size: 100% 100% !important;
+            }
+
+            .quote-page.entering {
+                animation: none !important;
+                opacity: 1 !important;
+                transform: none !important;
+            }
+
+            /* --- Force All Reveal Sections Visible --- */
+            .reveal,
+            .reveal.visible,
+            .reveal-delay-1,
+            .reveal-delay-2,
+            .reveal-delay-3,
+            .stagger-children>* {
+                opacity: 1 !important;
+                transform: none !important;
+                transition: none !important;
+            }
+
+            /* --- Header --- */
+            .header {
+                background: var(--primary-color) !important;
+                padding: 28px 32px 24px !important;
+                border-radius: 0 !important;
+            }
+
+            .header::before,
+            .header::after {
+                display: none !important;
+            }
+
+            .header-watermark {
+                display: none !important;
+            }
+
+            .header h1 {
+                font-size: 22px !important;
+            }
+
+            /* --- Sections --- */
+            .section {
+                margin-bottom: 20px !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            .section-title {
+                font-size: 14px !important;
+                margin-bottom: 12px !important;
+                padding-bottom: 6px !important;
+            }
+
+            .section-title::before {
+                width: 24px !important;
+                height: 24px !important;
+                font-size: 12px !important;
+            }
+
+            /* --- Client Details Grid --- */
+            .client-grid {
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 8px !important;
+            }
+
+            .client-grid .item {
+                padding: 8px 10px !important;
+            }
+
+            .client-grid .label {
+                font-size: 8px !important;
+            }
+
+            .client-grid .value {
+                font-size: 13px !important;
+            }
+
+            /* --- Valuation Blocks --- */
+            .val-blocks {
+                gap: 8px !important;
+            }
+
+            .val-block {
+                padding: 10px !important;
+            }
+
+            .val-label {
+                font-size: 8px !important;
+            }
+
+            .val-value {
+                font-size: 16px !important;
+            }
+
+            .highlight .val-value {
+                font-size: 18px !important;
+            }
+
+            /* --- Equity Donut Chart --- */
+            .equity-chart-wrap {
+                gap: 20px !important;
+            }
+
+            .equity-donut {
+                width: 140px !important;
+                height: 140px !important;
+                flex-shrink: 0 !important;
+            }
+
+            .equity-donut-center {
+                width: 80px !important;
+                height: 80px !important;
+            }
+
+            /* --- Social Proof --- */
+            .social-proof {
+                gap: 12px !important;
+            }
+
+            .sp-number {
+                font-size: 22px !important;
+            }
+
+            .sp-label {
+                font-size: 10px !important;
+            }
+
+            /* --- Recommendation Box --- */
+            .recommendation {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                border: 2px solid var(--accent-color) !important;
+                padding: 20px !important;
+            }
+
+            .recommendation::before,
+            .recommendation::after {
+                display: none !important;
+            }
+
+            .rec-grid {
+                gap: 10px !important;
+            }
+
+            .rec-label {
+                font-size: 8px !important;
+            }
+
+            .rec-value {
+                font-size: 18px !important;
+            }
+
+            /* --- Savings Comparison --- */
+            .savings-compare {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                border: 1px solid #d1fae5 !important;
+            }
+
+            .sc-bar-fill {
+                transition: none !important;
+            }
+
+            /* --- Funds Carousel --- */
+            .funds-carousel {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                min-height: auto !important;
+                padding: 16px 20px !important;
+            }
+
+            .fc-slide {
+                position: relative !important;
+                opacity: 1 !important;
+                transform: none !important;
+            }
+
+            /* Show only the active slide */
+            .fc-slide:not(.active) {
+                display: none !important;
+            }
+
+            /* --- Rate Matrix / Tiers --- */
+            #sec-rates {
+                page-break-before: auto;
+            }
+
+            .tier {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                margin-bottom: 12px !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 8px !important;
+            }
+
+            .tier-header {
+                padding: 8px 14px !important;
+                font-size: 12px !important;
+            }
+
+            .rate-table th {
+                font-size: 9px !important;
+                padding: 6px 10px !important;
+            }
+
+            .rate-table td {
+                font-size: 12px !important;
+                padding: 8px 10px !important;
+            }
+
+            tr.recommended td {
+                background: #fffbf0 !important;
+                border-color: var(--accent-color) !important;
+            }
+
+            .rate-row-detail {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            .rate-detail-grid {
+                gap: 6px !important;
+            }
+
+            .rd-label {
+                font-size: 8px !important;
+            }
+
+            .rd-value {
+                font-size: 11px !important;
+            }
+
+            /* --- Video Section (hide interactive, keep static info) --- */
+            #sec-personal-video {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .pvf-video-thumbnail {
+                min-height: auto !important;
+                padding: 20px !important;
+            }
+
+            .pvf-video-thumbnail::before {
+                display: none !important;
+            }
+
+            /* --- Progress Stepper --- */
+            .progress-stepper {
+                margin: 16px 0 !important;
+            }
+
+            .step-dot {
+                width: 22px !important;
+                height: 22px !important;
+                font-size: 10px !important;
+            }
+
+            .step-label {
+                font-size: 9px !important;
+            }
+
+            /* --- Greeting Banner --- */
+            #greeting-banner {
+                padding: 10px 16px !important;
+                font-size: 13px !important;
+            }
+
+            /* --- Disclaimer --- */
+            #client-disclaimer {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                font-size: 9px !important;
+                padding: 10px 14px !important;
+            }
+
+            /* --- Trust Badges --- */
+            #trust-badges {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            .trust-badge {
+                opacity: 0.7 !important;
+                font-size: 10px !important;
+            }
+
+            /* --- Footer --- */
+            .quote-footer {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                background: var(--slate) !important;
+                padding: 16px 24px !important;
+            }
+
+            .footer-headshot {
+                width: 52px !important;
+                height: 52px !important;
+            }
+
+            .footer-name {
+                font-size: 14px !important;
+            }
+
+            .footer-legal {
+                font-size: 8px !important;
+            }
+
+            .proprietary-notice {
+                font-size: 7px !important;
+                padding: 4px 8px !important;
+            }
+
+            /* --- Links: show URL after link text --- */
+            a[href]:not([href^="#"])::after {
+                content: " (" attr(href) ")";
+                font-size: 9px;
+                color: #64748b;
+                font-weight: 400;
+            }
+
+            /* --- Padding for inner content --- */
+            .quote-page>div:not(.header):not(.quote-footer):not(#sec-personal-video) {
+                padding-left: 28px !important;
+                padding-right: 28px !important;
+            }
+
+            /* --- Savings Badge: stop pulse --- */
+            .savings-badge {
+                transform: none !important;
+            }
+
+            /* --- Cert Icon on Recommendation --- */
+            .cert-icon {
+                position: static !important;
+                display: inline-block !important;
+                margin-bottom: 8px !important;
+            }
+        }
     </style>
 </head>
 
@@ -3726,7 +4127,8 @@
     <!-- Floating Action Bar -->
     <div class="floating-bar" id="floating-bar" style="display: none;">
         <button onclick="openApplyModal()">&#10024; Apply Now</button>
-        <button class="secondary" id="btn-schedule" onclick="scheduleCall()" style="display:none;">&#128197; Schedule Call</button>
+        <button class="secondary" id="btn-schedule" onclick="scheduleCall()" style="display:none;">&#128197; Schedule
+            Call</button>
         <button class="secondary" id="btn-ask" onclick="askQuestion()">&#9679; Ask Question</button>
         <button class="secondary" onclick="downloadPDF()">&#128196; Save PDF</button>
         <button class="secondary" onclick="shareQuote()">&#128279; Share</button>
@@ -3736,13 +4138,18 @@
     <div id="apply-modal" class="modal-overlay" onclick="if(event.target===this)closeApplyModal()">
         <div class="modal-box">
             <h3>Start Your Application</h3>
-            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 4px;">You're one step away from unlocking your home equity.</p>
-            <p style="color: rgba(197,160,89,0.8); font-size: 11px; margin-bottom: 16px; font-family: var(--font-heading); font-weight: 600;">&#9201; Takes less than 2 minutes &#8226; No obligation &#8226; No credit pull</p>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 4px;">You're one step away from
+                unlocking your home equity.</p>
+            <p
+                style="color: rgba(197,160,89,0.8); font-size: 11px; margin-bottom: 16px; font-family: var(--font-heading); font-weight: 600;">
+                &#9201; Takes less than 2 minutes &#8226; No obligation &#8226; No credit pull</p>
             <input type="text" id="apply-name" placeholder="Your Full Name">
             <input type="email" id="apply-email" placeholder="Email Address">
             <input type="tel" id="apply-phone" placeholder="Phone Number">
             <textarea id="apply-message" rows="3" placeholder="Any questions or notes? (optional)"></textarea>
-            <div style="text-align: center; padding: 8px 0 4px; font-size: 10px; color: rgba(255,255,255,0.4); font-family: var(--font-heading);">&#128274; Your information is encrypted and secure</div>
+            <div
+                style="text-align: center; padding: 8px 0 4px; font-size: 10px; color: rgba(255,255,255,0.4); font-family: var(--font-heading);">
+                &#128274; Your information is encrypted and secure</div>
             <div style="display: flex; gap: 10px; margin-top: 8px;">
                 <button onclick="closeApplyModal()"
                     style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer;">Cancel</button>
@@ -3825,7 +4232,8 @@
         <div class="greeting-banner" id="greeting-banner"></div>
         <div class="body-content">
             <div class="progress-stepper" id="progress-stepper">
-                <div class="step completed" id="step-1"><span class="step-dot">&#10003;</span><span>Review Quote</span></div>
+                <div class="step completed" id="step-1"><span class="step-dot">&#10003;</span><span>Review Quote</span>
+                </div>
                 <div class="step-line filled" id="step-line-1"></div>
                 <div class="step active" id="step-2"><span class="step-dot">2</span><span>Quick Application</span></div>
                 <div class="step-line" id="step-line-2"></div>
@@ -3837,9 +4245,9 @@
                     <span class="dot"></span>
                     <span>Rates change daily — This quote expires in <strong id="pvf-countdown">48:00:00</strong></span>
                 </div>
-                
+
                 <div class="section-title" data-icon="🎥">Watch This Before Your Quote Expires</div>
-                
+
                 <!-- Social Proof Bar -->
                 <div class="pvf-social-proof" id="pvf-social-proof">
                     <div class="pvf-avatar-stack">
@@ -3863,7 +4271,7 @@
                     <!-- Thumbnail State -->
                     <div class="video-thumbnail pvf-video-thumbnail" id="video-thumbnail" onclick="playPsychVideo()">
                         <div class="pvf-video-pattern"></div>
-                        
+
                         <!-- LO Presence (Authority Builder) -->
                         <div class="pvf-lo-presence" id="pvf-lo-presence">
                             <div class="pvf-lo-avatar-wrap">
@@ -3880,7 +4288,8 @@
                         <div class="pvf-video-caption" id="pvf-video-caption">
                             <div class="pvf-caption-label">Your Personalized Strategy</div>
                             <div class="pvf-caption-text" id="pvf-caption-text">
-                                "Based on your home value, I found a way to access your equity while potentially lowering your monthly payments..."
+                                "Based on your home value, I found a way to access your equity while potentially
+                                lowering your monthly payments..."
                             </div>
                         </div>
 
@@ -3928,13 +4337,13 @@
                             <div class="pvf-step-title">Ask a Question</div>
                             <div class="pvf-step-desc">Send a quick message and get a response within 2 hours.</div>
                         </div>
-                        
+
                         <div class="pvf-commitment-step recommended" onclick="handleCommitmentStep(2)">
                             <div class="pvf-step-number">2</div>
                             <div class="pvf-step-title">Schedule a Call</div>
                             <div class="pvf-step-desc">15-minute strategy session. No obligation.</div>
                         </div>
-                        
+
                         <div class="pvf-commitment-step" onclick="handleCommitmentStep(3)">
                             <div class="pvf-step-number">3</div>
                             <div class="pvf-step-title">Start Application</div>
@@ -3950,10 +4359,15 @@
                                 <div class="pvf-widget-title">Common Questions</div>
                             </div>
                             <div class="pvf-quick-chips">
-                                <button class="pvf-chip" onclick="askQuickQuestion('Will this affect my credit score?')">Credit impact?</button>
-                                <button class="pvf-chip" onclick="askQuickQuestion('How long does approval take?')">Timeline?</button>
-                                <button class="pvf-chip" onclick="askQuickQuestion('Can I pay it off early?')">Early payoff?</button>
-                                <button class="pvf-chip" onclick="askQuickQuestion('What are the closing costs?')">Closing costs?</button>
+                                <button class="pvf-chip"
+                                    onclick="askQuickQuestion('Will this affect my credit score?')">Credit
+                                    impact?</button>
+                                <button class="pvf-chip"
+                                    onclick="askQuickQuestion('How long does approval take?')">Timeline?</button>
+                                <button class="pvf-chip" onclick="askQuickQuestion('Can I pay it off early?')">Early
+                                    payoff?</button>
+                                <button class="pvf-chip"
+                                    onclick="askQuickQuestion('What are the closing costs?')">Closing costs?</button>
                             </div>
                         </div>
 
@@ -3992,7 +4406,9 @@
                     </div>
                     <div class="pvf-trust-item">
                         <div class="pvf-trust-icon">🛡️</div>
-                        <span>Licensed & Insured · <a href="https://nmlsconsumeraccess.org/" target="_blank" rel="noopener" style="color: var(--accent-color); text-decoration: underline;">NMLS Verified</a></span>
+                        <span>Licensed & Insured · <a href="https://nmlsconsumeraccess.org/" target="_blank"
+                                rel="noopener" style="color: var(--accent-color); text-decoration: underline;">NMLS
+                                Verified</a></span>
                     </div>
                 </div>
             </div>
@@ -4007,9 +4423,18 @@
             <div class="equity-chart-section reveal" id="sec-equity-chart"></div>
             <!-- Social Proof Strip -->
             <div class="social-proof reveal" id="sec-social-proof">
-                <div class="sp-item"><div class="sp-number" data-target="2500" data-suffix="+">0</div><div class="sp-label">Homeowners Funded This Year</div></div>
-                <div class="sp-item"><div class="sp-number" data-target="5" data-suffix=" days">0</div><div class="sp-label">Average Time to Funding</div></div>
-                <div class="sp-item"><div class="sp-number" data-target="97" data-suffix="%">0</div><div class="sp-label">Client Satisfaction Rating</div></div>
+                <div class="sp-item">
+                    <div class="sp-number" data-target="2500" data-suffix="+">0</div>
+                    <div class="sp-label">Homeowners Funded This Year</div>
+                </div>
+                <div class="sp-item">
+                    <div class="sp-number" data-target="5" data-suffix=" days">0</div>
+                    <div class="sp-label">Average Time to Funding</div>
+                </div>
+                <div class="sp-item">
+                    <div class="sp-number" data-target="97" data-suffix="%">0</div>
+                    <div class="sp-label">Client Satisfaction Rating</div>
+                </div>
             </div>
             <div class="recommendation reveal" id="sec-recommendation">
                 <div class="cert-icon">&#9733;</div>
@@ -4351,7 +4776,7 @@
 
                     // 1. Savings Comparison (anchoring against credit cards & personal loans)
                     var ccMinPayment = Math.round(cashVal * 0.03); // ~3% minimum payment on credit cards at ~24% APR
-                    var plPayment = Math.round((cashVal * (0.12/12) * Math.pow(1 + 0.12/12, 60)) / (Math.pow(1 + 0.12/12, 60) - 1)); // 12% personal loan 5yr
+                    var plPayment = Math.round((cashVal * (0.12 / 12) * Math.pow(1 + 0.12 / 12, 60)) / (Math.pow(1 + 0.12 / 12, 60) - 1)); // 12% personal loan 5yr
                     var monthSavingsCC = Math.max(0, ccMinPayment - payVal);
                     var monthSavingsPL = Math.max(0, plPayment - payVal);
                     var yearSavingsCC = monthSavingsCC * 12;
@@ -4362,14 +4787,14 @@
                         savEl.innerHTML =
                             '<div class="sc-title"><span>&#128176;</span> Why a HELOC Saves You Thousands</div>' +
                             '<div class="sc-bars">' +
-                                '<div class="sc-bar-row"><div class="sc-bar-label">Your HELOC</div><div class="sc-bar-track"><div class="sc-bar-fill heloc" data-width="' + Math.round((payVal / maxBar) * 100) + '" style="width:0">$' + payVal.toLocaleString() + '/mo</div></div></div>' +
-                                '<div class="sc-bar-row"><div class="sc-bar-label">Credit Cards</div><div class="sc-bar-track"><div class="sc-bar-fill credit" data-width="' + Math.round((ccMinPayment / maxBar) * 100) + '" style="width:0">$' + ccMinPayment.toLocaleString() + '/mo</div></div></div>' +
-                                '<div class="sc-bar-row"><div class="sc-bar-label">Personal Loan</div><div class="sc-bar-track"><div class="sc-bar-fill personal" data-width="' + Math.round((plPayment / maxBar) * 100) + '" style="width:0">$' + plPayment.toLocaleString() + '/mo</div></div></div>' +
+                            '<div class="sc-bar-row"><div class="sc-bar-label">Your HELOC</div><div class="sc-bar-track"><div class="sc-bar-fill heloc" data-width="' + Math.round((payVal / maxBar) * 100) + '" style="width:0">$' + payVal.toLocaleString() + '/mo</div></div></div>' +
+                            '<div class="sc-bar-row"><div class="sc-bar-label">Credit Cards</div><div class="sc-bar-track"><div class="sc-bar-fill credit" data-width="' + Math.round((ccMinPayment / maxBar) * 100) + '" style="width:0">$' + ccMinPayment.toLocaleString() + '/mo</div></div></div>' +
+                            '<div class="sc-bar-row"><div class="sc-bar-label">Personal Loan</div><div class="sc-bar-track"><div class="sc-bar-fill personal" data-width="' + Math.round((plPayment / maxBar) * 100) + '" style="width:0">$' + plPayment.toLocaleString() + '/mo</div></div></div>' +
                             '</div>' +
                             '<div class="sc-savings-box">' +
-                                '<div class="sc-savings-item"><div class="sc-big">$' + monthSavingsCC.toLocaleString() + '</div><div class="sc-sub">saved per month vs credit cards</div></div>' +
-                                '<div class="sc-savings-item"><div class="sc-big">$' + yearSavingsCC.toLocaleString() + '</div><div class="sc-sub">saved per year</div></div>' +
-                                '<div class="sc-savings-item"><div class="sc-big">' + rateVal + '%</div><div class="sc-sub">' + (data.recType === 'variable' ? 'variable' : 'fixed') + ' rate vs 24%+ credit cards</div></div>' +
+                            '<div class="sc-savings-item"><div class="sc-big">$' + monthSavingsCC.toLocaleString() + '</div><div class="sc-sub">saved per month vs credit cards</div></div>' +
+                            '<div class="sc-savings-item"><div class="sc-big">$' + yearSavingsCC.toLocaleString() + '</div><div class="sc-sub">saved per year</div></div>' +
+                            '<div class="sc-savings-item"><div class="sc-big">' + rateVal + '%</div><div class="sc-sub">' + (data.recType === 'variable' ? 'variable' : 'fixed') + ' rate vs 24%+ credit cards</div></div>' +
                             '</div>';
                     }
 
@@ -4383,25 +4808,25 @@
                     ];
                     var fcEl = document.getElementById('sec-funds-carousel');
                     if (fcEl && cashVal > 0) {
-                        var slidesHtml = slides.map(function(s, i) {
+                        var slidesHtml = slides.map(function (s, i) {
                             return '<div class="fc-slide' + (i === 0 ? ' active' : '') + '">' +
                                 '<div class="fc-icon">' + s.icon + '</div>' +
                                 '<div class="fc-text"><div class="fc-headline">' + s.headline + '</div><div class="fc-sub">' + s.sub + '</div>' +
                                 '<button class="fc-cta" onclick="openApplyModal()">Get Started Now</button></div></div>';
                         }).join('');
-                        var dotsHtml = slides.map(function(s, i) {
+                        var dotsHtml = slides.map(function (s, i) {
                             return '<div class="fc-dot' + (i === 0 ? ' active' : '') + '" onclick="fcGoTo(' + i + ')"></div>';
                         }).join('');
                         fcEl.innerHTML = slidesHtml + '<div class="fc-dots">' + dotsHtml + '</div>';
 
                         // Auto-rotate carousel
                         var fcIdx = 0;
-                        window.fcGoTo = function(idx) {
+                        window.fcGoTo = function (idx) {
                             fcIdx = idx;
-                            fcEl.querySelectorAll('.fc-slide').forEach(function(s, i) { s.classList.toggle('active', i === idx); });
-                            fcEl.querySelectorAll('.fc-dot').forEach(function(d, i) { d.classList.toggle('active', i === idx); });
+                            fcEl.querySelectorAll('.fc-slide').forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+                            fcEl.querySelectorAll('.fc-dot').forEach(function (d, i) { d.classList.toggle('active', i === idx); });
                         };
-                        setInterval(function() { fcIdx = (fcIdx + 1) % slides.length; window.fcGoTo(fcIdx); }, 5000);
+                        setInterval(function () { fcIdx = (fcIdx + 1) % slides.length; window.fcGoTo(fcIdx); }, 5000);
                     }
 
                     // 3. Daily Cost Badge on recommendation payment
@@ -4420,11 +4845,11 @@
                     var spEl = document.getElementById('sec-social-proof');
                     if (!spEl) return;
                     var counted = false;
-                    var observer = new IntersectionObserver(function(entries) {
-                        entries.forEach(function(entry) {
+                    var observer = new IntersectionObserver(function (entries) {
+                        entries.forEach(function (entry) {
                             if (entry.isIntersecting && !counted) {
                                 counted = true;
-                                spEl.querySelectorAll('.sp-number').forEach(function(numEl) {
+                                spEl.querySelectorAll('.sp-number').forEach(function (numEl) {
                                     var target = parseInt(numEl.getAttribute('data-target')) || 0;
                                     var suffix = numEl.getAttribute('data-suffix') || '';
                                     var duration = 2000;
@@ -4451,12 +4876,12 @@
                     var savEl = document.getElementById('sec-savings');
                     if (!savEl) return;
                     var animated = false;
-                    var observer = new IntersectionObserver(function(entries) {
-                        entries.forEach(function(entry) {
+                    var observer = new IntersectionObserver(function (entries) {
+                        entries.forEach(function (entry) {
                             if (entry.isIntersecting && !animated) {
                                 animated = true;
-                                savEl.querySelectorAll('.sc-bar-fill').forEach(function(bar, i) {
-                                    setTimeout(function() {
+                                savEl.querySelectorAll('.sc-bar-fill').forEach(function (bar, i) {
+                                    setTimeout(function () {
                                         bar.style.width = bar.getAttribute('data-width') + '%';
                                     }, i * 200);
                                 });
@@ -4493,14 +4918,14 @@
                             '<div class="ub-unit"><span class="ub-num">0</span><span class="ub-lbl">Hours</span></div>';
                     }
 
-                    setTimeout(function() {
+                    setTimeout(function () {
                         banner.classList.add('visible');
                         trackEvent('urgency_banner_shown', { code: code });
                     }, 30000);
 
                     // Close on scroll past 90%
                     var dismissed = false;
-                    window.addEventListener('scroll', function() {
+                    window.addEventListener('scroll', function () {
                         if (dismissed) return;
                         var scrollPct = (window.scrollY + window.innerHeight) / document.body.scrollHeight;
                         if (scrollPct > 0.95) { banner.classList.remove('visible'); dismissed = true; }
@@ -4562,12 +4987,12 @@
                             function doPoll() {
                                 if (pollCount >= maxPolls) return;
                                 pollCount++;
-                                setTimeout(function() {
+                                setTimeout(function () {
                                     fetch(SUPABASE_URL + '/functions/v1/generate-video', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ action: 'poll_public', videoId: opts.heygenVideoId, code: code })
-                                    }).then(function(r) { return r.json(); }).then(function(result) {
+                                    }).then(function (r) { return r.json(); }).then(function (result) {
                                         if (result.status === 'completed' && result.videoUrl) {
                                             var isMP4 = /\.(mp4|webm|mov)(\?|$)/i.test(result.videoUrl);
                                             var safeVidUrl = esc(result.videoUrl);
@@ -4581,7 +5006,7 @@
                                         } else if (result.status !== 'failed') {
                                             doPoll(); // keep polling
                                         }
-                                    }).catch(function() { doPoll(); });
+                                    }).catch(function () { doPoll(); });
                                 }, 15000);
                             }
                             doPoll();
@@ -4597,10 +5022,24 @@
 
                 // === SALES PSYCHOLOGY SECTIONS: hide if LO turned them off ===
                 if (opts.showSalesPsych === false) {
-                    ['sec-savings', 'sec-funds-carousel', 'sec-social-proof'].forEach(function(id) {
+                    ['sec-savings', 'sec-funds-carousel', 'sec-social-proof'].forEach(function (id) {
                         var el = document.getElementById(id);
                         if (el) el.style.display = 'none';
                     });
+                }
+
+                // === LO INFO: hide footer if LO turned it off ===
+                if (opts.showLoInfo === false) {
+                    var footerEl = document.getElementById('sec-footer');
+                    if (footerEl) footerEl.style.display = 'none';
+                }
+
+                // === APPLY BUTTON: hide if LO turned it off ===
+                if (opts.showApply === false) {
+                    var barBtns = document.querySelectorAll('#floating-bar button');
+                    if (barBtns.length) barBtns[0].style.display = 'none'; // first btn = Apply Now
+                    var urgBtnEl = document.querySelector('.ub-btn');
+                    if (urgBtnEl) urgBtnEl.style.display = 'none';
                 }
 
                 // Apply scroll reveal classes
@@ -4691,41 +5130,41 @@
             // ============================================
             // PSYCHOLOGY VIDEO FUNNEL FUNCTIONS
             // ============================================
-            
+
             var _videoProgress = 0;
             var _videoInterval;
             var _videoCompleted = false;
 
             // Initialize Psychology Video Funnel
-            window.initPsychVideoFunnel = function(data, lo) {
+            window.initPsychVideoFunnel = function (data, lo) {
                 // Show urgency bar
                 var urgencyBar = document.getElementById('pvf-urgency-bar');
                 if (urgencyBar) urgencyBar.style.display = 'inline-flex';
-                
+
                 // Start countdown
                 startCountdown();
-                
+
                 // Update LO info
                 var loName = lo.name || 'Your Advisor';
                 var loAvatar = document.getElementById('pvf-lo-avatar');
                 var loNameEl = document.getElementById('pvf-lo-name');
                 var captionText = document.getElementById('pvf-caption-text');
-                
+
                 if (loNameEl) loNameEl.textContent = loName;
                 if (loAvatar && lo.name) {
-                    var initials = lo.name.split(' ').map(function(n) { return n.charAt(0).toUpperCase(); }).join('').substring(0, 2);
+                    var initials = lo.name.split(' ').map(function (n) { return n.charAt(0).toUpperCase(); }).join('').substring(0, 2);
                     loAvatar.textContent = initials;
                 }
-                
+
                 // Update caption with personalized data
                 if (captionText && data) {
                     var homeValue = data.homeValue ? parseFloat(String(data.homeValue).replace(/[$,]/g, '')) : 0;
                     var cashBack = data.cashBack ? parseFloat(String(data.cashBack).replace(/[$,]/g, '')) : 0;
                     if (homeValue && cashBack) {
-                        captionText.innerHTML = '"Based on your <strong>$' + (homeValue/1000000 >= 1 ? (homeValue/1000000).toFixed(2) + 'M' : (homeValue/1000).toFixed(0) + 'k') + '</strong> home value, I found a way to access <strong>$' + (cashBack/1000).toFixed(0) + 'k</strong> in equity while keeping your payments manageable..."';
+                        captionText.innerHTML = '"Based on your <strong>$' + (homeValue / 1000000 >= 1 ? (homeValue / 1000000).toFixed(2) + 'M' : (homeValue / 1000).toFixed(0) + 'k') + '</strong> home value, I found a way to access <strong>$' + (cashBack / 1000).toFixed(0) + 'k</strong> in equity while keeping your payments manageable..."';
                     }
                 }
-                
+
                 // Update savings calculator
                 var equityAmount = document.getElementById('pvf-equity-amount');
                 var paymentAmount = document.getElementById('pvf-payment-amount');
@@ -4748,16 +5187,16 @@
                 function update() {
                     var countdownEl = document.getElementById('pvf-countdown');
                     if (!countdownEl) return;
-                    
+
                     var remaining = Math.max(0, parseInt(expiry) - Date.now());
                     var hours = Math.floor(remaining / (60 * 60 * 1000));
                     var minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
                     var seconds = Math.floor((remaining % (60 * 1000)) / 1000);
-                    
-                    countdownEl.textContent = String(hours).padStart(2, '0') + ':' + 
-                                               String(minutes).padStart(2, '0') + ':' + 
-                                               String(seconds).padStart(2, '0');
-                    
+
+                    countdownEl.textContent = String(hours).padStart(2, '0') + ':' +
+                        String(minutes).padStart(2, '0') + ':' +
+                        String(seconds).padStart(2, '0');
+
                     if (remaining > 0) {
                         setTimeout(update, 1000);
                     }
@@ -4766,14 +5205,14 @@
             }
 
             // Play Video with Psychology Funnel
-            window.playPsychVideo = function() {
+            window.playPsychVideo = function () {
                 trackEvent('video_played', { code: code });
-                
+
                 var thumb = document.getElementById('video-thumbnail');
                 var wrapper = document.getElementById('video-frame-wrapper');
                 var fakePlayer = document.getElementById('fake-video-player');
                 var progressContainer = document.getElementById('pvf-progress-container');
-                
+
                 thumb.style.display = 'none';
                 wrapper.classList.add('playing');
                 if (progressContainer) progressContainer.style.display = 'block';
@@ -4782,7 +5221,7 @@
                 setTimeout(function () {
                     var loName = window._loInfo && window._loInfo.name ? window._loInfo.name : 'Your Advisor';
                     fakePlayer.innerHTML = '<div style="text-align: center; padding: 20px;"><div style="font-size:48px; margin-bottom:16px;">👤</div><div style="font-family: var(--font-heading); font-size: 18px; color: white; margin-bottom:8px;">Playing Personal Message from ' + esc(loName) + '</div><div style="font-size: 14px; color: #94a3b8; max-width: 400px; margin: 0 auto; line-height: 1.5;">This is a demonstration of the psychological video funnel. In production, a recorded Loom, YouTube, or native video would play here.</div></div>';
-                    
+
                     // Start progress simulation
                     simulateVideoProgress();
                 }, 1500);
@@ -4792,11 +5231,11 @@
             function simulateVideoProgress() {
                 _videoProgress = 0;
                 var progressBar = document.getElementById('pvf-progress-bar');
-                
-                _videoInterval = setInterval(function() {
+
+                _videoInterval = setInterval(function () {
                     _videoProgress += 0.8;
                     if (progressBar) progressBar.style.width = _videoProgress + '%';
-                    
+
                     if (_videoProgress >= 100) {
                         clearInterval(_videoInterval);
                         onVideoComplete();
@@ -4808,43 +5247,43 @@
             function onVideoComplete() {
                 if (_videoCompleted) return;
                 _videoCompleted = true;
-                
+
                 trackEvent('video_completed', { code: code });
-                
+
                 // Show funnel stage
                 var funnelStage = document.getElementById('pvf-funnel-stage');
                 if (funnelStage) {
                     funnelStage.style.display = 'block';
                     funnelStage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 }
-                
+
                 // Create confetti celebration
                 createConfetti();
             }
 
             // Commitment Step Handler
-            window.handleCommitmentStep = function(step) {
+            window.handleCommitmentStep = function (step) {
                 var actions = {
-                    1: function() { 
-                        trackEvent('ask_question_clicked', { code: code }); 
-                        askQuestion(); 
+                    1: function () {
+                        trackEvent('ask_question_clicked', { code: code });
+                        askQuestion();
                     },
-                    2: function() { 
-                        trackEvent('schedule_call_clicked', { code: code }); 
-                        scheduleCall(); 
+                    2: function () {
+                        trackEvent('schedule_call_clicked', { code: code });
+                        scheduleCall();
                     },
-                    3: function() { 
-                        trackEvent('start_application_clicked', { code: code }); 
-                        openApplyModal(); 
+                    3: function () {
+                        trackEvent('start_application_clicked', { code: code });
+                        openApplyModal();
                     }
                 };
-                
+
                 if (actions[step]) actions[step]();
                 createConfetti();
             };
 
             // Quick Question Handler
-            window.askQuickQuestion = function(question) {
+            window.askQuickQuestion = function (question) {
                 trackEvent('quick_question_clicked', { code: code, question: question });
                 // Pre-fill the contact modal with the question
                 var contactMessage = document.getElementById('contact-message');
@@ -4853,7 +5292,7 @@
             };
 
             // Schedule Call Handler
-            window.scheduleCall = function() {
+            window.scheduleCall = function () {
                 if (window._loInfo && window._loInfo.calendarLink) {
                     window.open(window._loInfo.calendarLink, '_blank');
                 } else {
