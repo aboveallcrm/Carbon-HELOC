@@ -469,18 +469,27 @@
 
         /* ===== SEND QUOTE SECTION ===== */
         .send-quote-section {
-            margin: 14px 0 10px;
-            padding: 14px 16px;
-            background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(6,182,212,0.06));
-            border: 1px solid rgba(16,185,129,0.2);
-            border-radius: 10px;
+            position: fixed;
+            top: 52px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 94%;
+            max-width: 960px;
+            z-index: 99998;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, rgba(15,23,42,0.97), rgba(30,41,59,0.97));
+            border: 1px solid rgba(16,185,129,0.25);
+            border-radius: 0 0 12px 12px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            display: none;
         }
         .send-quote-section h3 {
             font-family: var(--font-heading);
             font-size: 11px;
             font-weight: 800;
             color: #10b981;
-            margin: 0 0 10px;
+            margin: 0 0 8px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
@@ -1369,8 +1378,8 @@
             }
 
             .send-quote-section {
-                margin: 8px 0 6px;
-                padding: 10px 12px;
+                width: 96%;
+                padding: 8px 12px;
             }
             .send-quote-section h3 { font-size: 9px; margin-bottom: 6px; }
             .send-quote-preview textarea { font-size: 8px; padding: 6px 8px; }
@@ -4854,6 +4863,8 @@
         <button class="toolbar-btn" onclick="printPDF()">📄 PDF</button>
         <button class="toolbar-btn" onclick="openEmailSendModal()" title="One-click email with quote"
             style="background:linear-gradient(135deg,#0078d4,#005a9e);">✉️ Email</button>
+        <button class="toolbar-btn" onclick="toggleSendQuotePanel()" title="Send quote via SMS, Email, or CRM"
+            style="background:linear-gradient(135deg,#10b981,#059669);" id="btn-send-quote">📲 Send</button>
         <button class="toolbar-btn" id="btn-download-pdf"
             style="display:none; background: linear-gradient(135deg, #06b6d4, #0891b2);" onclick="exportBrandedPDF()">⬇
             Download</button>
@@ -4869,6 +4880,32 @@
         <button class="toolbar-btn" id="btn-logout"
             style="display:none; background: #ef4444; font-size: 10px; padding: 5px 10px;"
             onclick="if(window.logoutUser) window.logoutUser()">Logout</button>
+    </div>
+
+    <!-- SEND THIS QUOTE SECTION (toolbar-level, outside proposal container) -->
+    <div id="send-quote-section" class="send-quote-section">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+            <h3 style="margin:0;">Send This Quote</h3>
+            <button onclick="toggleSendQuotePanel()" style="background:none; border:none; color:rgba(255,255,255,0.5); font-size:16px; cursor:pointer; padding:0 4px; line-height:1;">&times;</button>
+        </div>
+        <div class="send-quote-preview">
+            <textarea id="send-quote-sms" rows="2" readonly></textarea>
+            <span class="send-quote-charcount"><span id="sms-char-count">0</span>/160</span>
+        </div>
+        <div class="send-quote-actions">
+            <button class="sq-btn-copy" onclick="copyQuoteSMS()">📋 Copy</button>
+            <button class="sq-btn-bonzo" id="sq-btn-bonzo" onclick="sendQuoteViaBonzo()">📲 Send via Bonzo</button>
+            <button class="sq-btn-ghl" id="sq-btn-ghl" onclick="sendQuoteViaGHL()">📲 Send via GHL</button>
+            <button class="sq-btn-email" id="sq-btn-email" onclick="toggleQuoteEmailMenu(event)" style="position:relative;">
+                📧 Email Quote
+                <div class="sq-email-dropdown" id="sq-email-dropdown">
+                    <button onclick="sendQuoteViaOutlook(event)">📨 Outlook</button>
+                    <button onclick="sendQuoteViaGmailDirect(event)">📧 Gmail</button>
+                    <button onclick="copyQuoteEmailHTML(event)">📋 Copy HTML</button>
+                </div>
+            </button>
+        </div>
+        <div id="send-quote-status"></div>
     </div>
 
     <!-- Quote View Notification Panel -->
@@ -5087,7 +5124,7 @@
                         <div class="toggle-switch" id="toggle-show-fees" onclick="toggleSwitch(this)"></div><span
                             class="toggle-label">Show Fees</span>
                     </div>
-                    <div class="toggle-container">
+                    <div class="toggle-container" id="disclaimer-toggle-container" style="display:none;">
                         <div class="toggle-switch active" id="toggle-show-disclaimer" onclick="toggleSwitch(this)">
                         </div><span class="toggle-label">Show Disclaimer</span>
                     </div>
@@ -5145,6 +5182,11 @@
                             <option value="15">15-Year</option>
                             <option value="10">10-Year</option>
                         </select></div>
+                    <div class="input-field"><label style="color: var(--accent-color);">Rec. Type <span class="help-tip">?<span class="help-tip-text">Fixed = locked rate for the life of the loan. Variable = rate may adjust periodically. Choose which type to recommend to the client.</span></span></label><select
+                            id="rec-type-select" style="border-color: var(--accent-color);" onchange="updateQuote()">
+                            <option value="fixed" selected>Fixed</option>
+                            <option value="variable">Variable</option>
+                        </select></div>
                     <div style="display: flex; gap: 15px; align-items: center; padding-top: 15px;">
                         <label
                             style="display: flex; align-items: center; cursor: pointer; font-family: var(--font-heading); font-size: 9px; text-transform: uppercase; font-weight: 700; color: white;"><input
@@ -5165,6 +5207,16 @@
             <div class="control-section" style="background: rgba(6,182,212,0.1); border-color: #06b6d4;">
                 <h4 style="font-family: var(--font-heading); color: #06b6d4; margin: 0 0 12px 0; font-size: 11px;">📄
                     Presentation Output Controls <span class="help-tip">?<span class="help-tip-text">Control what appears on the client-facing link vs the PDF export. Client Link = the web page they see. PDF = the downloaded document.</span></span></h4>
+                <div style="margin-bottom: 12px;">
+                    <label style="font-size: 9px; color: rgba(255,255,255,0.8); font-family: var(--font-heading); font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 4px;">🎨 Quote Style Preset</label>
+                    <select id="link-style-preset" onchange="applyLinkPreset(this.value)"
+                        style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(6,182,212,0.3); color: #22d3ee; border-radius: 6px; padding: 8px 10px; font-size: 10px; font-family: var(--font-heading); cursor: pointer;">
+                        <option value="enhanced" selected>Enhanced — Full sales psychology, animations, AI chat</option>
+                        <option value="original">Original — Clean quote with rates, no extras</option>
+                        <option value="minimal">Minimal — Just the numbers, fast loading</option>
+                        <option value="custom">Custom — Set each option below</option>
+                    </select>
+                </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: start;">
                     <div>
                         <strong style="color:white;font-size:10px;display:block;margin-bottom:8px;">🔗 Client Link
@@ -5181,6 +5233,40 @@
                             style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8); margin-bottom: 6px;"><input
                                 type="checkbox" id="chk-link-apply" checked style="margin-right: 6px;"> Show 'Apply Now'
                             Button</label>
+                        <label
+                            style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8); margin-bottom: 6px;"><input
+                                type="checkbox" id="chk-link-video" style="margin-right: 6px;"> Show Video Section</label>
+                        <div id="link-video-options-wrap" style="display:none; margin-bottom: 6px; padding-left: 18px;">
+                            <div id="link-video-mode-wrap" style="margin-bottom: 6px;">
+                                <label style="display: flex; align-items: center; cursor: pointer; font-size: 8px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">
+                                    <input type="radio" name="video-mode" id="video-mode-manual" value="manual" checked style="margin-right: 6px;"> Custom Video URL (YouTube, Loom, etc.)
+                                </label>
+                                <label id="video-mode-heygen-label" style="display: none; align-items: center; cursor: pointer; font-size: 8px; color: #06b6d4; margin-bottom: 4px;">
+                                    <input type="radio" name="video-mode" id="video-mode-heygen" value="heygen" style="margin-right: 6px;">
+                                    🎬 Auto-Generate Personalized Video (HeyGen AI)
+                                    <span style="font-size: 7px; background: #06b6d4; color: #0f172a; padding: 1px 4px; border-radius: 6px; font-weight: 700; margin-left: 4px;">DIAMOND</span>
+                                </label>
+                            </div>
+                            <div id="link-video-url-wrap">
+                                <input type="text" id="link-video-url" placeholder="Video URL (YouTube, Loom, etc.)"
+                                    style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(139,92,246,0.3); color: #a78bfa; border-radius: 4px; padding: 4px 8px; font-size: 8px; font-family: var(--font-heading);">
+                            </div>
+                            <div id="link-video-heygen-wrap" style="display: none;">
+                                <textarea id="heygen-script-preview" rows="5"
+                                    placeholder="Script will be auto-generated from quote data..."
+                                    style="width:100%;border-radius:5px;border:1px solid rgba(6,182,212,0.3);padding:6px 8px;font-family:var(--font-body);font-size:8px;background:rgba(0,0,0,0.3);color:#67e8f9;resize:vertical;"></textarea>
+                                <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                    <button class="btn" style="background: #06b6d4; font-size: 8px; padding: 3px 10px;"
+                                        onclick="regenerateHeyGenScript()">🔄 Regenerate Script</button>
+                                    <span id="heygen-script-chars" style="font-size: 7px; color: rgba(255,255,255,0.4);">0 / 1500 chars</span>
+                                </div>
+                                <p style="font-size: 7px; color: rgba(255,255,255,0.4); margin: 4px 0 0 0;">
+                                    Edit the script above or click Regenerate. Video will be generated when you create the client link (~2 min).</p>
+                            </div>
+                        </div>
+                        <label
+                            style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8); margin-bottom: 6px;"><input
+                                type="checkbox" id="chk-link-sales-psych" checked style="margin-right: 6px;"> Sales Psychology Sections</label>
                         <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
                             <label
                                 style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8);"><input
@@ -5799,6 +5885,12 @@
                                 onclick="uploadSettingsImage('lo-headshot-url','headshotUrl')">📷 Upload</button></div>
                     </div>
                 </div>
+                <div class="input-group" style="margin-top:8px;">
+                    <div class="input-field"><label>Application Link <span class="help-tip">?<span class="help-tip-text">The URL where clients start their HELOC application. Clients see this as the "Apply Now" button on their quote page.</span></span></label><input type="text" id="lo-apply-link"
+                            placeholder="https://your-application-page.com" oninput="debouncedUpdateProfile()"></div>
+                    <div class="input-field"><label>Calendar Link <span class="help-tip">?<span class="help-tip-text">Your scheduling link (Calendly, Cal.com, etc.). Clients see this as the "Schedule a Call" button on their quote page.</span></span></label><input type="text" id="lo-calendar-link"
+                            placeholder="https://calendly.com/your-link" oninput="debouncedUpdateProfile()"></div>
+                </div>
 
                 <!-- Notification Preferences -->
                 <div
@@ -6255,6 +6347,45 @@ Best regards,
                             how the AI generates sales strategies. The default prompt is tailored for HELOC — only
                             override if you need a specific approach.</p>
                     </div>
+                </div>
+
+                <!-- HEYGEN AI VIDEO (Diamond exclusive) -->
+                <div id="int-heygen"
+                    style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(6,182,212,0.3);">
+                    <h5 style="font-family: var(--font-heading); font-size: 10px; color: #06b6d4; margin: 0 0 10px 0;">
+                        🎬 HeyGen AI Video <span
+                            style="font-size: 7px; background: #06b6d4; color: #0f172a; padding: 2px 6px; border-radius: 8px; font-weight: 700;">DIAMOND</span>
+                    </h5>
+                    <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 0 0 10px 0;">Auto-generate
+                        personalized video greetings for each client quote using your AI avatar.</p>
+                    <div class="input-group">
+                        <div class="input-field" style="flex: 2;">
+                            <label>HeyGen API Key <span class="help-tip">?<span class="help-tip-text">Your HeyGen API
+                                        key from Settings → API Keys in the HeyGen dashboard.</span></span></label>
+                            <input type="password" id="heygen-api-key" placeholder="sk-heygen-xxxxxxxx">
+                        </div>
+                    </div>
+                    <div class="input-group" style="margin-top: 8px;">
+                        <div class="input-field">
+                            <label>Avatar ID <span class="help-tip">?<span class="help-tip-text">Your avatar ID from
+                                        HeyGen. Create a video avatar first, then copy its ID from the avatar details
+                                        page.</span></span></label>
+                            <input type="text" id="heygen-avatar-id" placeholder="avatar_xxxxx">
+                        </div>
+                        <div class="input-field">
+                            <label>Voice ID (optional)</label>
+                            <input type="text" id="heygen-voice-id"
+                                placeholder="Leave blank for avatar's default voice">
+                        </div>
+                    </div>
+                    <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 8px 0 0 0;">
+                        Create your video avatar at <a href="https://app.heygen.com/avatars" target="_blank"
+                            style="color: #06b6d4;">app.heygen.com/avatars</a>.
+                        Record a 2-minute training video and HeyGen creates your digital twin.</p>
+                    <button class="btn" style="background: #06b6d4; margin-top: 10px; font-size: 9px;"
+                        onclick="testHeyGenConnection()">🔗 Test Connection</button>
+                    <span id="heygen-status"
+                        style="font-size: 8px; color: rgba(255,255,255,0.4); margin-left: 8px;"></span>
                 </div>
 
                 <!-- WEBHOOKS & CRM CONNECTIONS -->
@@ -7121,28 +7252,7 @@ Best regards,
                 <span class="cta-link-text" id="apply-link-text">heloc.westcapitallending.com</span>
             </div>
 
-            <!-- SEND THIS QUOTE SECTION -->
-            <div id="send-quote-section" class="send-quote-section">
-                <h3>Send This Quote</h3>
-                <div class="send-quote-preview">
-                    <textarea id="send-quote-sms" rows="2" readonly></textarea>
-                    <span class="send-quote-charcount"><span id="sms-char-count">0</span>/160</span>
-                </div>
-                <div class="send-quote-actions">
-                    <button class="sq-btn-copy" onclick="copyQuoteSMS()">📋 Copy</button>
-                    <button class="sq-btn-bonzo" id="sq-btn-bonzo" onclick="sendQuoteViaBonzo()">📲 Send via Bonzo</button>
-                    <button class="sq-btn-ghl" id="sq-btn-ghl" onclick="sendQuoteViaGHL()">📲 Send via GHL</button>
-                    <button class="sq-btn-email" id="sq-btn-email" onclick="toggleQuoteEmailMenu(event)" style="position:relative;">
-                        📧 Email Quote
-                        <div class="sq-email-dropdown" id="sq-email-dropdown">
-                            <button onclick="sendQuoteViaOutlook(event)">📨 Outlook</button>
-                            <button onclick="sendQuoteViaGmailDirect(event)">📧 Gmail</button>
-                            <button onclick="copyQuoteEmailHTML(event)">📋 Copy HTML</button>
-                        </div>
-                    </button>
-                </div>
-                <div id="send-quote-status"></div>
-            </div>
+            <!-- SEND THIS QUOTE — moved to toolbar area above proposal -->
         </div>
 
         <div class="client-disclaimer" id="client-disclaimer">
@@ -7501,6 +7611,12 @@ Best regards,
                 userInfo.innerText = window.currentUserEmail || '';
             }
 
+            // Show disclaimer toggle only for admin/super_admin (disclaimer is always-on for clients)
+            var disclaimerToggle = document.getElementById('disclaimer-toggle-container');
+            if (disclaimerToggle) {
+                disclaimerToggle.style.display = (role === 'admin' || role === 'super_admin') ? '' : 'none';
+            }
+
             console.log('Role access applied:', role, '| Tabs:', visibleTabs.join(', '));
         }
 
@@ -7515,7 +7631,7 @@ Best regards,
             if (level === -1) level = 0;
 
             // Start by hiding ALL integration subsections
-            var allIds = ['int-ghl', 'int-n8n', 'int-radar', 'int-ai', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks'];
+            var allIds = ['int-ghl', 'int-n8n', 'int-radar', 'int-ai', 'int-heygen', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks'];
             allIds.forEach(function (id) {
                 var el = document.getElementById(id);
                 if (el) el.style.display = 'none';
@@ -7556,6 +7672,30 @@ Best regards,
             if (level >= 3) {
                 var intN8n = document.getElementById('int-n8n');
                 if (intN8n) intN8n.style.display = '';
+            }
+
+            // ---- DIAMOND (level >= 4): HeyGen AI Video ----
+            if (level >= 4) {
+                var intHeygen = document.getElementById('int-heygen');
+                if (intHeygen) intHeygen.style.display = '';
+            }
+
+            // Show HeyGen video mode option in Presentation Controls for Diamond users
+            var heygenModeLabel = document.getElementById('video-mode-heygen-label');
+            if (heygenModeLabel) {
+                heygenModeLabel.style.display = level >= 4 ? 'flex' : 'none';
+            }
+            // If not diamond and heygen was selected, force back to manual
+            if (level < 4) {
+                var heygenRadio = document.getElementById('video-mode-heygen');
+                var manualRadio = document.getElementById('video-mode-manual');
+                if (heygenRadio && heygenRadio.checked && manualRadio) {
+                    manualRadio.checked = true;
+                    var manWrap = document.getElementById('link-video-url-wrap');
+                    var hgWrap = document.getElementById('link-video-heygen-wrap');
+                    if (manWrap) manWrap.style.display = '';
+                    if (hgWrap) hgWrap.style.display = 'none';
+                }
             }
 
             // ---- TEASER for features they can't access yet ----
@@ -7969,14 +8109,14 @@ Best regards,
                 if (_demoTierOverride) {
                     // Demo mode: use full hide/show (like real users) instead of badges
                     // Clear any existing lock badges first
-                    ['int-ghl', 'int-n8n', 'int-radar', 'int-ai', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks'].forEach(function(id) {
+                    ['int-ghl', 'int-n8n', 'int-radar', 'int-ai', 'int-heygen', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks'].forEach(function(id) {
                         unlockSubsection(id);
                     });
                     applyIntegrationAccess(window.currentUserRole, effectiveTier);
                 } else {
                     // Normal super_admin view: show all sections, add tier lock badges for preview
                     // First restore all sections to visible (undo any demo hiding)
-                    ['int-ghl', 'int-n8n', 'int-radar', 'int-ai', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks'].forEach(function(id) {
+                    ['int-ghl', 'int-n8n', 'int-radar', 'int-ai', 'int-heygen', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks'].forEach(function(id) {
                         var el = document.getElementById(id);
                         if (el) el.style.display = '';
                         unlockSubsection(id);
@@ -8217,7 +8357,8 @@ Best regards,
             var FIELD_MAP = {
                 loName: 'lo-name', loTitle: 'lo-title', loNmls: 'lo-nmls', loDre: 'lo-dre',
                 loPhone: 'lo-phone', loEmail: 'lo-email', loWebsite: 'lo-website', headshotUrl: 'lo-headshot-url',
-                loCompany: 'lo-company', coNmls: 'co-nmls', coDre: 'co-dre', loAddress: 'lo-address', logoUrl: 'lo-logo-url'
+                loCompany: 'lo-company', coNmls: 'co-nmls', coDre: 'co-dre', loAddress: 'lo-address', logoUrl: 'lo-logo-url',
+                loApplyLink: 'lo-apply-link', loCalendarLink: 'lo-calendar-link'
             };
             var INT_FIELD_MAP = {
                 bonzoApiKey: 'bonzo-api-key', bonzoApiKey2: 'bonzo-api-key-2',
@@ -8479,6 +8620,10 @@ Best regards,
                     '<div class="ob-field"><label>Phone *</label><input type="tel" data-ob-field="loPhone" data-ob-required placeholder="(555) 123-4567"><div class="ob-error">Phone is required</div></div>' +
                     '<div class="ob-field"><label>Email *</label><input type="email" data-ob-field="loEmail" data-ob-required placeholder="you@company.com"><div class="ob-error">Valid email required</div></div>' +
                     '<div class="ob-field"><label>Website</label><input type="text" data-ob-field="loWebsite" placeholder="www.yoursite.com"></div>' +
+                    '</div>' +
+                    '<div class="ob-row">' +
+                    '<div class="ob-field"><label>Application Link</label><input type="text" data-ob-field="loApplyLink" placeholder="https://your-application-page.com"></div>' +
+                    '<div class="ob-field"><label>Calendar Link</label><input type="text" data-ob-field="loCalendarLink" placeholder="https://calendly.com/your-link"></div>' +
                     '</div>' +
                     '</div>' +
                     renderDots(1) +
@@ -11033,10 +11178,13 @@ Best regards,
                 wlAccent: getVal('wl-accent'),
                 wlHeaderText: getVal('wl-header-text'),
                 wlBodyText: getVal('wl-body-text'),
+                loApplyLink: getVal('lo-apply-link'),
+                loCalendarLink: getVal('lo-calendar-link'),
                 wlApplyLink: getVal('wl-apply-link'),
                 wlApplyText: getVal('wl-apply-text'),
                 recTier: getVal('rec-tier-select'),
                 recTerm: getVal('rec-term-select'),
+                recType: getVal('rec-type-select'),
                 isInterestOnly: isInterestOnly,
                 manualRatesEnabled: manualRatesEnabled,
                 t1Orig: getVal('t1-orig'),
@@ -11086,10 +11234,13 @@ Best regards,
                     if (data.wlAccent) document.getElementById('wl-accent').value = data.wlAccent;
                     if (data.wlHeaderText) document.getElementById('wl-header-text').value = data.wlHeaderText;
                     if (data.wlBodyText) document.getElementById('wl-body-text').value = data.wlBodyText;
+                    if (data.loApplyLink) document.getElementById('lo-apply-link').value = data.loApplyLink;
+                    if (data.loCalendarLink) document.getElementById('lo-calendar-link').value = data.loCalendarLink;
                     if (data.wlApplyLink) document.getElementById('wl-apply-link').value = data.wlApplyLink;
                     if (data.wlApplyText) document.getElementById('wl-apply-text').value = data.wlApplyText;
                     if (data.recTier) document.getElementById('rec-tier-select').value = data.recTier;
                     if (data.recTerm) document.getElementById('rec-term-select').value = data.recTerm;
+                    if (data.recType) document.getElementById('rec-type-select').value = data.recType;
                     if (data.t1Orig) document.getElementById('t1-orig').value = data.t1Orig;
                     if (data.t2Orig) document.getElementById('t2-orig').value = data.t2Orig;
                     if (data.t3Orig) document.getElementById('t3-orig').value = data.t3Orig;
@@ -11117,7 +11268,7 @@ Best regards,
             const bodyText = document.getElementById('wl-body-text').value;
             const lenderName = document.getElementById('wl-lender-name').value;
             const tagline = document.getElementById('wl-tagline').value;
-            const applyLink = document.getElementById('wl-apply-link').value;
+            const applyLink = document.getElementById('lo-apply-link')?.value || document.getElementById('wl-apply-link').value;
             const applyText = document.getElementById('wl-apply-text').value;
             document.documentElement.style.setProperty('--header-bg', headerBg);
             document.documentElement.style.setProperty('--primary-color', headerBg);
@@ -11268,6 +11419,8 @@ Best regards,
 
             const recTier = document.getElementById('rec-tier-select').value;
             const recTerm = parseInt(document.getElementById('rec-term-select').value);
+            const recRateType = document.getElementById('rec-type-select').value;
+            const isVarRec = recRateType === 'variable';
 
             document.querySelectorAll('.heloc-table tr, #proposal-container table tr').forEach(row => row.classList.remove('highlight-row'));
             const targetTable = document.getElementById(recTier + '-table');
@@ -11277,11 +11430,15 @@ Best regards,
             }
 
             const recData = calculatedData[recTier];
-            const recPaymentData = recData.payments[recTerm];
+            const recPaymentData = isVarRec ? recData.varPayments[recTerm] : recData.payments[recTerm];
 
             document.getElementById('rec-term-display').innerText = recTerm + '-YEAR';
-            document.getElementById('rec-type-display').innerText = isInterestOnly ? "I/O" : "FIXED";
-            document.getElementById('rec-offer-line').innerText = recTerm + '-Yr @ ' + recPaymentData.rate.toFixed(2) + '% | ' + recData.orig + '% Orig | ' + fmtCurrency(recPaymentData.pmt) + (isInterestOnly ? ' (I/O)' : '');
+            document.getElementById('rec-type-display').innerText = isInterestOnly
+                ? (isVarRec ? "VAR I/O" : "I/O")
+                : (isVarRec ? "VARIABLE" : "FIXED");
+            var recTypeLabel = isVarRec ? 'Var' : 'Fixed';
+            if (isInterestOnly) recTypeLabel += ' I/O';
+            document.getElementById('rec-offer-line').innerText = recTerm + '-Yr ' + recTypeLabel + ' @ ' + recPaymentData.rate.toFixed(2) + '% | ' + recData.orig + '% Orig | ' + fmtCurrency(recPaymentData.pmt);
             document.getElementById('rec-tagline').innerText = taglines[recTier];
 
             document.getElementById('snap-orig-perc').innerText = recData.orig;
@@ -11291,7 +11448,9 @@ Best regards,
             const cltv = homeValue > 0 ? ((mortgageBalance + recData.totalLoan) / homeValue) * 100 : 0;
             document.getElementById('out-cltv').innerText = cltv.toFixed(1) + '%';
             document.getElementById('snap-rate').innerText = recPaymentData.rate.toFixed(2);
-            document.getElementById('snap-rate-type').innerText = isInterestOnly ? "I/O" : "Fixed";
+            document.getElementById('snap-rate-type').innerText = isInterestOnly
+                ? (isVarRec ? "Var I/O" : "I/O")
+                : (isVarRec ? "Variable" : "Fixed");
             document.getElementById('snap-term').innerText = recTerm;
             document.getElementById('snap-payment').innerText = fmtCurrencyExact(recPaymentData.pmt);
             document.getElementById('snap-orig-amt').innerText = fmtCurrencyExact(recData.feeAmt);
@@ -11299,7 +11458,7 @@ Best regards,
             // Break-even
             const recFee = recData.feeAmt;
             const t3Data = calculatedData['t3'];
-            const t3Pmt = t3Data.payments[recTerm].pmt;
+            const t3Pmt = isVarRec ? t3Data.varPayments[recTerm].pmt : t3Data.payments[recTerm].pmt;
             const t3Fee = t3Data.feeAmt;
             const upfrontDiff = recFee - t3Fee;
             const monthlySavings = t3Pmt - recPaymentData.pmt;
@@ -11355,7 +11514,7 @@ Best regards,
                     cash_back: cashBack,
                     heloc_payoff: helocPayoff,
                     cltv: cltv.toFixed(1),
-                    recommended: { tier: recTier, term: recTerm, rate: recPaymentData.rate, payment: recPaymentData.pmt }
+                    recommended: { tier: recTier, term: recTerm, rate: recPaymentData.rate, payment: recPaymentData.pmt, rateType: recRateType }
                 });
             }, 2000);
         }
@@ -11427,7 +11586,9 @@ Best regards,
             // ── 2. KEY NUMBERS ──
             var nums = '📊 KEY NUMBERS TO PRESENT\n';
             nums += '• Total Loan: ' + totalLoan + '\n';
-            nums += '• Rate: ' + rate + '% ' + (ctx.isInterestOnly ? '(Interest Only)' : '(Fixed)') + '  |  Term: ' + term + ' years\n';
+            var kbRateTypeLabel = ctx.recType === 'variable' ? 'Variable' : 'Fixed';
+            if (ctx.isInterestOnly) kbRateTypeLabel += ' I/O';
+            nums += '• Rate: ' + rate + '% (' + kbRateTypeLabel + ')  |  Term: ' + term + ' years\n';
             nums += '• Monthly Payment: ' + payment + '\n';
             if (origPct && origPct !== '0') nums += '• Origination: ' + origPct + '%\n';
             nums += '• Combined LTV: ' + ctx.cltv + '\n';
@@ -11444,7 +11605,14 @@ Best regards,
                 why += '→ One payment vs. multiple creditors — simpler, cheaper, faster payoff\n';
             }
             if (helocPayoff > 0) {
-                why += '→ Rolling the existing HELOC balance into a fixed-rate product eliminates variable rate risk\n';
+                if (ctx.recType === 'variable') {
+                    why += '→ Rolling the existing HELOC into a competitive variable rate structure with potential savings\n';
+                } else {
+                    why += '→ Rolling the existing HELOC balance into a fixed-rate product eliminates variable rate risk\n';
+                }
+            }
+            if (ctx.recType === 'variable') {
+                why += '→ Variable rate offers a lower starting rate — ideal if the client plans to pay down aggressively or refinance within a few years\n';
             }
             if (savingsNum > 200) {
                 why += '→ ' + savings + '/mo savings = ' + (savingsNum * 12).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) + '/yr back in the client\'s pocket\n';
@@ -11588,18 +11756,23 @@ Best regards,
             ctx.recommendedTerm = g('snap-term');
             ctx.monthlyPayment = g('snap-payment');
             ctx.origination = g('snap-orig-perc');
+            ctx.recType = document.getElementById('rec-type-select')?.value || 'fixed';
             ctx.netMonthlySavings = g('out-net-savings');
 
-            // Tier details (all 3 tiers, fixed rates)
+            // Tier details (all 3 tiers, fixed + variable rates)
             ctx.tiers = [];
             for (var t = 1; t <= 3; t++) {
-                var tier = { tier: t, origPts: g('t' + t + '-orig'), rates: {} };
+                var tier = { tier: t, origPts: g('t' + t + '-orig'), rates: {}, varRates: {} };
                 ['30', '20', '15', '10'].forEach(function (yr) {
                     var rate = g('out-t' + t + '-' + yr + '-rate');
                     var pay = g('out-t' + t + '-' + yr + '-pay');
                     if (rate && rate !== '0.00') tier.rates[yr + 'yr'] = { rate: rate + '%', payment: pay };
+
+                    var varRate = g('out-t' + t + '-' + yr + '-var');
+                    var varPay = g('out-t' + t + '-' + yr + '-var-pay');
+                    if (varRate && varRate !== '0.00') tier.varRates[yr + 'yr'] = { rate: varRate + '%', payment: varPay };
                 });
-                if (Object.keys(tier.rates).length > 0) ctx.tiers.push(tier);
+                if (Object.keys(tier.rates).length > 0 || Object.keys(tier.varRates).length > 0) ctx.tiers.push(tier);
             }
 
             // Scenario context
@@ -11689,6 +11862,7 @@ CLIENT PROFILE:
 RECOMMENDED QUOTE:
 - Total Loan: ${ctx.totalLoanAmount}
 - Rate: ${ctx.recommendedRate}%  |  Term: ${ctx.recommendedTerm} years
+- Rate Type: ${ctx.recType === 'variable' ? 'Variable (adjustable)' : 'Fixed (locked)'}
 - Monthly Payment: ${ctx.monthlyPayment}
 - Origination: ${ctx.origination}%
 - Interest Only: ${ctx.isInterestOnly ? 'Yes' : 'No'}
@@ -11697,7 +11871,9 @@ ${ctx.breakEvenMonths ? '- Break-Even: ' + ctx.breakEvenMonths + ' months' : ''}
 
 ALL AVAILABLE TIERS:
 ${ctx.tiers.map(function (t) {
-                return 'Tier ' + t.tier + ' (' + t.origPts + '% pts): ' + Object.entries(t.rates).map(function (e) { return e[0] + ' @ ' + e[1].rate + ' = ' + e[1].payment; }).join(', ');
+                var fixedLine = 'Tier ' + t.tier + ' (' + t.origPts + '% pts) Fixed: ' + Object.entries(t.rates).map(function (e) { return e[0] + ' @ ' + e[1].rate + ' = ' + e[1].payment; }).join(', ');
+                var varLine = (t.varRates && Object.keys(t.varRates).length > 0) ? '\n  Variable: ' + Object.entries(t.varRates).map(function (e) { return e[0] + ' @ ' + e[1].rate + ' = ' + e[1].payment; }).join(', ') : '';
+                return fixedLine + varLine;
             }).join('\n')}
 
 ${ctx.debtConsolidation ? 'DEBT CONSOLIDATION:\n- Current Total Payments: ' + ctx.debtConsolidation.currentTotal + '\n- New Combined Payment: ' + ctx.debtConsolidation.newPayment + '\n- Monthly Savings: ' + ctx.debtConsolidation.savings : ''}
@@ -11908,8 +12084,8 @@ Generate the sales strategy and phone script now.`;
             var data = getEmailData();
             var loHeadshot = document.getElementById('lo-headshot-url')?.value || '';
             var loLogo = document.getElementById('lo-logo-url')?.value || '';
-            var applyLink = document.getElementById('wl-apply-link')?.value || '';
-            var calendarLink = opts.calendarLink || document.getElementById('ghl-calendar-link')?.value || '';
+            var applyLink = document.getElementById('lo-apply-link')?.value || document.getElementById('wl-apply-link')?.value || '';
+            var calendarLink = opts.calendarLink || document.getElementById('lo-calendar-link')?.value || document.getElementById('ghl-calendar-link')?.value || '';
             var quoteLink = data.QUOTE_LINK;
             var hasQuoteLink = quoteLink && !quoteLink.includes('[Generate');
             var screenshotDataUrl = opts.screenshotDataUrl || _esmScreenshotDataUrl || null;
@@ -12055,8 +12231,14 @@ Generate the sales strategy and phone script now.`;
         async function copyRichEmailHTML() {
             var html = buildRichEmailHTML();
             var ok = await copyRichHTMLToClipboard(html);
-            if (ok) showToast('Rich HTML email copied! Paste with Ctrl+V.', 'success');
-            else showToast('Copy failed — try the Email modal instead.', 'error');
+            if (ok) {
+                var clientName = document.getElementById('in-client-name')?.value || 'Client';
+                var subjectEl = document.getElementById('email-subject');
+                var subject = (subjectEl && subjectEl.value) ? subjectEl.value.replace('{{CLIENT_NAME}}', clientName) : 'Your Personalized HELOC Quote — ' + clientName;
+                showToast('Rich HTML copied! Subject: "' + subject + '"', 'success', 6000);
+            } else {
+                showToast('Copy failed — try the Email modal instead.', 'error');
+            }
         }
 
         async function sendViaGHL() {
@@ -12406,6 +12588,162 @@ Sent via Above All Carbon HELOC Tool`;
         }
 
         // ===== CLIENT QUOTE LINK GENERATOR (with auto-shorten + lead attribution) =====
+        // ===== LINK STYLE PRESETS =====
+        function applyLinkPreset(preset) {
+            var chkLo = document.getElementById('chk-link-lo-info');
+            var chkAi = document.getElementById('chk-link-ai-chat');
+            var chkApply = document.getElementById('chk-link-apply');
+            var chkVideo = document.getElementById('chk-link-video');
+            var chkSales = document.getElementById('chk-link-sales-psych');
+            var chkExpiry = document.getElementById('chk-link-expiry');
+            if (preset === 'custom') return; // user sets their own
+            if (preset === 'enhanced') {
+                if (chkLo) chkLo.checked = true;
+                if (chkAi) chkAi.checked = true;
+                if (chkApply) chkApply.checked = true;
+                if (chkVideo) chkVideo.checked = false;
+                if (chkSales) chkSales.checked = true;
+                if (chkExpiry) chkExpiry.checked = true;
+            } else if (preset === 'original') {
+                if (chkLo) chkLo.checked = true;
+                if (chkAi) chkAi.checked = false;
+                if (chkApply) chkApply.checked = true;
+                if (chkVideo) chkVideo.checked = false;
+                if (chkSales) chkSales.checked = false;
+                if (chkExpiry) chkExpiry.checked = true;
+            } else if (preset === 'minimal') {
+                if (chkLo) chkLo.checked = false;
+                if (chkAi) chkAi.checked = false;
+                if (chkApply) chkApply.checked = true;
+                if (chkVideo) chkVideo.checked = false;
+                if (chkSales) chkSales.checked = false;
+                if (chkExpiry) chkExpiry.checked = false;
+            }
+            // Toggle video options wrapper visibility
+            var optWrap = document.getElementById('link-video-options-wrap');
+            if (optWrap) optWrap.style.display = chkVideo && chkVideo.checked ? 'block' : 'none';
+        }
+
+        // Wire up video checkbox to toggle options + radio mode switching
+        document.addEventListener('DOMContentLoaded', function() {
+            var chkVideo = document.getElementById('chk-link-video');
+            if (chkVideo) {
+                chkVideo.addEventListener('change', function() {
+                    var optWrap = document.getElementById('link-video-options-wrap');
+                    if (optWrap) optWrap.style.display = this.checked ? 'block' : 'none';
+                    var presetEl = document.getElementById('link-style-preset');
+                    if (presetEl) presetEl.value = 'custom';
+                });
+            }
+            // Video mode radio buttons — toggle between manual URL and HeyGen script
+            document.querySelectorAll('input[name="video-mode"]').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    var manWrap = document.getElementById('link-video-url-wrap');
+                    var hgWrap = document.getElementById('link-video-heygen-wrap');
+                    if (this.value === 'heygen') {
+                        if (manWrap) manWrap.style.display = 'none';
+                        if (hgWrap) hgWrap.style.display = '';
+                        var ta = document.getElementById('heygen-script-preview');
+                        if (ta && !ta.value) regenerateHeyGenScript();
+                    } else {
+                        if (manWrap) manWrap.style.display = '';
+                        if (hgWrap) hgWrap.style.display = 'none';
+                    }
+                });
+            });
+            // Character count on HeyGen script textarea
+            var hgTA = document.getElementById('heygen-script-preview');
+            if (hgTA) hgTA.addEventListener('input', updateHeyGenCharCount);
+            // Same for other checkboxes — switch to custom on manual change
+            ['chk-link-lo-info', 'chk-link-ai-chat', 'chk-link-apply', 'chk-link-sales-psych'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.addEventListener('change', function() {
+                    var presetEl = document.getElementById('link-style-preset');
+                    if (presetEl) presetEl.value = 'custom';
+                });
+            });
+        });
+
+        // ===== HEYGEN AI VIDEO FUNCTIONS =====
+        var SUPABASE_FUNCTIONS_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1';
+
+        async function testHeyGenConnection() {
+            var sb = window._supabase;
+            var session = (await sb.auth.getSession()).data.session;
+            if (!session) { showToast('Not authenticated', 'error'); return; }
+
+            var statusEl = document.getElementById('heygen-status');
+            if (statusEl) statusEl.textContent = 'Testing...';
+            showToast('Testing HeyGen connection...', 'info', 3000);
+
+            try {
+                var resp = await fetch(SUPABASE_FUNCTIONS_URL + '/generate-video', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + session.access_token
+                    },
+                    body: JSON.stringify({ action: 'check_status' })
+                });
+                var result = await resp.json();
+                if (result.configured && result.valid) {
+                    showToast('HeyGen connected! Avatar: ' + (result.avatarId || 'not set'), 'success');
+                    if (statusEl) { statusEl.textContent = '✅ Connected'; statusEl.style.color = '#22c55e'; }
+                } else if (result.configured) {
+                    showToast('HeyGen API key invalid. Check your key.', 'error');
+                    if (statusEl) { statusEl.textContent = '❌ Invalid key'; statusEl.style.color = '#ef4444'; }
+                } else {
+                    showToast('HeyGen not configured. Save your API key first.', 'warning');
+                    if (statusEl) { statusEl.textContent = '⚠️ Not configured'; statusEl.style.color = '#f59e0b'; }
+                }
+            } catch (e) {
+                showToast('HeyGen test failed: ' + e.message, 'error');
+                if (statusEl) { statusEl.textContent = '❌ Error'; statusEl.style.color = '#ef4444'; }
+            }
+        }
+
+        function buildHeyGenScript() {
+            var g = function(id) { var el = document.getElementById(id); return el ? (el.value || el.innerText || '').trim() : ''; };
+            var clientName = g('in-client-name') || 'there';
+            var firstName = clientName.split(' ')[0];
+            var loName = g('lo-name') || 'Your Loan Officer';
+            var company = g('lo-company') || '';
+            var homeValue = g('in-home-value') || '0';
+            var mortBal = g('in-mortgage-balance') || '0';
+            var hvNum = parseFloat(homeValue.replace(/[^0-9.]/g, '')) || 0;
+            var mbNum = parseFloat(mortBal.replace(/[^0-9.]/g, '')) || 0;
+            var equity = '$' + Math.round(hvNum - mbNum).toLocaleString();
+            var rate = g('snap-rate') || '0';
+            var term = g('snap-term') || '30';
+            var payment = g('snap-payment') || '$0';
+            var totalLoan = g('snap-total-loan') || g('in-net-cash') || '$0';
+            var expiryDays = document.getElementById('link-expiry-days')?.value || '7';
+
+            return 'Hi ' + firstName + ', this is ' + loName + (company ? ' from ' + company : '') + '.\n\n' +
+                'I put together a personalized HELOC quote just for you. Based on your home\'s value and current mortgage, you have approximately ' + equity + ' in available equity.\n\n' +
+                'I found a ' + term + '-year HELOC at ' + rate + ' percent with a monthly payment of just ' + payment + '. That gives you access to ' + totalLoan + ' in funds.\n\n' +
+                'This quote is valid for the next ' + expiryDays + ' days. Scroll through the page I\'ve prepared, and when you\'re ready, hit Apply Now or schedule a quick call with me.\n\n' +
+                'Looking forward to connecting, ' + firstName + '.';
+        }
+
+        function regenerateHeyGenScript() {
+            var ta = document.getElementById('heygen-script-preview');
+            if (ta) {
+                ta.value = buildHeyGenScript();
+                updateHeyGenCharCount();
+            }
+        }
+
+        function updateHeyGenCharCount() {
+            var ta = document.getElementById('heygen-script-preview');
+            var counter = document.getElementById('heygen-script-chars');
+            if (ta && counter) {
+                var len = ta.value.length;
+                counter.textContent = len + ' / 1500 chars';
+                counter.style.color = len > 1500 ? '#ef4444' : 'rgba(255,255,255,0.4)';
+            }
+        }
+
         async function generateClientLink() {
             var sb = window._supabase;
             var userId = window.currentUserId;
@@ -12429,24 +12767,34 @@ Sent via Above All Carbon HELOC Tool`;
                 term: g('snap-term'),
                 payment: g('snap-payment'),
                 origination: g('snap-orig-perc'),
+                recType: document.getElementById('rec-type-select').value || 'fixed',
                 date: new Date().toLocaleDateString(),
                 linkOptions: {
                     showLoInfo: document.getElementById('chk-link-lo-info')?.checked ?? true,
                     showAiChat: document.getElementById('chk-link-ai-chat')?.checked ?? true,
-                    showApply: document.getElementById('chk-link-apply')?.checked ?? true
+                    showApply: document.getElementById('chk-link-apply')?.checked ?? true,
+                    showVideo: document.getElementById('chk-link-video')?.checked ?? false,
+                    videoUrl: document.getElementById('link-video-url')?.value?.trim() || '',
+                    videoMode: (document.getElementById('video-mode-heygen')?.checked ? 'heygen' : 'manual'),
+                    showSalesPsych: document.getElementById('chk-link-sales-psych')?.checked ?? true,
+                    preset: document.getElementById('link-style-preset')?.value || 'enhanced'
                 },
                 tiers: []
             };
 
-            // Gather all tier data
+            // Gather all tier data (fixed + variable)
             for (var t = 1; t <= 3; t++) {
-                var tier = { tier: t, origPts: g('t' + t + '-orig'), rates: {} };
+                var tier = { tier: t, origPts: g('t' + t + '-orig'), rates: {}, varRates: {} };
                 ['30', '20', '15', '10'].forEach(function (yr) {
                     var rate = g('out-t' + t + '-' + yr + '-rate');
                     var pay = g('out-t' + t + '-' + yr + '-pay');
                     if (rate && rate !== '0.00') tier.rates[yr + 'yr'] = { rate: rate + '%', payment: pay };
+
+                    var varRate = g('out-t' + t + '-' + yr + '-var');
+                    var varPay = g('out-t' + t + '-' + yr + '-var-pay');
+                    if (varRate && varRate !== '0.00') tier.varRates[yr + 'yr'] = { rate: varRate + '%', payment: varPay };
                 });
-                if (Object.keys(tier.rates).length > 0) quoteData.tiers.push(tier);
+                if (Object.keys(tier.rates).length > 0 || Object.keys(tier.varRates).length > 0) quoteData.tiers.push(tier);
             }
 
             // LO info
@@ -12464,8 +12812,8 @@ Sent via Above All Carbon HELOC Tool`;
                 address: g('lo-address'),
                 headshot: g('lo-headshot-url'),
                 logo: g('lo-logo-url'),
-                applyLink: g('wl-apply-link'),
-                calendarLink: g('ghl-calendar-link'),
+                applyLink: g('lo-apply-link') || g('wl-apply-link'),
+                calendarLink: g('lo-calendar-link') || g('ghl-calendar-link'),
                 googleRating: '5.0'
             };
 
@@ -12493,6 +12841,65 @@ Sent via Above All Carbon HELOC Tool`;
             var expiryEnabled = document.getElementById('chk-link-expiry') && document.getElementById('chk-link-expiry').checked;
             var expiryDays = expiryEnabled ? parseInt(document.getElementById('link-expiry-days').value) || 7 : 0;
             var expiresAt = expiryDays > 0 ? new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString() : null;
+
+            // ===== HEYGEN AI VIDEO GENERATION (Diamond-only) =====
+            if (quoteData.linkOptions.showVideo && quoteData.linkOptions.videoMode === 'heygen') {
+                var scriptText = document.getElementById('heygen-script-preview')?.value?.trim();
+                if (!scriptText) scriptText = buildHeyGenScript();
+
+                showToast('Generating personalized AI video... This may take ~2 minutes.', 'info', 15000);
+                var output = document.getElementById('client-link-output');
+                if (output) output.placeholder = 'Generating AI video...';
+
+                try {
+                    var session = (await sb.auth.getSession()).data.session;
+                    var genResp = await fetch(SUPABASE_FUNCTIONS_URL + '/generate-video', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+                        body: JSON.stringify({
+                            action: 'generate',
+                            scriptText: scriptText,
+                            scriptVariables: { clientName: quoteData.clientName, rate: quoteData.rate, payment: quoteData.payment, homeValue: quoteData.homeValue },
+                            quoteLinkCode: code
+                        })
+                    });
+                    var genResult = await genResp.json();
+
+                    if (genResult.videoId) {
+                        // Poll for completion (max 3 minutes, every 10 seconds)
+                        var videoUrl = null;
+                        for (var p = 0; p < 18; p++) {
+                            await new Promise(r => setTimeout(r, 10000));
+                            var pollResp = await fetch(SUPABASE_FUNCTIONS_URL + '/generate-video', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+                                body: JSON.stringify({ action: 'poll', videoId: genResult.videoId })
+                            });
+                            var pollResult = await pollResp.json();
+                            if (pollResult.status === 'completed' && pollResult.videoUrl) {
+                                videoUrl = pollResult.videoUrl;
+                                break;
+                            } else if (pollResult.status === 'failed') {
+                                throw new Error('HeyGen video generation failed');
+                            }
+                        }
+                        if (videoUrl) {
+                            quoteData.linkOptions.videoUrl = videoUrl;
+                            quoteData.linkOptions.videoSource = 'heygen';
+                            showToast('AI video generated!', 'success');
+                        } else {
+                            showToast('Video still generating. Link created — video will appear once ready.', 'warning', 8000);
+                            quoteData.linkOptions.heygenVideoId = genResult.videoId;
+                        }
+                    } else {
+                        showToast('HeyGen error: ' + (genResult.error || 'Unknown'), 'error');
+                    }
+                } catch (hgErr) {
+                    console.error('HeyGen error:', hgErr);
+                    showToast('AI video failed: ' + hgErr.message + '. Creating link without video.', 'warning', 5000);
+                }
+                if (output) output.placeholder = 'Click Generate to create link';
+            }
 
             try {
                 var insertObj = {
@@ -12719,6 +13126,14 @@ Sent via Above All Carbon HELOC Tool`;
         }
 
         // ===== SEND THIS QUOTE — SECTION FUNCTIONS =====
+        function toggleSendQuotePanel() {
+            var panel = document.getElementById('send-quote-section');
+            if (!panel) return;
+            var isOpen = panel.style.display === 'block';
+            panel.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) updateQuoteSMS();
+        }
+
         function updateQuoteSMS() {
             var textarea = document.getElementById('send-quote-sms');
             var charCount = document.getElementById('sms-char-count');
@@ -12962,10 +13377,24 @@ Sent via Above All Carbon HELOC Tool`;
             if (e) e.stopPropagation();
             document.getElementById('sq-email-dropdown')?.classList.remove('show');
             await ensureQuoteLink();
+            var clientName = document.getElementById('in-client-name')?.value || 'Client';
+            var subject = 'Your Personalized HELOC Quote — ' + clientName;
             var html = buildRichEmailHTML();
             var ok = await copyRichHTMLToClipboard(html);
-            if (ok) showToast('Rich HTML email copied! Paste with Ctrl+V.', 'success');
-            else showToast('Copy failed — try the Email tab instead.', 'error');
+            if (ok) {
+                // Show subject line in a persistent notification so user can copy it
+                var subjectNotif = document.createElement('div');
+                subjectNotif.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(135deg,#1e293b,#0f172a);color:white;padding:20px 28px;border-radius:12px;z-index:110000;font-family:var(--font-heading);box-shadow:0 12px 40px rgba(0,0,0,0.5);border:1px solid rgba(16,185,129,0.3);text-align:center;max-width:420px;';
+                subjectNotif.innerHTML = '<div style="font-size:12px;font-weight:800;color:#10b981;margin-bottom:10px;">RICH HTML EMAIL COPIED!</div>' +
+                    '<div style="font-size:10px;color:rgba(255,255,255,0.7);margin-bottom:8px;">Paste body with Ctrl+V. Use this subject line:</div>' +
+                    '<input type="text" value="' + subject.replace(/"/g, '&quot;') + '" readonly style="width:100%;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7;padding:8px 10px;border-radius:6px;font-family:var(--font-heading);font-size:11px;text-align:center;box-sizing:border-box;" onclick="this.select(); navigator.clipboard.writeText(this.value); this.style.borderColor=\'#10b981\';">' +
+                    '<div style="font-size:8px;color:rgba(255,255,255,0.4);margin-top:6px;">Click the subject to copy it</div>' +
+                    '<button onclick="this.parentNode.remove()" style="margin-top:10px;background:#10b981;color:white;border:none;padding:6px 20px;border-radius:6px;font-family:var(--font-heading);font-size:10px;font-weight:700;cursor:pointer;">GOT IT</button>';
+                document.body.appendChild(subjectNotif);
+                setTimeout(function() { if (subjectNotif.parentNode) subjectNotif.remove(); }, 15000);
+            } else {
+                showToast('Copy failed — try the Email tab instead.', 'error');
+            }
         }
 
         // Apply tier gating to Send Quote buttons
@@ -13462,6 +13891,11 @@ Sent via Above All Carbon HELOC Tool`;
                 onclone: function(clonedDoc) {
                     var el = clonedDoc.getElementById('proposal-container');
                     if (el) { el.style.width = captureWidth + 'px'; el.style.maxWidth = captureWidth + 'px'; }
+                    // Hide internal-only sections from client-facing screenshots
+                    var aiBox = clonedDoc.getElementById('ai-assistant-container');
+                    if (aiBox) aiBox.style.display = 'none';
+                    var sendBox = clonedDoc.getElementById('send-quote-section');
+                    if (sendBox) sendBox.style.display = 'none';
                 }
             });
             container.style.width = origWidth;
@@ -14274,6 +14708,7 @@ Sent via Above All Carbon HELOC Tool`;
                 radar: { apiKey: _val('radar-api-key') },
                 bonzo: { apiKey: _val('bonzo-api-key'), apiKey2: _val('bonzo-api-key-2') },
                 fub: { apiKey: _val('fub-api-key') },
+                heygen: { apiKey: _val('heygen-api-key'), avatarId: _val('heygen-avatar-id'), voiceId: _val('heygen-voice-id') },
                 outboundWebhooks: outboundWebhooks
             };
         }
@@ -14303,6 +14738,11 @@ Sent via Above All Carbon HELOC Tool`;
                 if (bsb) bsb.style.display = (data.bonzo.apiKey || data.bonzo.apiKey2) ? '' : 'none';
             }
             if (data.fub) _setVal('fub-api-key', data.fub.apiKey);
+            if (data.heygen) {
+                _setVal('heygen-api-key', data.heygen.apiKey);
+                _setVal('heygen-avatar-id', data.heygen.avatarId);
+                _setVal('heygen-voice-id', data.heygen.voiceId);
+            }
             if (data.outboundWebhooks && Array.isArray(data.outboundWebhooks)) {
                 outboundWebhooks = data.outboundWebhooks;
                 renderOutboundWebhooks();
@@ -14317,6 +14757,7 @@ Sent via Above All Carbon HELOC Tool`;
             if (safe.radar) safe.radar.apiKey = '';
             if (safe.bonzo) safe.bonzo.apiKey = '';
             if (safe.fub) safe.fub.apiKey = '';
+            if (safe.heygen) safe.heygen.apiKey = '';
             if (safe.outboundWebhooks && Array.isArray(safe.outboundWebhooks)) {
                 safe.outboundWebhooks = safe.outboundWebhooks.map(function (wh) {
                     var w = Object.assign({}, wh);
