@@ -1003,6 +1003,23 @@
             }
         }
 
+        /* Variable rate column styling */
+        .rate-table th.var-col {
+            color: #7c3aed;
+            opacity: 0.7;
+        }
+
+        .rate-table td.var-col {
+            color: #6d28d9;
+            font-weight: 400;
+            opacity: 0.85;
+        }
+
+        .rate-table tr.recommended td.var-col {
+            opacity: 1;
+            font-weight: 800;
+        }
+
         /* CTA */
         /* CTA section removed — actions handled by floating bar */
 
@@ -1499,6 +1516,14 @@
 
         body.theme-dark .rate-table tr.recommended td {
             color: var(--accent-color);
+        }
+
+        body.theme-dark .rate-table th.var-col {
+            color: #a78bfa;
+        }
+
+        body.theme-dark .rate-table td.var-col {
+            color: #c4b5fd;
         }
 
         body.theme-dark .client-disclaimer {
@@ -2675,6 +2700,10 @@
             color: var(--slate);
         }
 
+        .pvf-trust-item a:hover {
+            color: var(--accent-dark);
+        }
+
         .pvf-trust-icon {
             width: 24px;
             height: 24px;
@@ -2877,8 +2906,8 @@
             }
 
             .rate-table {
-                font-size: 13px;
-                min-width: 320px;
+                font-size: 12px;
+                min-width: 420px;
             }
 
             .rate-table th {
@@ -3276,6 +3305,7 @@
     <!-- Floating Action Bar -->
     <div class="floating-bar" id="floating-bar" style="display: none;">
         <button onclick="openApplyModal()">&#10024; Apply Now</button>
+        <button class="secondary" id="btn-schedule" onclick="scheduleCall()" style="display:none;">&#128197; Schedule Call</button>
         <button class="secondary" id="btn-ask" onclick="askQuestion()">&#9679; Ask Question</button>
         <button class="secondary" onclick="downloadPDF()">&#128196; Save PDF</button>
         <button class="secondary" onclick="shareQuote()">&#128279; Share</button>
@@ -3380,8 +3410,8 @@
                 <div class="step-line" id="step-line-2"></div>
                 <div class="step" id="step-3"><span class="step-dot">Get Funded</span></div>
             </div>
-            <!-- PSYCHOLOGY VIDEO FUNNEL - Stage 1: The Hook -->
-            <div class="section reveal" id="sec-personal-video">
+            <!-- PSYCHOLOGY VIDEO FUNNEL - Stage 1: The Hook (hidden by default, LO enables via link options) -->
+            <div class="section reveal" id="sec-personal-video" style="display: none;">
                 <div class="pvf-urgency-bar" id="pvf-urgency-bar" style="display: none;">
                     <span class="dot"></span>
                     <span>Rates change daily — This quote expires in <strong id="pvf-countdown">48:00:00</strong></span>
@@ -3532,12 +3562,16 @@
                         <span>256-bit Encryption</span>
                     </div>
                     <div class="pvf-trust-item">
-                        <div class="pvf-trust-icon">✓</div>
-                        <span>No Credit Check Required</span>
+                        <div class="pvf-trust-icon">⚡</div>
+                        <span>Fast Approval</span>
                     </div>
                     <div class="pvf-trust-item">
-                        <div class="pvf-trust-icon">↩</div>
-                        <span>Cancel Anytime</span>
+                        <div class="pvf-trust-icon">✓</div>
+                        <span>No Hidden Fees</span>
+                    </div>
+                    <div class="pvf-trust-item">
+                        <div class="pvf-trust-icon">🛡️</div>
+                        <span>Licensed & Insured · <a href="https://nmlsconsumeraccess.org/" target="_blank" rel="noopener" style="color: var(--accent-color); text-decoration: underline;">NMLS Verified</a></span>
                     </div>
                 </div>
             </div>
@@ -3553,7 +3587,7 @@
             <!-- Social Proof Strip -->
             <div class="social-proof reveal" id="sec-social-proof">
                 <div class="sp-item"><div class="sp-number" data-target="2500" data-suffix="+">0</div><div class="sp-label">Homeowners Funded This Year</div></div>
-                <div class="sp-item"><div class="sp-number" data-target="21" data-suffix=" days">0</div><div class="sp-label">Average Time to Funding</div></div>
+                <div class="sp-item"><div class="sp-number" data-target="5" data-suffix=" days">0</div><div class="sp-label">Average Time to Funding</div></div>
                 <div class="sp-item"><div class="sp-number" data-target="97" data-suffix="%">0</div><div class="sp-label">Client Satisfaction Rating</div></div>
             </div>
             <div class="recommendation reveal" id="sec-recommendation">
@@ -3813,7 +3847,7 @@
                 // Recommendation
                 var recItems = [];
                 if (data.totalLoan) recItems.push({ label: 'Total Loan', value: data.totalLoan });
-                if (data.rate) recItems.push({ label: 'Rate', value: data.rate + '%' });
+                if (data.rate) recItems.push({ label: 'Rate', value: data.rate + '%' + ((data.recType === 'variable') ? ' (Var)' : '') });
                 if (data.term) recItems.push({ label: 'Term', value: data.term + ' yr' });
                 if (data.payment) recItems.push({ label: 'Payment', value: data.payment, final: true });
                 document.getElementById('q-rec-grid').innerHTML = recItems.map(function (r) {
@@ -3823,24 +3857,51 @@
                 // Rate Tiers with expandable rows
                 var recPayment = parseFloat((data.payment || '').replace(/[$,\/mo]/g, '')) || 0;
                 var loanAmt = parseFloat((data.totalLoan || data.cashBack || '').toString().replace(/[$,]/g, '')) || 0;
+                var hasVarRates = data.tiers && data.tiers.some(function (t) { return t.varRates && Object.keys(t.varRates).length > 0; });
+                var recType = data.recType || 'fixed';
+                var isVarRec = recType === 'variable';
                 var tiersHtml = '';
                 if (data.tiers && data.tiers.length > 0) {
                     data.tiers.forEach(function (tier) {
                         tiersHtml += '<div class="tier"><div class="tier-header"><span>Tier ' + tier.tier + '</span><span class="pts">' + esc(tier.origPts) + '% Points</span></div>';
-                        tiersHtml += '<table class="rate-table"><thead><tr><th>Term</th><th>Rate</th><th>Payment</th></tr></thead><tbody>';
+                        tiersHtml += '<table class="rate-table"><thead><tr><th>Term</th><th>' + (hasVarRates ? 'Fixed Rate' : 'Rate') + '</th><th>' + (hasVarRates ? 'Fixed Pmt' : 'Payment') + '</th>';
+                        if (hasVarRates) tiersHtml += '<th class="var-col">Var Rate</th><th class="var-col">Var Pmt</th>';
+                        tiersHtml += '</tr></thead><tbody>';
                         Object.entries(tier.rates).forEach(function (e) {
-                            var isRec = data.rate && e[1].rate && e[1].rate.replace('%', '') === data.rate;
-                            var rateVal = parseFloat((e[1].rate || '').replace('%', '')) || 0;
-                            var payVal = parseFloat((e[1].payment || '').replace(/[$,\/mo]/g, '')) || 0;
-                            var termYrs = parseInt(e[0]) || 10;
-                            var totalInterest = Math.max(0, Math.round((payVal * termYrs * 12) - loanAmt));
-                            var annualCost = Math.round(payVal * 12);
-                            var vsDiff = Math.round(Math.abs(payVal - recPayment));
-                            var vsLabel = isRec ? 'This is recommended' : (payVal > recPayment ? '$' + vsDiff + '/mo more' : '$' + vsDiff + '/mo less');
+                            var termKey = e[0];
+                            var fixedRateStr = e[1].rate;
+                            var fixedPayStr = e[1].payment;
+                            var varData = (tier.varRates && tier.varRates[termKey]) || null;
+
+                            // Determine if this row is recommended
+                            var isRec = false;
+                            if (!isVarRec && data.rate && fixedRateStr && fixedRateStr.replace('%', '') === data.rate) {
+                                isRec = true;
+                            }
+                            if (isVarRec && varData && data.rate && varData.rate && varData.rate.replace('%', '') === data.rate) {
+                                isRec = true;
+                            }
+
+                            var rateVal = parseFloat((fixedRateStr || '').replace('%', '')) || 0;
+                            var payVal = parseFloat((fixedPayStr || '').replace(/[$,\/mo]/g, '')) || 0;
+                            var compPayVal = isVarRec && varData ? parseFloat((varData.payment || '').replace(/[$,\/mo]/g, '')) || payVal : payVal;
+                            var termYrs = parseInt(termKey) || 10;
+                            var totalInterest = Math.max(0, Math.round((compPayVal * termYrs * 12) - loanAmt));
+                            var annualCost = Math.round(compPayVal * 12);
+                            var vsDiff = Math.round(Math.abs(compPayVal - recPayment));
+                            var vsLabel = isRec ? 'This is recommended' : (compPayVal > recPayment ? '$' + vsDiff + '/mo more' : '$' + vsDiff + '/mo less');
 
                             tiersHtml += '<tr' + (isRec ? ' class="recommended"' : '') + ' onclick="toggleRateDetail(this)">';
-                            tiersHtml += '<td>' + esc(e[0]) + '</td><td>' + esc(e[1].rate) + (isRec ? '<span class="rec-badge">REC</span>' : '') + '</td><td>' + esc(e[1].payment) + '</td></tr>';
-                            tiersHtml += '<tr class="rate-detail-tr"><td colspan="3"><div class="rate-row-detail"><div class="rate-detail-grid">';
+                            tiersHtml += '<td>' + esc(termKey) + '</td>';
+                            tiersHtml += '<td>' + esc(fixedRateStr) + (!isVarRec && isRec ? '<span class="rec-badge">REC</span>' : '') + '</td>';
+                            tiersHtml += '<td>' + esc(fixedPayStr) + '</td>';
+                            if (hasVarRates) {
+                                tiersHtml += '<td class="var-col">' + (varData ? esc(varData.rate) : '--') + (isVarRec && isRec ? '<span class="rec-badge">REC</span>' : '') + '</td>';
+                                tiersHtml += '<td class="var-col">' + (varData ? esc(varData.payment) : '--') + '</td>';
+                            }
+                            tiersHtml += '</tr>';
+                            var detailColspan = hasVarRates ? 5 : 3;
+                            tiersHtml += '<tr class="rate-detail-tr"><td colspan="' + detailColspan + '"><div class="rate-row-detail"><div class="rate-detail-grid">';
                             tiersHtml += '<div class="rate-detail-item"><div class="rd-label">Total Interest</div><div class="rd-value">$' + totalInterest.toLocaleString() + '</div></div>';
                             tiersHtml += '<div class="rate-detail-item"><div class="rd-label">Annual Cost</div><div class="rd-value">$' + annualCost.toLocaleString() + '/yr</div></div>';
                             tiersHtml += '<div class="rate-detail-item"><div class="rd-label">Daily Rate Cost</div><div class="rd-value">$' + ((rateVal / 100 / 365) * loanAmt).toFixed(2) + '/day</div></div>';
@@ -3854,6 +3915,12 @@
 
                 // CTA handled by floating action bar — wire buttons with LO data
                 window._loInfo = lo;
+
+                // Show Schedule Call button if LO has a calendar link
+                if (lo && lo.calendarLink) {
+                    var schedBtn = document.getElementById('btn-schedule');
+                    if (schedBtn) schedBtn.style.display = '';
+                }
 
                 // === SALES PSYCHOLOGY SECTIONS ===
                 (function buildSalesSections() {
@@ -3881,7 +3948,7 @@
                             '<div class="sc-savings-box">' +
                                 '<div class="sc-savings-item"><div class="sc-big">$' + monthSavingsCC.toLocaleString() + '</div><div class="sc-sub">saved per month vs credit cards</div></div>' +
                                 '<div class="sc-savings-item"><div class="sc-big">$' + yearSavingsCC.toLocaleString() + '</div><div class="sc-sub">saved per year</div></div>' +
-                                '<div class="sc-savings-item"><div class="sc-big">' + rateVal + '%</div><div class="sc-sub">fixed rate vs 24%+ credit cards</div></div>' +
+                                '<div class="sc-savings-item"><div class="sc-big">' + rateVal + '%</div><div class="sc-sub">' + (data.recType === 'variable' ? 'variable' : 'fixed') + ' rate vs 24%+ credit cards</div></div>' +
                             '</div>';
                     }
 
@@ -4019,11 +4086,99 @@
                     });
                 })();
 
-                // Set LO Name in Video
-                document.getElementById('video-lo-name').textContent = lo.name ? lo.name : "Your Advisor";
+                // === VIDEO SECTION: Only show if LO enabled it ===
+                var opts = data.linkOptions || {};
+                var videoSection = document.getElementById('sec-personal-video');
+                if (opts.showVideo) {
+                    if (videoSection) videoSection.style.display = '';
+                    // Set LO Name in Video
+                    var videoLoName = document.getElementById('pvf-lo-name');
+                    if (videoLoName) videoLoName.textContent = lo.name ? lo.name : "Your Advisor";
 
-                // Initialize Psychology Video Funnel
-                initPsychVideoFunnel(data, lo);
+                    // If LO provided a real video URL, embed it
+                    if (opts.videoUrl) {
+                        var embedUrl = opts.videoUrl;
+                        var isDirectVideo = /\.(mp4|webm|mov)(\?|$)/i.test(embedUrl);
+
+                        // Convert YouTube watch URLs to embed format
+                        var ytMatch = embedUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+                        if (ytMatch) embedUrl = 'https://www.youtube.com/embed/' + ytMatch[1] + '?autoplay=0';
+                        // Convert Loom share URLs to embed format
+                        var loomMatch = embedUrl.match(/loom\.com\/share\/([\w-]+)/);
+                        if (loomMatch) embedUrl = 'https://www.loom.com/embed/' + loomMatch[1];
+                        // Convert HeyGen share URLs to embed format
+                        var heygenMatch = embedUrl.match(/app\.heygen\.com\/share\/([\w-]+)/);
+                        if (heygenMatch) embedUrl = 'https://app.heygen.com/embed/' + heygenMatch[1];
+
+                        var thumbEl = document.getElementById('video-thumbnail');
+                        var wrapEl = document.getElementById('video-frame-wrapper');
+                        if (thumbEl) thumbEl.style.display = 'none';
+                        if (wrapEl) {
+                            wrapEl.classList.add('playing');
+                            if (isDirectVideo) {
+                                // Direct mp4/webm from HeyGen CDN or other source
+                                wrapEl.innerHTML = '<video src="' + embedUrl + '" controls playsinline style="width:100%;height:100%;min-height:360px;border-radius:12px;background:#000;"></video>';
+                            } else {
+                                wrapEl.innerHTML = '<iframe src="' + embedUrl + '" style="width:100%;height:100%;min-height:360px;border:none;border-radius:12px;" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
+                            }
+                        }
+                    } else if (opts.heygenVideoId) {
+                        // HeyGen video still generating — show spinner and poll
+                        var thumbEl = document.getElementById('video-thumbnail');
+                        var wrapEl = document.getElementById('video-frame-wrapper');
+                        if (thumbEl) thumbEl.style.display = 'none';
+                        if (wrapEl) {
+                            wrapEl.classList.add('playing');
+                            wrapEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--accent-light);font-family:var(--font-heading);">' +
+                                '<div class="loader"></div><div style="margin-top:12px;font-size:14px;">Your personalized video is being created...</div>' +
+                                '<div style="font-size:11px;opacity:0.6;margin-top:4px;">This usually takes about 2 minutes</div></div>';
+                        }
+                        // Poll for video completion
+                        (function pollHeyGenVideo() {
+                            var pollCount = 0;
+                            var maxPolls = 24; // 24 * 15s = 6 minutes
+                            function doPoll() {
+                                if (pollCount >= maxPolls) return;
+                                pollCount++;
+                                setTimeout(function() {
+                                    fetch(SUPABASE_URL + '/functions/v1/generate-video', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ action: 'poll_public', videoId: opts.heygenVideoId, code: code })
+                                    }).then(function(r) { return r.json(); }).then(function(result) {
+                                        if (result.status === 'completed' && result.videoUrl) {
+                                            var isMP4 = /\.(mp4|webm|mov)(\?|$)/i.test(result.videoUrl);
+                                            if (wrapEl) {
+                                                if (isMP4) {
+                                                    wrapEl.innerHTML = '<video src="' + result.videoUrl + '" controls playsinline style="width:100%;height:100%;min-height:360px;border-radius:12px;background:#000;"></video>';
+                                                } else {
+                                                    wrapEl.innerHTML = '<iframe src="' + result.videoUrl + '" style="width:100%;height:100%;min-height:360px;border:none;border-radius:12px;" allowfullscreen></iframe>';
+                                                }
+                                            }
+                                        } else if (result.status !== 'failed') {
+                                            doPoll(); // keep polling
+                                        }
+                                    }).catch(function() { doPoll(); });
+                                }, 15000);
+                            }
+                            doPoll();
+                        })();
+                    }
+
+                    // Initialize Psychology Video Funnel
+                    initPsychVideoFunnel(data, lo);
+                } else {
+                    // Video off — hide the section entirely
+                    if (videoSection) videoSection.style.display = 'none';
+                }
+
+                // === SALES PSYCHOLOGY SECTIONS: hide if LO turned them off ===
+                if (opts.showSalesPsych === false) {
+                    ['sec-savings', 'sec-funds-carousel', 'sec-social-proof'].forEach(function(id) {
+                        var el = document.getElementById(id);
+                        if (el) el.style.display = 'none';
+                    });
+                }
 
                 // Apply scroll reveal classes
                 ['sec-client', 'sec-valuation', 'sec-recommendation', 'sec-rates'].forEach(function (id, i) {
@@ -4053,7 +4208,17 @@
             setTimeout(function () { document.getElementById('floating-bar').style.display = 'flex'; }, 1500);
 
             // Modal Functions
-            window.openApplyModal = function () { document.getElementById('apply-modal').classList.add('visible'); trackEvent('modal_opened', { modal: 'apply', code: code }); };
+            window.openApplyModal = function () {
+                // If LO has a direct apply link, go straight there instead of showing the modal
+                var applyUrl = window._loInfo && window._loInfo.applyLink;
+                if (applyUrl) {
+                    if (!/^https?:\/\//i.test(applyUrl)) applyUrl = 'https://' + applyUrl;
+                    trackEvent('apply_redirect', { code: code, url: applyUrl });
+                    window.open(applyUrl, '_blank');
+                    return;
+                }
+                document.getElementById('apply-modal').classList.add('visible'); trackEvent('modal_opened', { modal: 'apply', code: code });
+            };
             window.closeApplyModal = function () { document.getElementById('apply-modal').classList.remove('visible'); };
             window.openContactModal = function () { document.getElementById('contact-modal').classList.add('visible'); trackEvent('modal_opened', { modal: 'contact', code: code }); };
             window.closeContactModal = function () { document.getElementById('contact-modal').classList.remove('visible'); };
@@ -4463,7 +4628,7 @@
                     },
                     {
                         target: '#sec-recommendation', label: 'Recommended Option',
-                        text: "This is the option your loan officer recommends. At **" + esc(quoteData.rate) + "%** for **" + esc(quoteData.term) + " years**, your monthly payment would be **" + esc(quoteData.payment) + "**. This balances the best rate with manageable payments."
+                        text: "This is the option your loan officer recommends. At **" + esc(quoteData.rate) + "%" + (quoteData.recType === 'variable' ? ' variable' : '') + "** for **" + esc(quoteData.term) + " years**, your monthly payment would be **" + esc(quoteData.payment) + "**. This balances the best rate with manageable payments."
                     },
                     {
                         target: '#sec-rates', label: 'All Rate Options',
@@ -4539,6 +4704,11 @@
                         if (tourActive) endTour();
                     }
                 };
+
+                // Auto-open Ezra after a short delay so clients engage immediately
+                setTimeout(function () {
+                    if (!isOpen) window.eqToggle();
+                }, 3000);
 
                 window.eqChip = function (text) {
                     if (text === 'Take a guided tour') { startTour(); return; }

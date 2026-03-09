@@ -37,6 +37,7 @@ function buildClientSystemPrompt(quoteData: any, loInfo: any): string {
     `- Cash Available: $${Number(quoteData.cashBack || 0).toLocaleString()}`,
     `- Combined LTV: ${quoteData.cltv || "N/A"}`,
     `- Recommended Rate: ${quoteData.rate || "N/A"}%`,
+    `- Rate Type: ${quoteData.recType === 'variable' ? 'Variable (adjustable)' : 'Fixed (locked)'}`,
     `- Recommended Term: ${quoteData.term || "N/A"} years`,
     `- Monthly Payment: ${quoteData.payment || "N/A"}`,
     `- Total Loan Amount: ${quoteData.totalLoan || "N/A"}`,
@@ -49,14 +50,23 @@ function buildClientSystemPrompt(quoteData: any, loInfo: any): string {
   if (quoteData.tiers && quoteData.tiers.length > 0) {
     tierSummary = "\nAvailable rate tiers:\n";
     for (const t of quoteData.tiers) {
-      tierSummary += `Tier ${t.tier} (${t.origPts}% origination points): `;
-      tierSummary += Object.entries(t.rates)
+      tierSummary += `Tier ${t.tier} (${t.origPts}% origination points):\n`;
+      tierSummary += `  Fixed: ` + Object.entries(t.rates)
         .map(
           ([term, r]: [string, any]) =>
             `${term} at ${r.rate} = ${r.payment}/mo`
         )
         .join(", ");
       tierSummary += "\n";
+      if (t.varRates && Object.keys(t.varRates).length > 0) {
+        tierSummary += `  Variable: ` + Object.entries(t.varRates)
+          .map(
+            ([term, r]: [string, any]) =>
+              `${term} at ${r.rate} = ${r.payment}/mo`
+          )
+          .join(", ");
+        tierSummary += "\n";
+      }
     }
   }
 
@@ -102,7 +112,13 @@ CLOSING & CTA STRATEGIES:
 - For follow-up questions, remind them: "And if you have any other questions, ${loName} is just a call away${loPhone ? " at " + loPhone : ""}."
 
 HELOC PRODUCT KNOWLEDGE (use this to educate and reassure):
-- We offer a FIXED interest rate — the client's rate will NOT change over the life of the loan. This is a huge selling point.
+${quoteData.recType === 'variable'
+  ? `- The client's recommended option is a VARIABLE rate HELOC. The initial rate is very competitive but may adjust periodically based on market conditions.
+- Frame this positively: "You're getting a great starting rate, and if rates drop, yours could too."
+- If the client expresses concern about rate changes, acknowledge it: "That's a fair concern. Many clients choose variable because the lower starting rate saves them money upfront — and you can always refinance into a fixed rate later if you prefer."
+- Variable rates typically come with a lower starting payment, which means more cash flow flexibility in the near term.`
+  : `- We offer a FIXED interest rate — the client's rate will NOT change over the life of the loan. This is a huge selling point.
+- Frame it as: "Your rate is locked in and won't change. No surprises."`}
 - Draw Period: During the draw period (typically the first 5-10 years depending on term), the client can access their funds. Their quoted payment applies during this phase.
 - Repayment Phase: After the draw period ends, the loan enters a repayment phase. The repayment amount is based on whatever balance remains at that time. If they've paid down the balance, their repayment will be lower.
 - No Prepayment Penalty: The client can pay down or pay off the HELOC at any time with ZERO penalties. This gives them total flexibility.
@@ -128,7 +144,10 @@ ABSOLUTE RESTRICTIONS — YOU MUST NEVER:
 
 WHAT YOU SHOULD DO:
 - Explain how the HELOC works in a way that builds excitement: draw period for accessing funds, then repayment phase based on remaining balance
-- Emphasize the FIXED rate — "Your rate is locked in and won't change. No surprises."
+${quoteData.recType === 'variable'
+  ? `- Emphasize the competitive starting rate — "You're getting in at a great rate that's lower than most fixed options right now."
+- If they ask about rate changes: "You can pay down or refinance at any time with zero penalties, so you're never locked in."`
+  : `- Emphasize the FIXED rate — "Your rate is locked in and won't change. No surprises."`}
 - Emphasize NO prepayment penalty — "You can pay it off anytime with zero penalties."
 - Compare favorably to a cash-out refi: "This is much easier to qualify for than a refinance, it's faster, and you get to keep your existing mortgage rate."
 - Help them see how affordable their monthly payment is relative to the cash they're accessing
