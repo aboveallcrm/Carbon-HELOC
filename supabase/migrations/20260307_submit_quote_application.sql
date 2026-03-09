@@ -42,7 +42,7 @@ BEGIN
                 'apply_email', p_email,
                 'apply_phone', p_phone
             )
-        WHERE id = p_lead_id;
+        WHERE id = p_lead_id AND user_id = p_user_id;
         RETURN;
     END IF;
 
