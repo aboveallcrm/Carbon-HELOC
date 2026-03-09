@@ -4074,9 +4074,9 @@
                 if (link.expires_at && new Date(link.expires_at) < new Date()) { showError(); return; }
 
                 sb.rpc('increment_quote_view', { p_code: code }).then(function () { });
-                trackEvent('quote_opened', { code: code });
                 window._quoteExpiry = link.expires_at || null;
                 renderQuote(link.quote_data, link.lo_info || {}, link.user_id, link.lead_id);
+                trackEvent('quote_opened', { code: code });
 
                 // Initialize visual enhancements
                 setTimeout(function () {
@@ -4536,11 +4536,12 @@
                         if (thumbEl) thumbEl.style.display = 'none';
                         if (wrapEl) {
                             wrapEl.classList.add('playing');
+                            var safeUrl = esc(embedUrl);
                             if (isDirectVideo) {
                                 // Direct mp4/webm from HeyGen CDN or other source
-                                wrapEl.innerHTML = '<video src="' + embedUrl + '" controls playsinline style="width:100%;height:100%;min-height:360px;border-radius:12px;background:#000;"></video>';
+                                wrapEl.innerHTML = '<video src="' + safeUrl + '" controls playsinline style="width:100%;height:100%;min-height:360px;border-radius:12px;background:#000;"></video>';
                             } else {
-                                wrapEl.innerHTML = '<iframe src="' + embedUrl + '" style="width:100%;height:100%;min-height:360px;border:none;border-radius:12px;" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
+                                wrapEl.innerHTML = '<iframe src="' + safeUrl + '" style="width:100%;height:100%;min-height:360px;border:none;border-radius:12px;" allowfullscreen allow="autoplay; encrypted-media"></iframe>';
                             }
                         }
                     } else if (opts.heygenVideoId) {
@@ -4569,11 +4570,12 @@
                                     }).then(function(r) { return r.json(); }).then(function(result) {
                                         if (result.status === 'completed' && result.videoUrl) {
                                             var isMP4 = /\.(mp4|webm|mov)(\?|$)/i.test(result.videoUrl);
+                                            var safeVidUrl = esc(result.videoUrl);
                                             if (wrapEl) {
                                                 if (isMP4) {
-                                                    wrapEl.innerHTML = '<video src="' + result.videoUrl + '" controls playsinline style="width:100%;height:100%;min-height:360px;border-radius:12px;background:#000;"></video>';
+                                                    wrapEl.innerHTML = '<video src="' + safeVidUrl + '" controls playsinline style="width:100%;height:100%;min-height:360px;border-radius:12px;background:#000;"></video>';
                                                 } else {
-                                                    wrapEl.innerHTML = '<iframe src="' + result.videoUrl + '" style="width:100%;height:100%;min-height:360px;border:none;border-radius:12px;" allowfullscreen></iframe>';
+                                                    wrapEl.innerHTML = '<iframe src="' + safeVidUrl + '" style="width:100%;height:100%;min-height:360px;border:none;border-radius:12px;" allowfullscreen></iframe>';
                                                 }
                                             }
                                         } else if (result.status !== 'failed') {
@@ -4626,8 +4628,6 @@
                 if (detail.classList.contains('expanded')) trackEvent('rate_detail_viewed', { code: code });
             };
 
-            setTimeout(function () { document.getElementById('floating-bar').style.display = 'flex'; }, 1500);
-
             // Modal Functions
             window.openApplyModal = function () {
                 // If LO has a direct apply link, go straight there instead of showing the modal
@@ -4667,7 +4667,7 @@
                         p_email: e,
                         p_phone: p,
                         p_quote_code: code
-                    }).then(function () { });
+                    }).then(function (res) { if (res.error) console.error('Application save failed:', res.error); }).catch(function (err) { console.error('Application save error:', err); });
                 }
 
                 // Redirect to LO's apply link if available
@@ -4871,7 +4871,7 @@
                 var url = window.location.href;
                 if (method === 'email') window.open('mailto:?subject=My HELOC Quote&body=' + encodeURIComponent('Check out my HELOC quote: ' + url));
                 else if (method === 'sms') window.open('sms:?body=' + encodeURIComponent('Check out my HELOC quote: ' + url));
-                else if (method === 'copy') navigator.clipboard.writeText(url).then(function () { showToast('Link copied to clipboard!'); });
+                else if (method === 'copy') navigator.clipboard.writeText(url).then(function () { showToast('Link copied to clipboard!'); }).catch(function () { showToast('Could not copy link'); });
                 trackEvent('share_clicked', { method: method, code: code });
             };
             window.downloadPDF = function () { trackEvent('pdf_download_clicked', { code: code }); window.print(); };
@@ -5099,7 +5099,8 @@
                     if (!el) return;
                     var div = document.createElement('div');
                     div.className = 'eq-msg ' + role;
-                    div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>').replace(/^- (.+)/gm, '&bull; $1');
+                    var safe = role === 'user' ? esc(text) : text;
+                    div.innerHTML = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>').replace(/^- (.+)/gm, '&bull; $1');
                     el.appendChild(div);
                     el.scrollTop = el.scrollHeight;
                     chatHistory.push({ role: role, content: text });
@@ -5228,7 +5229,7 @@
             }
 
             function esc(s) { return s ? String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : ''; }
-            function num(v) { return Number(v).toLocaleString(); }
+            function num(v) { var n = Number(String(v).replace(/[^0-9.\-]/g, '')); return isNaN(n) ? '0' : n.toLocaleString(); }
         })();
     </script>
 

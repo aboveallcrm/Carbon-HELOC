@@ -6,6 +6,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
@@ -104,7 +105,8 @@ serve(async (req: Request) => {
     };
     const aiModel = integration?.metadata?.ai_model || model || defaultModels[aiProvider] || "gpt-4o";
     const aiMaxTokens = integration?.metadata?.ai_max_tokens || maxTokens || 500;
-    const aiEndpointUrl = integration?.metadata?.ai_endpoint_url || endpointUrl || "";
+    // Only trust endpoint URL from DB (admin-configured), never from client request
+    const aiEndpointUrl = integration?.metadata?.ai_endpoint_url || "";
     const aiSystemPrompt = integration?.metadata?.ai_system_prompt || systemPrompt || "";
 
     // Status check — just verify key exists without calling AI provider
@@ -245,7 +247,7 @@ serve(async (req: Request) => {
     });
   } catch (err) {
     console.error("ai-proxy error:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return new Response(JSON.stringify({ error: (err as Error)?.message || "Internal error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

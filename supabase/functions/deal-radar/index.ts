@@ -107,7 +107,7 @@ async function runFullScan(supabaseClient: any, userId: string) {
     if (tappableEquity < 25000) continue;
 
     const cltv = homeValue > 0
-      ? ((mortgageBalance + tappableEquity) / homeValue) * 100
+      ? (mortgageBalance / homeValue) * 100
       : 0;
 
     opportunities.push({

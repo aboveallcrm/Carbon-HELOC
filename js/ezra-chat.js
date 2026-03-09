@@ -1168,6 +1168,7 @@ RESPONSE RULES
                         <button id="ezra-model-selector" class="ezra-model-btn" title="AI Mode">
                             <span class="ezra-model-name">Fast</span>
                         </button>
+                        <button id="ezra-clear" class="ezra-icon-btn" title="Clear Chat" style="font-size:12px;">\u{1F5D1}</button>
                         <button id="ezra-minimize" class="ezra-icon-btn" title="Minimize">\u2212</button>
                         <button id="ezra-close" class="ezra-icon-btn" title="Close">\u00D7</button>
                     </div>
@@ -2622,6 +2623,9 @@ RESPONSE RULES
 
         // Close button
         document.getElementById('ezra-close')?.addEventListener('click', closeWidget);
+
+        // Clear chat button
+        document.getElementById('ezra-clear')?.addEventListener('click', clearChat);
 
         // Minimize button
         document.getElementById('ezra-minimize')?.addEventListener('click', minimizeWidget);
@@ -4476,6 +4480,42 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
     }
 
     // ============================================
+    // CLEAR CHAT
+    // ============================================
+    async function clearChat() {
+        // Clear UI messages
+        const messagesContainer = document.getElementById('ezra-messages');
+        if (messagesContainer) messagesContainer.innerHTML = '';
+
+        // Clear state
+        EzraState.messages = [];
+
+        // Mark old conversation as ended and start fresh
+        if (EZRA_TABLES_DEPLOYED && EzraState.conversationId && EzraState.supabase) {
+            try {
+                await EzraState.supabase
+                    .from('ezra_conversations')
+                    .update({ status: 'ended' })
+                    .eq('id', EzraState.conversationId);
+            } catch (e) { }
+            EzraState.conversationId = null;
+            await createNewConversation();
+        }
+
+        // Show welcome state again
+        if (messagesContainer) {
+            messagesContainer.innerHTML = `
+                <div class="ezra-welcome" style="text-align:center;padding:40px 20px;color:var(--ezra-text-muted,#94a3b8);">
+                    <div style="font-size:32px;margin-bottom:12px;filter:drop-shadow(0 0 8px rgba(212,175,55,0.4));">\u2726</div>
+                    <div style="font-family:'DM Sans',sans-serif;font-weight:700;font-size:14px;color:var(--ezra-gold,#c5a059);letter-spacing:2px;margin-bottom:8px;">EZRA</div>
+                    <div style="font-size:12px;line-height:1.6;">Chat cleared. Ask me anything about<br>HELOC structuring & strategy.</div>
+                </div>`;
+        }
+
+        console.log('Ezra: Chat cleared');
+    }
+
+    // ============================================
     // PUBLIC API
     // ============================================
     window.Ezra = {
@@ -4483,6 +4523,7 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
         toggle: toggleWidget,
         open: () => { if (!EzraState.isOpen) toggleWidget(); },
         close: closeWidget,
+        clearChat: clearChat,
         sendMessage: (msg) => {
             document.getElementById('ezra-input').value = msg;
             sendMessage();

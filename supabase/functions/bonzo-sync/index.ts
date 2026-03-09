@@ -241,7 +241,7 @@ serve(async (req: Request) => {
             if (lead.email) emailIndex.set(lead.email.toLowerCase().trim(), lead)
             const digits = (lead.phone || '').replace(/\D/g, '')
             if (digits.length >= 7) phoneIndex.set(digits, lead)
-            if (lead.crm_contact_id) bonzoIdIndex.set(lead.crm_contact_id, lead)
+            if (lead.crm_contact_id) bonzoIdIndex.set(String(lead.crm_contact_id), lead)
         }
         logs.push(`Pre-fetched ${(existingLeads || []).length} existing leads for dedup`)
 

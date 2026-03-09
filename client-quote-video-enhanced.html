@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Personalized HELOC Quote</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f2b4c;
+            --accent: #c5a059;
+            --accent-light: #d4b872;
+            --accent-dark: #a68543;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --slate: #1e293b;
+            --paper: #FDFBF7;
+            --gradient-gold: linear-gradient(135deg, #c5a059, #d4b872, #c5a059);
+            --shadow-soft: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-medium: 0 8px 30px rgba(0,0,0,0.12);
+            --shadow-heavy: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(160deg, #0a1628 0%, #132240 40%, #0f2b4c 70%, #0d2340 100%);
+            min-height: 100vh;
+            color: var(--slate);
+            padding: 40px 20px 100px;
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           MAIN QUOTE CONTAINER
+           ============================================ */
+        .quote-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--paper);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.3), 0 0 0 1px rgba(15, 43, 76, 0.06);
+        }
+
+        /* Header */
+        .quote-header {
+            background: linear-gradient(160deg, #0a1628 0%, var(--primary) 50%, #132240 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quote-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 100%, rgba(197, 160, 89, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 40%);
+        }
+
+        .header-title {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            position: relative;
+        }
+
+        .lo-info {
+            margin-top: 20px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            position: relative;
+        }
+
+        .lo-info strong {
+            color: white;
+            font-weight: 700;
+        }
+
+        /* Greeting Banner */
+        .greeting-banner {
+            background: linear-gradient(135deg, #fffbf0, #fff8e6);
+            padding: 18px 28px;
+            text-align: center;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.12);
+        }
+
+        .greeting-text {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .greeting-sub {
+            font-size: 12px;
+            color: var(--slate);
+            opacity: 0.6;
+            margin-top: 4px;
+        }
+
+        /* ============================================
+           VIDEO EXPERIENCE SECTION
+           ============================================ */
+        .video-experience {
+            padding: 0;
+            background: linear-gradient(180deg, #0a1628 0%, var(--paper) 100%);
+        }
+
+        .video-urgency-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+            padding: 14px 24px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #dc2626;
+            border-bottom: 1px solid rgba(239, 68, 68, 0.1);
+        }
+
+        .urgency-dot {
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: dotPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .video-header {
+            background: linear-gradient(135deg, #0a1628, #1e293b);
+            padding: 32px 40px;
+            text-align: center;
+            color: white;
+        }
+
+        .video-headline {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .video-headline .highlight {
+            background: var(--gradient-gold);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .video-subheadline {
+            font-size: 15px;
+            color: rgba(255,255,255,0.7);
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Social Proof */
+        .video-social-proof {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px 40px;
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.05), rgba(197, 160, 89, 0.02));
+            border-bottom: 1px solid rgba(197, 160, 89, 0.1);
+        }
+
+        .avatar-stack {
+            display: flex;
+        }
+
+        .avatar-item {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gradient-gold);
+            border: 3px solid white;
+            margin-left: -12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .avatar-item:first-child { margin-left: 0; }
+
+        .social-text {
+            font-size: 14px;
+            color: var(--slate);
+        }
+
+        .social-text strong {
+            color: var(--accent-dark);
+            font-weight: 700;
+        }
+
+        .rating-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            padding: 8px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(197, 160, 89, 0.2);
+        }
+
+        .stars {
+            color: #fbbf24;
+            font-size: 14px;
+            letter-spacing: -2px;
+        }
+
+        .rating-text {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--slate);
+        }
+
+        /* Main Video Player */
+        .video-player-container {
+            padding: 32px 40px;
+            position: relative;
+        }
+
+        .video-wrapper {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3), 0 0 0 1px rgba(197, 160, 89, 0.2);
+        }
+
+        /* Video States */
+        .video-thumbnail {
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, #0a1628, #1e293b);
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-thumbnail::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 30% 70%, rgba(197, 160, 89, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 40%);
+        }
+
+        .video-pattern {
+            position: absolute;
+            inset: 0;
+            opacity: 0.1;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(197, 160, 89, 0.1) 35px, rgba(197, 160, 89, 0.1) 70px);
+            animation: patternMove 20s linear infinite;
+        }
+
+        @keyframes patternMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(70px, 70px); }
+        }
+
+        /* LO Presence */
+        .lo-presence {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .lo-avatar-wrap {
+            position: relative;
+        }
+
+        .lo-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--gradient-gold);
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+
+        .lo-verified {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 20px;
+            height: 20px;
+            background: var(--success);
+            border-radius: 50%;
+            border: 2px solid #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .lo-details {
+            color: white;
+        }
+
+        .lo-name {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .lo-title {
+            font-size: 12px;
+            opacity: 0.8;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* Video Caption */
+        .video-caption {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            max-width: 280px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(12px);
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            z-index: 10;
+        }
+
+        .caption-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .caption-text {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .caption-text strong {
+            color: var(--accent-light);
+        }
+
+        /* Play Button */
+        .play-trigger {
+            position: relative;
+            z-index: 20;
+        }
+
+        .play-button {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--gradient-gold);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 8px 32px rgba(197, 160, 89, 0.5),
+                0 0 0 20px rgba(197, 160, 89, 0.1),
+                0 0 0 40px rgba(197, 160, 89, 0.05);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: playPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes playPulse {
+            0%, 100% { 
+                box-shadow: 
+                    0 8px 32px rgba(197, 160, 89, 0.5),
+                    0 0 0 20px rgba(197, 160, 89, 0.1),
+                    0 0 0 40px rgba(197, 160, 89, 0.05);
+            }
+            50% { 
+                box-shadow: 
+                    0 12px 40px rgba(197, 160, 89, 0.6),
+                    0 0 0 25px rgba(197, 160, 89, 0.15),
+                    0 0 0 50px rgba(197, 160, 89, 0.08);
+            }
+        }
+
+        .play-button:hover {
+            transform: scale(1.1);
+        }
+
+        .play-icon {
+            color: white;
+            font-size: 36px;
+            margin-left: 6px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .play-label {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        /* Duration Badge */
+        .duration-badge {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .record-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            animation: recordPulse 1.5s ease-in-out infinite;
+        }
+
+        /* Video Player Active State */
+        .video-player {
+            display: none;
+            aspect-ratio: 16/9;
+            background: #000;
+            position: relative;
+        }
+
+        .video-player.active {
+            display: block;
+        }
+
+        .video-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Interactive Hotspots */
+        .video-hotspots {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 30;
+        }
+
+        .hotspot {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            pointer-events: auto;
+            animation: hotspotPulse 2s ease-in-out infinite;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+
+        @keyframes hotspotPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.5); }
+            50% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(197, 160, 89, 0); }
+        }
+
+        /* Video Progress & Chapters */
+        .video-progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.8);
+            padding: 16px 24px;
+            z-index: 40;
+        }
+
+        .chapter-markers {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .chapter {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .chapter-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            margin: 0 auto 6px;
+            transition: all 0.3s ease;
+        }
+
+        .chapter.active .chapter-dot,
+        .chapter.completed .chapter-dot {
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .chapter-label {
+            font-size: 10px;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chapter.active .chapter-label {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .progress-bar-container {
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--gradient-gold);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Trust Bar */
+        .video-trust-bar {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            padding: 20px 40px;
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.03), rgba(197, 160, 89, 0.01));
+            border-top: 1px solid rgba(197, 160, 89, 0.1);
+        }
+
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--slate);
+        }
+
+        .trust-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--gradient-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: white;
+        }
+
+        /* ============================================
+           POPUP SYSTEM
+           ============================================ */
+        .popup-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .popup-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .popup {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .popup-header {
+            background: linear-gradient(135deg, var(--primary), #1e3a5f);
+            color: white;
+            padding: 24px;
+            position: relative;
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .popup-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .popup-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            background: var(--gradient-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+
+        .popup-title {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .popup-subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .popup-body {
+            padding: 24px;
+        }
+
+        .popup-content {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--slate);
+            margin-bottom: 20px;
+        }
+
+        .popup-highlight {
+            background: linear-gradient(90deg, rgba(197, 160, 89, 0.15), rgba(197, 160, 89, 0.05));
+            border-left: 4px solid var(--accent);
+            padding: 16px 20px;
+            border-radius: 0 10px 10px 0;
+            margin: 16px 0;
+        }
+
+        .popup-highlight strong {
+            color: var(--accent-dark);
+            font-weight: 700;
+        }
+
+        .popup-action {
+            background: var(--gradient-gold);
+            color: var(--dark);
+            border: none;
+            padding: 16px 28px;
+            border-radius: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .popup-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(197, 160, 89, 0.4);
+        }
+
+        /* ============================================
+           POST-VIDEO FUNNEL
+           ============================================ */
+        .post-video-funnel {
+            display: none;
+            padding: 32px 40px;
+            background: linear-gradient(135deg, #fff, #f8fafc);
+            border-top: 1px solid rgba(197, 160, 89, 0.15);
+            animation: slideDown 0.5s ease;
+        }
+
+        .post-video-funnel.active {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .funnel-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .funnel-title {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .funnel-subtitle {
+            font-size: 14px;
+            color: var(--slate);
+            opacity: 0.7;
+        }
+
+        /* Number Explainer Cards */
+        .number-explainers {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .number-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .number-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-gold);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .number-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 12px 32px rgba(197, 160, 89, 0.2);
+        }
+
+        .number-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .number-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.15), rgba(197, 160, 89, 0.05));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 12px;
+        }
+
+        .number-value {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .number-label {
+            font-size: 12px;
+            color: var(--slate);
+            opacity: 0.7;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .number-hint {
+            font-size: 11px;
+            color: var(--accent);
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        /* Action Steps */
+        .action-steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .action-step {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 20px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .action-step:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(197, 160, 89, 0.15);
+        }
+
+        .action-step.recommended {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, #fffbf0, #fff8e6);
+        }
+
+        .action-step.recommended::after {
+            content: 'RECOMMENDED';
+            position: absolute;
+            top: -1px;
+            right: 16px;
+            background: var(--accent);
+            color: white;
+            font-size: 8px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 0 0 6px 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--gradient-gold);
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+        }
+
+        .step-title {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .step-desc {
+            font-size: 12px;
+            color: var(--slate);
+            opacity: 0.7;
+            line-height: 1.5;
+        }
+
+        /* ============================================
+           QUOTE CONTENT
+           ============================================ */
+        .quote-content {
+            padding: 40px;
+        }
+
+        .section-title {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 16px;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid transparent;
+            border-image: linear-gradient(90deg, var(--accent), transparent) 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--gradient-gold);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        /* Client Grid */
+        .client-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .info-card {
+            background: rgba(15, 43, 76, 0.03);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(15, 43, 76, 0.06);
+        }
+
+        .info-label {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-dark);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .info-value {
+            font-size: 15px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Value Blocks */
+        .value-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .value-block {
+            background: white;
+            border-radius: 14px;
+            padding: 22px 16px;
+            text-align: center;
+            border: 1px solid rgba(15, 43, 76, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .value-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(15, 43, 76, 0.1);
+        }
+
+        .value-block.highlight {
+            border: 2px solid var(--accent);
+            background: linear-gradient(135deg, #fffbf0, #fff8e6);
+        }
+
+        .value-label {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--slate);
+            opacity: 0.5;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .value-amount {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .value-block.highlight .value-amount {
+            color: var(--accent);
+            font-size: 26px;
+        }
+
+        /* Recommendation Box */
+        .recommendation-box {
+            background: linear-gradient(135deg, #fffdf7, white);
+            border: none;
+            border-radius: 18px;
+            padding: 36px 32px 30px;
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+            box-shadow: 0 8px 40px rgba(197, 160, 89, 0.1);
+        }
+
+        .recommendation-box::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 20px;
+            background: conic-gradient(from 0deg, var(--accent-dark), var(--accent), var(--accent-light), var(--accent), var(--accent-dark));
+            z-index: -1;
+            animation: rotateBorder 4s linear infinite;
+        }
+
+        @keyframes rotateBorder {
+            to { transform: rotate(360deg); }
+        }
+
+        .recommendation-box::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #fffdf7, white);
+            z-index: -1;
+        }
+
+        .rec-badge {
+            position: absolute;
+            top: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-gold);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            border: 4px solid var(--paper);
+            box-shadow: 0 4px 12px rgba(197, 160, 89, 0.3);
+            z-index: 1;
+        }
+
+        .rec-title {
+            font-family: 'DM Sans', sans-serif;
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 24px;
+        }
+
+        .rec-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .rec-item {
+            padding: 8px 0;
+        }
+
+        .rec-label {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--slate);
+            opacity: 0.5;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .rec-value {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .rec-item.highlight .rec-value {
+            color: var(--accent);
+            font-size: 26px;
+        }
+
+        /* Floating Action Bar */
+        .floating-bar {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px) saturate(1.4);
+            padding: 14px 28px;
+            border-radius: 60px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(197, 160, 89, 0.15);
+            display: flex;
+            gap: 12px;
+            z-index: 1000;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .floating-bar button {
+            background: var(--gradient-gold);
+            color: var(--dark);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .floating-bar button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(197, 160, 89, 0.5);
+        }
+
+        .floating-bar button.secondary {
+            background: rgba(255,255,255,0.08);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .floating-bar button.secondary:hover {
+            background: rgba(255,255,255,0.16);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .video-header { padding: 24px; }
+            .video-headline { font-size: 20px; }
+            .video-social-proof { flex-direction: column; gap: 12px; padding: 16px; }
+            .video-player-container { padding: 20px; }
+            .lo-presence { top: 16px; left: 16px; }
+            .lo-avatar { width: 44px; height: 44px; font-size: 16px; }
+            .video-caption { position: relative; top: auto; right: auto; max-width: none; margin: 16px; margin-top: 80px; }
+            .play-button { width: 70px; height: 70px; }
+            .play-icon { font-size: 24px; }
+            .post-video-funnel { padding: 24px; }
+            .number-explainers { grid-template-columns: 1fr; }
+            .action-steps { grid-template-columns: 1fr; }
+            .client-grid { grid-template-columns: 1fr; }
+            .rec-grid { grid-template-columns: repeat(2, 1fr); }
+            .quote-content { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Quote Container -->
+    <div class="quote-container">
+        <!-- Header -->
+        <div class="quote-header">
+            <h1 class="header-title">Your HELOC Proposal</h1>
+            <div class="header-subtitle">Personalized Home Equity Line of Credit</div>
+            <div class="lo-info">
+                Prepared by: <strong>Michael Chen</strong> | NMLS# 123456
+            </div>
+        </div>
+
+        <!-- Greeting -->
+        <div class="greeting-banner">
+            <div class="greeting-text">Good afternoon, Sarah! 👋</div>
+            <div class="greeting-sub">Your personalized HELOC quote is ready for review</div>
+        </div>
+
+        <!-- VIDEO EXPERIENCE SECTION -->
+        <div class="video-experience">
+            <!-- Urgency Bar -->
+            <div class="video-urgency-bar">
+                <span class="urgency-dot"></span>
+                <span>Rates change daily — This quote expires in <strong id="countdown">47:52:18</strong></span>
+            </div>
+
+            <!-- Video Header -->
+            <div class="video-header">
+                <h2 class="video-headline">
+                    Watch This Before<br>Your Quote <span class="highlight">Expires</span>
+                </h2>
+                <p class="video-subheadline">
+                    I recorded this 2-minute video specifically for you. I'll walk through 
+                    your numbers and show you exactly how this HELOC can work for you.
+                </p>
+            </div>
+
+            <!-- Social Proof -->
+            <div class="video-social-proof">
+                <div class="avatar-stack">
+                    <div class="avatar-item">JD</div>
+                    <div class="avatar-item">MK</div>
+                    <div class="avatar-item">SR</div>
+                    <div class="avatar-item">+</div>
+                </div>
+                <div class="social-text">
+                    <strong>247 homeowners</strong> in your area<br>
+                    saved an average of <strong>$487/month</strong> last month
+                </div>
+                <div class="rating-badge">
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-text">4.9/5</span>
+                </div>
+            </div>
+
+            <!-- Video Player -->
+            <div class="video-player-container">
+                <div class="video-wrapper">
+                    <!-- Thumbnail State -->
+                    <div class="video-thumbnail" id="videoThumbnail" onclick="playVideo()">
+                        <div class="video-pattern"></div>
+                        
+                        <!-- LO Presence -->
+                        <div class="lo-presence">
+                            <div class="lo-avatar-wrap">
+                                <div class="lo-avatar">MC</div>
+                                <span class="lo-verified">✓</span>
+                            </div>
+                            <div class="lo-details">
+                                <div class="lo-name">Michael Chen</div>
+                                <div class="lo-title">Senior Loan Advisor</div>
+                            </div>
+                        </div>
+
+                        <!-- Caption -->
+                        <div class="video-caption">
+                            <div class="caption-label">Your Personalized Strategy</div>
+                            <div class="caption-text">
+                                "Based on your <strong>$750k</strong> home value, I found a way to access 
+                                <strong>$127k</strong> in equity while lowering your monthly payments..."
+                            </div>
+                        </div>
+
+                        <!-- Play Button -->
+                        <div class="play-trigger">
+                            <button class="play-button">
+                                <span class="play-icon">▶</span>
+                            </button>
+                            <div class="play-label">Watch Now</div>
+                        </div>
+
+                        <!-- Duration -->
+                        <div class="duration-badge">
+                            <span class="record-dot"></span>
+                            <span>2:15</span>
+                        </div>
+                    </div>
+
+                    <!-- Player State -->
+                    <div class="video-player" id="videoPlayer">
+                        <iframe id="videoIframe" class="video-iframe" src="" allowfullscreen></iframe>
+                        
+                        <!-- Interactive Hotspots (appear during video) -->
+                        <div class="video-hotspots" id="videoHotspots">
+                            <!-- Hotspots injected by JS -->
+                        </div>
+
+                        <!-- Progress & Chapters -->
+                        <div class="video-progress-container" id="videoProgress" style="display: none;">
+                            <div class="chapter-markers">
+                                <div class="chapter active" data-chapter="1">
+                                    <div class="chapter-dot"></div>
+                                    <div class="chapter-label">Intro</div>
+                                </div>
+                                <div class="chapter" data-chapter="2">
+                                    <div class="chapter-dot"></div>
+                                    <div class="chapter-label">Your Numbers</div>
+                                </div>
+                                <div class="chapter" data-chapter="3">
+                                    <div class="chapter-dot"></div>
+                                    <div class="chapter-label">The Savings</div>
+                                </div>
+                                <div class="chapter" data-chapter="4">
+                                    <div class="chapter-dot"></div>
+                                    <div class="chapter-label">Next Steps</div>
+                                </div>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" id="progressBar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trust Bar -->
+            <div class="video-trust-bar">
+                <div class="trust-item">
+                    <div class="trust-icon">🔒</div>
+                    <span>256-bit Encryption</span>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon">✓</div>
+                    <span>No Credit Check Required</span>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-icon">↩</div>
+                    <span>Cancel Anytime</span>
+                </div>
+            </div>
+
+            <!-- POST-VIDEO FUNNEL -->
+            <div class="post-video-funnel" id="postVideoFunnel">
+                <div class="funnel-header">
+                    <h3 class="funnel-title">Let's Make This Easy For You</h3>
+                    <p class="funnel-subtitle">Click any number below to understand exactly what it means</p>
+                </div>
+
+                <!-- Number Explainers -->
+                <div class="number-explainers">
+                    <div class="number-card" onclick="showNumberPopup('equity')">
+                        <div class="number-icon">🏠</div>
+                        <div class="number-value">$127,000</div>
+                        <div class="number-label">Available Equity</div>
+                        <div class="number-hint">Click to learn more →</div>
+                    </div>
+                    <div class="number-card" onclick="showNumberPopup('payment')">
+                        <div class="number-icon">💰</div>
+                        <div class="number-value">$485/mo</div>
+                        <div class="number-label">New Payment</div>
+                        <div class="number-hint">Click to learn more →</div>
+                    </div>
+                    <div class="number-card" onclick="showNumberPopup('savings')">
+                        <div class="number-icon">📈</div>
+                        <div class="number-value">$340/mo</div>
+                        <div class="number-label">Monthly Savings</div>
+                        <div class="number-hint">Click to learn more →</div>
+                    </div>
+                </div>
+
+                <!-- Action Steps -->
+                <div class="action-steps">
+                    <div class="action-step" onclick="handleAction('question')">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Ask a Question</div>
+                        <div class="step-desc">Not ready yet? Send me a quick message</div>
+                    </div>
+                    <div class="action-step recommended" onclick="handleAction('call')">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Schedule a Call</div>
+                        <div class="step-desc">15-min strategy session, no obligation</div>
+                    </div>
+                    <div class="action-step" onclick="handleAction('apply')">
+                        <div class="step-number">3</div>
+                        <div class="step-title">Start Application</div>
+                        <div class="step-desc">Lock in this rate (5 minutes)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QUOTE CONTENT -->
+        <div class="quote-content">
+            <!-- Client Details -->
+            <div class="section-title">
+                <span class="section-icon">👤</span>
+                Client Details
+            </div>
+            <div class="client-grid">
+                <div class="info-card">
+                    <div class="info-label">Prepared For</div>
+                    <div class="info-value">Sarah Johnson</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Credit Score</div>
+                    <div class="info-value">740</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Property</div>
+                    <div class="info-value">123 Main St, Los Angeles</div>
+                </div>
+            </div>
+
+            <!-- Valuation -->
+            <div class="section-title">
+                <span class="section-icon">🏠</span>
+                Valuation Summary
+            </div>
+            <div class="value-grid">
+                <div class="value-block">
+                    <div class="value-label">Home Value</div>
+                    <div class="value-amount">$750,000</div>
+                </div>
+                <div class="value-block">
+                    <div class="value-label">Current Mortgage</div>
+                    <div class="value-amount">$350,000</div>
+                </div>
+                <div class="value-block highlight">
+                    <div class="value-label">Cash Available</div>
+                    <div class="value-amount">$127,000</div>
+                </div>
+                <div class="value-block">
+                    <div class="value-label">CLTV</div>
+                    <div class="value-amount">75%</div>
+                </div>
+            </div>
+
+            <!-- Recommendation -->
+            <div class="recommendation-box">
+                <div class="rec-badge">★</div>
+                <h3 class="rec-title">Recommended Option</h3>
+                <div class="rec-grid">
+                    <div class="rec-item">
+                        <div class="rec-label">Total Loan</div>
+                        <div class="rec-value">$477K</div>
+                    </div>
+                    <div class="rec-item">
+                        <div class="rec-label">Rate</div>
+                        <div class="rec-value">8.5%</div>
+                    </div>
+                    <div class="rec-item">
+                        <div class="rec-label">Term</div>
+                        <div class="rec-value">15 yr</div>
+                    </div>
+                    <div class="rec-item highlight">
+                        <div class="rec-label">Payment</div>
+                        <div class="rec-value">$485/mo</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Bar -->
+    <div class="floating-bar">
+        <button onclick="startApplication()">✨ Apply Now</button>
+        <button class="secondary" onclick="askQuestion()">● Ask Question</button>
+        <button class="secondary" onclick="scheduleCall()">📅 Schedule Call</button>
+    </div>
+
+    <!-- POPUP SYSTEM -->
+    <div class="popup-overlay" id="popupOverlay" onclick="closePopup(event)">
+        <div class="popup" onclick="event.stopPropagation()">
+            <div class="popup-header">
+                <button class="popup-close" onclick="closePopup()">×</button>
+                <div class="popup-icon" id="popupIcon">💡</div>
+                <h3 class="popup-title" id="popupTitle">Understanding Your Numbers</h3>
+                <p class="popup-subtitle" id="popupSubtitle">Let me break this down for you</p>
+            </div>
+            <div class="popup-body">
+                <div class="popup-content" id="popupContent">
+                    <!-- Dynamic content -->
+                </div>
+                <div class="popup-highlight" id="popupHighlight">
+                    <!-- Dynamic highlight -->
+                </div>
+                <button class="popup-action" id="popupAction" onclick="closePopup()">
+                    Got it, thanks!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // COUNTDOWN TIMER
+        // ============================================
+        function startCountdown() {
+            let expiry = localStorage.getItem('quoteExpiry');
+            if (!expiry) {
+                expiry = Date.now() + (48 * 60 * 60 * 1000);
+                localStorage.setItem('quoteExpiry', expiry);
+            }
+
+            function update() {
+                const remaining = Math.max(0, parseInt(expiry) - Date.now());
+                const hours = Math.floor(remaining / (60 * 60 * 1000));
+                const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+                const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+                
+                document.getElementById('countdown').textContent = 
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                
+                if (remaining > 0) {
+                    setTimeout(update, 1000);
+                }
+            }
+            update();
+        }
+
+        // ============================================
+        // VIDEO PLAYER
+        // ============================================
+        let videoPlaying = false;
+        let videoProgress = 0;
+        let progressInterval;
+
+        function playVideo() {
+            const thumbnail = document.getElementById('videoThumbnail');
+            const player = document.getElementById('videoPlayer');
+            const iframe = document.getElementById('videoIframe');
+            const progress = document.getElementById('videoProgress');
+
+            // Replace with your actual video URL
+            const videoUrl = 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0';
+            
+            thumbnail.style.display = 'none';
+            player.classList.add('active');
+            progress.style.display = 'block';
+            iframe.src = videoUrl;
+            
+            videoPlaying = true;
+            simulateVideoProgress();
+        }
+
+        function simulateVideoProgress() {
+            progressInterval = setInterval(() => {
+                videoProgress += 0.8;
+                document.getElementById('progressBar').style.width = videoProgress + '%';
+                
+                // Update chapter markers
+                const chapters = document.querySelectorAll('.chapter');
+                chapters.forEach((ch, i) => {
+                    const threshold = (i + 1) * 25;
+                    ch.classList.remove('active', 'completed');
+                    if (videoProgress >= threshold) {
+                        ch.classList.add('completed');
+                    } else if (videoProgress >= threshold - 25 && videoProgress < threshold) {
+                        ch.classList.add('active');
+                    }
+                });
+
+                // Show hotspots at specific times
+                if (videoProgress > 30 && videoProgress < 35) {
+                    showHotspot('homeValue');
+                } else if (videoProgress > 50 && videoProgress < 55) {
+                    showHotspot('equity');
+                } else if (videoProgress > 70 && videoProgress < 75) {
+                    showHotspot('savings');
+                }
+                
+                if (videoProgress >= 100) {
+                    clearInterval(progressInterval);
+                    onVideoComplete();
+                }
+            }, 100);
+        }
+
+        function showHotspot(type) {
+            const hotspots = document.getElementById('videoHotspots');
+            const positions = {
+                homeValue: { top: '20%', left: '20%' },
+                equity: { top: '50%', left: '50%' },
+                savings: { top: '30%', right: '20%' }
+            };
+            
+            const pos = positions[type];
+            hotspots.innerHTML = `
+                <div class="hotspot" style="top: ${pos.top}; left: ${pos.left || 'auto'}; right: ${pos.right || 'auto'}" 
+                     onclick="showNumberPopup('${type}')">💡</div>
+            `;
+            
+            setTimeout(() => {
+                hotspots.innerHTML = '';
+            }, 5000);
+        }
+
+        function onVideoComplete() {
+            document.getElementById('postVideoFunnel').classList.add('active');
+            document.getElementById('postVideoFunnel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            createConfetti();
+        }
+
+        // ============================================
+        // POPUP SYSTEM
+        // ============================================
+        const popupContent = {
+            equity: {
+                icon: '🏠',
+                title: 'Your Available Equity',
+                subtitle: 'This is YOUR money, already in your home',
+                content: `
+                    <p><strong>What this means:</strong> You have $127,000 in equity that's just sitting in your home right now. 
+                    It's like having money in a savings account you can't touch.</p>
+                    <p>A HELOC lets you access this money while still owning your home. You only pay interest on what you use, 
+                    and you can pay it back on your own schedule.</p>
+                `,
+                highlight: '💡 <strong>Think of it this way:</strong> Your home has gained $127k in value since you bought it. This lets you put that value to work for you.'
+            },
+            payment: {
+                icon: '💰',
+                title: 'Your New Monthly Payment',
+                subtitle: 'Predictable, manageable, and lower than you might expect',
+                content: `
+                    <p><strong>What this means:</strong> Your new payment would be $485 per month for a $127,000 HELOC.</p>
+                    <p>This is an <strong>interest-only payment</strong> during the first 10 years. That means you're only paying 
+                    the interest, keeping your payments as low as possible.</p>
+                    <p>After 10 years, you can choose to pay off the balance, refinance, or convert to a fixed payment plan.</p>
+                `,
+                highlight: '💡 <strong>Compare this to:</strong> A credit card with the same balance would cost you $2,500+/month in minimum payments!'
+            },
+            savings: {
+                icon: '📈',
+                title: 'Your Monthly Savings',
+                subtitle: 'Real money back in your pocket every month',
+                content: `
+                    <p><strong>Where this comes from:</strong> If you're currently paying $825/month on credit cards or other high-interest debt, 
+                    consolidating into this HELOC at $485/month saves you $340 every single month.</p>
+                    <p><strong>Over 5 years, that's $20,400 in savings.</strong></p>
+                    <p>Plus, the interest on a HELOC is often tax-deductible (consult your tax advisor).</p>
+                `,
+                highlight: '💡 <strong>The best part?</strong> You can use those savings to pay off the HELOC faster, invest, or improve your home to build even more equity!'
+            },
+            homeValue: {
+                icon: '🏡',
+                title: 'Your Home Value',
+                subtitle: 'Your biggest asset, working harder for you',
+                content: `
+                    <p><strong>Your home is worth $750,000.</strong> This is based on recent comparable sales in your neighborhood 
+                    and current market conditions.</p>
+                    <p>You currently owe $350,000 on your mortgage, which means you have $400,000 in total equity.</p>
+                    <p>We can lend up to 85% of your home's value (minus what you owe), giving you access to $127,000.</p>
+                `,
+                highlight: '💡 <strong>Conservative approach:</strong> We leave a 15% equity cushion to protect you if home values fluctuate.'
+            }
+        };
+
+        function showNumberPopup(type) {
+            const data = popupContent[type];
+            if (!data) return;
+
+            document.getElementById('popupIcon').textContent = data.icon;
+            document.getElementById('popupTitle').textContent = data.title;
+            document.getElementById('popupSubtitle').textContent = data.subtitle;
+            document.getElementById('popupContent').innerHTML = data.content;
+            document.getElementById('popupHighlight').innerHTML = data.highlight;
+            
+            document.getElementById('popupOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePopup(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('popupOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // ============================================
+        // ACTION HANDLERS
+        // ============================================
+        function handleAction(type) {
+            const actions = {
+                question: () => {
+                    alert('💬 Opening chat to ask your loan officer a question...\n\n(In production, this would open the Ezra chat widget)');
+                },
+                call: () => {
+                    alert('📅 Opening calendar to schedule your 15-minute strategy session...\n\n(In production, this would open your LO\'s calendar)');
+                },
+                apply: () => {
+                    startApplication();
+                }
+            };
+            
+            if (actions[type]) actions[type]();
+        }
+
+        function startApplication() {
+            alert('🚀 Starting your application...\n\nThis would redirect to your secure application portal.\n\nRemember: This takes just 5 minutes and there\'s no obligation!');
+        }
+
+        function askQuestion() {
+            handleAction('question');
+        }
+
+        function scheduleCall() {
+            handleAction('call');
+        }
+
+        // ============================================
+        // VISUAL EFFECTS
+        // ============================================
+        function createConfetti() {
+            const colors = ['#c5a059', '#10b981', '#3b82f6', '#f59e0b', '#ec4899'];
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.cssText = `
+                    position: fixed;
+                    width: 10px;
+                    height: 10px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    left: ${Math.random() * 100}vw;
+                    top: -10px;
+                    border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
+                    animation: confettiFall ${2 + Math.random()}s ease-out forwards;
+                    z-index: 9999;
+                `;
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        // Add confetti animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes confettiFall {
+                to { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ============================================
+        // INITIALIZE
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            startCountdown();
+        });
+    </script>
+
+</body>
+</html>

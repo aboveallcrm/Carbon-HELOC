@@ -16586,6 +16586,27 @@ Sent via Above All Carbon HELOC Tool`;
     <script type="module" src="./js/main.js"></script>
     <!-- Ezra AI Loan Structuring Assistant -->
     <script defer src="./js/ezra-chat.js"></script>
+    <script>
+        // Auto-clear Ezra chat when switching clients
+        (function () {
+            var _lastClient = '';
+            var nameField = document.getElementById('in-client-name');
+            if (nameField) {
+                _lastClient = nameField.value.trim();
+                nameField.addEventListener('blur', function () {
+                    var current = this.value.trim();
+                    if (current && current !== _lastClient && _lastClient !== '') {
+                        _lastClient = current;
+                        if (window.Ezra && typeof window.Ezra.clearChat === 'function') {
+                            window.Ezra.clearChat();
+                        }
+                    } else {
+                        _lastClient = current;
+                    }
+                });
+            }
+        })();
+    </script>
 </body>
 
 </html>

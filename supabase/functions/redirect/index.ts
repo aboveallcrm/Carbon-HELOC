@@ -107,7 +107,7 @@ serve(async (req: Request) => {
       },
     })
   } catch (e) {
-    console.error('Redirect error:', e.message);
+    console.error('Redirect error:', (e as Error)?.message || e);
     return new Response(JSON.stringify({ error: 'Internal error' }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -123,13 +123,17 @@ async function hashString(input) {
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("").substring(0, 16)
 }
 
+function escHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 function notFoundHtml(slug) {
   return `<!DOCTYPE html>
 <html><head><title>Link Not Found</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#0f0f23;color:#e0e0e0;}
 .card{text-align:center;padding:2rem;max-width:400px;}.card h1{font-size:3rem;margin:0 0 1rem;}.card p{color:#999;}</style>
-</head><body><div class="card"><h1>404</h1><p>Link <code>${slug}</code> not found.</p></div></body></html>`
+</head><body><div class="card"><h1>404</h1><p>Link <code>${escHtml(slug)}</code> not found.</p></div></body></html>`
 }
 
 function expiredHtml() {

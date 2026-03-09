@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Psychology Video Funnel Component</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0f2b4c;
+            --accent-color: #c5a059;
+            --accent-dark: #a68543;
+            --accent-light: #d4b872;
+            --slate: #1e293b;
+            --paper: #FDFBF7;
+            --white: #ffffff;
+            --green: #10b981;
+            --red: #ef4444;
+            --font-heading: 'DM Sans', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(160deg, #0a1628 0%, #132240 40%, #0f2b4c 70%, #0d2340 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: var(--slate);
+        }
+
+        /* ============================================
+           PSYCHOLOGY VIDEO FUNNEL - MAIN COMPONENT
+           ============================================ */
+
+        .pvf-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--paper);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(15, 43, 76, 0.06);
+        }
+
+        /* --- Stage 1: The Hook (Pattern Interrupt) --- */
+        .pvf-hook-section {
+            position: relative;
+            background: linear-gradient(135deg, #0a1628 0%, #1e293b 50%, #0f2b4c 100%);
+            padding: 48px 40px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .pvf-hook-section::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(197, 160, 89, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(197, 160, 89, 0.1) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .pvf-urgency-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            animation: urgencyPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes urgencyPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+        }
+
+        .pvf-urgency-bar .dot {
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: dotPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .pvf-hook-title {
+            font-family: var(--font-heading);
+            font-size: 32px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pvf-hook-title .highlight {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .pvf-hook-subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: 500px;
+            margin: 0 auto 32px;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Social Proof Bar */
+        .pvf-social-proof {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pvf-avatar-stack {
+            display: flex;
+            align-items: center;
+        }
+
+        .pvf-avatar-stack img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid #0a1628;
+            margin-left: -12px;
+            object-fit: cover;
+        }
+
+        .pvf-avatar-stack img:first-child { margin-left: 0; }
+
+        .pvf-social-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .pvf-social-text strong {
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .pvf-rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .pvf-stars {
+            color: #fbbf24;
+            font-size: 14px;
+            letter-spacing: -2px;
+        }
+
+        .pvf-rating-text {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+        }
+
+        /* --- Stage 2: The Video Experience --- */
+        .pvf-video-stage {
+            padding: 0 40px 40px;
+            background: linear-gradient(180deg, #0a1628 0%, var(--paper) 100%);
+        }
+
+        .pvf-video-wrapper {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(197, 160, 89, 0.2);
+            transform: translateY(-20px);
+        }
+
+        /* Video Thumbnail (Pre-play State) */
+        .pvf-video-thumbnail {
+            position: relative;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f2b4c 100%);
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .pvf-video-thumbnail::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 30% 70%, rgba(197, 160, 89, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 40%);
+        }
+
+        /* Animated Background Pattern */
+        .pvf-video-pattern {
+            position: absolute;
+            inset: 0;
+            opacity: 0.1;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(197, 160, 89, 0.1) 35px, rgba(197, 160, 89, 0.1) 70px),
+                repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(255,255,255,0.05) 35px, rgba(255,255,255,0.05) 70px);
+            animation: patternMove 20s linear infinite;
+        }
+
+        @keyframes patternMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(70px, 70px); }
+        }
+
+        /* LO Presence (Authority Builder) */
+        .pvf-lo-presence {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .pvf-lo-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 3px solid var(--accent-color);
+            object-fit: cover;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .pvf-lo-badge {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 22px;
+            height: 22px;
+            background: var(--green);
+            border-radius: 50%;
+            border: 2px solid #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .pvf-lo-info {
+            text-align: left;
+        }
+
+        .pvf-lo-name {
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .pvf-lo-title {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Video Caption Overlay */
+        .pvf-video-caption {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            left: auto;
+            max-width: 280px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
+        }
+
+        .pvf-caption-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent-color);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .pvf-caption-text {
+            font-size: 14px;
+            color: white;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        /* Play Button (The Trigger) */
+        .pvf-play-trigger {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+        }
+
+        .pvf-play-btn {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 8px 32px rgba(197, 160, 89, 0.5),
+                0 0 0 20px rgba(197, 160, 89, 0.1),
+                0 0 0 40px rgba(197, 160, 89, 0.05);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: playPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes playPulse {
+            0%, 100% { 
+                box-shadow: 
+                    0 8px 32px rgba(197, 160, 89, 0.5),
+                    0 0 0 20px rgba(197, 160, 89, 0.1),
+                    0 0 0 40px rgba(197, 160, 89, 0.05);
+            }
+            50% { 
+                box-shadow: 
+                    0 12px 40px rgba(197, 160, 89, 0.6),
+                    0 0 0 25px rgba(197, 160, 89, 0.15),
+                    0 0 0 50px rgba(197, 160, 89, 0.08);
+            }
+        }
+
+        .pvf-play-btn:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 
+                0 12px 40px rgba(197, 160, 89, 0.7),
+                0 0 0 30px rgba(197, 160, 89, 0.2),
+                0 0 0 60px rgba(197, 160, 89, 0.1);
+        }
+
+        .pvf-play-btn:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
+        .pvf-play-icon {
+            color: white;
+            font-size: 36px;
+            margin-left: 6px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .pvf-play-label {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-family: var(--font-heading);
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+
+        /* Video Duration Badge */
+        .pvf-duration-badge {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: var(--font-heading);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 10;
+        }
+
+        .pvf-duration-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--red);
+            border-radius: 50%;
+            animation: recordPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* --- Stage 3: Interactive Video Player --- */
+        .pvf-video-player {
+            display: none;
+            aspect-ratio: 16/9;
+            background: #000;
+            position: relative;
+        }
+
+        .pvf-video-player.active {
+            display: block;
+        }
+
+        .pvf-video-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Progress Bar */
+        .pvf-progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .pvf-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
+            width: 0%;
+            transition: width 0.1s linear;
+            position: relative;
+        }
+
+        .pvf-progress-bar::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Chapter Markers */
+        .pvf-chapter-markers {
+            position: absolute;
+            bottom: 6px;
+            left: 0;
+            right: 0;
+            height: 20px;
+            display: flex;
+            pointer-events: none;
+        }
+
+        .pvf-chapter {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pvf-chapter-dot {
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .pvf-chapter.active .pvf-chapter-dot,
+        .pvf-chapter.completed .pvf-chapter-dot {
+            background: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .pvf-chapter-label {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            margin-bottom: 8px;
+        }
+
+        .pvf-chapter:hover .pvf-chapter-label {
+            opacity: 1;
+        }
+
+        /* --- Stage 4: Post-Video CTA Funnel --- */
+        .pvf-funnel-stage {
+            padding: 32px 40px 40px;
+            background: var(--paper);
+        }
+
+        .pvf-funnel-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .pvf-funnel-title {
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .pvf-funnel-subtitle {
+            font-size: 14px;
+            color: var(--slate);
+            opacity: 0.7;
+        }
+
+        /* The Commitment Ladder */
+        .pvf-commitment-ladder {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .pvf-commitment-step {
+            background: linear-gradient(135deg, #fff, #f8fafc);
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pvf-commitment-step::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .pvf-commitment-step:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-color);
+            box-shadow: 0 12px 32px rgba(197, 160, 89, 0.2);
+        }
+
+        .pvf-commitment-step:hover::before {
+            transform: scaleX(1);
+        }
+
+        .pvf-commitment-step.recommended {
+            border-color: var(--accent-color);
+            background: linear-gradient(135deg, #fffbf0, #fff8e6);
+        }
+
+        .pvf-commitment-step.recommended::before {
+            transform: scaleX(1);
+        }
+
+        .pvf-commitment-step.recommended::after {
+            content: 'RECOMMENDED';
+            position: absolute;
+            top: 8px;
+            right: -28px;
+            background: var(--accent-color);
+            color: white;
+            font-size: 8px;
+            font-weight: 800;
+            padding: 4px 24px;
+            transform: rotate(45deg);
+        }
+
+        .pvf-step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            color: white;
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            box-shadow: 0 4px 12px rgba(197, 160, 89, 0.3);
+        }
+
+        .pvf-step-title {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 6px;
+        }
+
+        .pvf-step-desc {
+            font-size: 12px;
+            color: var(--slate);
+            opacity: 0.7;
+            line-height: 1.5;
+        }
+
+        /* Trust Reinforcement */
+        .pvf-trust-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 32px;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.05), rgba(197, 160, 89, 0.02));
+            border-radius: 12px;
+            border: 1px solid rgba(197, 160, 89, 0.1);
+        }
+
+        .pvf-trust-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--slate);
+        }
+
+        .pvf-trust-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        /* --- Stage 5: Interactive Engagement Widgets --- */
+        .pvf-engagement-widgets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .pvf-widget {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .pvf-widget:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 8px 24px rgba(197, 160, 89, 0.1);
+        }
+
+        .pvf-widget-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .pvf-widget-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.15), rgba(197, 160, 89, 0.05));
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .pvf-widget-title {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .pvf-widget-content {
+            font-size: 13px;
+            color: var(--slate);
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        /* Quick Question Chips */
+        .pvf-quick-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .pvf-chip {
+            background: rgba(197, 160, 89, 0.1);
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            color: var(--accent-dark);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pvf-chip:hover {
+            background: var(--accent-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Savings Calculator Widget */
+        .pvf-savings-calc {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border: 1px solid #a7f3d0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .pvf-savings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .pvf-savings-row:last-child { margin-bottom: 0; }
+
+        .pvf-savings-label {
+            font-size: 12px;
+            color: #065f46;
+        }
+
+        .pvf-savings-value {
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 700;
+            color: #059669;
+        }
+
+        .pvf-savings-total {
+            border-top: 1px dashed #a7f3d0;
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
+        .pvf-savings-total .pvf-savings-label,
+        .pvf-savings-total .pvf-savings-value {
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        /* --- Stage 6: Exit Intent & Final CTA --- */
+        .pvf-final-cta {
+            background: linear-gradient(135deg, var(--primary-color), #1e3a5f);
+            padding: 32px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pvf-final-cta::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(197, 160, 89, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(197, 160, 89, 0.1) 0%, transparent 40%);
+        }
+
+        .pvf-cta-title {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pvf-cta-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pvf-cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pvf-btn {
+            padding: 16px 32px;
+            border-radius: 30px;
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pvf-btn-primary {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            color: white;
+            box-shadow: 0 8px 24px rgba(197, 160, 89, 0.4);
+        }
+
+        .pvf-btn-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 32px rgba(197, 160, 89, 0.5);
+        }
+
+        .pvf-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .pvf-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Risk Reversal */
+        .pvf-risk-reversal {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .pvf-risk-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .pvf-hook-section { padding: 32px 24px; }
+            .pvf-hook-title { font-size: 24px; }
+            .pvf-video-stage { padding: 0 20px 32px; }
+            .pvf-video-caption { 
+                position: relative; 
+                top: auto; 
+                right: auto; 
+                max-width: none;
+                margin: 16px;
+                margin-top: -40px;
+            }
+            .pvf-lo-presence { top: 16px; left: 16px; }
+            .pvf-lo-avatar { width: 44px; height: 44px; }
+            .pvf-play-btn { width: 80px; height: 80px; }
+            .pvf-play-icon { font-size: 28px; }
+            .pvf-commitment-ladder { grid-template-columns: 1fr; }
+            .pvf-engagement-widgets { grid-template-columns: 1fr; }
+            .pvf-trust-bar { flex-direction: column; gap: 16px; }
+            .pvf-cta-buttons { flex-direction: column; }
+            .pvf-btn { width: 100%; justify-content: center; }
+        }
+
+        /* --- Animations --- */
+        .pvf-fade-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pvf-slide-up {
+            animation: slideUp 0.5s ease forwards;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Confetti for conversions */
+        .pvf-confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--accent-color);
+            animation: confettiFall 3s ease-out forwards;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="pvf-container">
+        <!-- STAGE 1: The Hook -->
+        <div class="pvf-hook-section">
+            <div class="pvf-urgency-bar">
+                <span class="dot"></span>
+                <span>Rates change daily — This quote expires in <strong id="countdown">48:00:00</strong></span>
+            </div>
+            
+            <h1 class="pvf-hook-title">
+                Watch This <span class="highlight">2-Minute Video</span><br>
+                Before Your Quote Expires
+            </h1>
+            
+            <p class="pvf-hook-subtitle">
+                I recorded this specifically for you. In 2 minutes, I'll show you exactly how much you could save 
+                and why this opportunity won't last forever.
+            </p>
+
+            <div class="pvf-social-proof">
+                <div class="pvf-avatar-stack">
+                    <img src="https://i.pravatar.cc/150?img=1" alt="Client">
+                    <img src="https://i.pravatar.cc/150?img=2" alt="Client">
+                    <img src="https://i.pravatar.cc/150?img=3" alt="Client">
+                    <img src="https://i.pravatar.cc/150?img=4" alt="Client">
+                </div>
+                <div class="pvf-social-text">
+                    <strong>247 homeowners</strong> in your area<br>
+                    saved an average of <strong>$487/month</strong> last month
+                </div>
+                <div class="pvf-rating">
+                    <span class="pvf-stars">★★★★★</span>
+                    <span class="pvf-rating-text">4.9/5 from 1,200+ reviews</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- STAGE 2 & 3: Video Experience -->
+        <div class="pvf-video-stage">
+            <div class="pvf-video-wrapper">
+                <!-- Thumbnail State -->
+                <div class="pvf-video-thumbnail" id="videoThumbnail" onclick="playVideo()">
+                    <div class="pvf-video-pattern"></div>
+                    
+                    <!-- LO Presence -->
+                    <div class="pvf-lo-presence">
+                        <div style="position: relative;">
+                            <img src="https://i.pravatar.cc/150?img=11" alt="Loan Officer" class="pvf-lo-avatar">
+                            <span class="pvf-lo-badge">✓</span>
+                        </div>
+                        <div class="pvf-lo-info">
+                            <div class="pvf-lo-name">Michael Chen</div>
+                            <div class="pvf-lo-title">Senior Loan Advisor</div>
+                        </div>
+                    </div>
+
+                    <!-- Video Caption -->
+                    <div class="pvf-video-caption">
+                        <div class="pvf-caption-label">Your Personalized Strategy</div>
+                        <div class="pvf-caption-text">"Based on your $750K home value, I found a way to access $127,000 while lowering your monthly payments by $340..."</div>
+                    </div>
+
+                    <!-- Play Button -->
+                    <div class="pvf-play-trigger">
+                        <button class="pvf-play-btn">
+                            <span class="pvf-play-icon">▶</span>
+                        </button>
+                        <div class="pvf-play-label">Watch Now</div>
+                    </div>
+
+                    <!-- Duration Badge -->
+                    <div class="pvf-duration-badge">
+                        2:15
+                    </div>
+                </div>
+
+                <!-- Player State -->
+                <div class="pvf-video-player" id="videoPlayer">
+                    <iframe 
+                        class="pvf-video-iframe"
+                        id="videoIframe"
+                        src=""
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                    
+                    <!-- Progress Bar -->
+                    <div class="pvf-progress-container" onclick="seekVideo(event)">
+                        <div class="pvf-progress-bar" id="progressBar"></div>
+                    </div>
+
+                    <!-- Chapter Markers -->
+                    <div class="pvf-chapter-markers">
+                        <div class="pvf-chapter active" data-chapter="0">
+                            <div class="pvf-chapter-dot"></div>
+                            <div class="pvf-chapter-label">The Opportunity</div>
+                        </div>
+                        <div class="pvf-chapter" data-chapter="1">
+                            <div class="pvf-chapter-dot"></div>
+                            <div class="pvf-chapter-label">Your Numbers</div>
+                        </div>
+                        <div class="pvf-chapter" data-chapter="2">
+                            <div class="pvf-chapter-dot"></div>
+                            <div class="pvf-chapter-label">The Savings</div>
+                        </div>
+                        <div class="pvf-chapter" data-chapter="3">
+                            <div class="pvf-chapter-dot"></div>
+                            <div class="pvf-chapter-label">Next Steps</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STAGE 4: Commitment Ladder -->
+        <div class="pvf-funnel-stage">
+            <div class="pvf-funnel-header">
+                <h2 class="pvf-funnel-title">Ready to Move Forward?</h2>
+                <p class="pvf-funnel-subtitle">Choose how you'd like to proceed. No pressure — just options.</p>
+            </div>
+
+            <div class="pvf-commitment-ladder">
+                <div class="pvf-commitment-step" onclick="handleStep(1)">
+                    <div class="pvf-step-number">1</div>
+                    <div class="pvf-step-title">Ask a Question</div>
+                    <div class="pvf-step-desc">Not ready yet? Send me a quick message and I'll respond within 2 hours.</div>
+                </div>
+                
+                <div class="pvf-commitment-step recommended" onclick="handleStep(2)">
+                    <div class="pvf-step-number">2</div>
+                    <div class="pvf-step-title">Schedule a Call</div>
+                    <div class="pvf-step-desc">15-minute strategy session. I'll answer all your questions — no obligation.</div>
+                </div>
+                
+                <div class="pvf-commitment-step" onclick="handleStep(3)">
+                    <div class="pvf-step-number">3</div>
+                    <div class="pvf-step-title">Start Application</div>
+                    <div class="pvf-step-desc">Ready to lock in this rate? Start your application now (takes 5 minutes).</div>
+                </div>
+            </div>
+
+            <div class="pvf-trust-bar">
+                <div class="pvf-trust-item">
+                    <div class="pvf-trust-icon">🔒</div>
+                    <span>256-bit Encryption</span>
+                </div>
+                <div class="pvf-trust-item">
+                    <div class="pvf-trust-icon">✓</div>
+                    <span>No Credit Check Required</span>
+                </div>
+                <div class="pvf-trust-item">
+                    <div class="pvf-trust-icon">↩</div>
+                    <span>Cancel Anytime</span>
+                </div>
+                <div class="pvf-trust-item">
+                    <div class="pvf-trust-icon">☎</div>
+                    <span>24/7 Support</span>
+                </div>
+            </div>
+
+            <!-- Engagement Widgets -->
+            <div class="pvf-engagement-widgets">
+                <div class="pvf-widget">
+                    <div class="pvf-widget-header">
+                        <div class="pvf-widget-icon">💬</div>
+                        <div class="pvf-widget-title">Common Questions</div>
+                    </div>
+                    <div class="pvf-widget-content">
+                        Quick answers to questions other homeowners in your situation have asked:
+                    </div>
+                    <div class="pvf-quick-chips">
+                        <span class="pvf-chip" onclick="askQuestion('Will this affect my credit score?')">Credit impact?</span>
+                        <span class="pvf-chip" onclick="askQuestion('How long does approval take?')">Timeline?</span>
+                        <span class="pvf-chip" onclick="askQuestion('Can I pay it off early?')">Early payoff?</span>
+                        <span class="pvf-chip" onclick="askQuestion('What are the closing costs?')">Closing costs?</span>
+                    </div>
+                </div>
+
+                <div class="pvf-widget">
+                    <div class="pvf-widget-header">
+                        <div class="pvf-widget-icon">💰</div>
+                        <div class="pvf-widget-title">Your Potential Savings</div>
+                    </div>
+                    <div class="pvf-widget-content">
+                        Based on your current credit cards and this HELOC rate:
+                    </div>
+                    <div class="pvf-savings-calc">
+                        <div class="pvf-savings-row">
+                            <span class="pvf-savings-label">Current credit card payments</span>
+                            <span class="pvf-savings-value">$825/mo</span>
+                        </div>
+                        <div class="pvf-savings-row">
+                            <span class="pvf-savings-label">New HELOC payment</span>
+                            <span class="pvf-savings-value">$485/mo</span>
+                        </div>
+                        <div class="pvf-savings-row pvf-savings-total">
+                            <span class="pvf-savings-label">Monthly savings</span>
+                            <span class="pvf-savings-value">$340/mo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STAGE 5: Final CTA -->
+        <div class="pvf-final-cta">
+            <h2 class="pvf-cta-title">Don't Let This Rate Expire</h2>
+            <p class="pvf-cta-subtitle">Rates have increased 0.25% in the past week. Lock in your quote today.</p>
+            
+            <div class="pvf-cta-buttons">
+                <button class="pvf-btn pvf-btn-primary" onclick="startApplication()">
+                    <span>⚡</span> Start My Application
+                </button>
+                <button class="pvf-btn pvf-btn-secondary" onclick="scheduleCall()">
+                    <span>📅</span> Schedule a Call
+                </button>
+            </div>
+
+            <div class="pvf-risk-reversal">
+                <div class="pvf-risk-item">
+                    <span>✓</span> No application fees
+                </div>
+                <div class="pvf-risk-item">
+                    <span>✓</span> Rate lock for 30 days
+                </div>
+                <div class="pvf-risk-item">
+                    <span>✓</span> Cancel anytime before closing
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // PSYCHOLOGY VIDEO FUNNEL - INTERACTIONS
+        // ============================================
+
+        // Countdown Timer (Urgency)
+        function initCountdown() {
+            // Set expiry to 48 hours from now
+            let expiry = localStorage.getItem('quoteExpiry');
+            if (!expiry) {
+                expiry = Date.now() + (48 * 60 * 60 * 1000);
+                localStorage.setItem('quoteExpiry', expiry);
+            }
+
+            function update() {
+                const remaining = Math.max(0, parseInt(expiry) - Date.now());
+                const hours = Math.floor(remaining / (60 * 60 * 1000));
+                const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+                const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+                
+                document.getElementById('countdown').textContent = 
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                
+                if (remaining > 0) {
+                    requestAnimationFrame(update);
+                }
+            }
+            update();
+        }
+
+        // Video Player
+        let videoPlaying = false;
+        let videoProgress = 0;
+        let progressInterval;
+
+        function playVideo() {
+            const thumbnail = document.getElementById('videoThumbnail');
+            const player = document.getElementById('videoPlayer');
+            const iframe = document.getElementById('videoIframe');
+            
+            // In production, replace with actual video URL
+            // Example: Loom, YouTube, Vimeo, or self-hosted
+            const videoUrl = 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0';
+            
+            thumbnail.style.display = 'none';
+            player.classList.add('active');
+            iframe.src = videoUrl;
+            
+            videoPlaying = true;
+            simulateProgress();
+            
+            // Track video play
+            trackEvent('video_started');
+        }
+
+        function simulateProgress() {
+            // Simulate video progress for demo
+            progressInterval = setInterval(() => {
+                videoProgress += 0.5;
+                document.getElementById('progressBar').style.width = videoProgress + '%';
+                
+                // Update chapter markers
+                const chapters = document.querySelectorAll('.pvf-chapter');
+                chapters.forEach((ch, i) => {
+                    const threshold = (i + 1) * 25;
+                    ch.classList.remove('active', 'completed');
+                    if (videoProgress >= threshold) {
+                        ch.classList.add('completed');
+                    } else if (videoProgress >= threshold - 25 && videoProgress < threshold) {
+                        ch.classList.add('active');
+                    }
+                });
+                
+                if (videoProgress >= 100) {
+                    clearInterval(progressInterval);
+                    trackEvent('video_completed');
+                    showCompletionCelebration();
+                }
+            }, 100);
+        }
+
+        function seekVideo(e) {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const pct = ((e.clientX - rect.left) / rect.width) * 100;
+            videoProgress = pct;
+            document.getElementById('progressBar').style.width = pct + '%';
+        }
+
+        // Commitment Ladder Steps
+        function handleStep(step) {
+            const actions = {
+                1: () => { trackEvent('ask_question_clicked'); openChat(); },
+                2: () => { trackEvent('schedule_call_clicked'); scheduleCall(); },
+                3: () => { trackEvent('start_application_clicked'); startApplication(); }
+            };
+            
+            if (actions[step]) actions[step]();
+            
+            // Visual feedback
+            createConfetti();
+        }
+
+        // Quick Question Handler
+        function askQuestion(question) {
+            trackEvent('quick_question_clicked', { question });
+            // In production, this would open the chat widget with the question pre-filled
+            alert(`Opening chat with question: "${question}"`);
+        }
+
+        // CTA Handlers
+        function startApplication() {
+            trackEvent('application_started');
+            createConfetti();
+            // In production: window.location.href = '/apply';
+            alert('Redirecting to application...');
+        }
+
+        function scheduleCall() {
+            trackEvent('call_scheduled');
+            // In production: Open calendar widget
+            alert('Opening calendar to schedule your call...');
+        }
+
+        function openChat() {
+            trackEvent('chat_opened');
+            // In production: Open Ezra chat widget
+            alert('Opening chat with your loan officer...');
+        }
+
+        // Visual Effects
+        function createConfetti() {
+            const colors = ['#c5a059', '#10b981', '#3b82f6', '#f59e0b', '#ec4899'];
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'pvf-confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        function showCompletionCelebration() {
+            // Show a subtle completion message
+            const player = document.getElementById('videoPlayer');
+            const completion = document.createElement('div');
+            completion.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.9);
+                padding: 24px 40px;
+                border-radius: 16px;
+                text-align: center;
+                color: white;
+                z-index: 100;
+                animation: fadeIn 0.5s ease;
+            `;
+            completion.innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 12px;">🎉</div>
+                <div style="font-family: var(--font-heading); font-size: 20px; font-weight: 700; margin-bottom: 8px;">Video Complete!</div>
+                <div style="font-size: 14px; opacity: 0.8;">Ready to explore your options below?</div>
+            `;
+            player.appendChild(completion);
+            setTimeout(() => completion.remove(), 3000);
+        }
+
+        // Analytics Tracking
+        function trackEvent(eventName, data = {}) {
+            console.log('📊 Track:', eventName, data);
+            // In production: Send to your analytics endpoint
+            // fetch('/api/track', { method: 'POST', body: JSON.stringify({ event: eventName, ...data }) });
+        }
+
+        // Intersection Observer for scroll animations
+        function initScrollAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('pvf-fade-in');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.pvf-commitment-step, .pvf-widget').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initCountdown();
+            initScrollAnimations();
+            trackEvent('funnel_page_viewed');
+        });
+
+        // Exit Intent Detection
+        let exitIntentShown = false;
+        document.addEventListener('mouseleave', (e) => {
+            if (e.clientY < 10 && !exitIntentShown) {
+                exitIntentShown = true;
+                trackEvent('exit_intent_triggered');
+                // In production: Show exit intent modal
+                console.log('Exit intent triggered');
+            }
+        });
+    </script>
+
+</body>
+</html>

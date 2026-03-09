@@ -27,6 +27,37 @@ Thumbs.db
 # Claude Code
 .claude/
 
+# AI/IDE agent directories
+.adal/
+.agent/
+.agents/
+.augment/
+.codebuddy/
+.commandcode/
+.continue/
+.cortex/
+.crush/
+.factory/
+.goose/
+.iflow/
+.junie/
+.kilocode/
+.kiro/
+.kode/
+.mcpjam/
+.mux/
+.neovate/
+.openhands/
+.pi/
+.pochi/
+.qoder/
+.qwen/
+.roo/
+.trae/
+.vibe/
+.windsurf/
+.zencoder/
+
 # Test artifacts
 .test-env/
 
@@ -48,3 +79,20 @@ __pycache__/
 *.pyc
 optimize.py
 .vercel
+
+# Temp/demo files
+temp.txt
+search_results.txt
+make-demo.py
+skills-lock.json
+skills/
+
+# Demo HTML files
+*-demo.html
+*-demo.png
+dropdown-demo.*
+
+# Screenshots (not needed in repo)
+ezra-*.png
+login_page.png
+presentation-features-demo.png
