@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Above All Carbon HELOC Quote Tool | Professional HELOC Calculator & CRM</title>
     <meta name="description" content="Professional HELOC quote builder with multi-tier rate matrices, CRM integration, lead management, and AI-powered loan strategies. Built for mortgage loan officers.">
     <meta name="keywords" content="HELOC calculator, home equity line of credit, mortgage quote tool, loan officer CRM, rate matrix, HELOC proposal, debt consolidation, refinance comparison">
@@ -4291,26 +4291,71 @@
             #tab-leads [style*="grid-template-columns: repeat(3"] {
                 grid-template-columns: 1fr 1fr !important;
             }
-        }
 
-        /* --- Mobile: 480px --- */
-        @media (max-width: 480px) {
+            /* Settings tabs: enable horizontal scroll at tablet width */
             .settings-tabs {
                 overflow-x: auto;
                 flex-wrap: nowrap;
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
+                padding-bottom: 14px !important;
             }
-
             .settings-tabs::-webkit-scrollbar {
                 display: none;
             }
-
             .settings-tab {
                 white-space: nowrap;
                 flex-shrink: 0;
             }
 
+            /* Leads table: hide Email(3), Views(9), DNC(10) — 11 cols → 8 */
+            #leads-table thead th:nth-child(3),
+            #leads-table tbody td:nth-child(3),
+            #leads-table thead th:nth-child(9),
+            #leads-table tbody td:nth-child(9),
+            #leads-table thead th:nth-child(10),
+            #leads-table tbody td:nth-child(10) {
+                display: none;
+            }
+
+            /* Leads action buttons: enlarge for touch */
+            #tab-leads .btn {
+                padding: 10px 16px !important;
+                font-size: 10px !important;
+                min-height: 40px;
+            }
+
+            /* Leads filter controls: enlarge for touch */
+            #leads-filter-status,
+            #leads-filter-source {
+                min-height: 36px;
+            }
+
+            /* Rates tab: 3-col → 1-col */
+            #tab-rates > div[style*="grid-template-columns: 1fr 1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Floating toolbar: compact for tablet */
+            #floating-toolbar {
+                padding: 8px 10px;
+                gap: 6px;
+            }
+            #floating-toolbar .toolbar-btn {
+                padding: 8px 10px;
+                font-size: 10px;
+            }
+        }
+
+        /* --- Mobile: 480px --- */
+        @media (max-width: 480px) {
+            /* Settings tabs: reduce size further (scroll already enabled at 768px) */
+            .settings-tab {
+                padding: 8px 14px !important;
+                font-size: 9px !important;
+            }
+
+            /* Floating toolbar: dock to bottom */
             #floating-toolbar {
                 top: auto;
                 bottom: 10px;
@@ -4321,14 +4366,105 @@
                 border-radius: 12px;
                 border-left: none;
                 border-top: 3px solid var(--accent-color);
+                padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
             }
 
+            /* Body bottom padding for docked toolbar */
+            body {
+                padding-bottom: 80px;
+            }
+
+            /* Client grid: 2-col → 1-col */
+            .client-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Leads table: also hide Source(5), Quoted(7), Date(8) — down to 5 cols */
+            #leads-table thead th:nth-child(5),
+            #leads-table tbody td:nth-child(5),
+            #leads-table thead th:nth-child(7),
+            #leads-table tbody td:nth-child(7),
+            #leads-table thead th:nth-child(8),
+            #leads-table tbody td:nth-child(8) {
+                display: none;
+            }
+
+            /* Name column: constrain detail lines on phone */
+            #leads-table tbody td:nth-child(2) div[style*="max-width:320px"] {
+                max-width: 160px !important;
+            }
+
+            /* Leads search: full width */
+            #leads-search {
+                max-width: 100% !important;
+                width: 100%;
+            }
+
+            /* Leads pipeline stat tiles */
             #tab-leads [style*="grid-template-columns: repeat(5"] {
                 grid-template-columns: repeat(2, 1fr) !important;
             }
 
             .matrix-container {
                 flex-direction: column;
+            }
+        }
+
+        /* --- Mobile: 360px (small phones) --- */
+        @media (max-width: 360px) {
+            /* Hide checkbox column — 4 cols remain: Name, Phone, Status, Delete */
+            #leads-table thead th:nth-child(1),
+            #leads-table tbody td:nth-child(1) {
+                display: none;
+            }
+
+            #floating-toolbar {
+                gap: 4px;
+                padding: 6px 8px;
+            }
+            #floating-toolbar .toolbar-btn {
+                padding: 6px 8px;
+                font-size: 9px;
+            }
+
+            .premium-header {
+                padding: 14px 12px;
+            }
+            h1 {
+                font-size: 16px;
+            }
+
+            .content-body {
+                padding: 10px 8px;
+            }
+        }
+
+        /* ===== SAFE AREA INSETS (iPhone Notch/Dynamic Island) ===== */
+        @supports (padding: env(safe-area-inset-top)) {
+            body {
+                padding-top: env(safe-area-inset-top);
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
+            }
+        }
+
+        /* ===== TOUCH DEVICE HOVER SUPPRESSION ===== */
+        @media (hover: none) and (pointer: coarse) {
+            .toolbar-btn:hover,
+            .btn:hover,
+            .data-block:hover {
+                transform: none !important;
+                box-shadow: none !important;
+            }
+            .settings-tab:hover {
+                transform: none !important;
+                background: rgba(255, 255, 255, 0.04) !important;
+            }
+            .cloud-export-btn:hover {
+                transform: none !important;
+            }
+            #leads-table tbody tr:hover {
+                background: none !important;
             }
         }
 

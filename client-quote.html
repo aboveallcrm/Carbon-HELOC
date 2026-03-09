@@ -2867,6 +2867,8 @@
 
             .tier {
                 border-radius: 10px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
             }
 
             .tier-header {
@@ -2876,6 +2878,7 @@
 
             .rate-table {
                 font-size: 13px;
+                min-width: 320px;
             }
 
             .rate-table th {
@@ -2885,6 +2888,11 @@
 
             .rate-table td {
                 padding: 12px 14px;
+            }
+
+            .rate-detail-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
             }
 
             .quote-footer {
