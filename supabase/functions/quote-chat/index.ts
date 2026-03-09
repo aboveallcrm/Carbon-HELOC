@@ -235,8 +235,8 @@ serve(async (req: Request) => {
       return json({ error: "This quote has expired" }, 410);
     }
 
-    // 6. Check that showAiChat is enabled
-    if (!link.quote_data?.linkOptions?.showAiChat) {
+    // 6. Check that showAiChat is enabled (default ON — only block if explicitly false)
+    if (link.quote_data?.linkOptions?.showAiChat === false) {
       return json({ error: "AI chat is not enabled for this quote" }, 403);
     }
 

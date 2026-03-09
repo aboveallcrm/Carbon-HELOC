@@ -15548,11 +15548,9 @@ Sent via Above All Carbon HELOC Tool`;
                 // 5. Fetch analytics counts per lead (quote_opened events)
                 var analyticsMap = {};
                 try {
-                    var leadIds = enriched.map(function (l) { return l.id; }).filter(Boolean);
-                    if (leadIds.length === 0) throw new Error('no leads');
                     var { data: analyticsRows } = await sb.from('lead_analytics')
                         .select('lead_id, event_type, created_at')
-                        .in('lead_id', leadIds)
+                        .eq('user_id', userId)
                         .eq('event_type', 'quote_opened');
                     if (analyticsRows) {
                         analyticsRows.forEach(function (a) {
@@ -15695,11 +15693,9 @@ Sent via Above All Carbon HELOC Tool`;
             if (!sb || !userId || !leads || leads.length === 0) return;
 
             try {
-                var leadIds = leads.map(function (l) { return l.id; }).filter(Boolean);
-                if (leadIds.length === 0) return;
                 var { data: events } = await sb.from('lead_analytics')
                     .select('lead_id, event_type')
-                    .in('lead_id', leadIds);
+                    .eq('user_id', userId);
 
                 if (!events) return;
 
