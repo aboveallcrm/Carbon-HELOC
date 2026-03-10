@@ -442,22 +442,26 @@ END $$;
 -- ============================================================================
 -- SECTION 9: Missing GRANT statements for Ezra RPC functions
 -- ============================================================================
+-- Grant with explicit argument lists to avoid ambiguity from overloaded functions
 DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'search_ezra_knowledge') THEN
-        GRANT EXECUTE ON FUNCTION public.search_ezra_knowledge TO authenticated;
+        GRANT EXECUTE ON FUNCTION public.search_ezra_knowledge(vector, FLOAT, INT, TEXT) TO authenticated;
     END IF;
+EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
 DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'calculate_tappable_equity') THEN
-        GRANT EXECUTE ON FUNCTION public.calculate_tappable_equity TO authenticated;
+        GRANT EXECUTE ON FUNCTION public.calculate_tappable_equity(NUMERIC, NUMERIC, NUMERIC) TO authenticated;
     END IF;
+EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
 DO $$ BEGIN
     IF EXISTS (SELECT 1 FROM pg_proc WHERE proname = 'calculate_cltv') THEN
-        GRANT EXECUTE ON FUNCTION public.calculate_cltv TO authenticated;
+        GRANT EXECUTE ON FUNCTION public.calculate_cltv(NUMERIC, NUMERIC) TO authenticated;
     END IF;
+EXCEPTION WHEN OTHERS THEN NULL;
 END $$;
 
 -- ============================================================================
