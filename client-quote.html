@@ -4509,7 +4509,7 @@
                     initScrollReveal();
                     initCounters();
                     initParticles();
-                    initProgressStepper();
+                    initProgressStepper(link.quote_data.linkOptions || {});
                     // Initialize Ezra AI Chat (default on unless explicitly disabled)
                     if (!link.quote_data.linkOptions || link.quote_data.linkOptions.showAiChat !== false) {
                         initEzraChat(link.quote_data, link.lo_info || {}, code);
@@ -4891,11 +4891,13 @@
                     observer.observe(savEl);
                 })();
 
-                // 6. Urgency Banner — show after 30 seconds
+                // 6. Urgency Banner — show after 30 seconds (only if sales psychology is enabled)
                 (function initUrgencyBanner() {
                     var banner = document.getElementById('urgency-banner');
                     var cdEl = document.getElementById('ub-countdown');
                     if (!banner) return;
+                    var linkOpts = data.linkOptions || {};
+                    if (linkOpts.showSalesPsych === false) { banner.style.display = 'none'; return; }
 
                     // Calculate countdown from expiry date
                     var expiryStr = window._quoteExpiry;
@@ -5037,9 +5039,13 @@
                 // === APPLY BUTTON: hide if LO turned it off ===
                 if (opts.showApply === false) {
                     var barBtns = document.querySelectorAll('#floating-bar button');
-                    if (barBtns.length) barBtns[0].style.display = 'none'; // first btn = Apply Now
+                    if (barBtns.length > 0) barBtns[0].style.display = 'none'; // first btn = Apply Now
                     var urgBtnEl = document.querySelector('.ub-btn');
                     if (urgBtnEl) urgBtnEl.style.display = 'none';
+                    // Hide apply buttons in Carousel and Video Funnel
+                    document.querySelectorAll('.fc-cta').forEach(function (btn) { btn.style.display = 'none'; });
+                    var commitmentSteps = document.querySelectorAll('.pvf-commitment-step');
+                    if (commitmentSteps.length >= 3) commitmentSteps[2].style.display = 'none'; // 3rd is Start Application
                 }
 
                 // Apply scroll reveal classes
@@ -5430,25 +5436,40 @@
             }
 
             // ===== PROGRESS STEPPER =====
-            function initProgressStepper() {
+            function initProgressStepper(opts) {
                 if (!window.IntersectionObserver) return;
+                opts = opts || {};
+
+                // If footer is hidden (showLoInfo=false), step 3 has no scroll target
+                // Hide step 3 and its connector line so stepper shows 2 steps only
+                if (opts.showLoInfo === false) {
+                    var step3 = document.getElementById('step-3');
+                    var line2 = document.getElementById('step-line-2');
+                    if (step3) step3.style.display = 'none';
+                    if (line2) line2.style.display = 'none';
+                }
+
                 var sections = [
                     { ids: ['sec-client', 'sec-valuation'], step: 1 },
-                    { ids: ['sec-recommendation', 'sec-rates'], step: 2 },
-                    { ids: ['sec-footer'], step: 3 }
+                    { ids: ['sec-recommendation', 'sec-rates'], step: 2 }
                 ];
+                // Only add footer step if it's visible
+                if (opts.showLoInfo !== false) {
+                    sections.push({ ids: ['sec-footer'], step: 3 });
+                }
                 var currentStep = 1;
+                var maxSteps = opts.showLoInfo !== false ? 3 : 2;
                 function updateStepper(step) {
                     if (step === currentStep) return;
                     currentStep = step;
-                    for (var i = 1; i <= 3; i++) {
+                    for (var i = 1; i <= maxSteps; i++) {
                         var el = document.getElementById('step-' + i);
                         if (!el) continue;
                         el.classList.remove('active', 'completed');
                         if (i < step) el.classList.add('completed');
                         else if (i === step) el.classList.add('active');
                     }
-                    for (var j = 1; j <= 2; j++) {
+                    for (var j = 1; j < maxSteps; j++) {
                         var line = document.getElementById('step-line-' + j);
                         if (line) { if (j < step) line.classList.add('filled'); else line.classList.remove('filled'); }
                     }
@@ -5468,6 +5489,7 @@
             function initEzraChat(quoteData, loInfo, quoteCode) {
                 var chatHistory = [], isOpen = false, isSending = false, tourActive = false, tourStep = 0;
                 var loName = loInfo.name || 'your loan officer';
+                var opts = quoteData.linkOptions || {};
 
                 var defaultChips = [
                     'Walk me through my quote',
@@ -5499,6 +5521,23 @@
                         text: "Ready to move forward? Use the **Apply Now** button at the bottom of your screen to start your application, or schedule a call with **" + esc(loName) + "** to discuss any questions. There's no obligation \u2014 it's just the next step to explore your options."
                     }
                 ];
+
+                // If footer is hidden, remove the footer tour step (it targets a hidden element)
+                if (opts.showLoInfo === false) {
+                    tourSteps.pop(); // Remove the "Next Steps" footer tour entirely
+                } else {
+                    // Adjust the last step's text based on what's available
+                    var lastStep = tourSteps[tourSteps.length - 1];
+                    var nextStepsText = "Ready to move forward? ";
+                    if (opts.showApply !== false) {
+                        nextStepsText += "Use the **Apply Now** button to start your application, or ";
+                    }
+                    nextStepsText += "schedule a call with **" + esc(loName) + "** to discuss any questions. There's no obligation \u2014 it's just the next step to explore your options.";
+                    lastStep.text = nextStepsText;
+                    if (opts.showLoInfo === false) {
+                        lastStep.target = '#sec-rates'; // Fallback if footer is hidden
+                    }
+                }
 
                 // Build chat widget HTML
                 var root = document.getElementById('eq-root');
@@ -5627,8 +5666,16 @@
                     tourStep++;
                     if (tourStep >= tourSteps.length) {
                         endTour();
-                        addMsg('assistant', "That's the complete tour of your quote! Do you have any questions about what we covered?\n\nWhen you're ready, you can **start your application** or **schedule a call** with " + esc(loName) + ".");
-                        renderChips(['Start my application', 'Schedule a call', 'I have a question', 'Compare my rate options']);
+                        var endMsg = "That's the complete tour of your quote! Do you have any questions about what we covered?\n\nWhen you're ready, you can ";
+                        var chips = [];
+                        if (opts.showApply !== false) {
+                            endMsg += "**start your application** or ";
+                            chips.push('Start my application');
+                        }
+                        endMsg += "**schedule a call** with " + esc(loName) + ".";
+                        chips.push('Schedule a call', 'I have a question', 'Compare my rate options');
+                        addMsg('assistant', endMsg);
+                        renderChips(chips);
                         trackEvent('guided_tour_completed', { code: quoteCode });
                         return;
                     }
