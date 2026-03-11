@@ -6739,6 +6739,160 @@
                         });
                 };
 
+                // ===== CALL ME NOW & SCHEDULING FEATURES =====
+                var awaitingPhoneNumber = false;
+                var scheduleRequestType = null;
+                
+                // Check if message is a scheduling request
+                function checkSchedulingIntent(msg) {
+                    var lowerMsg = msg.toLowerCase();
+                    var callIntents = ['call me', 'call me now', 'have someone call me', 'can someone call me', 'i want to talk', 'i need to speak', 'talk to someone', 'speak to someone', 'talk to the loan officer', 'speak with the loan officer'];
+                    var scheduleIntents = ['schedule a call', 'book a call', 'set up a call', 'schedule appointment', 'book appointment', 'when can i talk', 'when are they available'];
+                    var urgentIntents = ['urgent', 'asap', 'immediately', 'right now', 'time sensitive', 'time-sensitive'];
+                    
+                    var isCallNow = callIntents.some(function(intent) { return lowerMsg.indexOf(intent) >= 0; });
+                    var isSchedule = scheduleIntents.some(function(intent) { return lowerMsg.indexOf(intent) >= 0; });
+                    var isUrgent = urgentIntents.some(function(intent) { return lowerMsg.indexOf(intent) >= 0; });
+                    
+                    if (isCallNow || isSchedule) {
+                        return { type: isUrgent ? 'call_me_now' : (isCallNow ? 'call_me_now' : 'schedule_call'), urgent: isUrgent };
+                    }
+                    return null;
+                }
+                
+                // Extract phone number from message
+                function extractPhoneNumber(msg) {
+                    // Match various phone number formats
+                    var phoneRegex = /(\+?1?[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/;
+                    var match = msg.match(phoneRegex);
+                    if (match) {
+                        return match[0].replace(/\D/g, '');
+                    }
+                    return null;
+                }
+                
+                // Send schedule request to API
+                function sendScheduleRequest(requestType, phone, preferredTime, isUrgent) {
+                    var SCHEDULE_API_URL = 'https://' + window.location.host + '/functions/v1/schedule-request';
+                    
+                    fetch(SCHEDULE_API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            quoteCode: quoteCode,
+                            clientName: quoteData.clientName || '',
+                            clientPhone: phone,
+                            clientEmail: quoteData.clientEmail || '',
+                            requestType: requestType,
+                            preferredTime: preferredTime || 'asap',
+                            metadata: { 
+                                urgent: isUrgent || false, 
+                                source: 'ezra_chat',
+                                timestamp: new Date().toISOString()
+                            }
+                        })
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        if (data.success) {
+                            var successMsg = requestType === 'call_me_now' 
+                                ? "✅ Perfect! I've sent your number to " + esc(loName) + ". They'll call you as soon as possible — usually within the next few minutes. Keep your phone nearby!"
+                                : "✅ Great! I've notified " + esc(loName) + " that you'd like to schedule a call. They'll reach out to you at " + esc(phone) + " to find a time that works.";
+                            addMsg('assistant', successMsg);
+                            trackEvent('schedule_request_sent', { code: quoteCode, type: requestType });
+                        } else {
+                            addMsg('assistant', "I had trouble sending that request. You can reach " + esc(loName) + " directly" + (loInfo.phone ? " at " + esc(loInfo.phone) : "") + ".");
+                        }
+                    })
+                    .catch(function(err) {
+                        console.error('Schedule request error:', err);
+                        addMsg('assistant', "I had trouble sending that request. You can reach " + esc(loName) + " directly" + (loInfo.phone ? " at " + esc(loInfo.phone) : "") + ".");
+                    });
+                }
+                
+                // Override eqSend to handle scheduling intents
+                var originalEqSend = window.eqSend;
+                window.eqSend = function() {
+                    var inp = document.getElementById('eq-input');
+                    if (!inp) return originalEqSend();
+                    var msg = inp.value.trim();
+                    
+                    // If we're waiting for a phone number
+                    if (awaitingPhoneNumber) {
+                        var phone = extractPhoneNumber(msg);
+                        if (phone) {
+                            awaitingPhoneNumber = false;
+                            inp.value = '';
+                            addMsg('user', msg);
+                            sendScheduleRequest(scheduleRequestType, phone, 'asap', scheduleRequestType === 'call_me_now');
+                            return;
+                        } else {
+                            // Still waiting for valid phone
+                            addMsg('assistant', "I need a valid 10-digit phone number to have " + esc(loName) + " call you. What's the best number to reach you at?");
+                            inp.value = '';
+                            return;
+                        }
+                    }
+                    
+                    // Check for scheduling intent
+                    var schedulingIntent = checkSchedulingIntent(msg);
+                    if (schedulingIntent) {
+                        // Check if phone number is already in the message
+                        var phone = extractPhoneNumber(msg);
+                        if (phone) {
+                            inp.value = '';
+                            addMsg('user', msg);
+                            sendScheduleRequest(schedulingIntent.type, phone, 'asap', schedulingIntent.urgent);
+                            return;
+                        } else {
+                            // Ask for phone number
+                            awaitingPhoneNumber = true;
+                            scheduleRequestType = schedulingIntent.type;
+                            inp.value = '';
+                            addMsg('user', msg);
+                            var askMsg = schedulingIntent.type === 'call_me_now'
+                                ? (schedulingIntent.urgent 
+                                    ? "I understand this is urgent! I'll have " + esc(loName) + " call you right away. What's the best number to reach you at?"
+                                    : "I can have " + esc(loName) + " call you! What's the best number to reach you at?")
+                                : "I'd be happy to help you schedule a call with " + esc(loName) + ". What's the best phone number to reach you at?";
+                            addMsg('assistant', askMsg);
+                            return;
+                        }
+                    }
+                    
+                    // Normal message handling
+                    return originalEqSend();
+                };
+                
+                // Add Call Me Now chip to default chips
+                defaultChips.push('📞 Call me now');
+                
+                // Handle Call Me Now chip click
+                var originalEqChip = window.eqChip;
+                window.eqChip = function(text) {
+                    if (text === '📞 Call me now' || text === 'Call me now') {
+                        awaitingPhoneNumber = true;
+                        scheduleRequestType = 'call_me_now';
+                        addMsg('user', 'I want someone to call me');
+                        addMsg('assistant', "I can have " + esc(loName) + " call you right away! What's the best number to reach you at?");
+                        trackEvent('call_me_now_clicked', { code: quoteCode });
+                        return;
+                    }
+                    if (text === '📅 Schedule a call' || text === 'Schedule a call') {
+                        if (loInfo.calendarLink) {
+                            window.open(loInfo.calendarLink, '_blank');
+                            trackEvent('schedule_call_clicked', { code: quoteCode, source: 'ezra_chip' });
+                        } else {
+                            awaitingPhoneNumber = true;
+                            scheduleRequestType = 'schedule_call';
+                            addMsg('user', 'I want to schedule a call');
+                            addMsg('assistant', "I'd be happy to help you schedule a call with " + esc(loName) + ". What's the best phone number to reach you at?");
+                        }
+                        return;
+                    }
+                    return originalEqChip(text);
+                };
+
                 // ===== WIDGET POSITION & DRAG =====
                 window.eqMoveWidget = function (position) {
                     var orb = document.getElementById('eq-orb');

@@ -5993,6 +5993,59 @@
                         receive an email at your account address each time a lead is received via webhook.</p>
                 </div>
 
+                <!-- Scheduling & Call Notifications -->
+                <div
+                    style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(197,160,89,0.3);">
+                    <h5 style="font-family: var(--font-heading); font-size: 10px; color: #c5a059; margin: 0 0 8px 0;">📞
+                        Scheduling & Call Notifications (Ezra)</h5>
+                    
+                    <div class="input-group" style="margin-bottom: 10px;">
+                        <div class="input-field">
+                            <label>Notification Phone <span class="help-tip">?<span class="help-tip-text">Phone number for SMS alerts when clients request calls via Ezra</span></span></label>
+                            <input type="tel" id="notification-phone" placeholder="(555) 123-4567" oninput="debouncedUpdateProfile()">
+                        </div>
+                        <div class="input-field">
+                            <label>Notification Email <span class="help-tip">?<span class="help-tip-text">Email for scheduling alerts (defaults to your account email)</span></span></label>
+                            <input type="email" id="notification-email" placeholder="you@example.com" oninput="debouncedUpdateProfile()">
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 10px;">
+                        <div class="toggle-container">
+                            <div class="toggle-switch" id="toggle-sms-notif"
+                                onclick="toggleNotifPref(this, 'sms_enabled')"></div>
+                            <span class="toggle-label">SMS me when client requests a call</span>
+                        </div>
+                        <div class="toggle-container">
+                            <div class="toggle-switch active" id="toggle-schedule-email-notif"
+                                onclick="toggleNotifPref(this, 'email_notifications_enabled')"></div>
+                            <span class="toggle-label">Email me for schedule requests</span>
+                        </div>
+                    </div>
+                    
+                    <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 10px;">
+                        <h6 style="font-family: var(--font-heading); font-size: 9px; color: #94a3b8; margin: 0 0 8px 0;">🔗 CRM Integration</h6>
+                        <div class="input-group">
+                            <div class="input-field" style="flex: 1;">
+                                <label>CRM Webhook URL <span class="help-tip">?<span class="help-tip-text">Your CRM webhook URL to receive schedule request data (GHL, Salesforce, etc.)</span></span></label>
+                                <input type="text" id="crm-webhook-url" placeholder="https://your-crm.com/webhook/..." oninput="debouncedUpdateProfile()">
+                            </div>
+                            <div class="input-field" style="flex: 0.5;">
+                                <label>CRM Type</label>
+                                <select id="crm-type" onchange="debouncedUpdateProfile()" style="width:100%;border-radius:5px;border:1px solid rgba(255,255,255,0.2);padding:8px;font-family:var(--font-body);font-size:11px;background:#1e293b;color:white;">
+                                    <option value="none">None</option>
+                                    <option value="ghl">GoHighLevel</option>
+                                    <option value="salesforce">Salesforce</option>
+                                    <option value="hubspot">HubSpot</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p style="font-size: 7px; color: rgba(255,255,255,0.4); margin: 6px 0 0 0;">When clients ask Ezra to "call me" or schedule a call, you'll be notified instantly via your preferred methods.</p>
+                </div>
+
                 <!-- Email Send Preferences -->
                 <div
                     style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(59,130,246,0.2);">
@@ -8449,12 +8502,18 @@ Best regards,
                 loName: 'lo-name', loTitle: 'lo-title', loNmls: 'lo-nmls', loDre: 'lo-dre',
                 loPhone: 'lo-phone', loEmail: 'lo-email', loWebsite: 'lo-website', headshotUrl: 'lo-headshot-url',
                 loCompany: 'lo-company', coNmls: 'co-nmls', coDre: 'co-dre', loAddress: 'lo-address', logoUrl: 'lo-logo-url',
-                loApplyLink: 'lo-apply-link', loCalendarLink: 'lo-calendar-link'
+                loApplyLink: 'lo-apply-link', loCalendarLink: 'lo-calendar-link',
+                notificationPhone: 'notification-phone', notificationEmail: 'notification-email',
+                crmWebhookUrl: 'crm-webhook-url', crmType: 'crm-type'
             };
             var INT_FIELD_MAP = {
                 bonzoApiKey: 'bonzo-api-key', bonzoApiKey2: 'bonzo-api-key-2',
                 radarApiKey: 'radar-api-key', ghlApiKey: 'ghl-api-key',
                 ghlLocationId: 'ghl-location-id', n8nWebhookUrl: 'n8n-webhook-url'
+            };
+            var BOOL_FIELD_MAP = {
+                smsEnabled: 'sms_enabled',
+                emailNotificationsEnabled: 'email_notifications_enabled'
             };
 
             function lsKey() { return 'aboveAllOnboarding_' + (window.currentUserId || 'anon'); }
@@ -11272,6 +11331,13 @@ Best regards,
                 loApplyLink: getVal('lo-apply-link'),
                 loCalendarLink: getVal('lo-calendar-link'),
                 wlApplyLink: getVal('wl-apply-link'),
+                // Notification preferences
+                notificationPhone: getVal('notification-phone'),
+                notificationEmail: getVal('notification-email'),
+                crmWebhookUrl: getVal('crm-webhook-url'),
+                crmType: getVal('crm-type'),
+                smsEnabled: document.getElementById('toggle-sms-notif')?.classList.contains('active') || false,
+                emailNotificationsEnabled: document.getElementById('toggle-schedule-email-notif')?.classList.contains('active') !== false,
                 wlApplyText: getVal('wl-apply-text'),
                 recTier: getVal('rec-tier-select'),
                 recTerm: getVal('rec-term-select'),
@@ -11328,6 +11394,20 @@ Best regards,
                     if (data.loApplyLink) document.getElementById('lo-apply-link').value = data.loApplyLink;
                     if (data.loCalendarLink) document.getElementById('lo-calendar-link').value = data.loCalendarLink;
                     if (data.wlApplyLink) document.getElementById('wl-apply-link').value = data.wlApplyLink;
+                    // Notification preferences
+                    if (data.notificationPhone) document.getElementById('notification-phone').value = data.notificationPhone;
+                    if (data.notificationEmail) document.getElementById('notification-email').value = data.notificationEmail;
+                    if (data.crmWebhookUrl) document.getElementById('crm-webhook-url').value = data.crmWebhookUrl;
+                    if (data.crmType) document.getElementById('crm-type').value = data.crmType;
+                    // Toggle states
+                    if (data.smsEnabled !== undefined) {
+                        var smsToggle = document.getElementById('toggle-sms-notif');
+                        if (smsToggle) smsToggle.classList.toggle('active', data.smsEnabled);
+                    }
+                    if (data.emailNotificationsEnabled !== undefined) {
+                        var emailToggle = document.getElementById('toggle-schedule-email-notif');
+                        if (emailToggle) emailToggle.classList.toggle('active', data.emailNotificationsEnabled);
+                    }
                     if (data.wlApplyText) document.getElementById('wl-apply-text').value = data.wlApplyText;
                     if (data.recTier) document.getElementById('rec-tier-select').value = data.recTier;
                     if (data.recTerm) document.getElementById('rec-term-select').value = data.recTerm;

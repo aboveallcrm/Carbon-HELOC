@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ezra Help & Commands</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #c5a059, #d4af37);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 20px;
+            box-shadow: 0 0 40px rgba(197, 160, 89, 0.4);
+        }
+        
+        h1 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 42px;
+            background: linear-gradient(135deg, #c5a059, #d4b76a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        
+        .subtitle {
+            color: rgba(255,255,255,0.6);
+            font-size: 18px;
+        }
+        
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto 40px;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 16px 24px 16px 52px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .search-box input:focus {
+            border-color: #c5a059;
+            box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.1);
+        }
+        
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .tab:hover, .tab.active {
+            background: rgba(197, 160, 89, 0.15);
+            border-color: rgba(197, 160, 89, 0.4);
+            color: #c5a059;
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .card {
+            background: linear-gradient(135deg, rgba(30,41,59,0.8), rgba(15,23,42,0.9));
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+        }
+        
+        .card h2 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 24px;
+            color: #c5a059;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .card h3 {
+            font-size: 18px;
+            color: #e2e8f0;
+            margin: 24px 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .command-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        
+        .command-item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+        
+        .command-item:hover {
+            border-color: rgba(197, 160, 89, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .command-item .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .command-item .name {
+            font-weight: 600;
+            color: #c5a059;
+            margin-bottom: 4px;
+        }
+        
+        .command-item .desc {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            line-height: 1.5;
+        }
+        
+        .shortcut-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .shortcut-table th,
+        .shortcut-table td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        
+        .shortcut-table th {
+            color: #c5a059;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .shortcut-table td {
+            font-size: 14px;
+        }
+        
+        .shortcut-table td:first-child {
+            font-family: 'DM Mono', monospace;
+            background: rgba(197, 160, 89, 0.1);
+            border-radius: 6px;
+            padding: 6px 12px;
+            display: inline-block;
+            color: #c5a059;
+            font-weight: 600;
+        }
+        
+        .voice-example {
+            background: rgba(34, 197, 94, 0.1);
+            border-left: 3px solid #22c55e;
+            padding: 16px 20px;
+            border-radius: 0 12px 12px 0;
+            margin: 12px 0;
+            font-style: italic;
+        }
+        
+        .voice-example::before {
+            content: "🎤 ";
+            font-style: normal;
+        }
+        
+        .tier-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+        
+        .tier-carbon { background: #374151; color: #9ca3af; }
+        .tier-titanium { background: #4b5563; color: #d1d5db; }
+        .tier-platinum { background: linear-gradient(135deg, #a78bfa, #8b5cf6); color: white; }
+        .tier-obsidian { background: linear-gradient(135deg, #1f2937, #111827); color: #c5a059; border: 1px solid #c5a059; }
+        .tier-diamond { background: linear-gradient(135deg, #c5a059, #d4af37); color: #0f172a; }
+        
+        .tip-box {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.15), rgba(197, 160, 89, 0.05));
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .tip-box strong {
+            color: #c5a059;
+        }
+        
+        .feature-locked {
+            opacity: 0.5;
+            position: relative;
+        }
+        
+        .feature-locked::after {
+            content: "🔒";
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            font-size: 20px;
+        }
+        
+        .quick-ref {
+            background: rgba(0,0,0,0.3);
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            line-height: 2;
+        }
+        
+        .quick-ref .key {
+            color: #c5a059;
+            font-weight: 600;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+            margin-top: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 32px; }
+            .command-grid { grid-template-columns: 1fr; }
+            .tabs { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">✦</div>
+            <h1>Ezra AI Assistant</h1>
+            <p class="subtitle">Complete Commands & Features Guide</p>
+        </header>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search commands, features, or shortcuts...">
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('quick-start')">🚀 Quick Start</div>
+            <div class="tab" onclick="showTab('commands')">🎯 Commands</div>
+            <div class="tab" onclick="showTab('voice')">🎤 Voice</div>
+            <div class="tab" onclick="showTab('shortcuts')">⌨️ Shortcuts</div>
+            <div class="tab" onclick="showTab('tiers')">💎 Tiers</div>
+            <div class="tab" onclick="showTab('reference')">📋 Quick Ref</div>
+        </div>
+        
+        <!-- Quick Start -->
+        <div id="quick-start" class="content-section active">
+            <div class="card">
+                <h2>🚀 Getting Started with Ezra</h2>
+                
+                <h3>Opening Ezra</h3>
+                <p style="margin-bottom: 16px; line-height: 1.7;">
+                    Look for the <strong>gold orb (✦)</strong> floating in the corner of your screen. 
+                    Click it to open Ezra. You can drag the orb to reposition it anywhere.
+                </p>
+                
+                <div class="tip-box">
+                    <strong>💡 Pro Tip:</strong> Double-click the orb for quick open/close. 
+                    Press <code style="background: rgba(197,160,89,0.2); padding: 2px 8px; border-radius: 4px;">Ctrl/Cmd + E</code> as a keyboard shortcut.
+                </div>
+                
+                <h3>Your First Quote</h3>
+                <p style="margin-bottom: 16px; line-height: 1.7;">
+                    New to Ezra? Click the <strong>🚀 Quick Quote</strong> button for a guided walkthrough, 
+                    or simply type your deal details naturally:
+                </p>
+                
+                <div class="voice-example">
+                    "$800k home, $400k mortgage, need $100k cash for John Smith"
+                </div>
+                
+                <h3>Quick Command Buttons</h3>
+                <div class="command-grid">
+                    <div class="command-item">
+                        <div class="icon">🚀</div>
+                        <div class="name">Quick Quote</div>
+                        <div class="desc">Step-by-step wizard for new users</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">💰</div>
+                        <div class="name">Build Quote</div>
+                        <div class="desc">Creates complete quote with rates</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">🏗️</div>
+                        <div class="name">Structure Deal</div>
+                        <div class="desc">Analyzes and recommends best program</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">📝</div>
+                        <div class="name">Client Script</div>
+                        <div class="desc">Generates word-for-word explanation</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Commands -->
+        <div id="commands" class="content-section">
+            <div class="card">
+                <h2>🎯 Quick Command Buttons</h2>
+                <p style="margin-bottom: 20px; color: rgba(255,255,255,0.7);">
+                    Click any button in the horizontal scroll bar below Ezra's header:
+                </p>
+                
+                <div class="command-grid">
+                    <div class="command-item">
+                        <div class="icon">🚀</div>
+                        <div class="name">Quick Quote</div>
+                        <div class="desc">Starts step-by-step quote wizard for new users</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">💰</div>
+                        <div class="name">Build Quote</div>
+                        <div class="desc">Creates complete quote with rates and terms</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">🏗️</div>
+                        <div class="name">Structure Deal</div>
+                        <div class="desc">Analyzes borrower situation and recommends program</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">🎯</div>
+                        <div class="name">Recommend Program</div>
+                        <div class="desc">Suggests ideal HELOC based on goals</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">1️⃣</div>
+                        <div class="name">Tier 1</div>
+                        <div class="desc">Highest origination fee, lowest rates</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">2️⃣</div>
+                        <div class="name">Tier 2</div>
+                        <div class="desc">Middle tier (recommended)</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">3️⃣</div>
+                        <div class="name">Tier 3</div>
+                        <div class="desc">Lowest origination fee, highest rates</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">🛡️</div>
+                        <div class="name">Handle Objection</div>
+                        <div class="desc">Get responses to common borrower objections</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">📝</div>
+                        <div class="name">Client Script</div>
+                        <div class="desc">Word-for-word scripts to explain the loan</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">🗣️</div>
+                        <div class="name">Narrate Quote</div>
+                        <div class="desc">Explains quote in plain English for clients</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">✉️</div>
+                        <div class="name">Draft Message</div>
+                        <div class="desc">Creates SMS/email follow-up messages</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">⚖️</div>
+                        <div class="name">Compare Scenarios</div>
+                        <div class="desc">Side-by-side rate/term comparison</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">📋</div>
+                        <div class="name">Lead Briefing</div>
+                        <div class="desc">Pulls up latest lead info and activity</div>
+                    </div>
+                    <div class="command-item feature-locked">
+                        <div class="icon">⚠️</div>
+                        <div class="name">Compliance Check <span class="tier-badge tier-platinum">Platinum</span></div>
+                        <div class="desc">Reviews messages for regulatory issues</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon">❓</div>
+                        <div class="name">Predict Questions</div>
+                        <div class="desc">Anticipates what clients will ask</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>💬 Natural Language Commands</h2>
+                <p style="margin-bottom: 20px; color: rgba(255,255,255,0.7);">
+                    Type naturally - Ezra understands context:
+                </p>
+                
+                <h3>Quote Building</h3>
+                <table class="shortcut-table">
+                    <tr>
+                        <td>$800k home, $400k mortgage, need $100k cash</td>
+                        <td>Auto-fills all borrower fields</td>
+                    </tr>
+                    <tr>
+                        <td>Client: John Smith, 750 score</td>
+                        <td>Creates quote with borrower info</td>
+                    </tr>
+                    <tr>
+                        <td>Change cash to $150K</td>
+                        <td>Updates HELOC amount</td>
+                    </tr>
+                    <tr>
+                        <td>Make it 15 years</td>
+                        <td>Changes term selection</td>
+                    </tr>
+                    <tr>
+                        <td>Switch to tier 2</td>
+                        <td>Changes origination fee tier</td>
+                    </tr>
+                </table>
+                
+                <h3>Actions</h3>
+                <table class="shortcut-table">
+                    <tr>
+                        <td>undo</td>
+                        <td>Reverts last form change</td>
+                    </tr>
+                    <tr>
+                        <td>clear</td>
+                        <td>Clears chat history</td>
+                    </tr>
+                    <tr>
+                        <td>help</td>
+                        <td>Shows available commands</td>
+                    </tr>
+                    <tr>
+                        <td>export quote</td>
+                        <td>Generates shareable quote link</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Voice -->
+        <div id="voice" class="content-section">
+            <div class="card">
+                <h2>🎤 Voice Commands <span class="tier-badge tier-platinum">Platinum</span></h2>
+                
+                <div class="tip-box">
+                    <strong>🎙️ To activate:</strong> Click the microphone button in the input area 
+                    or press <code style="background: rgba(197,160,89,0.2); padding: 2px 8px; border-radius: 4px;">Ctrl/Cmd + Shift + V</code>
+                </div>
+                
+                <h3>Creating Quotes by Voice</h3>
+                
+                <p style="margin: 16px 0; color: rgba(255,255,255,0.8);">Simply speak naturally. Ezra understands:</p>
+                
+                <div class="voice-example">
+                    "Create a quote for John Smith"
+                </div>
+                
+                <div class="voice-example">
+                    "$800,000 property, $400,000 mortgage, needs $100,000 cash"
+                </div>
+                
+                <div class="voice-example">
+                    "Client is Michael Brown, 750 credit score, $600,000 home value"
+                </div>
+                
+                <h3>Voice Shortcuts</h3>
+                <table class="shortcut-table">
+                    <tr>
+                        <th>Say This</th>
+                        <th>Result</th>
+                    </tr>
+                    <tr>
+                        <td>"Go with tier 1"</td>
+                        <td>Selects highest origination fee tier</td>
+                    </tr>
+                    <tr>
+                        <td>"Switch to tier 2"</td>
+                        <td>Selects middle tier</td>
+                    </tr>
+                    <tr>
+                        <td>"Use 15-year fixed"</td>
+                        <td>Selects 15-year fixed program</td>
+                    </tr>
+                    <tr>
+                        <td>"Change to 30-year"</td>
+                        <td>Switches to 30-year term</td>
+                    </tr>
+                    <tr>
+                        <td>"Make it variable"</td>
+                        <td>Switches to variable rate program</td>
+                    </tr>
+                    <tr>
+                        <td>"Undo"</td>
+                        <td>Reverts last action</td>
+                    </tr>
+                    <tr>
+                        <td>"Clear chat"</td>
+                        <td>Clears conversation history</td>
+                    </tr>
+                </table>
+                
+                <h3>Rate Input by Voice</h3>
+                
+                <div class="voice-example">
+                    "For the 4.99 origination fee, the 30-year is 7.45%, 20-year is 7.20%"
+                </div>
+                
+                <div class="voice-example">
+                    "At 2.99 origination: 30 years at 7.85%, 20 years at 7.60%"
+                </div>
+                
+                <div class="voice-example">
+                    "The 1.50 origination fee: 30-year rate is 8.35%"
+                </div>
+            </div>
+        </div>
+        
+        <!-- Shortcuts -->
+        <div id="shortcuts" class="content-section">
+            <div class="card">
+                <h2>⌨️ Keyboard Shortcuts</h2>
+                
+                <h3>Global Shortcuts</h3>
+                <table class="shortcut-table">
+                    <tr>
+                        <th>Shortcut</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr>
+                        <td>Ctrl/Cmd + E</td>
+                        <td>Open/Close Ezra</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl/Cmd + Shift + E</td>
+                        <td>Quick quote mode</td>
+                    </tr>
+                    <tr>
+                        <td>Esc</td>
+                        <td>Close Ezra or current modal</td>
+                    </tr>
+                </table>
+                
+                <h3>Inside Ezra Chat</h3>
+                <table class="shortcut-table">
+                    <tr>
+                        <th>Shortcut</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr>
+                        <td>Enter</td>
+                        <td>Send message</td>
+                    </tr>
+                    <tr>
+                        <td>Shift + Enter</td>
+                        <td>New line in message</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl/Cmd + Enter</td>
+                        <td>Send and stay focused</td>
+                    </tr>
+                    <tr>
+                        <td>↑ (Up Arrow)</td>
+                        <td>Edit previous message</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl/Cmd + L</td>
+                        <td>Clear chat</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl/Cmd + M</td>
+                        <td>Change AI model</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl/Cmd + P</td>
+                        <td>Open paste rates modal (Platinum+)</td>
+                    </tr>
+                    <tr>
+                        <td>Ctrl/Cmd + Shift + V</td>
+                        <td>Voice input (Platinum+)</td>
+                    </tr>
+                </table>
+                
+                <h3>Widget Controls</h3>
+                <table class="shortcut-table">
+                    <tr>
+                        <th>Action</th>
+                        <th>Result</th>
+                    </tr>
+                    <tr>
+                        <td>Drag orb</td>
+                        <td>Move Ezra anywhere on screen</td>
+                    </tr>
+                    <tr>
+                        <td>Double-click orb</td>
+                        <td>Quick open/close</td>
+                    </tr>
+                    <tr>
+                        <td>Right-click orb</td>
+                        <td>Show position options</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="card">
+                <h2>🤖 AI Model Modes</h2>
+                <p style="margin-bottom: 20px; color: rgba(255,255,255,0.7);">
+                    Click the <strong>AI Mode</strong> button (shows "Fast" by default) to switch:
+                </p>
+                
+                <div class="command-grid">
+                    <div class="command-item">
+                        <div class="icon" style="color: #4285f4;">🔵</div>
+                        <div class="name">Fast Mode</div>
+                        <div class="desc">Quick answers, simple questions. Best for lookups and definitions.</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon" style="color: #d97757;">🟠</div>
+                        <div class="name">Deep Mode</div>
+                        <div class="desc">Calculations, detailed analysis. Best for payment calculations and comparisons.</div>
+                    </div>
+                    <div class="command-item">
+                        <div class="icon" style="color: #10a37f;">🟢</div>
+                        <div class="name">Complex Mode</div>
+                        <div class="desc">Strategy, advanced reasoning. Best for complex scenarios and advice.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tiers -->
+        <div id="tiers" class="content-section">
+            <div class="card">
+                <h2>💎 Feature Tiers</h2>
+                
+                <table class="shortcut-table" style="font-size: 13px;">
+                    <tr>
+                        <th>Feature</th>
+                        <th style="text-align: center;"><span class="tier-badge tier-carbon">Carbon</span></th>
+                        <th style="text-align: center;"><span class="tier-badge tier-titanium">Titanium</span></th>
+                        <th style="text-align: center;"><span class="tier-badge tier-platinum">Platinum</span></th>
+                        <th style="text-align: center;"><span class="tier-badge tier-obsidian">Obsidian</span></th>
+                        <th style="text-align: center;"><span class="tier-badge tier-diamond">Diamond</span></th>
+                    </tr>
+                    <tr>
+                        <td>Basic Chat</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                    <tr>
+                        <td>Quick Commands</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                    <tr>
+                        <td>Quote Building</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                    <tr>
+                        <td>Deal Radar</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                    <tr>
+                        <td>Paste Rates</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                    <tr>
+                        <td>Voice Input</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                    <tr>
+                        <td>Compliance Check</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                    <tr>
+                        <td>Priority Support</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">✅</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                    <tr>
+                        <td>Custom AI Training</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">❌</td>
+                        <td style="text-align: center;">✅</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Quick Reference -->
+        <div id="reference" class="content-section">
+            <div class="card">
+                <h2>📋 Quick Reference Card</h2>
+                
+                <div class="quick-ref">
+                    <span class="key">OPEN</span> → Click gold orb (✦)<br>
+                    <span class="key">CLOSE</span> → Esc or click X<br>
+                    <span class="key">SEND</span> → Enter<br>
+                    <span class="key">NEW LINE</span> → Shift + Enter<br>
+                    <span class="key">UNDO</span> → Type "undo"<br>
+                    <span class="key">CLEAR CHAT</span> → Ctrl/Cmd + L<br>
+                    <span class="key">VOICE</span> → Click 🎤 (Platinum+)<br>
+                    <span class="key">PASTE RATES</span> → Ctrl/Cmd + P (Platinum+)<br>
+                    <span class="key">CHANGE MODEL</span> → Click "Fast" button<br>
+                    <span class="key">MOVE WIDGET</span> → Drag orb anywhere
+                </div>
+                
+                <div class="tip-box" style="margin-top: 24px;">
+                    <strong>💡 Remember:</strong> Ezra understands natural language. 
+                    You don't need to memorize commands—just type or speak what you want!
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>🎯 Example Workflows</h2>
+                
+                <h3>Quick Quote</h3>
+                <ol style="margin: 12px 0 20px 20px; line-height: 2; color: rgba(255,255,255,0.8);">
+                    <li>Click 🚀 <strong>Quick Quote</strong></li>
+                    <li>Answer 4 questions</li>
+                    <li>Get complete quote</li>
+                    <li>Click "Generate Link"</li>
+                </ol>
+                
+                <h3>Voice Quote</h3>
+                <ol style="margin: 12px 0 20px 20px; line-height: 2; color: rgba(255,255,255,0.8);">
+                    <li>Click 🎤 <strong>microphone</strong></li>
+                    <li>Say: "$800K property, $400K mortgage, need $100K cash"</li>
+                    <li>Confirm details</li>
+                    <li>Say: "Go with tier 2, 15-year fixed"</li>
+                </ol>
+                
+                <h3>Portal Import</h3>
+                <ol style="margin: 12px 0 20px 20px; line-height: 2; color: rgba(255,255,255,0.8);">
+                    <li>Open Figure portal</li>
+                    <li>Press <strong>Ctrl+A</strong>, then <strong>Ctrl+C</strong></li>
+                    <li>Click 📋 <strong>Paste Rates</strong> button</li>
+                    <li><strong>Ctrl+V</strong>, click Import</li>
+                    <li>All fields auto-filled!</li>
+                </ol>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Ezra AI Assistant v2.0 • Above All CRM</p>
+            <p style="margin-top: 8px; font-size: 12px;">Last Updated: March 2026</p>
+        </footer>
+    </div>
+    
+    <script>
+        function showTab(tabId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(tabId).classList.add('active');
+            
+            // Add active to clicked tab
+            event.target.classList.add('active');
+        }
+        
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            if (searchTerm.length < 2) return;
+            
+            // Simple search - could be enhanced
+            const allContent = document.querySelectorAll('.command-item, .shortcut-table tr');
+            allContent.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.opacity = '1';
+                } else {
+                    item.style.opacity = '0.3';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

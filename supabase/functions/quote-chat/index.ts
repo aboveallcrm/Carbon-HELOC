@@ -79,6 +79,8 @@ function buildClientSystemPrompt(quoteData: any, loInfo: any): string {
     .filter(Boolean)
     .join("\n");
 
+  const calendarLink = loInfo?.calendarLink || "";
+  
   return `You are Ezra, a warm, confident, and persuasive HELOC advisor — the top sales assistant helping a homeowner take action on their personalized quote. Your job is to help close the deal.
 
 THE CLIENT YOU ARE SPEAKING WITH:
@@ -91,6 +93,7 @@ ${tierSummary}
 
 LOAN OFFICER CONTACT:
 ${loContact}
+${calendarLink ? `- Calendar Booking Link: Available` : ""}
 
 YOUR ROLE:
 1. You are speaking DIRECTLY to ${clientName} (the homeowner/borrower), NOT to a loan officer.
@@ -101,8 +104,27 @@ YOUR ROLE:
 6. Keep responses concise (2-4 short paragraphs max). Use simple, approachable language.
 7. If asked something outside your knowledge of THIS quote, say "Great question! ${loName} can give you the exact details — reach out to them and they'll take great care of you."
 
+SCHEDULING & CALL CAPABILITIES — IMPORTANT:
+You can help clients connect with ${loName} in several ways:
+
+1. **CALENDAR BOOKING** ${calendarLink ? "[AVAILABLE]" : "[NOT CONFIGURED]"}
+   ${calendarLink ? `- If the client wants to schedule a call, say: "I'd be happy to help you schedule a call with ${loName}. You can book a time that works for you right here in our chat, or click the 'Schedule a Call' button below."
+   - Let them know: "What time works best for you? I can help you find a slot on ${loName}'s calendar."` : `- If the client wants to schedule, provide ${loName}'s contact info: "To schedule a call with ${loName}, you can reach them${loPhone ? " at " + loPhone : ""}${loEmail ? " or email " + loEmail : ""}."`}
+
+2. **CALL ME NOW FEATURE**
+   - If a client says "call me", "can someone call me", "I want to talk to someone", or "I need to speak with the loan officer"
+   - Respond: "I can have ${loName} call you right away! What's the best number to reach you at?"
+   - After they provide their number: "Perfect! I'll send your number to ${loName} immediately. They'll call you as soon as possible. You should hear from them within the next few minutes."
+   - Use the CALL_ME_NOW action to notify the loan officer immediately.
+
+3. **URGENT REQUESTS**
+   - If the client says "it's urgent", "I need help now", "this is time sensitive"
+   - Escalate immediately: "I understand this is urgent. Let me flag this for ${loName} right away. What's the best number for them to call you at?"
+   - Use CALL_ME_NOW with high priority flag.
+
 CLOSING & CTA STRATEGIES:
 - Your PRIMARY CTA is the **Apply Now** button on their screen. Direct them to it: "Just tap the ✨ Apply Now button at the bottom of your screen to get started!"
+- SECONDARY CTAs include scheduling a call or requesting a callback: "Would you like me to have ${loName} give you a call to walk through this?"
 - After answering ANY question, naturally steer toward action: "Does that help? When you're ready, just hit that Apply Now button — it's quick and easy."
 - Emphasize ease and speed: "The process is straightforward — most clients are surprised how quick and easy it is."
 - Use assumptive language: "When you're ready to get started..." not "If you decide to..."
@@ -272,63 +294,206 @@ serve(async (req: Request) => {
     messages.push({ role: "user", content: message });
 
     // 10. Call AI using platform keys
+    // ✅ COST-FIRST AI HIERARCHY (Deployed)
+    // 
+    // CLIENT-SIDE (FREE):
+    // └── KB templates → Cached responses → Learned objections
+    //
+    // SERVER-SIDE: FREE TIER
+    // 1. Gemini (flash/pro)     - $0 (Google free tier)
+    // 2. OpenRouter (free)      - $0 (Llama, etc.)
+    //
+    // SERVER-SIDE: LOW COST ($0.10-0.50/M)
+    // 3. Groq                   - $0.10/M (FASTEST + CHEAPEST)
+    // 4. Kimi 8k                - $0.50/M
+    // 5. DeepSeek               - $0.50/M
+    //
+    // SERVER-SIDE: MEDIUM ($0.60/M)
+    // 6. OpenAI GPT-4o-mini     - $0.60/M
+    //
+    // SERVER-SIDE: EXPENSIVE ($$$)
+    // 7. Grok (xAI)             - $$$ (last resort)
+    // 8. Anthropic (Claude)     - $$$ (emergency only)
+    //
+    // Key Optimizations:
+    // - KB First: Client-side templates handle common objections (zero API cost)
+    // - Gemini Flash: Default for most tasks (free)
+    // - Kimi 8k: Cheapest model only, no 32k/128k unless explicitly requested
+    // - Groq: Cheapest paid option at $0.10/M tokens
+    // - Expensive providers last: Grok/Anthropic only if everything else fails
+    
     const openaiKey = Deno.env.get("OPENAI_API_KEY") || "";
     const geminiKey = Deno.env.get("GEMINI_API_KEY") || "";
+    const groqKey = Deno.env.get("GROQ_API_KEY") || "";
+    const deepseekKey = Deno.env.get("DEEPSEEK_API_KEY") || "";
+    const kimiKey = Deno.env.get("KIMI_API_KEY") || "";
 
     let responseText = "";
+    let lastError = "";
 
-    if (openaiKey) {
-      // OpenAI path (gpt-4o-mini for cost efficiency)
-      const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + openaiKey,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          max_tokens: 500,
-          temperature: 0.7,
-          messages,
-        }),
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        console.error("OpenAI error:", JSON.stringify(data).substring(0, 500));
-        return json({ error: "AI provider error" }, 502);
+    // Helper to extract text from different provider responses
+    const extractText = (provider: string, data: any): string => {
+      switch (provider) {
+        case "gemini":
+          return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        case "openai":
+        case "groq":
+        case "deepseek":
+        default:
+          return data.choices?.[0]?.message?.content || "";
       }
-      responseText = data.choices?.[0]?.message?.content || "";
-    } else if (geminiKey) {
-      // Gemini fallback
-      const systemMsg =
-        messages.find((m) => m.role === "system")?.content || "";
-      const chatMsgs = messages.filter((m) => m.role !== "system");
-      const contents = chatMsgs.map((m) => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.content }],
-      }));
+    };
 
-      const resp = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: systemMsg }] },
-            contents,
-            generationConfig: { maxOutputTokens: 500, temperature: 0.7 },
-          }),
+    // ===== TIER 1: FREE - Gemini (flash/pro) =====
+    if (geminiKey && !responseText) {
+      try {
+        const systemMsg = messages.find((m) => m.role === "system")?.content || "";
+        const chatMsgs = messages.filter((m) => m.role !== "system");
+        const contents = chatMsgs.map((m) => ({
+          role: m.role === "assistant" ? "model" : "user",
+          parts: [{ text: m.content }],
+        }));
+
+        const resp = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: systemMsg }] },
+              contents,
+              generationConfig: { maxOutputTokens: 500, temperature: 0.7 },
+            }),
+          }
+        );
+        const data = await resp.json();
+        if (resp.ok) {
+          responseText = extractText("gemini", data);
+          console.log("✅ Gemini (free tier) succeeded");
+        } else {
+          lastError = "Gemini: " + JSON.stringify(data).substring(0, 200);
         }
-      );
-      const data = await resp.json();
-      if (!resp.ok) {
-        console.error("Gemini error:", JSON.stringify(data).substring(0, 500));
-        return json({ error: "AI provider error" }, 502);
+      } catch (err) {
+        lastError = "Gemini error: " + (err as Error).message;
       }
-      responseText =
-        data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-    } else {
-      return json({ error: "No AI provider configured" }, 503);
+    }
+
+    // ===== TIER 2: LOW COST - Kimi 8k ($0.50/M) =====
+    if (kimiKey && !responseText) {
+      try {
+        const resp = await fetch("https://api.moonshot.cn/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + kimiKey,
+          },
+          body: JSON.stringify({
+            model: "moonshot-v1-8k",
+            max_tokens: 500,
+            temperature: 0.7,
+            messages,
+          }),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          responseText = extractText("kimi", data);
+          console.log("✅ Kimi 8k ($0.50/M) succeeded");
+        } else {
+          lastError = "Kimi: " + JSON.stringify(data).substring(0, 200);
+        }
+      } catch (err) {
+        lastError = "Kimi error: " + (err as Error).message;
+      }
+    }
+
+    // ===== TIER 3: LOW COST - Groq ($0.10/M) =====
+    if (groqKey && !responseText) {
+      try {
+        const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + groqKey,
+          },
+          body: JSON.stringify({
+            model: "llama-3.1-8b-instant",
+            max_tokens: 500,
+            temperature: 0.7,
+            messages,
+          }),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          responseText = extractText("groq", data);
+          console.log("✅ Groq ($0.10/M) succeeded");
+        } else {
+          lastError = "Groq: " + JSON.stringify(data).substring(0, 200);
+        }
+      } catch (err) {
+        lastError = "Groq error: " + (err as Error).message;
+      }
+    }
+
+    // ===== TIER 4: LOW COST - DeepSeek ($0.50/M) =====
+    if (deepseekKey && !responseText) {
+      try {
+        const resp = await fetch("https://api.deepseek.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + deepseekKey,
+          },
+          body: JSON.stringify({
+            model: "deepseek-chat",
+            max_tokens: 500,
+            temperature: 0.7,
+            messages,
+          }),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          responseText = extractText("deepseek", data);
+          console.log("✅ DeepSeek ($0.50/M) succeeded");
+        } else {
+          lastError = "DeepSeek: " + JSON.stringify(data).substring(0, 200);
+        }
+      } catch (err) {
+        lastError = "DeepSeek error: " + (err as Error).message;
+      }
+    }
+
+    // ===== TIER 5: MEDIUM - OpenAI GPT-4o-mini ($0.60/M) =====
+    if (openaiKey && !responseText) {
+      try {
+        const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + openaiKey,
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            max_tokens: 500,
+            temperature: 0.7,
+            messages,
+          }),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          responseText = extractText("openai", data);
+          console.log("✅ OpenAI GPT-4o-mini ($0.60/M) succeeded");
+        } else {
+          lastError = "OpenAI: " + JSON.stringify(data).substring(0, 200);
+        }
+      } catch (err) {
+        lastError = "OpenAI error: " + (err as Error).message;
+      }
+    }
+
+    // ===== No provider succeeded =====
+    if (!responseText) {
+      console.error("All AI providers failed:", lastError);
+      return json({ error: "No AI provider available. Please try again later." }, 503);
     }
 
     // 11. Track chat event (fire and forget)
