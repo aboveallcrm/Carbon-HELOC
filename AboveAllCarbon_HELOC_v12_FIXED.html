@@ -11662,6 +11662,9 @@ Best regards,
             document.getElementById('out-credit-score').innerText = clientCredit || "---";
             document.getElementById('out-property-type').innerText = propTypeInput;
             document.getElementById('out-date').innerText = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            // Always sync address from input to output so printed PDF shows current client's address
+            const addressVal = document.getElementById('custom-address-input')?.value || '';
+            document.getElementById('out-property-address').innerText = addressVal;
             document.getElementById('out-home-value').innerText = fmtCurrency(homeValue);
             document.getElementById('out-mortgage-balance').innerText = fmtCurrency(mortgageBalance);
             document.getElementById('out-net-cash').innerText = fmtCurrency(cashBack);
@@ -14185,40 +14188,47 @@ Sent via Above All Carbon HELOC Tool`;
                 // Build comprehensive tags (same as GHL)
                 const tags = buildQuoteTags();
 
+                // Bonzo v3: custom_fields must be array of {key, value} objects
                 const contactPayload = {
                     first_name: firstName,
                     last_name: lastName,
                     email: contactEmail,
                     phone: contactPhone,
                     tags: tags,
-                    custom_fields: {
-                        heloc_home_value: '$' + homeValue.toLocaleString(),
-                        heloc_mortgage_balance: '$' + mortgageBalance.toLocaleString(),
-                        heloc_cash_back: cashBack,
-                        heloc_rate: rate + '%',
-                        heloc_term: term + ' years',
-                        heloc_payment: payment,
-                        heloc_total_loan: totalLoan,
-                        heloc_origination: origination + '%',
-                        heloc_credit_score: creditScore,
-                        heloc_property_type: propertyType,
-                        heloc_quote_date: new Date().toLocaleDateString()
-                    }
+                    custom_fields: [
+                        { key: 'heloc_home_value', value: '$' + homeValue.toLocaleString() },
+                        { key: 'heloc_mortgage_balance', value: '$' + mortgageBalance.toLocaleString() },
+                        { key: 'heloc_cash_back', value: cashBack },
+                        { key: 'heloc_rate', value: rate + '%' },
+                        { key: 'heloc_term', value: term + ' years' },
+                        { key: 'heloc_payment', value: payment },
+                        { key: 'heloc_total_loan', value: totalLoan },
+                        { key: 'heloc_origination', value: origination + '%' },
+                        { key: 'heloc_credit_score', value: creditScore },
+                        { key: 'heloc_property_type', value: propertyType },
+                        { key: 'heloc_quote_date', value: new Date().toLocaleDateString() }
+                    ]
                 };
 
                 if (teamId) contactPayload.team_id = teamId;
 
+                var contactData = null;
                 try {
                     var createResult = await _bonzoProxy('create_contact', { payload: contactPayload });
-                    var contactData = createResult.data || createResult;
-                    log('✅ Contact created: ' + (contactData.id || contactData.data?.id || 'OK'));
+                    contactData = createResult.data || createResult;
+                    log('✅ Contact created: ' + (contactData.id || 'OK'));
                 } catch (createErr) {
-                    // If 409/422 (already exists), search and link
-                    if (createErr.message && (createErr.message.includes('409') || createErr.message.includes('422'))) {
-                        log('✅ Contact already exists — updating...');
+                    if (createErr.message && (createErr.message.includes('409') || createErr.message.includes('422') || createErr.message.includes('duplicate'))) {
+                        log('✅ Contact already exists — searching...');
                         try {
-                            await _bonzoProxy('search_contact', { payload: { email: contactEmail } });
-                            log('✅ Contact found and linked');
+                            var searchResult = await _bonzoProxy('search_contact', { payload: { email: contactEmail } });
+                            var prospects = searchResult.data || searchResult;
+                            if (Array.isArray(prospects)) {
+                                contactData = prospects.find(function(p) { return p.email && p.email.toLowerCase() === contactEmail.toLowerCase(); }) || prospects[0];
+                            } else if (prospects && prospects.id) {
+                                contactData = prospects;
+                            }
+                            log('✅ Contact found: ' + (contactData?.id || 'OK'));
                         } catch (e2) { log('⚠️ Could not find existing contact: ' + e2.message); }
                     } else {
                         log('⚠️ Bonzo API error: ' + createErr.message);
@@ -14232,13 +14242,12 @@ Sent via Above All Carbon HELOC Tool`;
                 if (_bonzoContactId) {
                     log('⏳ Sending email via Bonzo API...');
                     try {
+                        // Bonzo v3 email payload: subject + body (HTML)
                         await _bonzoProxy('send_email', {
                             contactId: _bonzoContactId,
                             payload: {
                                 subject: _bonzoEmailSubject,
-                                html: _bonzoRichHtml,
-                                from_name: document.getElementById('lo-name')?.value || '',
-                                from_email: document.getElementById('lo-email')?.value || ''
+                                body: _bonzoRichHtml
                             }
                         });
                         log('✅ Email sent via Bonzo!');
