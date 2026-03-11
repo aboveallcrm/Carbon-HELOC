@@ -6,6 +6,26 @@
     { "source": "/register", "destination": "/register.html" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/pricing", "destination": "/pricing.html" },
-    { "source": "/quote", "destination": "/client-quote.html" }
+    { "source": "/quote", "destination": "/client-quote.html" },
+    { "source": "/([a-zA-Z0-9]{6,10})", "destination": "https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/redirect/$1" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" }
+      ]
+    },
+    {
+      "source": "/([a-zA-Z0-9]{6,10})",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Pragma", "value": "no-cache" },
+        { "key": "Expires", "value": "0" }
+      ]
+    }
   ]
 }

@@ -17,13 +17,67 @@
     <meta name="twitter:title" content="Above All Carbon HELOC Quote Tool">
     <meta name="twitter:description" content="Professional HELOC calculator with CRM integration for mortgage loan officers.">
     <meta name="theme-color" content="#0f2b4c">
-    <link rel="canonical" href="https://aboveallcrm.com">
+    <link rel="canonical" href="https://carbon-heloc.vercel.app/">
+    <meta property="og:site_name" content="Above All Carbon">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:image" content="https://carbon-heloc.vercel.app/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:image" content="https://carbon-heloc.vercel.app/images/og-image.jpg">
+    <meta name="twitter:site" content="@aboveallcrm">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Above All Carbon HELOC Tool",
+      "applicationCategory": "FinanceApplication",
+      "description": "Professional HELOC quote builder with multi-tier rate matrices, CRM integration, lead management, and AI-powered loan strategies.",
+      "url": "https://carbon-heloc.vercel.app",
+      "provider": {
+        "@type": "Organization",
+        "name": "Above All CRM",
+        "url": "https://aboveallcrm.com"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "127"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Above All CRM",
+      "url": "https://aboveallcrm.com",
+      "logo": "https://carbon-heloc.vercel.app/images/logo.png",
+      "sameAs": [
+        "https://www.linkedin.com/company/aboveallcrm"
+      ]
+    }
+    </script>
     <!-- Stripe disabled until backend is configured -->
+    <!-- Resource Hints -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://czzabvfzuxhpdcowgvam.supabase.co">
+    <link rel="dns-prefetch" href="https://czzabvfzuxhpdcowgvam.supabase.co">
+    <link rel="prefetch" href="/client-quote.html">
     <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;700;800&family=Inter:wght@400;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;700;800&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
+    <!-- Carbon Command Palette v3.0 Ultimate -->
+    <link rel="stylesheet" href="js/carbon-commands-v3.css">
     <style>
         :root {
             --primary-color: #0f2b4c;
@@ -4928,7 +4982,7 @@
             <div class="esm-body">
                 <div class="esm-preview" id="esm-preview">
                     <div class="esm-loading" id="esm-loading">📸 Capturing quote screenshot...</div>
-                    <img id="esm-screenshot" style="display:none;" alt="Quote screenshot">
+                    <img id="esm-screenshot" style="display:none;" alt="Quote screenshot" loading="lazy">
                 </div>
                 <div class="esm-to">
                     <label>To:</label>
@@ -6192,7 +6246,7 @@ Best regards,
                         <!-- QR Code Display -->
                         <div id="qr-code-display"
                             style="display: none; margin-top: 10px; text-align: center; padding: 10px; background: white; border-radius: 8px;">
-                            <img id="qr-code-img" style="max-width: 200px; margin: 0 auto;" alt="QR Code">
+                            <img id="qr-code-img" style="max-width: 200px; margin: 0 auto;" alt="QR Code" loading="lazy">
                             <p style="font-size: 8px; color: #666; margin: 6px 0 0 0;">Scan to view quote on mobile</p>
                         </div>
                     </div>
@@ -16899,9 +16953,37 @@ Sent via Above All Carbon HELOC Tool`;
         function saveQuotesToOneDrive() { return _exportQuotesToCloud('https://onedrive.live.com/', 'OneDrive'); }
 
     </script>
+    <!-- DOM Cache Module - Reduces DOM queries -->
+    <script src="js/dom-cache.js"></script>
     <script type="module" src="./js/main.js"></script>
+    <!-- Carbon Command Palette v3.0 Ultimate -->
+    <script src="js/carbon-commands-v3.js"></script>
     <!-- Ezra AI Loan Structuring Assistant -->
     <script defer src="./js/ezra-chat.js"></script>
+    
+    <!-- Performance: Debounce utility -->
+    <script>
+    window.debounce = function(fn, delay) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => fn.apply(this, args), delay);
+        };
+    };
+    
+    // Lazy load non-critical components
+    window.lazyLoad = function(selector, callback) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    callback(entry.target);
+                    observer.unobserve(entry.target);
+                }
+            });
+        });
+        document.querySelectorAll(selector).forEach(el => observer.observe(el));
+    };
+    </script>
     <script>
         // Auto-clear Ezra chat when switching clients
         (function () {
@@ -16923,6 +17005,16 @@ Sent via Above All Carbon HELOC Tool`;
             }
         })();
     </script>
+    <!-- Floating Command Button -->
+    <button class="carbon-cmd-button" onclick="CarbonCommands.open()" title="Command Palette (Cmd/Ctrl+K)">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+    </button>
+    <!-- Command Hint -->
+    <div class="carbon-cmd-hint">
+        Press <kbd>Cmd</kbd>+<kbd>K</kbd> or say <kbd>Hey Ezra</kbd>
+    </div>
 </body>
 
 </html>

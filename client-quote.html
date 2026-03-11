@@ -4,7 +4,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your HELOC Quote</title>
+    <meta name="description" content="Get your personalized HELOC quote. Compare home equity line of credit rates, calculate potential savings, and unlock your home's equity.">
+    <meta name="keywords" content="HELOC, home equity loan, home equity line of credit, mortgage rates, equity calculator">
+    <meta name="author" content="Above All CRM">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://carbon-heloc.vercel.app/client-quote.html">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Your Personalized HELOC Quote">
+    <meta property="og:description" content="Compare HELOC rates and calculate your savings with our personalized quote tool.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://carbon-heloc.vercel.app/client-quote.html">
+    <meta property="og:site_name" content="Above All Carbon">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:image" content="https://carbon-heloc.vercel.app/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Your Personalized HELOC Quote">
+    <meta name="twitter:description" content="Compare HELOC rates and calculate your savings.">
+    <meta name="twitter:image" content="https://carbon-heloc.vercel.app/images/og-image.jpg">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#0f2b4c">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FinancialProduct",
+      "name": "Home Equity Line of Credit (HELOC)",
+      "description": "A flexible line of credit secured by your home equity.",
+      "provider": {
+        "@type": "Organization",
+        "name": "Above All CRM"
+      },
+      "category": "Home Equity Loan",
+      "areaServed": {
+        "@type": "Country",
+        "name": "United States"
+      }
+    }
+    </script>
+    
+    <title>Your Personalized HELOC Quote | Above All Carbon</title>
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
@@ -5110,11 +5157,7 @@
                     // Show preview banner
                     var previewBanner = document.createElement('div');
                     previewBanner.id = 'preview-banner';
-                    previewBanner.innerHTML = '
-                        <div style="position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;padding:12px 20px;z-index:10000;text-align:center;font-family:var(--font-heading);font-weight:700;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
-                            👁️ PREVIEW MODE - This is how your client will see the quote
-                            <button onclick="window.close()" style="margin-left:20px;background:rgba(255,255,255,0.2);border:none;color:white;padding:6px 16px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;">Close Preview</button>
-                        </div>';
+                    previewBanner.innerHTML = '<div style="position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;padding:12px 20px;z-index:10000;text-align:center;font-family:var(--font-heading);font-weight:700;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">👁️ PREVIEW MODE - This is how your client will see the quote <button onclick="window.close()" style="margin-left:20px;background:rgba(255,255,255,0.2);border:none;color:white;padding:6px 16px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;">Close Preview</button></div>';
                     document.body.appendChild(previewBanner);
                     document.body.style.paddingTop = '50px';
                     
@@ -5748,7 +5791,7 @@
 
                 // === SALES PSYCHOLOGY SECTIONS: hide if LO turned them off ===
                 if (opts.showSalesPsych === false) {
-                    ['sec-savings', 'sec-funds-carousel', 'sec-social-proof', 'pvf-social-proof', 'pvf-trust-bar'].forEach(function (id) {
+                    ['sec-savings', 'sec-funds-carousel', 'sec-social-proof', 'pvf-social-proof', 'pvf-trust-bar', 'sec-interactive-savings', 'sec-payment-scenario'].forEach(function (id) {
                         var el = document.getElementById(id);
                         if (el) el.style.display = 'none';
                     });
