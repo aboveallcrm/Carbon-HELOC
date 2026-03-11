@@ -5229,6 +5229,13 @@
                             style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8); margin-bottom: 6px;"><input
                                 type="checkbox" id="chk-link-ai-chat" checked style="margin-right: 6px;"> Enable Ezra AI
                             Widget</label>
+                        <div style="padding-left: 18px; margin-bottom: 6px;">
+                            <label style="display: flex; align-items: center; cursor: pointer; font-size: 8px; color: rgba(255,255,255,0.6); margin-bottom: 4px;">
+                                🎙️ Voice Note URL (optional):
+                            </label>
+                            <input type="text" id="link-voice-note-url" placeholder="https://... (mp3/m4a/ogg audio URL)"
+                                style="width:100%;padding:4px 8px;font-size:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:white;font-family:var(--font-body);">
+                        </div>
                         <label
                             style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8); margin-bottom: 6px;"><input
                                 type="checkbox" id="chk-link-apply" checked style="margin-right: 6px;"> Show 'Apply Now'
@@ -5282,6 +5289,21 @@
                                 <option value="30">30 days</option>
                             </select>
                             <span id="link-expiry-label" style="font-size: 7px; color: rgba(255,255,255,0.4);">⏰</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 6px; margin-top: 6px;">
+                            <label
+                                style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8);"><input
+                                    type="checkbox" id="chk-rate-lock" checked style="margin-right: 6px;"
+                                    onchange="document.getElementById('rate-lock-days').disabled=!this.checked; document.getElementById('rate-lock-label').style.opacity=this.checked?'1':'0.4'"> Rate
+                                Lock</label>
+                            <select id="rate-lock-days"
+                                style="background: rgba(0,0,0,0.4); border: 1px solid rgba(197,160,89,0.3); color: #c5a059; border-radius: 4px; padding: 2px 6px; font-size: 9px; font-family: var(--font-heading);">
+                                <option value="15">15 days</option>
+                                <option value="30" selected>30 days</option>
+                                <option value="45">45 days</option>
+                                <option value="60">60 days</option>
+                            </select>
+                            <span id="rate-lock-label" style="font-size: 7px; color: rgba(255,255,255,0.4);">🔒</span>
                         </div>
                     </div>
                     <div>
@@ -5545,6 +5567,15 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Active Borrowers (Real-Time) -->
+            <div class="control-section" id="active-borrowers-section" style="display:none;">
+                <h4 style="font-family: var(--font-heading); color: white; margin: 0 0 10px 0; font-size: 11px;">
+                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;margin-right:6px;animation:pulse 1.5s ease-in-out infinite;"></span>
+                    Viewing Right Now
+                </h4>
+                <div id="active-borrowers-list" style="display:flex; flex-direction:column; gap:6px;"></div>
             </div>
 
             <div class="control-section">
@@ -6126,6 +6157,9 @@ Best regards,
                         <button class="btn"
                             style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); font-size: 9px; padding: 5px 14px; white-space: nowrap;"
                             onclick="generateClientLink()">🔗 Generate Link</button>
+                        <button class="btn"
+                            style="background: linear-gradient(135deg, #06b6d4, #0891b2); font-size: 9px; padding: 5px 14px; white-space: nowrap;"
+                            onclick="previewQuote()">👁️ Preview</button>
                         <input type="text" id="client-link-output" readonly placeholder="Click Generate to create link"
                             style="flex:1; background: rgba(0,0,0,0.3); border: 1px solid rgba(139,92,246,0.3); color: #a78bfa; border-radius: 4px; padding: 6px 10px; font-family: var(--font-heading); font-size: 9px; cursor: pointer;"
                             onclick="if(this.value){navigator.clipboard.writeText(this.value);showToast('Link copied!','success')}">
@@ -7162,6 +7196,7 @@ Best regards,
                     </h2>
                     <div class="main-offer" id="rec-offer-line">20-Yr @ 7.50% | 2.99% Orig | $1,612/mo</div>
                     <div class="tagline" id="rec-tagline">The "Sweet Spot" balancing rate + capital preservation.</div>
+                    <div id="rate-lock-notice" style="margin-top: 8px; padding: 6px 12px; background: rgba(197,160,89,0.15); border: 1px solid rgba(197,160,89,0.3); border-radius: 4px; font-size: 10px; color: #c5a059; font-weight: 600;">🔒 Rate locked for 30 days</div>
                 </div>
                 <h3><span id="lbl-payment-type">Monthly Payment</span> Snapshot</h3>
                 <div class="snapshot-container">
@@ -7178,6 +7213,8 @@ Best regards,
                     <div class="snapshot-row"><span class="snap-label">Interest Rate</span><span
                             class="snap-value"><span id="snap-rate">7.50</span>% <span
                                 id="snap-rate-type">Fixed</span></span></div>
+                    <div class="snapshot-row" id="rate-lock-row"><span class="snap-label">Rate Lock</span><span
+                            class="snap-value" id="snap-rate-lock">30 days</span></div>
                     <div class="snapshot-row"><span class="snap-label">Loan Term</span><span class="snap-value"><span
                                 id="snap-term">20</span> Years</span></div>
                     <div class="snapshot-row final"><span class="snap-label">Your Payment</span><span class="snap-value"
@@ -7258,7 +7295,7 @@ Best regards,
         <div class="client-disclaimer" id="client-disclaimer">
             <strong>⚠️ IMPORTANT DISCLOSURE:</strong> This quote is for informational purposes only and does not
             constitute a commitment to lend. All loan programs are subject to credit approval, income verification, and
-            underwriting guidelines. Rates and terms are subject to change without notice. Contact your loan officer for
+            underwriting guidelines. <span id="disclaimer-rate-lock">Rate is locked for 30 days.</span> Rates and terms are subject to change without notice after lock expiration. Contact your loan officer for
             current rates and eligibility requirements.
         </div>
 
@@ -11440,6 +11477,19 @@ Best regards,
             if (isInterestOnly) recTypeLabel += ' I/O';
             document.getElementById('rec-offer-line').innerText = recTerm + '-Yr ' + recTypeLabel + ' @ ' + recPaymentData.rate.toFixed(2) + '% | ' + recData.orig + '% Orig | ' + fmtCurrency(recPaymentData.pmt);
             document.getElementById('rec-tagline').innerText = taglines[recTier];
+            
+            // Update rate lock notice
+            const rateLockNotice = document.getElementById('rate-lock-notice');
+            if (rateLockNotice) {
+                const rateLockEnabled = document.getElementById('chk-rate-lock')?.checked ?? true;
+                const rateLockDays = document.getElementById('rate-lock-days')?.value || '30';
+                if (rateLockEnabled) {
+                    rateLockNotice.style.display = 'block';
+                    rateLockNotice.innerHTML = '🔒 Rate locked for ' + rateLockDays + ' days';
+                } else {
+                    rateLockNotice.style.display = 'none';
+                }
+            }
 
             document.getElementById('snap-orig-perc').innerText = recData.orig;
             document.getElementById('snap-total-loan').innerText = fmtCurrency(recData.totalLoan);
@@ -11451,6 +11501,27 @@ Best regards,
             document.getElementById('snap-rate-type').innerText = isInterestOnly
                 ? (isVarRec ? "Var I/O" : "I/O")
                 : (isVarRec ? "Variable" : "Fixed");
+            
+            // Update rate lock display
+            const rateLockEnabled = document.getElementById('chk-rate-lock')?.checked ?? true;
+            const rateLockDays = document.getElementById('rate-lock-days')?.value || '30';
+            const rateLockRow = document.getElementById('rate-lock-row');
+            if (rateLockRow) {
+                rateLockRow.style.display = rateLockEnabled ? 'flex' : 'none';
+                document.getElementById('snap-rate-lock').innerText = rateLockEnabled ? rateLockDays + ' days' : 'Not locked';
+            }
+            
+            // Update disclaimer rate lock text
+            const disclaimerRateLock = document.getElementById('disclaimer-rate-lock');
+            if (disclaimerRateLock) {
+                if (rateLockEnabled) {
+                    disclaimerRateLock.innerText = 'Rate is locked for ' + rateLockDays + ' days. ';
+                    disclaimerRateLock.style.display = 'inline';
+                } else {
+                    disclaimerRateLock.style.display = 'none';
+                }
+            }
+            
             document.getElementById('snap-term').innerText = recTerm;
             document.getElementById('snap-payment').innerText = fmtCurrencyExact(recPaymentData.pmt);
             document.getElementById('snap-orig-amt').innerText = fmtCurrencyExact(recData.feeAmt);
@@ -12744,6 +12815,90 @@ Sent via Above All Carbon HELOC Tool`;
             }
         }
 
+        // ===== QUOTE PREVIEW FUNCTIONALITY =====
+        function previewQuote() {
+            var g = function (id) { var el = document.getElementById(id); return el ? (el.value || el.innerText || '').trim() : ''; };
+
+            // Gather all quote data (same structure as generateClientLink)
+            var quoteData = {
+                clientName: g('in-client-name'),
+                creditScore: g('in-client-credit'),
+                propertyAddress: g('custom-address-input'),
+                propertyType: g('in-property-type'),
+                homeValue: g('in-home-value'),
+                mortgageBalance: g('in-mortgage-balance'),
+                helocPayoff: g('in-refi-balance'),
+                cashBack: g('in-net-cash'),
+                cltv: g('out-cltv'),
+                totalLoan: g('snap-total-loan'),
+                rate: g('snap-rate'),
+                term: g('snap-term'),
+                payment: g('snap-payment'),
+                origination: g('snap-orig-perc'),
+                recType: document.getElementById('rec-type-select').value || 'fixed',
+                date: new Date().toLocaleDateString(),
+                linkOptions: {
+                    showLoInfo: document.getElementById('chk-link-lo-info')?.checked ?? true,
+                    showAiChat: document.getElementById('chk-link-ai-chat')?.checked ?? true,
+                    showApply: document.getElementById('chk-link-apply')?.checked ?? true,
+                    showVideo: document.getElementById('chk-link-video')?.checked ?? false,
+                    videoUrl: document.getElementById('link-video-url')?.value?.trim() || '',
+                    videoMode: (document.getElementById('video-mode-heygen')?.checked ? 'heygen' : 'manual'),
+                    showSalesPsych: document.getElementById('chk-link-sales-psych')?.checked ?? true,
+                    preset: document.getElementById('link-style-preset')?.value || 'enhanced',
+                    voiceNoteUrl: document.getElementById('link-voice-note-url')?.value?.trim() || ''
+                },
+                tiers: []
+            };
+
+            // Gather all tier data
+            for (var t = 1; t <= 3; t++) {
+                var tier = { tier: t, origPts: g('t' + t + '-orig'), rates: {}, varRates: {} };
+                ['30', '20', '15', '10'].forEach(function (yr) {
+                    var rate = g('out-t' + t + '-' + yr + '-rate');
+                    var pay = g('out-t' + t + '-' + yr + '-pay');
+                    if (rate && rate !== '0.00') tier.rates[yr + 'yr'] = { rate: rate + '%', payment: pay };
+
+                    var varRate = g('out-t' + t + '-' + yr + '-var');
+                    var varPay = g('out-t' + t + '-' + yr + '-var-pay');
+                    if (varRate && varRate !== '0.00') tier.varRates[yr + 'yr'] = { rate: varRate + '%', payment: varPay };
+                });
+                if (Object.keys(tier.rates).length > 0 || Object.keys(tier.varRates).length > 0) quoteData.tiers.push(tier);
+            }
+
+            // LO info
+            var loInfo = {
+                name: g('lo-name'),
+                title: g('lo-title'),
+                company: g('lo-company'),
+                nmls: g('lo-nmls'),
+                dre: g('lo-dre'),
+                coNmls: g('co-nmls'),
+                coDre: g('co-dre'),
+                phone: g('lo-phone'),
+                email: g('lo-email'),
+                website: g('lo-website'),
+                address: g('lo-address'),
+                headshot: g('lo-headshot-url'),
+                logo: g('lo-logo-url'),
+                applyLink: g('lo-apply-link') || g('wl-apply-link'),
+                calendarLink: g('lo-calendar-link') || g('ghl-calendar-link'),
+                googleRating: '5.0'
+            };
+
+            // Build preview URL with data encoded in query params
+            var previewParams = new URLSearchParams();
+            previewParams.set('preview', 'true');
+            previewParams.set('data', encodeURIComponent(JSON.stringify(quoteData)));
+            previewParams.set('lo', encodeURIComponent(JSON.stringify(loInfo)));
+
+            // Open preview in new tab
+            var previewUrl = 'client-quote.html?' + previewParams.toString();
+            window.open(previewUrl, '_blank', 'width=1200,height=800,scrollbars=yes');
+            
+            showToast('Preview opened in new tab', 'success');
+        }
+
         async function generateClientLink() {
             var sb = window._supabase;
             var userId = window.currentUserId;
@@ -12777,7 +12932,8 @@ Sent via Above All Carbon HELOC Tool`;
                     videoUrl: document.getElementById('link-video-url')?.value?.trim() || '',
                     videoMode: (document.getElementById('video-mode-heygen')?.checked ? 'heygen' : 'manual'),
                     showSalesPsych: document.getElementById('chk-link-sales-psych')?.checked ?? true,
-                    preset: document.getElementById('link-style-preset')?.value || 'enhanced'
+                    preset: document.getElementById('link-style-preset')?.value || 'enhanced',
+                    voiceNoteUrl: document.getElementById('link-voice-note-url')?.value?.trim() || ''
                 },
                 tiers: []
             };
@@ -15107,6 +15263,19 @@ Sent via Above All Carbon HELOC Tool`;
                     return;
                 }
 
+                // Calculate scores and sort by priority
+                filtered.forEach(function(q) {
+                    var age = Math.floor((Date.now() - new Date(q.created_at).getTime()) / 86400000);
+                    q.leadScore = calculateLeadScore(q.quote_data, age);
+                    q.scoreInfo = getLeadScoreLabel(q.leadScore);
+                });
+                
+                // Sort by score (highest first), then by date
+                filtered.sort(function(a, b) {
+                    if (b.leadScore !== a.leadScore) return b.leadScore - a.leadScore;
+                    return new Date(b.created_at) - new Date(a.created_at);
+                });
+
                 listEl.innerHTML = filtered.map(function (q) {
                     var d = q.quote_data || {};
                     var date = new Date(q.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
@@ -15119,8 +15288,14 @@ Sent via Above All Carbon HELOC Tool`;
                     var stColor = _quoteStatusColors[qStatus] || '#3b82f6';
                     var stLabel = qStatus === 'follow_up' ? 'Follow Up' : qStatus.charAt(0).toUpperCase() + qStatus.slice(1);
                     var ageBadge = _quoteAgeBadge(q.created_at, qStatus);
+                    
+                    // Lead score display
+                    var score = q.leadScore || 0;
+                    var scoreInfo = q.scoreInfo || { label: 'Cold', color: '#9ca3af', icon: '\ud83e\uddca' };
+                    var priorityReason = getLeadPriorityReason(score, d);
 
-                    return '<div data-quote-id="' + q.id + '" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:6px;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor=\'var(--accent-color)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.1)\'" onclick="loadQuoteIntoForm(\'' + q.id + '\')">' +
+                    return '<div data-quote-id="' + q.id + '" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;margin-bottom:6px;cursor:pointer;transition:border-color 0.2s;position:relative;" onmouseover="this.style.borderColor=\'var(--accent-color)\'" onmouseout="this.style.borderColor=\'rgba(255,255,255,0.1)\'" onclick="loadQuoteIntoForm(\'' + q.id + '\')">' +
+                        '<div style="position:absolute;top:-1px;right:-1px;background:' + scoreInfo.color + ';color:white;font-size:8px;font-family:var(--font-heading);font-weight:700;padding:2px 8px;border-radius:0 8px 0 8px;">' + scoreInfo.icon + ' ' + scoreInfo.label + ' ' + score + '</div>' +
                         '<div style="display:flex;align-items:flex-start;gap:8px;">' +
                         '<input type="checkbox" class="quote-checkbox" data-quote-id="' + q.id + '" onclick="event.stopPropagation()" onchange="onQuoteCheckboxChange()" style="margin-top:4px;" title="Select this quote">' +
                         '<div style="flex:1;">' +
@@ -15146,6 +15321,8 @@ Sent via Above All Carbon HELOC Tool`;
                         '<span>Rate: ' + rate + '%</span>' +
                         '<span>Pmt: ' + payment + '</span>' +
                         '</div>' +
+                        '<div style="margin-top:4px;font-size:8px;color:' + scoreInfo.color + ';font-family:var(--font-heading);">' + priorityReason + '</div>' +
+                        '</div>' +
                         '</div>' +
                         '</div>' +
                         '</div>';
@@ -15163,6 +15340,100 @@ Sent via Above All Carbon HELOC Tool`;
                 console.error('Error loading quotes:', e);
                 listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#f87171;font-family:var(--font-heading);font-size:10px;">Error loading quotes: ' + e.message + '</div>';
             }
+        }
+
+        // ===== SMART LEAD SCORING =====
+        function calculateLeadScore(quoteData, quoteAge) {
+            const d = quoteData || {};
+            let score = 50; // Base score
+            
+            // Credit Score Factor (0-25 points)
+            const credit = parseInt(d.creditScore) || 0;
+            if (credit >= 760) score += 25;
+            else if (credit >= 720) score += 20;
+            else if (credit >= 680) score += 15;
+            else if (credit >= 640) score += 10;
+            else if (credit >= 600) score += 5;
+            
+            // Equity Position Factor (0-20 points)
+            const homeValue = parseFloat(d.homeValue) || 0;
+            const mortgageBalance = parseFloat(d.mortgageBalance) || 0;
+            const helocAmount = parseFloat(d.netCash) || 0;
+            const cltv = homeValue > 0 ? ((mortgageBalance + helocAmount) / homeValue) * 100 : 0;
+            
+            if (cltv <= 60) score += 20;
+            else if (cltv <= 70) score += 15;
+            else if (cltv <= 80) score += 10;
+            else if (cltv <= 85) score += 5;
+            
+            // Loan Amount Factor (0-15 points)
+            if (helocAmount >= 100000) score += 15;
+            else if (helocAmount >= 75000) score += 12;
+            else if (helocAmount >= 50000) score += 10;
+            else if (helocAmount >= 25000) score += 7;
+            else if (helocAmount > 0) score += 5;
+            
+            // Recency Factor (0-15 points) - newer leads score higher
+            const age = quoteAge || 0;
+            if (age <= 1) score += 15; // Today
+            else if (age <= 3) score += 12; // This week
+            else if (age <= 7) score += 8; // Last week
+            else if (age <= 14) score += 5; // Two weeks
+            else if (age <= 30) score += 3; // This month
+            
+            // Property Type Factor (0-10 points)
+            const occupancy = d.propertyType || d.occupancy || '';
+            if (occupancy.includes('Primary')) score += 10;
+            else if (occupancy.includes('Second')) score += 7;
+            else if (occupancy.includes('Investment')) score += 5;
+            
+            // Rate Competitiveness (0-10 points)
+            const rate = parseFloat(d.rate) || 0;
+            if (rate > 0 && rate <= 7) score += 10;
+            else if (rate <= 8) score += 7;
+            else if (rate <= 9) score += 5;
+            else if (rate <= 10) score += 3;
+            
+            // Intent Signals (0-5 points)
+            if (d.linkOptions?.showApply !== false) score += 3; // Apply button enabled
+            if (d.linkOptions?.showAiChat !== false) score += 2; // AI chat enabled
+            
+            return Math.min(100, Math.max(0, score));
+        }
+
+        function getLeadScoreLabel(score) {
+            if (score >= 85) return { label: 'Hot', color: '#ef4444', icon: '\ud83d\udd25' };
+            if (score >= 70) return { label: 'Warm', color: '#f59e0b', icon: '\u2600' };
+            if (score >= 50) return { label: 'Qualified', color: '#3b82f6', icon: '\u2705' };
+            if (score >= 30) return { label: 'Nurture', color: '#6b7280', icon: '\ud83c\udf31' };
+            return { label: 'Cold', color: '#9ca3af', icon: '\ud83e\uddca' };
+        }
+
+        function getLeadPriorityReason(score, quoteData) {
+            const d = quoteData || {};
+            const reasons = [];
+            
+            const credit = parseInt(d.creditScore) || 0;
+            const homeValue = parseFloat(d.homeValue) || 0;
+            const helocAmount = parseFloat(d.netCash) || 0;
+            
+            if (credit >= 760) reasons.push('Excellent credit');
+            else if (credit >= 720) reasons.push('Good credit');
+            
+            if (helocAmount >= 100000) reasons.push('High loan amount');
+            else if (helocAmount >= 50000) reasons.push('Solid loan amount');
+            
+            if (homeValue >= 1000000) reasons.push('High-value property');
+            
+            const rate = parseFloat(d.rate) || 0;
+            if (rate > 0 && rate <= 7) reasons.push('Competitive rate');
+            
+            if (reasons.length === 0) {
+                if (score >= 50) return 'Standard opportunity';
+                return 'Needs nurturing';
+            }
+            
+            return reasons.join(', ');
         }
 
         async function loadQuoteIntoForm(quoteId) {
@@ -15431,6 +15702,51 @@ Sent via Above All Carbon HELOC Tool`;
                 console.error('Advanced analytics error:', err);
             }
         }
+
+        // ===== ACTIVE BORROWERS (REAL-TIME) =====
+        var _activeBorrowerInterval = null;
+        async function pollActiveBorrowers() {
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) return;
+            try {
+                var { data, error } = await sb.rpc('get_active_borrowers', { p_user_id: userId, p_minutes: 5 });
+                var section = document.getElementById('active-borrowers-section');
+                var list = document.getElementById('active-borrowers-list');
+                if (!section || !list) return;
+                if (error || !data || data.length === 0) {
+                    section.style.display = 'none';
+                    return;
+                }
+                section.style.display = '';
+                list.innerHTML = data.map(function (a) {
+                    var name = (a.metadata && a.metadata.lead_name) || a.quote_code;
+                    var device = (a.metadata && a.metadata.device) || 'unknown';
+                    var msgs = (a.metadata && a.metadata.chat_messages) || 0;
+                    var statusColor = a.status === 'active' ? '#10b981' : a.status === 'idle' ? '#f59e0b' : '#64748b';
+                    var ago = Math.round((Date.now() - new Date(a.last_seen).getTime()) / 60000);
+                    var agoStr = ago < 1 ? 'just now' : ago + 'm ago';
+                    return '<div style="display:flex;align-items:center;gap:8px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:8px 12px;">' +
+                        '<div style="width:8px;height:8px;border-radius:50%;background:' + statusColor + ';flex-shrink:0;animation:pulse 1.5s ease-in-out infinite;"></div>' +
+                        '<div style="flex:1;min-width:0;">' +
+                        '<div style="font-family:var(--font-heading);font-size:10px;font-weight:600;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (name || 'Borrower') + '</div>' +
+                        '<div style="font-size:8px;color:#94a3b8;">' + device + ' · ' + msgs + ' chat msgs · ' + agoStr + '</div>' +
+                        '</div>' +
+                        '<div style="font-size:8px;color:' + statusColor + ';font-weight:600;text-transform:uppercase;font-family:var(--font-heading);">' + a.status + '</div>' +
+                        '</div>';
+                }).join('');
+            } catch (e) { /* silent */ }
+        }
+
+        function startActiveBorrowerPolling() {
+            pollActiveBorrowers();
+            _activeBorrowerInterval = setInterval(pollActiveBorrowers, 30000);
+        }
+
+        // Start polling when leads tab is opened
+        document.addEventListener('auth-ready', function () {
+            setTimeout(startActiveBorrowerPolling, 3000);
+        });
 
         // ===== MY LEADS =====
         async function loadUserLeads() {

@@ -1683,13 +1683,11 @@
         /* ===== Ezra AI Chat Widget ===== */
         .eq-orb {
             position: fixed;
-            bottom: 90px;
-            right: 20px;
             width: 52px;
             height: 52px;
             border-radius: 50%;
             border: none;
-            cursor: pointer;
+            cursor: grab;
             background: linear-gradient(135deg, #c5a059, #d4af37, #c5a059);
             color: #1e293b;
             font-size: 20px;
@@ -1697,13 +1695,29 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 0 20px rgba(212, 175, 55, 0.4), 0 0 60px rgba(212, 175, 55, 0.15), 0 8px 32px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
             z-index: 1100;
+            user-select: none;
+            touch-action: none;
         }
 
+        /* Position variants */
+        .eq-orb.pos-bottom-right { bottom: 90px; right: 20px; }
+        .eq-orb.pos-bottom-left { bottom: 90px; left: 20px; }
+        .eq-orb.pos-top-right { top: 90px; right: 20px; }
+        .eq-orb.pos-top-left { top: 90px; left: 20px; }
+        .eq-orb.pos-custom { /* Uses inline styles from drag */ }
+
         .eq-orb:hover {
-            transform: translateY(-3px) scale(1.08);
+            transform: scale(1.08);
             box-shadow: 0 0 30px rgba(212, 175, 55, 0.6), 0 12px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        .eq-orb.dragging {
+            cursor: grabbing;
+            transform: scale(1.15);
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.8), 0 16px 50px rgba(0, 0, 0, 0.4);
+            transition: none;
         }
 
         .eq-orb-ring {
@@ -1743,8 +1757,6 @@
 
         .eq-panel {
             position: fixed;
-            bottom: 90px;
-            right: 20px;
             width: 380px;
             max-width: calc(100vw - 40px);
             height: 520px;
@@ -1758,6 +1770,13 @@
             overflow: hidden;
             z-index: 1200;
         }
+
+        /* Panel position variants - match orb positions */
+        .eq-panel.pos-bottom-right { bottom: 150px; right: 20px; }
+        .eq-panel.pos-bottom-left { bottom: 150px; left: 20px; }
+        .eq-panel.pos-top-right { top: 150px; right: 20px; }
+        .eq-panel.pos-top-left { top: 150px; left: 20px; }
+        .eq-panel.pos-custom { /* Uses inline styles from drag */ }
 
         .eq-panel.open {
             display: flex;
@@ -2022,6 +2041,81 @@
             cursor: not-allowed;
             transform: none;
         }
+
+        /* ===== Ezra Position Bar ===== */
+        .eq-position-bar {
+            padding: 8px 12px;
+            border-top: 1px solid rgba(197, 160, 89, 0.15);
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+        }
+
+        .eq-pos-label {
+            color: #64748b;
+            margin-right: 4px;
+        }
+
+        .eq-pos-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            color: #94a3b8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .eq-pos-btn:hover {
+            background: rgba(197, 160, 89, 0.15);
+            border-color: rgba(197, 160, 89, 0.4);
+            color: #c5a059;
+        }
+
+        .eq-drag-hint {
+            margin-left: auto;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        /* ===== Voice Note Player ===== */
+        .eq-voice-note { padding: 10px 14px; border-bottom: 1px solid rgba(197, 160, 89, 0.15); display: none; }
+        .eq-voice-note.has-audio { display: block; }
+        .eq-vn-wrap { display: flex; align-items: center; gap: 10px; background: rgba(197, 160, 89, 0.08); border: 1px solid rgba(197, 160, 89, 0.15); border-radius: 12px; padding: 8px 12px; }
+        .eq-vn-play { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #c5a059, #a68543); border: none; color: #0f172a; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; transition: transform 0.2s; }
+        .eq-vn-play:hover { transform: scale(1.1); }
+        .eq-vn-info { flex: 1; min-width: 0; }
+        .eq-vn-label { font-size: 10px; color: #94a3b8; font-family: var(--font-heading); font-weight: 600; letter-spacing: 0.5px; }
+        .eq-vn-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        .eq-vn-progress { height: 100%; width: 0%; background: linear-gradient(90deg, #c5a059, #d4af37); border-radius: 2px; transition: width 0.1s linear; }
+        .eq-vn-time { font-size: 10px; color: #64748b; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        /* ===== Nudge Bubble ===== */
+        .eq-nudge { position: fixed; z-index: 1150; background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 12px; padding: 12px 16px; max-width: 280px; box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(197,160,89,0.1); animation: eq-nudge-in 0.4s cubic-bezier(0.4,0,0.2,1); cursor: pointer; }
+        .eq-nudge.pos-bottom-right { bottom: 150px; right: 20px; }
+        .eq-nudge.pos-bottom-left { bottom: 150px; left: 20px; }
+        .eq-nudge.pos-top-right { top: 150px; right: 20px; }
+        .eq-nudge.pos-top-left { top: 150px; left: 20px; }
+        .eq-nudge-text { font-size: 12px; color: #e2e8f0; line-height: 1.5; }
+        .eq-nudge-text strong { color: #c5a059; }
+        .eq-nudge-dismiss { position: absolute; top: 6px; right: 8px; background: none; border: none; color: #64748b; cursor: pointer; font-size: 14px; }
+        @keyframes eq-nudge-in { from { opacity: 0; transform: translateY(12px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        /* ===== Compare Mode Table ===== */
+        .eq-compare-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 11px; }
+        .eq-compare-table th { text-align: left; padding: 6px 8px; color: #c5a059; font-family: var(--font-heading); font-weight: 600; font-size: 10px; letter-spacing: 0.5px; border-bottom: 1px solid rgba(197,160,89,0.2); }
+        .eq-compare-table td { padding: 6px 8px; color: #e2e8f0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .eq-compare-table tr.compare-highlight { background: rgba(197,160,89,0.1); }
+        .eq-compare-table .compare-best { color: #10b981; font-weight: 600; }
+        .eq-compare-table .compare-worst { color: #ef4444; font-weight: 600; }
+        /* ===== Activity Pulse ===== */
+        .eq-activity-pulse { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; margin-right: 6px; animation: eq-live-pulse 1.5s ease-in-out infinite; }
+        @keyframes eq-live-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); } 50% { box-shadow: 0 0 0 6px rgba(16,185,129,0); } }
 
         /* Tour Highlight */
         .eq-tour-hl {
@@ -3396,6 +3490,420 @@
             margin-top: 2px;
         }
 
+        /* ===== INTERACTIVE SAVINGS CALCULATOR ===== */
+        .interactive-savings {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border: 1px solid rgba(15, 43, 76, 0.08);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .is-title {
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .is-slider-group {
+            margin-bottom: 20px;
+        }
+
+        .is-slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--slate);
+            margin-bottom: 8px;
+        }
+
+        .is-slider-label span:first-child {
+            font-weight: 600;
+        }
+
+        .is-slider-label .is-value {
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .is-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .is-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(197, 160, 89, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .is-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .is-results {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .is-result-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .is-result-card.active {
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 20px rgba(197, 160, 89, 0.15);
+        }
+
+        .is-result-card.heloc {
+            border-color: #10b981;
+        }
+
+        .is-result-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .is-result-label {
+            font-size: 11px;
+            color: var(--slate);
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+
+        .is-result-payment {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+
+        .is-result-savings {
+            font-size: 11px;
+            color: #10b981;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* ===== PAYMENT SCENARIO TOGGLE ===== */
+        .payment-scenario {
+            background: linear-gradient(135deg, #0f2b4c, #1a3a5c);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            color: white;
+        }
+
+        .ps-title {
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ps-toggle {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+
+        .ps-toggle-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: var(--font-heading);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .ps-toggle-btn.active {
+            background: var(--accent-color);
+            color: #0f172a;
+        }
+
+        .ps-slider-group {
+            margin-bottom: 16px;
+        }
+
+        .ps-slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .ps-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .ps-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .ps-result {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .ps-result-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+        }
+
+        .ps-result-amount {
+            font-family: var(--font-heading);
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--accent-color);
+        }
+
+        .ps-result-detail {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 8px;
+        }
+
+        /* ===== OBJECTION HANDLER POPUP ===== */
+        .objection-popup {
+            position: fixed;
+            bottom: 160px;
+            right: 20px;
+            width: 320px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(197, 160, 89, 0.1);
+            z-index: 1300;
+            display: none;
+            animation: objection-slide-in 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes objection-slide-in {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .objection-popup.visible {
+            display: block;
+        }
+
+        .objection-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .objection-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .objection-title {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .objection-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 16px;
+        }
+
+        .objection-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .objection-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-family: var(--font-heading);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .objection-btn.primary {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            color: #0f172a;
+        }
+
+        .objection-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .objection-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        /* ===== FOLLOW-UP NUDGE ===== */
+        .followup-nudge {
+            position: fixed;
+            bottom: 160px;
+            right: 20px;
+            width: 340px;
+            background: linear-gradient(135deg, #0f2b4c, #1a3a5c);
+            border: 1px solid rgba(197, 160, 89, 0.4);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            z-index: 1300;
+            display: none;
+            animation: nudge-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes nudge-bounce {
+            0% { opacity: 0; transform: translateY(30px) scale(0.9); }
+            60% { transform: translateY(-5px) scale(1.02); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .followup-nudge.visible {
+            display: block;
+        }
+
+        .followup-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .followup-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .followup-title {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .followup-subtitle {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .followup-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 16px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .followup-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .followup-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-family: var(--font-heading);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .followup-btn.primary {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            color: #0f172a;
+        }
+
+        .followup-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
         .social-proof {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -4134,6 +4642,13 @@
         <button class="secondary" onclick="shareQuote()">&#128279; Share</button>
     </div>
 
+    <!-- Preview Mode Floating Bar -->
+    <div class="floating-bar" id="preview-floating-bar" style="display: none; background: linear-gradient(135deg, rgba(245,158,11,0.95), rgba(217,119,6,0.95)); border: 1px solid rgba(245,158,11,0.5);">
+        <button onclick="downloadPDF()" style="background: white; color: #d97706;">&#128196; Test PDF Export</button>
+        <button class="secondary" onclick="window.print()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">&#128424; Print View</button>
+        <button class="secondary" onclick="window.close()" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">&#10005; Close Preview</button>
+    </div>
+
     <!-- Apply Modal -->
     <div id="apply-modal" class="modal-overlay" onclick="if(event.target===this)closeApplyModal()">
         <div class="modal-box">
@@ -4441,6 +4956,66 @@
                 <h3>Recommended Option</h3>
                 <div class="rec-grid stagger-children" id="q-rec-grid"></div>
             </div>
+            <!-- Interactive Savings Calculator -->
+            <div class="interactive-savings reveal" id="sec-interactive-savings">
+                <div class="is-title">&#128176; What Your Equity Could Do</div>
+                <div class="is-slider-group">
+                    <div class="is-slider-label">
+                        <span>Credit Card Debt to Pay Off</span>
+                        <span class="is-value" id="is-cc-value">$10,000</span>
+                    </div>
+                    <input type="range" class="is-slider" id="is-cc-slider" min="0" max="100000" step="1000" value="10000">
+                </div>
+                <div class="is-slider-group">
+                    <div class="is-slider-label">
+                        <span>Home Renovation Budget</span>
+                        <span class="is-value" id="is-reno-value">$25,000</span>
+                    </div>
+                    <input type="range" class="is-slider" id="is-reno-slider" min="0" max="200000" step="5000" value="25000">
+                </div>
+                <div class="is-results">
+                    <div class="is-result-card heloc active">
+                        <div class="is-result-icon">&#127968;</div>
+                        <div class="is-result-label">With HELOC</div>
+                        <div class="is-result-payment" id="is-heloc-payment">$350/mo</div>
+                        <div class="is-result-savings" id="is-heloc-savings">Save $420/mo</div>
+                    </div>
+                    <div class="is-result-card">
+                        <div class="is-result-icon">&#128179;</div>
+                        <div class="is-result-label">Credit Cards</div>
+                        <div class="is-result-payment" id="is-cc-payment">$770/mo</div>
+                        <div class="is-result-savings">at 22% APR</div>
+                    </div>
+                    <div class="is-result-card">
+                        <div class="is-result-icon">&#128736;</div>
+                        <div class="is-result-label">Personal Loan</div>
+                        <div class="is-result-payment" id="is-loan-payment">$580/mo</div>
+                        <div class="is-result-savings">at 12% APR</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Scenario Toggle -->
+            <div class="payment-scenario reveal" id="sec-payment-scenario">
+                <div class="ps-title">&#128260; Explore Your Payment Options</div>
+                <div class="ps-toggle">
+                    <button class="ps-toggle-btn active" id="ps-btn-interest" onclick="setPaymentScenario('interest')">Interest-Only</button>
+                    <button class="ps-toggle-btn" id="ps-btn-amortized" onclick="setPaymentScenario('amortized')">Fully Amortized</button>
+                </div>
+                <div class="ps-slider-group">
+                    <div class="ps-slider-label">
+                        <span>Draw Amount</span>
+                        <span id="ps-draw-value">$50,000</span>
+                    </div>
+                    <input type="range" class="ps-slider" id="ps-draw-slider" min="10000" max="500000" step="5000" value="50000">
+                </div>
+                <div class="ps-result">
+                    <div class="ps-result-label">Estimated Monthly Payment</div>
+                    <div class="ps-result-amount" id="ps-payment-amount">$292</div>
+                    <div class="ps-result-detail" id="ps-payment-detail">Interest-only payment at 7.0% APR</div>
+                </div>
+            </div>
+
             <!-- Savings Comparison (Anchoring) -->
             <div class="savings-compare reveal" id="sec-savings"></div>
             <!-- Use of Funds Carousel -->
@@ -4478,6 +5053,38 @@
     <!-- Tour Highlight Overlay -->
     <div id="eq-tour-hl" class="eq-tour-hl"></div>
 
+    <!-- Proactive Objection Handler Popup -->
+    <div id="objection-popup" class="objection-popup">
+        <button class="objection-close" onclick="hideObjectionPopup()">&times;</button>
+        <div class="objection-header">
+            <div class="objection-icon">&#10022;</div>
+            <div class="objection-title" id="objection-title">Quick Question</div>
+        </div>
+        <div class="objection-text" id="objection-text">Loading...</div>
+        <div class="objection-actions">
+            <button class="objection-btn primary" onclick="openEzraChat()">Talk to Ezra</button>
+            <button class="objection-btn secondary" onclick="hideObjectionPopup()">Maybe Later</button>
+        </div>
+    </div>
+
+    <!-- Follow-Up Nudge -->
+    <div id="followup-nudge" class="followup-nudge">
+        <div class="followup-header">
+            <div class="followup-avatar">&#10022;</div>
+            <div>
+                <div class="followup-title">Ezra</div>
+                <div class="followup-subtitle">Your HELOC Advisor</div>
+            </div>
+        </div>
+        <div class="followup-text" id="followup-text">
+            Still thinking it over? Here's one thing most borrowers don't realize: HELOC interest is often tax-deductible when used for home improvements. That makes your effective rate even lower!
+        </div>
+        <div class="followup-actions">
+            <button class="followup-btn primary" onclick="openApplyModal()">Apply Now</button>
+            <button class="followup-btn secondary" onclick="hideFollowupNudge()">Ask Ezra</button>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         (function () {
@@ -4488,6 +5095,47 @@
 
             var params = new URLSearchParams(window.location.search);
             var code = params.get('id') || params.get('code');
+            var isPreview = params.get('preview') === 'true';
+
+            // ===== PREVIEW MODE =====
+            if (isPreview) {
+                try {
+                    var previewData = JSON.parse(decodeURIComponent(params.get('data') || '{}'));
+                    var previewLo = JSON.parse(decodeURIComponent(params.get('lo') || '{}'));
+                    
+                    // Show preview banner
+                    var previewBanner = document.createElement('div');
+                    previewBanner.id = 'preview-banner';
+                    previewBanner.innerHTML = '
+                        <div style="position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#f59e0b,#d97706);color:white;padding:12px 20px;z-index:10000;text-align:center;font-family:var(--font-heading);font-weight:700;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+                            👁️ PREVIEW MODE - This is how your client will see the quote
+                            <button onclick="window.close()" style="margin-left:20px;background:rgba(255,255,255,0.2);border:none;color:white;padding:6px 16px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;">Close Preview</button>
+                        </div>';
+                    document.body.appendChild(previewBanner);
+                    document.body.style.paddingTop = '50px';
+                    
+                    // Render preview without tracking
+                    renderQuote(previewData, previewLo, 'preview', null);
+                    
+                    // Initialize visual enhancements
+                    setTimeout(function () {
+                        initScrollProgress();
+                        initScrollReveal();
+                        initCounters();
+                        initParticles();
+                        initProgressStepper(previewData.linkOptions || {});
+                        if (!previewData.linkOptions || previewData.linkOptions.showAiChat !== false) {
+                            initEzraChat(previewData, previewLo || {}, 'preview');
+                        }
+                    }, 300);
+                    
+                    return; // Skip Supabase loading
+                } catch (e) {
+                    console.error('Preview error:', e);
+                    showError();
+                    return;
+                }
+            }
 
             if (!code) { showError(); return; }
 
@@ -4514,6 +5162,14 @@
                     if (!link.quote_data.linkOptions || link.quote_data.linkOptions.showAiChat !== false) {
                         initEzraChat(link.quote_data, link.lo_info || {}, code);
                     }
+                    // Initialize interactive calculators
+                    initInteractiveSavings(link.quote_data);
+                    initPaymentScenario(link.quote_data);
+                    // Initialize proactive features
+                    initProactiveObjections(link.quote_data);
+                    initFollowupNudge(link.quote_data);
+                    // Detect language for Ezra
+                    detectBrowserLanguage();
                 }, 300);
 
                 // Track time on page
@@ -4561,12 +5217,19 @@
             function renderQuote(data, lo, userId, leadId) {
                 _userId = userId;
                 _leadId = leadId;
+                var isPreviewMode = userId === 'preview';
 
                 document.getElementById('loading').style.display = 'none';
                 var content = document.getElementById('content');
                 content.style.display = 'block';
                 content.classList.add('entering');
-                document.getElementById('floating-bar').style.display = 'flex';
+                
+                // Show appropriate floating bar
+                if (isPreviewMode) {
+                    document.getElementById('preview-floating-bar').style.display = 'flex';
+                } else {
+                    document.getElementById('floating-bar').style.display = 'flex';
+                }
 
                 // Title
                 var title = lo.company ? lo.company + ' HELOC Proposal' : 'Your HELOC Proposal';
@@ -5024,7 +5687,7 @@
 
                 // === SALES PSYCHOLOGY SECTIONS: hide if LO turned them off ===
                 if (opts.showSalesPsych === false) {
-                    ['sec-savings', 'sec-funds-carousel', 'sec-social-proof'].forEach(function (id) {
+                    ['sec-savings', 'sec-funds-carousel', 'sec-social-proof', 'pvf-social-proof', 'pvf-trust-bar'].forEach(function (id) {
                         var el = document.getElementById(id);
                         if (el) el.style.display = 'none';
                     });
@@ -5435,6 +6098,262 @@
                 draw();
             }
 
+            // ===== INTERACTIVE SAVINGS CALCULATOR =====
+            function initInteractiveSavings(data) {
+                var ccSlider = document.getElementById('is-cc-slider');
+                var renoSlider = document.getElementById('is-reno-slider');
+                if (!ccSlider || !renoSlider) return;
+
+                var helocRate = parseFloat(data.rate) || 7.0;
+                var ccRate = 22.0;
+                var loanRate = 12.0;
+
+                function calculate() {
+                    var ccDebt = parseInt(ccSlider.value);
+                    var renoAmount = parseInt(renoSlider.value);
+                    var total = ccDebt + renoAmount;
+
+                    // Update labels
+                    document.getElementById('is-cc-value').textContent = '$' + ccDebt.toLocaleString();
+                    document.getElementById('is-reno-value').textContent = '$' + renoAmount.toLocaleString();
+
+                    // Calculate payments (simplified)
+                    var ccPayment = ccDebt > 0 ? (ccDebt * (ccRate / 100) / 12) + (ccDebt * 0.02) : 0; // Min payment ~2% + interest
+                    var helocPayment = total > 0 ? (total * (helocRate / 100) / 12) : 0; // Interest only
+                    var loanPayment = total > 0 ? calculateAmortizedPayment(total, loanRate, 10) : 0;
+
+                    // Update displays
+                    document.getElementById('is-heloc-payment').textContent = '$' + Math.round(helocPayment).toLocaleString() + '/mo';
+                    document.getElementById('is-cc-payment').textContent = '$' + Math.round(ccPayment).toLocaleString() + '/mo';
+                    document.getElementById('is-loan-payment').textContent = '$' + Math.round(loanPayment).toLocaleString() + '/mo';
+
+                    var savings = ccPayment - helocPayment;
+                    document.getElementById('is-heloc-savings').textContent = savings > 0 ? 'Save $' + Math.round(savings).toLocaleString() + '/mo' : 'Best rate';
+                }
+
+                ccSlider.addEventListener('input', calculate);
+                renoSlider.addEventListener('input', calculate);
+                calculate();
+            }
+
+            function calculateAmortizedPayment(principal, annualRate, years) {
+                var r = annualRate / 100 / 12;
+                var n = years * 12;
+                if (r === 0) return principal / n;
+                return (principal * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+            }
+
+            // ===== PAYMENT SCENARIO TOGGLE =====
+            var currentScenario = 'interest';
+            var currentDrawAmount = 50000;
+            var currentHelocRate = 7.0;
+
+            function initPaymentScenario(data) {
+                var slider = document.getElementById('ps-draw-slider');
+                if (!slider) return;
+
+                currentHelocRate = parseFloat(data.rate) || 7.0;
+                var maxDraw = parseInt(data.cashBack) || 500000;
+                slider.max = Math.min(maxDraw, 500000);
+
+                slider.addEventListener('input', function() {
+                    currentDrawAmount = parseInt(this.value);
+                    document.getElementById('ps-draw-value').textContent = '$' + currentDrawAmount.toLocaleString();
+                    updatePaymentDisplay();
+                });
+
+                updatePaymentDisplay();
+            }
+
+            window.setPaymentScenario = function(scenario) {
+                currentScenario = scenario;
+                document.getElementById('ps-btn-interest').classList.toggle('active', scenario === 'interest');
+                document.getElementById('ps-btn-amortized').classList.toggle('active', scenario === 'amortized');
+                updatePaymentDisplay();
+            };
+
+            function updatePaymentDisplay() {
+                var payment, detail;
+                if (currentScenario === 'interest') {
+                    payment = (currentDrawAmount * (currentHelocRate / 100) / 12);
+                    detail = 'Interest-only payment at ' + currentHelocRate + '% APR';
+                } else {
+                    payment = calculateAmortizedPayment(currentDrawAmount, currentHelocRate, 20);
+                    detail = 'Fully amortized over 20 years at ' + currentHelocRate + '% APR';
+                }
+                document.getElementById('ps-payment-amount').textContent = '$' + Math.round(payment).toLocaleString();
+                document.getElementById('ps-payment-detail').textContent = detail;
+            }
+
+            // ===== PROACTIVE OBJECTION HANDLING =====
+            function initProactiveObjections(data) {
+                // Don't show in preview mode
+                if (data.preview) return;
+                
+                // Wait 45 seconds after page load
+                setTimeout(function() {
+                    showRelevantObjection(data);
+                }, 45000);
+            }
+
+            function showRelevantObjection(data) {
+                var rate = parseFloat(data.rate) || 7.0;
+                var cashBack = parseInt(data.cashBack) || 0;
+                var cltv = parseFloat(data.cltv) || 0;
+                var popup = document.getElementById('objection-popup');
+                var title = document.getElementById('objection-title');
+                var text = document.getElementById('objection-text');
+
+                if (!popup || !title || !text) return;
+
+                // Determine which objection to show
+                if (rate > 8.5) {
+                    // High rate objection
+                    title.textContent = 'About Your Rate';
+                    text.innerHTML = 'I see you\'re looking at a <strong>' + rate + '% rate</strong>. Here\'s the context that matters:<br><br>' +
+                        '&#8226; Credit cards charge <strong>22%+ APR</strong> — that\'s 3x higher<br>' +
+                        '&#8226; Personal loans average <strong>12-15%</strong><br>' +
+                        '&#8226; Your HELOC interest may be <strong>tax-deductible</strong><br><br>' +
+                        'Even at ' + rate + '%, you could save thousands compared to other financing options.';
+                } else if (cashBack < 50000) {
+                    // Low equity objection
+                    title.textContent = 'Make the Most of Your Equity';
+                    text.innerHTML = 'With <strong>$' + cashBack.toLocaleString() + '</strong> available, here\'s what you could accomplish:<br><br>' +
+                        '&#8226; Pay off high-interest credit card debt<br>' +
+                        '&#8226; Fund a kitchen renovation (avg ROI: 75%)<br>' +
+                        '&#8226; Cover emergency expenses without touching savings<br><br>' +
+                        'Sometimes the smartest move is accessing just what you need.';
+                } else if (data.helocPayoff && parseFloat(data.helocPayoff) > 0) {
+                    // Refinance objection
+                    var potentialSavings = Math.round(parseFloat(data.helocPayoff) * 0.02); // Rough estimate
+                    title.textContent = 'Refinance Opportunity';
+                    text.innerHTML = 'I see you have an existing HELOC. Here\'s what refinancing could do:<br><br>' +
+                        '&#8226; Potentially lower your rate<br>' +
+                        '&#8226; Consolidate into a single payment<br>' +
+                        '&#8226; Access additional equity if needed<br><br>' +
+                        'Many borrowers save <strong>$' + potentialSavings + '+ per month</strong> by refinancing.';
+                } else {
+                    // Default objection
+                    title.textContent = 'Quick Question';
+                    text.innerHTML = 'I noticed you\'ve been reviewing your quote. What\'s the #1 thing holding you back from moving forward?<br><br>' +
+                        'I can help with:<br>' +
+                        '&#8226; Explaining any part of the quote<br>' +
+                        '&#8226; Comparing different scenarios<br>' +
+                        '&#8226; Answering questions about the process';
+                }
+
+                popup.classList.add('visible');
+                trackEvent('objection_shown', { type: rate > 8.5 ? 'high_rate' : cashBack < 50000 ? 'low_equity' : 'default' });
+            }
+
+            window.hideObjectionPopup = function() {
+                var popup = document.getElementById('objection-popup');
+                if (popup) popup.classList.remove('visible');
+            };
+
+            window.openEzraChat = function() {
+                hideObjectionPopup();
+                if (typeof window.eqToggle === 'function') {
+                    window.eqToggle();
+                }
+            };
+
+            // ===== FOLLOW-UP NUDGE =====
+            function initFollowupNudge(data) {
+                // Don't show in preview mode
+                if (data.preview) return;
+
+                var hasApplied = false;
+                var nudgeShown = false;
+
+                // Track if user clicks apply
+                document.getElementById('floating-bar')?.addEventListener('click', function(e) {
+                    if (e.target.textContent.includes('Apply')) {
+                        hasApplied = true;
+                    }
+                });
+
+                // Show nudge after 10 minutes if not applied
+                setTimeout(function() {
+                    if (!hasApplied && !nudgeShown) {
+                        showFollowupNudge();
+                    }
+                }, 10 * 60 * 1000); // 10 minutes
+
+                // Also check on page visibility change
+                document.addEventListener('visibilitychange', function() {
+                    if (!document.hidden && !hasApplied && !nudgeShown) {
+                        // User returned to tab, could show nudge
+                    }
+                });
+            }
+
+            function showFollowupNudge() {
+                var nudge = document.getElementById('followup-nudge');
+                if (!nudge) return;
+
+                // Rotate through different insights
+                var insights = [
+                    'Still thinking it over? Here\'s one thing most borrowers don\'t realize: <strong>HELOC interest is often tax-deductible</strong> when used for home improvements. That makes your effective rate even lower!',
+                    'Did you know? The average homeowner who consolidates credit card debt with a HELOC saves over <strong>$400 per month</strong> in interest payments.',
+                    'One more thing: Unlike a traditional loan, you only pay interest on what you actually draw. If you only use half your available credit, your payments are cut in half too.',
+                    'Quick fact: Home improvements funded by a HELOC have an average <strong>75-80% ROI</strong>. Your home could be worth significantly more after the renovation!'
+                ];
+
+                var randomInsight = insights[Math.floor(Math.random() * insights.length)];
+                document.getElementById('followup-text').innerHTML = randomInsight;
+
+                nudge.classList.add('visible');
+                trackEvent('followup_nudge_shown', {});
+            }
+
+            window.hideFollowupNudge = function() {
+                var nudge = document.getElementById('followup-nudge');
+                if (nudge) nudge.classList.remove('visible');
+                openEzraChat();
+            };
+
+            // ===== MULTI-LANGUAGE SUPPORT =====
+            function detectBrowserLanguage() {
+                var lang = navigator.language || navigator.userLanguage;
+                var primaryLang = lang.split('-')[0];
+                
+                // Store language preference
+                window._ezraLanguage = primaryLang;
+                
+                // If Spanish, update UI elements
+                if (primaryLang === 'es') {
+                    updateUISpanish();
+                }
+            }
+
+            function updateUISpanish() {
+                // Update key UI elements to Spanish
+                var translations = {
+                    'Your HELOC Proposal': 'Su Propuesta de HELOC',
+                    'Apply Now': 'Aplicar Ahora',
+                    'Schedule Call': 'Programar Llamada',
+                    'Ask Question': 'Hacer Pregunta',
+                    'Save PDF': 'Guardar PDF',
+                    'Share': 'Compartir',
+                    'Rate Options': 'Opciones de Tasa',
+                    'Your Details': 'Sus Detalles',
+                    'Your Equity': 'Su Equity',
+                    'Recommended Option': 'Opción Recomendada'
+                };
+
+                // Update elements
+                document.querySelectorAll('*').forEach(function(el) {
+                    var text = el.textContent?.trim();
+                    if (translations[text]) {
+                        el.textContent = translations[text];
+                    }
+                });
+
+                // Update Ezra's welcome message if chat is initialized
+                window._ezraSpanishMode = true;
+            }
+
             // ===== PROGRESS STEPPER =====
             function initProgressStepper(opts) {
                 if (!window.IntersectionObserver) return;
@@ -5488,6 +6407,8 @@
             // ===== EZRA AI CHAT WIDGET =====
             function initEzraChat(quoteData, loInfo, quoteCode) {
                 var chatHistory = [], isOpen = false, isSending = false, tourActive = false, tourStep = 0;
+                var engagementCount = 0, nudgeShown = false, nudgeTimer = null, lastActivityTime = Date.now();
+                var voiceAudio = null, voiceIsPlaying = false;
                 var loName = loInfo.name || 'your loan officer';
                 var opts = quoteData.linkOptions || {};
 
@@ -5542,15 +6463,47 @@
                 // Build chat widget HTML
                 var root = document.getElementById('eq-root');
                 if (!root) return;
+                
+                // Load saved position preference
+                var savedPos = localStorage.getItem('ezraPosition') || 'bottom-right';
+                var customPos = localStorage.getItem('ezraCustomPosition');
+                
                 root.innerHTML =
-                    '<button class="eq-orb" id="eq-orb" onclick="eqToggle()"><span style="font-size:20px;filter:drop-shadow(0 0 4px rgba(212,175,55,0.6));">&#10022;</span><span class="eq-orb-ring"></span></button>' +
-                    '<div class="eq-panel" id="eq-panel">' +
-                    '<div class="eq-header"><div class="eq-header-left"><div class="eq-avatar">&#10022;</div><div><div class="eq-title">EZRA</div><div class="eq-subtitle">Your Quote Assistant</div></div></div><button class="eq-close" onclick="eqToggle()">&times;</button></div>' +
+                    '<button class="eq-orb pos-' + savedPos + '" id="eq-orb" onclick="eqToggle(event)"><span style="font-size:20px;filter:drop-shadow(0 0 4px rgba(212,175,55,0.6));">&#10022;</span><span class="eq-orb-ring"></span></button>' +
+                    '<div class="eq-panel pos-' + savedPos + '" id="eq-panel">' +
+                    '<div class="eq-header"><div class="eq-header-left"><div class="eq-avatar">&#10022;</div><div><div class="eq-title">EZRA</div><div class="eq-subtitle"><span class="eq-activity-pulse" id="eq-live-dot" style="display:none;"></span>Your Quote Assistant</div></div></div><button class="eq-close" onclick="eqToggle()">&times;</button></div>' +
+                    '<div class="eq-voice-note" id="eq-voice-note"><div class="eq-vn-wrap"><button class="eq-vn-play" id="eq-vn-play" onclick="eqPlayVoice()">&#9654;</button><div class="eq-vn-info"><div class="eq-vn-label">&#127908; Voice message from <span id="eq-vn-lo-name">your advisor</span></div><div class="eq-vn-bar"><div class="eq-vn-progress" id="eq-vn-progress"></div></div></div><div class="eq-vn-time" id="eq-vn-time">0:00</div></div></div>' +
                     '<div class="eq-chips" id="eq-chips"></div>' +
                     '<div class="eq-messages" id="eq-messages"></div>' +
                     '<div class="eq-typing" id="eq-typing"><span class="eq-dot"></span><span class="eq-dot"></span><span class="eq-dot"></span></div>' +
                     '<div class="eq-input-area"><textarea id="eq-input" class="eq-input" placeholder="Ask about your quote..." rows="1"></textarea><button class="eq-send" id="eq-send" onclick="eqSend()" disabled>&#9654;</button></div>' +
+                    '<div class="eq-position-bar" id="eq-position-bar">' +
+                    '<span class="eq-pos-label">Position:</span>' +
+                    '<button class="eq-pos-btn" onclick="eqMoveWidget(\'bottom-right\')" title="Bottom Right">&#8598;</button>' +
+                    '<button class="eq-pos-btn" onclick="eqMoveWidget(\'bottom-left\')" title="Bottom Left">&#8599;</button>' +
+                    '<button class="eq-pos-btn" onclick="eqMoveWidget(\'top-right\')" title="Top Right">&#8601;</button>' +
+                    '<button class="eq-pos-btn" onclick="eqMoveWidget(\'top-left\')" title="Top Left">&#8600;</button>' +
+                    '<span class="eq-drag-hint">&#128070; Drag orb to move</span>' +
+                    '</div>' +
                     '</div>';
+                
+                // Apply custom position if saved
+                if (savedPos === 'custom' && customPos) {
+                    var pos = JSON.parse(customPos);
+                    var orb = document.getElementById('eq-orb');
+                    var panel = document.getElementById('eq-panel');
+                    orb.style.left = pos.x + 'px';
+                    orb.style.top = pos.y + 'px';
+                    orb.style.right = 'auto';
+                    orb.style.bottom = 'auto';
+                    panel.style.left = pos.x + 'px';
+                    panel.style.top = (pos.y - 420) + 'px';
+                    panel.style.right = 'auto';
+                    panel.style.bottom = 'auto';
+                }
+                
+                // Initialize drag functionality
+                initEzraDrag();
 
                 renderChips(['Take a guided tour'].concat(defaultChips));
 
@@ -5572,30 +6525,49 @@
                     }).join('');
                 }
 
-                function addMsg(role, text) {
+                function addMsg(role, text, skipPersist) {
                     var el = document.getElementById('eq-messages');
                     if (!el) return;
                     var div = document.createElement('div');
                     div.className = 'eq-msg ' + role;
+                    // Support compare table HTML passthrough
                     var safe = role === 'user' ? esc(text) : text;
                     div.innerHTML = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>').replace(/^- (.+)/gm, '&bull; $1');
                     el.appendChild(div);
                     el.scrollTop = el.scrollHeight;
                     chatHistory.push({ role: role, content: text });
                     if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+                    // Track engagement for smart CTA escalation
+                    if (role === 'user') { engagementCount++; lastActivityTime = Date.now(); resetNudgeTimer(); updateSmartChips(); }
+                    // Persist to Supabase (fire-and-forget)
+                    if (!skipPersist && quoteCode !== 'preview') {
+                        logMessage(role, text);
+                    }
                 }
 
                 function showTyping() { var t = document.getElementById('eq-typing'); if (t) t.classList.add('active'); }
                 function hideTyping() { var t = document.getElementById('eq-typing'); if (t) t.classList.remove('active'); }
 
                 // Global handlers
-                window.eqToggle = function () {
+                window.eqToggle = function (e) {
+                    // Prevent toggle if we just finished dragging
+                    if (e && e.target && e.target.classList.contains('dragging')) return;
+                    
                     var panel = document.getElementById('eq-panel');
                     isOpen = !isOpen;
                     if (isOpen) {
                         panel.classList.add('open');
                         if (chatHistory.length === 0) {
-                            addMsg('assistant', "Hi " + esc(quoteData.clientName || 'there') + "! I'm **Ezra**, your personal HELOC advisor. I'm here to walk you through your quote and answer any questions you have.\n\nYou've got **$" + num(quoteData.cashBack) + "** in available equity — let me help you understand your options! I can give you a **guided tour** of your quote, or just ask me anything.");
+                            var welcomeMsg = window._ezraLanguage === 'es'
+                                ? "\u00a1Hola " + esc(quoteData.clientName || 'amigo') + "! Soy **Ezra**, su asesor personal de HELOC. Estoy aqu\u00ed para guiarlo a trav\u00e9s de su cotizaci\u00f3n y responder cualquier pregunta.\n\nTiene **$" + num(quoteData.cashBack) + "** en equity disponible — \u00a1d\u00e9jeme ayudarle a entender sus opciones! Puedo darle un **tour guiado** de su cotizaci\u00f3n, o simplemente preg\u00fanteme lo que sea."
+                                : "Hi " + esc(quoteData.clientName || 'there') + "! I'm **Ezra**, your personal HELOC advisor. I'm here to walk you through your quote and answer any questions you have.\n\nYou've got **$" + num(quoteData.cashBack) + "** in available equity — let me help you understand your options! I can give you a **guided tour** of your quote, or just ask me anything.";
+                            addMsg('assistant', welcomeMsg);
+                        } else if (hadPersisted && chatHistory.length > 0) {
+                            // Returning visitor — welcome back message (only once)
+                            if (!window._ezraWelcomedBack) {
+                                window._ezraWelcomedBack = true;
+                                addMsg('assistant', "Welcome back, " + esc(quoteData.clientName || 'there') + "! I see you were here before. Your previous conversation is right above. Feel free to pick up where you left off, or ask me anything new about your **$" + num(quoteData.cashBack) + "** in available equity.", true);
+                            }
                         }
                         trackEvent('chat_opened', { code: quoteCode });
                         setTimeout(function () { var inp = document.getElementById('eq-input'); if (inp) inp.focus(); }, 400);
@@ -5632,7 +6604,12 @@
                     fetch(CHAT_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ quoteCode: quoteCode, message: msg, conversationHistory: chatHistory.slice(-10) })
+                        body: JSON.stringify({ 
+                            quoteCode: quoteCode, 
+                            message: msg, 
+                            conversationHistory: chatHistory.slice(-10),
+                            language: window._ezraLanguage || 'en'
+                        })
                     })
                         .then(function (r) { return r.json(); })
                         .then(function (data) {
@@ -5651,6 +6628,126 @@
                             addMsg('assistant', "I'm having trouble connecting right now. Please try again in a moment, or contact " + esc(loName) + (loInfo.phone ? " at " + esc(loInfo.phone) : "") + " directly.");
                         });
                 };
+
+                // ===== WIDGET POSITION & DRAG =====
+                window.eqMoveWidget = function (position) {
+                    var orb = document.getElementById('eq-orb');
+                    var panel = document.getElementById('eq-panel');
+                    if (!orb || !panel) return;
+                    
+                    // Remove all position classes
+                    ['pos-bottom-right', 'pos-bottom-left', 'pos-top-right', 'pos-top-left', 'pos-custom'].forEach(function (cls) {
+                        orb.classList.remove(cls);
+                        panel.classList.remove(cls);
+                    });
+                    
+                    // Clear inline styles
+                    orb.style.left = orb.style.top = orb.style.right = orb.style.bottom = '';
+                    panel.style.left = panel.style.top = panel.style.right = panel.style.bottom = '';
+                    
+                    // Add new position class
+                    orb.classList.add('pos-' + position);
+                    panel.classList.add('pos-' + position);
+                    
+                    // Save preference
+                    localStorage.setItem('ezraPosition', position);
+                    if (position !== 'custom') {
+                        localStorage.removeItem('ezraCustomPosition');
+                    }
+                };
+
+                function initEzraDrag() {
+                    var orb = document.getElementById('eq-orb');
+                    var panel = document.getElementById('eq-panel');
+                    if (!orb || !panel) return;
+
+                    var isDragging = false;
+                    var startX, startY, startLeft, startTop;
+                    var dragThreshold = 5; // pixels to consider a drag vs click
+
+                    function onMouseDown(e) {
+                        // Don't drag if clicking the position bar
+                        if (e.target.closest('.eq-position-bar')) return;
+                        
+                        isDragging = false;
+                        startX = e.clientX || (e.touches && e.touches[0].clientX);
+                        startY = e.clientY || (e.touches && e.touches[0].clientY);
+                        
+                        var rect = orb.getBoundingClientRect();
+                        startLeft = rect.left;
+                        startTop = rect.top;
+
+                        document.addEventListener('mousemove', onMouseMove);
+                        document.addEventListener('mouseup', onMouseUp);
+                        document.addEventListener('touchmove', onTouchMove, { passive: false });
+                        document.addEventListener('touchend', onMouseUp);
+                    }
+
+                    function onMouseMove(e) {
+                        var clientX = e.clientX;
+                        var clientY = e.clientY;
+                        var dx = clientX - startX;
+                        var dy = clientY - startY;
+
+                        if (!isDragging && (Math.abs(dx) > dragThreshold || Math.abs(dy) > dragThreshold)) {
+                            isDragging = true;
+                            orb.classList.add('dragging');
+                        }
+
+                        if (isDragging) {
+                            e.preventDefault();
+                            var newLeft = Math.max(0, Math.min(window.innerWidth - 52, startLeft + dx));
+                            var newTop = Math.max(0, Math.min(window.innerHeight - 52, startTop + dy));
+                            
+                            // Remove position classes
+                            ['pos-bottom-right', 'pos-bottom-left', 'pos-top-right', 'pos-top-left', 'pos-custom'].forEach(function (cls) {
+                                orb.classList.remove(cls);
+                                panel.classList.remove(cls);
+                            });
+                            orb.classList.add('pos-custom');
+                            panel.classList.add('pos-custom');
+                            
+                            // Apply inline styles
+                            orb.style.left = newLeft + 'px';
+                            orb.style.top = newTop + 'px';
+                            orb.style.right = 'auto';
+                            orb.style.bottom = 'auto';
+                            
+                            // Position panel above orb
+                            panel.style.left = newLeft + 'px';
+                            panel.style.top = Math.max(10, newTop - 530) + 'px';
+                            panel.style.right = 'auto';
+                            panel.style.bottom = 'auto';
+                        }
+                    }
+
+                    function onTouchMove(e) {
+                        if (e.touches && e.touches[0]) {
+                            onMouseMove({
+                                clientX: e.touches[0].clientX,
+                                clientY: e.touches[0].clientY,
+                                preventDefault: function () { e.preventDefault(); }
+                            });
+                        }
+                    }
+
+                    function onMouseUp() {
+                        if (isDragging) {
+                            orb.classList.remove('dragging');
+                            // Save custom position
+                            var rect = orb.getBoundingClientRect();
+                            localStorage.setItem('ezraPosition', 'custom');
+                            localStorage.setItem('ezraCustomPosition', JSON.stringify({ x: rect.left, y: rect.top }));
+                        }
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                        document.removeEventListener('touchmove', onTouchMove);
+                        document.removeEventListener('touchend', onMouseUp);
+                    }
+
+                    orb.addEventListener('mousedown', onMouseDown);
+                    orb.addEventListener('touchstart', onMouseDown, { passive: true });
+                }
 
                 // ===== GUIDED TOUR ENGINE =====
                 function startTour() {
@@ -5706,6 +6803,300 @@
                         hl.style.height = (rect.height + 16) + 'px';
                     }, 400);
                 }
+
+                // ===== FEATURE 11: CONDITIONAL FOLLOW-UP NUDGES =====
+                var nudgeMessages = [
+                    "Still thinking it over? Here's something most borrowers don't realize — **your equity is growing every month** as you pay down your mortgage. Locking in now means you capture today's value.",
+                    "Quick thought: **$" + num(quoteData.cashBack) + " in available equity** is sitting idle. Most clients are surprised how fast and painless the process is — no traditional appraisal needed.",
+                    "Did you know? A HELOC lets you **access funds only when you need them** — you only pay interest on what you draw. It's like having a financial safety net built into your home."
+                ];
+                var nudgeIndex = 0;
+
+                function resetNudgeTimer() {
+                    if (nudgeTimer) clearTimeout(nudgeTimer);
+                    nudgeShown = false;
+                    dismissNudge();
+                    // Set nudge for 10 minutes of inactivity (if chat is closed)
+                    nudgeTimer = setTimeout(function () {
+                        if (!isOpen && !nudgeShown && engagementCount > 0) {
+                            showNudge();
+                        }
+                    }, 10 * 60 * 1000);
+                }
+
+                function showNudge() {
+                    nudgeShown = true;
+                    var pos = localStorage.getItem('ezraPosition') || 'bottom-right';
+                    var msg = nudgeMessages[nudgeIndex % nudgeMessages.length];
+                    nudgeIndex++;
+                    var nudge = document.createElement('div');
+                    nudge.className = 'eq-nudge pos-' + pos;
+                    nudge.id = 'eq-nudge';
+                    nudge.innerHTML = '<button class="eq-nudge-dismiss" onclick="event.stopPropagation();dismissNudge()">&times;</button><div class="eq-nudge-text">' + msg.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') + '</div>';
+                    nudge.onclick = function () { dismissNudge(); if (!isOpen) window.eqToggle(); };
+                    document.body.appendChild(nudge);
+                    trackEvent('nudge_shown', { code: quoteCode, index: nudgeIndex });
+                    // Auto-dismiss after 20 seconds
+                    setTimeout(function () { dismissNudge(); }, 20000);
+                }
+
+                window.dismissNudge = function () {
+                    var el = document.getElementById('eq-nudge');
+                    if (el) el.remove();
+                };
+
+                // Start initial nudge timer (triggers if user viewed but didn't chat for 10 min)
+                nudgeTimer = setTimeout(function () {
+                    if (!isOpen && engagementCount === 0) {
+                        showNudge();
+                    }
+                }, 10 * 60 * 1000);
+
+                // ===== FEATURE 12: LO VOICE NOTE =====
+                var voiceNoteUrl = (loInfo && loInfo.voiceNoteUrl) || (opts && opts.voiceNoteUrl) || null;
+
+                function initVoiceNote() {
+                    if (!voiceNoteUrl) return;
+                    var vnEl = document.getElementById('eq-voice-note');
+                    var vnName = document.getElementById('eq-vn-lo-name');
+                    if (!vnEl) return;
+                    vnEl.classList.add('has-audio');
+                    if (vnName && loInfo.name) vnName.textContent = esc(loInfo.name);
+
+                    voiceAudio = new Audio(voiceNoteUrl);
+                    voiceAudio.preload = 'metadata';
+                    voiceAudio.addEventListener('loadedmetadata', function () {
+                        var timeEl = document.getElementById('eq-vn-time');
+                        if (timeEl) timeEl.textContent = formatTime(voiceAudio.duration);
+                    });
+                    voiceAudio.addEventListener('timeupdate', function () {
+                        var prog = document.getElementById('eq-vn-progress');
+                        var timeEl = document.getElementById('eq-vn-time');
+                        if (prog && voiceAudio.duration) prog.style.width = ((voiceAudio.currentTime / voiceAudio.duration) * 100) + '%';
+                        if (timeEl) timeEl.textContent = formatTime(voiceAudio.currentTime) + ' / ' + formatTime(voiceAudio.duration);
+                    });
+                    voiceAudio.addEventListener('ended', function () {
+                        voiceIsPlaying = false;
+                        var btn = document.getElementById('eq-vn-play');
+                        if (btn) btn.innerHTML = '&#9654;';
+                        var prog = document.getElementById('eq-vn-progress');
+                        if (prog) prog.style.width = '0%';
+                        trackEvent('voice_note_completed', { code: quoteCode });
+                    });
+                }
+
+                function formatTime(sec) {
+                    if (!sec || isNaN(sec)) return '0:00';
+                    var m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+                    return m + ':' + (s < 10 ? '0' : '') + s;
+                }
+
+                window.eqPlayVoice = function () {
+                    if (!voiceAudio) return;
+                    var btn = document.getElementById('eq-vn-play');
+                    if (voiceIsPlaying) {
+                        voiceAudio.pause();
+                        voiceIsPlaying = false;
+                        if (btn) btn.innerHTML = '&#9654;';
+                    } else {
+                        voiceAudio.play().catch(function () {});
+                        voiceIsPlaying = true;
+                        if (btn) btn.innerHTML = '&#10074;&#10074;';
+                        trackEvent('voice_note_played', { code: quoteCode });
+                    }
+                };
+
+                initVoiceNote();
+
+                // ===== FEATURE 13: SMART CTA ESCALATION =====
+                function updateSmartChips() {
+                    if (tourActive) return; // Don't override tour chips
+                    if (engagementCount >= 5) {
+                        // High engagement — aggressive CTAs
+                        var chips = [];
+                        if (opts.showApply !== false) chips.push('Apply Now — takes 2 minutes');
+                        chips.push('Schedule a 5-min call with ' + esc(loName));
+                        chips.push('Compare to other loan options');
+                        renderChips(chips);
+                    } else if (engagementCount >= 3) {
+                        // Medium engagement — nudge toward action
+                        var chips = ['How do I get started?'];
+                        if (opts.showApply !== false) chips.push('Start my application');
+                        chips.push('Schedule a call', 'Compare my rate options');
+                        renderChips(chips);
+                    }
+                    // Under 3 interactions: keep default chips
+                }
+
+                // Wire escalated chip actions
+                var origChip = window.eqChip;
+                window.eqChip = function (text) {
+                    if (text === 'Apply Now — takes 2 minutes' || text === 'How do I get started?') {
+                        window.openApplyModal();
+                        trackEvent('smart_cta_clicked', { code: quoteCode, cta: text });
+                        return;
+                    }
+                    if (text.indexOf('Schedule a 5-min call') === 0) {
+                        if (loInfo.calendarLink) window.open(loInfo.calendarLink, '_blank');
+                        else { addMsg('assistant', "Great choice! Reach out to **" + esc(loName) + "**" + (loInfo.phone ? " at " + esc(loInfo.phone) : "") + " to set up a quick call."); }
+                        trackEvent('smart_cta_clicked', { code: quoteCode, cta: 'schedule_call' });
+                        return;
+                    }
+                    if (text === 'Compare to other loan options' || text === 'Compare my rate options') {
+                        showCompareMode();
+                        return;
+                    }
+                    origChip(text);
+                };
+
+                // ===== FEATURE 14: COMPARE MODE =====
+                function showCompareMode() {
+                    var cashVal = parseFloat(String(quoteData.cashBack || 0).replace(/[$,]/g, '')) || 0;
+                    var helocRate = parseFloat(quoteData.rate) || 7;
+                    var helocPay = parseFloat(String(quoteData.payment || '').replace(/[$,\/mo]/g, '')) || 0;
+                    var termYrs = parseInt(quoteData.term) || 15;
+
+                    // Calculate comparison products
+                    var cashRefiRate = helocRate + 1.5; // Typically higher
+                    var cashRefiPay = Math.round((cashVal * (cashRefiRate / 100 / 12) * Math.pow(1 + cashRefiRate / 100 / 12, 360)) / (Math.pow(1 + cashRefiRate / 100 / 12, 360) - 1));
+                    var cashRefiClose = Math.round(cashVal * 0.03); // ~3% closing costs
+                    var plRate = 12; // Avg personal loan rate
+                    var plPay = Math.round((cashVal * (plRate / 100 / 12) * Math.pow(1 + plRate / 100 / 12, 60)) / (Math.pow(1 + plRate / 100 / 12, 60) - 1));
+                    var ccRate = 24; // Avg credit card APR
+                    var ccPay = Math.round(cashVal * 0.03); // Min payment ~3%
+
+                    var table = '<table class="eq-compare-table">' +
+                        '<tr><th></th><th>Your HELOC</th><th>Cash-Out Refi</th><th>Personal Loan</th><th>Credit Cards</th></tr>' +
+                        '<tr class="compare-highlight"><td>Rate</td><td class="compare-best">' + helocRate + '%' + (quoteData.recType === 'variable' ? ' var' : ' fixed') + '</td><td>' + cashRefiRate.toFixed(1) + '% fixed</td><td class="compare-worst">' + plRate + '% fixed</td><td class="compare-worst">' + ccRate + '%+ var</td></tr>' +
+                        '<tr><td>Monthly Pmt</td><td class="compare-best">$' + helocPay.toLocaleString() + '</td><td>$' + cashRefiPay.toLocaleString() + '</td><td class="compare-worst">$' + plPay.toLocaleString() + '</td><td>$' + ccPay.toLocaleString() + '</td></tr>' +
+                        '<tr><td>Closing Costs</td><td class="compare-best">Low</td><td>$' + cashRefiClose.toLocaleString() + '</td><td>$0</td><td>$0</td></tr>' +
+                        '<tr><td>Term</td><td>' + termYrs + ' yrs</td><td>30 yrs</td><td>5 yrs</td><td>Revolving</td></tr>' +
+                        '<tr><td>Appraisal</td><td class="compare-best">Usually none</td><td>Required</td><td>None</td><td>None</td></tr>' +
+                        '<tr><td>Keep 1st Mortgage</td><td class="compare-best">Yes</td><td class="compare-worst">No — replaces it</td><td>Yes</td><td>Yes</td></tr>' +
+                        '<tr><td>Prepay Penalty</td><td class="compare-best">None</td><td>Varies</td><td>Varies</td><td>None</td></tr>' +
+                        '</table>';
+
+                    addMsg('assistant', "Here's how your HELOC stacks up against other ways to access **$" + num(quoteData.cashBack) + "**:\n\n" + table + "\n\nYour HELOC wins on rate, flexibility, and simplicity. You keep your existing mortgage rate AND access your equity — it's the best of both worlds.");
+                    trackEvent('compare_mode_viewed', { code: quoteCode });
+                }
+
+                // ===== FEATURE 15: CONVERSATION PERSISTENCE =====
+                function loadPersistedChat() {
+                    if (quoteCode === 'preview') return;
+                    var storageKey = 'ezra_chat_' + quoteCode;
+                    try {
+                        var saved = localStorage.getItem(storageKey);
+                        if (saved) {
+                            var parsed = JSON.parse(saved);
+                            if (parsed && parsed.length > 0) {
+                                chatHistory = parsed;
+                                engagementCount = parsed.filter(function (m) { return m.role === 'user'; }).length;
+                                // Render persisted messages
+                                parsed.forEach(function (m) {
+                                    var el = document.getElementById('eq-messages');
+                                    if (!el) return;
+                                    var div = document.createElement('div');
+                                    div.className = 'eq-msg ' + m.role;
+                                    var safe = m.role === 'user' ? esc(m.content) : m.content;
+                                    div.innerHTML = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>').replace(/^- (.+)/gm, '&bull; $1');
+                                    el.appendChild(div);
+                                });
+                                var el = document.getElementById('eq-messages');
+                                if (el) el.scrollTop = el.scrollHeight;
+                                return true; // Had persisted chat
+                            }
+                        }
+                    } catch (e) { /* localStorage unavailable */ }
+                    return false;
+                }
+
+                function persistChat() {
+                    if (quoteCode === 'preview') return;
+                    var storageKey = 'ezra_chat_' + quoteCode;
+                    try {
+                        localStorage.setItem(storageKey, JSON.stringify(chatHistory));
+                    } catch (e) { /* storage full or unavailable */ }
+                }
+
+                function logMessage(role, text) {
+                    // Persist locally
+                    persistChat();
+                    // Also log to Supabase via log-conversation (fire-and-forget)
+                    var logUrl = SUPABASE_URL + '/functions/v1/log-conversation';
+                    fetch(logUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            context: 'quote-chat',
+                            content: text.substring(0, 2000),
+                            role: role,
+                            quote_code: quoteCode,
+                            lead_id: _leadId || null,
+                            user_id: _userId || null,
+                            channel: 'ezra-client'
+                        })
+                    }).catch(function () {});
+                }
+
+                // Load persisted chat on init (before welcome message check)
+                var hadPersisted = loadPersistedChat();
+
+                // ===== FEATURE 16: REAL-TIME ACTIVITY ALERTS TO LO =====
+                var heartbeatInterval = null;
+
+                function startActivityHeartbeat() {
+                    if (quoteCode === 'preview' || !_userId || heartbeatInterval) return;
+                    // Send initial "viewing now" signal
+                    sendHeartbeat('viewing');
+                    // Heartbeat every 30 seconds while page is visible
+                    heartbeatInterval = setInterval(function () {
+                        if (!document.hidden) {
+                            var activity = (Date.now() - lastActivityTime < 60000) ? 'active' : 'idle';
+                            sendHeartbeat(activity);
+                        }
+                    }, 30000);
+                    // Stop when page unloads
+                    window.addEventListener('beforeunload', function () {
+                        sendHeartbeat('left');
+                        clearInterval(heartbeatInterval);
+                    });
+                    // Pause/resume on visibility change
+                    document.addEventListener('visibilitychange', function () {
+                        if (document.hidden) {
+                            sendHeartbeat('tab_hidden');
+                        } else {
+                            sendHeartbeat('tab_visible');
+                        }
+                    });
+                }
+
+                function sendHeartbeat(status) {
+                    if (!_leadId || !_userId || quoteCode === 'preview') return;
+                    var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    sb.from('lead_activity').upsert({
+                        lead_id: _leadId,
+                        user_id: _userId,
+                        quote_code: quoteCode,
+                        status: status,
+                        engagement_count: engagementCount,
+                        last_seen: new Date().toISOString(),
+                        metadata: {
+                            chat_messages: chatHistory.length,
+                            page_url: window.location.href,
+                            device: /Mobi/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
+                        }
+                    }, { onConflict: 'lead_id,quote_code' }).then(function () {}).catch(function () {});
+                }
+
+                // Start heartbeat after a short delay
+                setTimeout(startActivityHeartbeat, 5000);
+
+                // Show live dot in Ezra header when active
+                function updateLiveDot() {
+                    var dot = document.getElementById('eq-live-dot');
+                    if (dot && quoteCode !== 'preview') dot.style.display = 'inline-block';
+                }
+                updateLiveDot();
 
                 // Auto-bounce orb after 5 seconds
                 setTimeout(function () {
