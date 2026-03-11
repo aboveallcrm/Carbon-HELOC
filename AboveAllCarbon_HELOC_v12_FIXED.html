@@ -1274,7 +1274,11 @@
             }
 
             #admin-panel,
-            #floating-toolbar {
+            #floating-toolbar,
+            #carbon-prediction-bar,
+            #carbon-quick-widget,
+            .carbon-prediction-bar,
+            .carbon-quick-widget {
                 display: none !important;
             }
 
@@ -14365,6 +14369,11 @@ Sent via Above All Carbon HELOC Tool`;
                     if (aiBox) aiBox.style.display = 'none';
                     var sendBox = clonedDoc.getElementById('send-quote-section');
                     if (sendBox) sendBox.style.display = 'none';
+                    // Hide command palette prediction bar and quick widget
+                    ['carbon-prediction-bar', 'carbon-quick-widget'].forEach(function(id) {
+                        var el = clonedDoc.getElementById(id);
+                        if (el) el.style.display = 'none';
+                    });
                 }
             });
             container.style.width = origWidth;

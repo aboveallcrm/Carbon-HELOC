@@ -1032,3 +1032,13 @@
 .carbon-quick-widget {
     animation: carbon-slide-up 0.4s ease;
 }
+
+@media print {
+    .carbon-prediction-bar,
+    .carbon-quick-widget,
+    .carbon-palette-overlay,
+    #carbon-prediction-bar,
+    #carbon-quick-widget {
+        display: none !important;
+    }
+}
