@@ -4726,7 +4726,11 @@
 
     <div id="error" class="error-page" style="display:none;">
         <h1>Quote Not Found</h1>
-        <p>This quote link may have expired or is invalid.<br>Please contact your loan officer for a new quote.</p>
+        <p id="error-message">This quote link may have expired or is invalid.<br>Please contact your loan officer for a new quote.</p>
+        <div style="margin-top: 20px; font-size: 12px; color: #666;">
+            <p>Debug info (for support):</p>
+            <code id="error-debug" style="background: #f0f0f0; padding: 10px; border-radius: 4px; display: block; margin-top: 10px;"></code>
+        </div>
     </div>
 
     <div id="content" class="quote-page entering" style="display:none;">
@@ -5137,14 +5141,47 @@
                 }
             }
 
-            if (!code) { showError(); return; }
+            if (!code) { 
+                console.error('No quote code provided in URL');
+                showError(
+                    'No quote code found in URL.<br>Please check the link or contact your loan officer.',
+                    'URL: ' + window.location.href + '\nSearch: ' + window.location.search
+                ); 
+                return; 
+            }
+
+            console.log('Loading quote with code:', code);
 
             var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
             sb.from('quote_links').select('*').eq('code', code).maybeSingle().then(function (res) {
-                if (res.error || !res.data) { showError(); return; }
+                if (res.error) {
+                    console.error('Database error loading quote:', res.error);
+                    showError(
+                        'Error loading quote.<br>Please try again or contact your loan officer.',
+                        'DB Error: ' + JSON.stringify(res.error) + '\nCode: ' + code
+                    );
+                    return;
+                }
+                if (!res.data) {
+                    console.error('Quote not found for code:', code);
+                    showError(
+                        'Quote not found.<br>This link may be invalid or was deleted.',
+                        'Code: ' + code + '\nURL: ' + window.location.href
+                    );
+                    return;
+                }
                 var link = res.data;
-                if (link.expires_at && new Date(link.expires_at) < new Date()) { showError(); return; }
+                console.log('Quote loaded successfully:', link);
+                
+                if (link.expires_at && new Date(link.expires_at) < new Date()) {
+                    console.error('Quote expired:', link.expires_at);
+                    showError(
+                        'This quote has expired.<br>Please contact your loan officer for a new quote.',
+                        'Expired: ' + link.expires_at + '\nCode: ' + code
+                    );
+                    return;
+                }
 
                 sb.rpc('increment_quote_view', { p_code: code }).then(function () { });
                 window._quoteExpiry = link.expires_at || null;
@@ -5153,23 +5190,47 @@
 
                 // Initialize visual enhancements
                 setTimeout(function () {
-                    initScrollProgress();
-                    initScrollReveal();
-                    initCounters();
-                    initParticles();
-                    initProgressStepper(link.quote_data.linkOptions || {});
+                    try {
+                        initScrollProgress();
+                        initScrollReveal();
+                        initCounters();
+                        initParticles();
+                        initProgressStepper(link.quote_data.linkOptions || {});
+                    } catch (e) {
+                        console.warn('Visual enhancement error:', e);
+                    }
+                    
                     // Initialize Ezra AI Chat (default on unless explicitly disabled)
                     if (!link.quote_data.linkOptions || link.quote_data.linkOptions.showAiChat !== false) {
-                        initEzraChat(link.quote_data, link.lo_info || {}, code);
+                        try {
+                            initEzraChat(link.quote_data, link.lo_info || {}, code);
+                        } catch (e) {
+                            console.warn('Ezra chat init error:', e);
+                        }
                     }
+                    
                     // Initialize interactive calculators
-                    initInteractiveSavings(link.quote_data);
-                    initPaymentScenario(link.quote_data);
+                    try {
+                        initInteractiveSavings(link.quote_data);
+                        initPaymentScenario(link.quote_data);
+                    } catch (e) {
+                        console.warn('Calculator init error:', e);
+                    }
+                    
                     // Initialize proactive features
-                    initProactiveObjections(link.quote_data);
-                    initFollowupNudge(link.quote_data);
+                    try {
+                        initProactiveObjections(link.quote_data);
+                        initFollowupNudge(link.quote_data);
+                    } catch (e) {
+                        console.warn('Proactive features init error:', e);
+                    }
+                    
                     // Detect language for Ezra
-                    detectBrowserLanguage();
+                    try {
+                        detectBrowserLanguage();
+                    } catch (e) {
+                        console.warn('Language detection error:', e);
+                    }
                 }, 300);
 
                 // Track time on page
@@ -5718,9 +5779,15 @@
                 });
             }
 
-            function showError() {
+            function showError(message, debug) {
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('error').style.display = 'block';
+                if (message) {
+                    document.getElementById('error-message').innerHTML = message;
+                }
+                if (debug) {
+                    document.getElementById('error-debug').textContent = debug;
+                }
             }
 
             // ===== INTERACTIVE FEATURES =====
