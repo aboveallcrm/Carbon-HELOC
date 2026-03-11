@@ -1014,10 +1014,79 @@ RESPONSE RULES
     // ============================================
     // CONFIGURATION
     // ============================================
+    // ============================================
+    // AUTOMATED FOLLOW-UP SEQUENCES
+    // ============================================
+    const FOLLOW_UP_SEQUENCES = {
+        new_lead: [
+            {
+                delay: 0, // Immediate
+                channel: 'sms',
+                subject: null,
+                message: "Hi {{clientName}}! This is {{loName}} from {{company}}. I just prepared your personalized HELOC quote. Check it out here: {{quoteLink}} - Ezra, my AI assistant, can answer any questions 24/7. Talk soon!"
+            },
+            {
+                delay: 24 * 60 * 60 * 1000, // 24 hours
+                channel: 'email',
+                subject: 'Your HELOC Quote + 3 Ways to Use Your Equity',
+                message: "Hi {{clientName}},<br><br>I wanted to follow up on the HELOC quote I prepared for you. Here are 3 popular ways homeowners are using their ${{cashBack}} in available equity:<br><br>1. <strong>Debt Consolidation</strong> - Save ${{monthlySavings}}/month vs credit cards<br>2. <strong>Home Improvements</strong> - 75% average ROI<br>3. <strong>Emergency Fund</strong> - Only pay when you use it<br><br>Questions? Just reply or call me at {{loPhone}}.<br><br>Best,<br>{{loName}}"
+            },
+            {
+                delay: 3 * 24 * 60 * 60 * 1000, // 3 days
+                channel: 'sms',
+                subject: null,
+                message: "{{clientName}}, rates change daily. Your {{rate}}% rate is locked for 45 days. Want to discuss your options? Call/text {{loPhone}} or apply here: {{applyLink}} -{{loName}}"
+            },
+            {
+                delay: 7 * 24 * 60 * 60 * 1000, // 7 days
+                channel: 'email',
+                subject: 'Last chance: Your HELOC quote expires soon',
+                message: "Hi {{clientName}},<br><br>Your HELOC pre-qualification expires in 7 days. Based on your profile, you're approved for up to ${{cashBack}} at {{rate}}%.<br><br><strong>What happens next?</strong><br>1. Apply online (5 minutes)<br>2. Upload documents<br>3. Close in 14-21 days<br><br>Questions? I'm here to help.<br><br>{{loName}}<br>{{loPhone}} | {{loEmail}}"
+            }
+        ],
+        quote_viewed: [
+            {
+                delay: 2 * 60 * 60 * 1000, // 2 hours after viewing
+                channel: 'sms',
+                subject: null,
+                message: "Hi {{clientName}}! I saw you checked out your HELOC quote. Any questions I can answer? I'm here to help! -{{loName}} {{loPhone}}"
+            },
+            {
+                delay: 24 * 60 * 60 * 1000, // 24 hours
+                channel: 'email',
+                subject: 'Quick question about your HELOC quote',
+                message: "Hi {{clientName}},<br><br>I noticed you viewed your HELOC quote yesterday. I wanted to personally reach out and see if you have any questions.<br><br>Most borrowers ask about:<br>• How the rate compares to their current debt<br>• Tax benefits of HELOC interest<br>• How quickly they can access funds<br><br>I'm here to help! Just reply or call {{loPhone}}.<br><br>Best,<br>{{loName}}"
+            }
+        ],
+        application_started: [
+            {
+                delay: 0, // Immediate
+                channel: 'email',
+                subject: 'Your application is in progress!',
+                message: "Hi {{clientName}},<br><br>Great news! I've received your HELOC application. Here's what happens next:<br><br><strong>Step 1:</strong> Document review (1-2 business days)<br><strong>Step 2:</strong> Property appraisal ordered<br><strong>Step 3:</strong> Final approval & closing<br><br>Need to upload documents? Use our secure portal: {{portalLink}}<br><br>Questions? Call me anytime at {{loPhone}}.<br><br>{{loName}}"
+            },
+            {
+                delay: 48 * 60 * 60 * 1000, // 48 hours
+                channel: 'sms',
+                subject: null,
+                message: "{{clientName}}, just checking in on your application. Need help with any documents? I'm here to make this easy. Call/text {{loPhone}} -{{loName}}"
+            }
+        ],
+        no_activity: [
+            {
+                delay: 14 * 24 * 60 * 60 * 1000, // 14 days
+                channel: 'email',
+                subject: 'Still interested in accessing your home equity?',
+                message: "Hi {{clientName}},<br><br>I haven't heard from you in a couple weeks. I know life gets busy!<br><br>If you're still considering a HELOC, I'd love to chat. If the timing isn't right, I completely understand - just reply and let me know.<br><br>Your quote is still valid for 30 more days.<br><br>Best,<br>{{loName}}<br>{{loPhone}}"
+            }
+        ]
+    };
+
     const EZRA_CONFIG = {
         widgetTitle: 'Ezra — AI Loan Structuring Assistant',
         placeholderText: 'Ask Ezra anything...',
         quickCommands: [
+            { label: 'Quick Quote', icon: '🚀', action: 'quick_quote_wizard', prompt: '' },
             { label: 'Build Quote', icon: '💰', action: 'build_quote', prompt: 'Ezra build a quote for this borrower' },
             { label: 'Structure Deal', icon: '🏗️', action: 'structure_deal', prompt: 'Ezra structure this deal' },
             { label: 'Recommend Program', icon: '🎯', action: 'recommend_program', prompt: 'Which HELOC program is best for this borrower?' },
@@ -1025,7 +1094,13 @@ RESPONSE RULES
             { label: 'Tier 2', icon: '2️⃣', action: 'tier2', prompt: 'Go with tier 2' },
             { label: 'Tier 3', icon: '3️⃣', action: 'tier3', prompt: 'Go with tier 3' },
             { label: 'Handle Objection', icon: '🛡️', action: 'handle_objection', prompt: 'How do I handle common HELOC objections?' },
-            { label: 'Client Script', icon: '📝', action: 'client_script', prompt: 'How should I explain this HELOC to my client?' }
+            { label: 'Client Script', icon: '📝', action: 'client_script', prompt: 'How should I explain this HELOC to my client?' },
+            { label: 'Narrate Quote', icon: '🗣️', action: 'narrate_quote', prompt: 'Explain this quote in plain English for the client' },
+            { label: 'Draft Message', icon: '✉️', action: 'draft_message', prompt: 'Draft a personalized SMS and email for this client' },
+            { label: 'Compare Scenarios', icon: '⚖️', action: 'compare_scenarios', prompt: 'Compare the different rate and term scenarios in plain English' },
+            { label: 'Lead Briefing', icon: '📋', action: 'lead_briefing', prompt: '' },
+            { label: 'Compliance Check', icon: '⚠️', action: 'compliance_check', prompt: '' },
+            { label: 'Predict Questions', icon: '❓', action: 'predict_questions', prompt: 'What questions will my client likely ask about this quote?' }
         ],
         models: {
             gemini: { name: 'Fast', color: '#4285f4', desc: 'Quick answers & simple questions' },
@@ -1051,7 +1126,8 @@ RESPONSE RULES
         supabase: null,
         user: null,
         dealRadarData: null,
-        activeTab: 'chat' // 'chat' | 'deal-radar'
+        activeTab: 'chat', // 'chat' | 'deal-radar'
+        _pendingComplianceCheck: false
     };
 
     // ============================================
@@ -1121,6 +1197,9 @@ RESPONSE RULES
         loadUserPreferences();
 
         console.log('Ezra: Initialized successfully');
+        
+        // Check for new users and show onboarding
+        setTimeout(showOnboardingIfNew, 1000);
     }
 
     async function checkAuthState() {
@@ -1165,6 +1244,7 @@ RESPONSE RULES
                         </div>
                     </div>
                     <div class="ezra-header-actions">
+                        <button id="ezra-position-btn" class="ezra-icon-btn" title="Move Widget">\u2726</button>
                         <button id="ezra-model-selector" class="ezra-model-btn" title="AI Mode">
                             <span class="ezra-model-name">Fast</span>
                         </button>
@@ -1186,7 +1266,7 @@ RESPONSE RULES
 
                 <!-- Messages Area -->
                 <div id="ezra-messages" class="ezra-messages">
-                    <div class="ezra-welcome">
+                    <div class="ezra-welcome" id="ezra-welcome">
                         <div class="ezra-welcome-icon">\u2726</div>
                         <h3>Hello, I'm Ezra</h3>
                         <p>Your AI loan structuring co-pilot.</p>
@@ -1195,6 +1275,14 @@ RESPONSE RULES
                             <div class="ezra-welcome-cap"><span>\u2726</span> Structure deals instantly</div>
                             <div class="ezra-welcome-cap"><span>\u2726</span> Recommend best program</div>
                             <div class="ezra-welcome-cap"><span>\u2726</span> Client scripts & coaching</div>
+                        </div>
+                        <!-- Onboarding Section for First-Time Users -->
+                        <div class="ezra-onboarding" id="ezra-onboarding" style="display:none;">
+                            <div class="ezra-onboarding-title">\ud83c\udf1f New here? Let me help you create your first quote!</div>
+                            <button class="ezra-onboarding-btn" onclick="window.ezraStartOnboarding()">
+                                <span>\ud83d\ude80</span> Start Quick Quote Wizard
+                            </button>
+                            <div class="ezra-onboarding-hint">Or just type naturally: "$800k home, $400k mortgage, need $100k cash"</div>
                         </div>
                     </div>
                 </div>
@@ -1274,6 +1362,32 @@ RESPONSE RULES
                     </div>
                 </div>
             </div>
+
+            <!-- Position Selector Modal -->
+            <div id="ezra-position-modal" class="ezra-modal" style="display: none;">
+                <div class="ezra-modal-content">
+                    <h4>Move Ezra</h4>
+                    <p style="font-size:12px;color:var(--ezra-text-muted);margin-bottom:12px;">Choose a corner or drag the orb anywhere</p>
+                    <div class="ezra-position-options">
+                        <button class="ezra-position-option" data-pos="bottom-right">
+                            <span class="ezra-pos-icon">\u2198</span>
+                            <span>Bottom Right</span>
+                        </button>
+                        <button class="ezra-position-option" data-pos="bottom-left">
+                            <span class="ezra-pos-icon">\u2199</span>
+                            <span>Bottom Left</span>
+                        </button>
+                        <button class="ezra-position-option" data-pos="top-right">
+                            <span class="ezra-pos-icon">\u2197</span>
+                            <span>Top Right</span>
+                        </button>
+                        <button class="ezra-position-option" data-pos="top-left">
+                            <span class="ezra-pos-icon">\u2196</span>
+                            <span>Top Left</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
         `;
 
         document.body.appendChild(widget);
@@ -1323,7 +1437,7 @@ RESPONSE RULES
                 height: 64px;
                 border-radius: 50%;
                 border: none;
-                cursor: pointer;
+                cursor: grab;
                 background: 
                     radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4) 0%, transparent 50%),
                     linear-gradient(135deg, #c5a059 0%, #d4af37 25%, #f0d878 50%, #d4af37 75%, #c5a059 100%);
@@ -1341,9 +1455,23 @@ RESPONSE RULES
                     0 8px 32px rgba(0,0,0,0.4),
                     inset 0 2px 4px rgba(255,255,255,0.3),
                     inset 0 -2px 4px rgba(0,0,0,0.2);
-                transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+                transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease;
                 z-index: 2;
                 animation: ezra-orb-shimmer 3s ease-in-out infinite, ezra-orb-float 4s ease-in-out infinite;
+                user-select: none;
+                touch-action: none;
+            }
+
+            .ezra-orb.dragging {
+                cursor: grabbing;
+                animation: none;
+                transform: scale(1.15);
+                box-shadow:
+                    0 0 50px rgba(212,175,55,0.9),
+                    0 0 100px rgba(212,175,55,0.5),
+                    0 0 160px rgba(212,175,55,0.25),
+                    0 20px 60px rgba(0,0,0,0.5);
+                transition: none;
             }
 
             .ezra-orb:hover {
@@ -1847,6 +1975,57 @@ RESPONSE RULES
                 color: var(--ezra-gold);
                 font-size: 12px;
                 filter: drop-shadow(0 0 4px rgba(212,175,55,0.5));
+            }
+
+            /* Onboarding Section */
+            .ezra-onboarding {
+                margin-top: 20px;
+                padding: 16px;
+                background: linear-gradient(135deg, rgba(197,160,89,0.15) 0%, rgba(197,160,89,0.05) 100%);
+                border: 1px solid rgba(197,160,89,0.3);
+                border-radius: 12px;
+                text-align: center;
+                animation: ezra-onboarding-pulse 3s ease-in-out infinite;
+            }
+
+            @keyframes ezra-onboarding-pulse {
+                0%, 100% { box-shadow: 0 0 0 0 rgba(197,160,89,0.2); }
+                50% { box-shadow: 0 0 20px 5px rgba(197,160,89,0.1); }
+            }
+
+            .ezra-onboarding-title {
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--ezra-gold);
+                margin-bottom: 12px;
+            }
+
+            .ezra-onboarding-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 12px 24px;
+                background: linear-gradient(135deg, var(--ezra-gold), var(--ezra-gold-bright));
+                color: #0f172a;
+                border: none;
+                border-radius: 25px;
+                font-size: 14px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(197,160,89,0.3);
+            }
+
+            .ezra-onboarding-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(197,160,89,0.4);
+            }
+
+            .ezra-onboarding-hint {
+                margin-top: 12px;
+                font-size: 11px;
+                color: var(--ezra-text-muted);
+                font-style: italic;
             }
 
             /* Message Bubbles - Enhanced */
@@ -2353,6 +2532,38 @@ RESPONSE RULES
                 color: var(--ezra-text-muted);
             }
 
+            /* ===== POSITION SELECTOR ===== */
+            .ezra-position-options {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .ezra-position-option {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+                padding: 16px 12px;
+                border: 1px solid rgba(255,255,255,0.08);
+                border-radius: var(--ezra-radius-sm);
+                background: rgba(255,255,255,0.03);
+                cursor: pointer;
+                transition: all 0.2s;
+                color: var(--ezra-text);
+                font-size: 12px;
+            }
+
+            .ezra-position-option:hover {
+                background: rgba(197,160,89,0.1);
+                border-color: rgba(197,160,89,0.3);
+            }
+
+            .ezra-pos-icon {
+                font-size: 24px;
+                color: var(--ezra-gold);
+            }
+
             /* ===== DEAL RADAR (dark theme) ===== */
             .ezra-deal-radar {
                 padding: 16px;
@@ -2621,6 +2832,9 @@ RESPONSE RULES
         // Toggle button
         document.getElementById('ezra-orb')?.addEventListener('click', toggleWidget);
 
+        // Drag functionality
+        initDragFunctionality();
+
         // Close button
         document.getElementById('ezra-close')?.addEventListener('click', closeWidget);
 
@@ -2632,6 +2846,9 @@ RESPONSE RULES
 
         // Model selector
         document.getElementById('ezra-model-selector')?.addEventListener('click', showModelModal);
+
+        // Position selector
+        document.getElementById('ezra-position-btn')?.addEventListener('click', showPositionModal);
 
         // Send button
         document.getElementById('ezra-send')?.addEventListener('click', sendMessage);
@@ -2673,6 +2890,153 @@ RESPONSE RULES
 
         // Voice input button
         document.getElementById('ezra-voice')?.addEventListener('click', toggleVoiceInput);
+
+        // Position selection
+        document.querySelectorAll('.ezra-position-option').forEach(btn => {
+            btn.addEventListener('click', () => moveWidgetToPosition(btn.dataset.pos));
+        });
+
+        // Close position modal on outside click
+        document.getElementById('ezra-position-modal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'ezra-position-modal') {
+                hidePositionModal();
+            }
+        });
+    }
+
+    // ============================================
+    // WIDGET POSITION & DRAG
+    // ============================================
+    function initDragFunctionality() {
+        const orb = document.getElementById('ezra-orb');
+        const widget = document.getElementById('ezra-widget');
+        if (!orb || !widget) return;
+
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
+        let dragThreshold = 5;
+
+        // Load saved position
+        const savedPos = localStorage.getItem('ezraWidgetPosition');
+        if (savedPos) {
+            const pos = JSON.parse(savedPos);
+            if (pos.custom) {
+                widget.style.left = pos.x + 'px';
+                widget.style.right = 'auto';
+                widget.style.bottom = 'auto';
+                widget.style.top = pos.y + 'px';
+            }
+        }
+
+        function onMouseDown(e) {
+            isDragging = false;
+            startX = e.clientX || (e.touches && e.touches[0].clientX);
+            startY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            const rect = widget.getBoundingClientRect();
+            startLeft = rect.left;
+            startTop = rect.top;
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+            document.addEventListener('touchmove', onTouchMove, { passive: false });
+            document.addEventListener('touchend', onMouseUp);
+        }
+
+        function onMouseMove(e) {
+            const clientX = e.clientX;
+            const clientY = e.clientY;
+            const dx = clientX - startX;
+            const dy = clientY - startY;
+
+            if (!isDragging && (Math.abs(dx) > dragThreshold || Math.abs(dy) > dragThreshold)) {
+                isDragging = true;
+                orb.classList.add('dragging');
+            }
+
+            if (isDragging) {
+                e.preventDefault();
+                const newLeft = Math.max(0, Math.min(window.innerWidth - 64, startLeft + dx));
+                const newTop = Math.max(0, Math.min(window.innerHeight - 64, startTop + dy));
+                
+                widget.style.left = newLeft + 'px';
+                widget.style.top = newTop + 'px';
+                widget.style.right = 'auto';
+                widget.style.bottom = 'auto';
+            }
+        }
+
+        function onTouchMove(e) {
+            if (e.touches && e.touches[0]) {
+                onMouseMove({
+                    clientX: e.touches[0].clientX,
+                    clientY: e.touches[0].clientY,
+                    preventDefault: () => e.preventDefault()
+                });
+            }
+        }
+
+        function onMouseUp() {
+            if (isDragging) {
+                orb.classList.remove('dragging');
+                // Save position
+                const rect = widget.getBoundingClientRect();
+                localStorage.setItem('ezraWidgetPosition', JSON.stringify({
+                    custom: true,
+                    x: rect.left,
+                    y: rect.top
+                }));
+            }
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onMouseUp);
+        }
+
+        orb.addEventListener('mousedown', onMouseDown);
+        orb.addEventListener('touchstart', onMouseDown, { passive: true });
+    }
+
+    function showPositionModal() {
+        const modal = document.getElementById('ezra-position-modal');
+        if (modal) modal.style.display = 'flex';
+    }
+
+    function hidePositionModal() {
+        const modal = document.getElementById('ezra-position-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function moveWidgetToPosition(position) {
+        const widget = document.getElementById('ezra-widget');
+        if (!widget) return;
+
+        // Clear inline styles
+        widget.style.left = widget.style.top = widget.style.right = widget.style.bottom = '';
+
+        // Apply position
+        switch (position) {
+            case 'bottom-right':
+                widget.style.right = '28px';
+                widget.style.bottom = '28px';
+                break;
+            case 'bottom-left':
+                widget.style.left = '28px';
+                widget.style.bottom = '28px';
+                break;
+            case 'top-right':
+                widget.style.right = '28px';
+                widget.style.top = '28px';
+                break;
+            case 'top-left':
+                widget.style.left = '28px';
+                widget.style.top = '28px';
+                break;
+        }
+
+        // Save preference
+        localStorage.setItem('ezraWidgetPosition', JSON.stringify({ position }));
+        hidePositionModal();
     }
 
     // ============================================
@@ -2767,10 +3131,20 @@ RESPONSE RULES
 
         _voiceRecognition.onresult = (event) => {
             let interim = '';
+            let newFinalText = '';
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 const transcript = event.results[i][0].transcript;
                 if (event.results[i].isFinal) {
+                    newFinalText += (newFinalText ? ' ' : '') + transcript;
                     finalTranscript += (finalTranscript.length > startLength ? ' ' : '') + transcript;
+                    
+                    // Check for voice-to-quote command
+                    if (window.processVoiceToQuote && window.processVoiceToQuote(transcript)) {
+                        // Quote command detected and processed, clear input
+                        stopVoiceInput();
+                        if (input) input.value = '';
+                        return;
+                    }
                 } else {
                     interim += transcript;
                 }
@@ -2812,6 +3186,189 @@ RESPONSE RULES
         if (voiceBtn) voiceBtn.classList.remove('recording');
         if (input) input.placeholder = EZRA_CONFIG.placeholderText;
     }
+
+    // ============================================
+    // VOICE-TO-QUOTE - Auto-fill from voice dictation
+    // ============================================
+    function initVoiceToQuote() {
+        // Add special voice command handler
+        const originalOnResult = _voiceRecognition?.onresult;
+        
+        window.processVoiceToQuote = function(transcript) {
+            const lower = transcript.toLowerCase();
+            
+            // Check if this is a "create quote" command
+            const isQuoteCommand = /create quote|new quote|build quote|start quote|client|borrower/i.test(lower);
+            
+            if (!isQuoteCommand) return false;
+            
+            // Parse the dictation
+            const parsed = parseVoiceQuoteCommand(transcript);
+            
+            if (parsed.hasData) {
+                // Show confirmation before auto-filling
+                showVoiceQuoteConfirmation(parsed);
+                return true;
+            }
+            
+            return false;
+        };
+    }
+
+    function parseVoiceQuoteCommand(transcript) {
+        const result = {
+            hasData: false,
+            clientName: null,
+            creditScore: null,
+            homeValue: 0,
+            mortgageBalance: 0,
+            helocAmount: 0,
+            occupancy: 'Primary Residence',
+            raw: transcript
+        };
+        
+        // Parse name - handles various patterns
+        const namePatterns = [
+            /client\s+(?:is\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i,
+            /borrower\s+(?:is\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i,
+            /for\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i,
+            /name\s+(?:is\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i
+        ];
+        
+        for (const pattern of namePatterns) {
+            const match = transcript.match(pattern);
+            if (match) {
+                result.clientName = match[1];
+                break;
+            }
+        }
+        
+        // Parse dollar amounts with context
+        // Property value patterns
+        const propMatch = transcript.match(/\$?([\d,.]+)\s*(k|K|m|M)?\s*(?:property|home|house|value|worth)/i);
+        if (propMatch) {
+            result.homeValue = parseAmount(propMatch[1], propMatch[2]);
+        }
+        
+        // Mortgage balance patterns
+        const mortPatterns = [
+            /(?:mortgage|owe|balance|1st)\s+(?:is\s+)?\$?([\d,.]+)\s*(k|K|m|M)?/i,
+            /\$?([\d,.]+)\s*(k|K|m|M)?\s*(?:mortgage|owe|balance)/i
+        ];
+        for (const pattern of mortPatterns) {
+            const match = transcript.match(pattern);
+            if (match) {
+                result.mortgageBalance = parseAmount(match[1], match[2]);
+                break;
+            }
+        }
+        
+        // HELOC/cash amount patterns
+        const cashPatterns = [
+            /(?:wants?|needs?|looking for|requesting|cash|equity|heloc|draw)\s+(?:of\s+)?\$?([\d,.]+)\s*(k|K|m|M)?/i,
+            /\$?([\d,.]+)\s*(k|K|m|M)?\s*(?:cash|equity|heloc|draw)/i
+        ];
+        for (const pattern of cashPatterns) {
+            const match = transcript.match(pattern);
+            if (match) {
+                result.helocAmount = parseAmount(match[1], match[2]);
+                break;
+            }
+        }
+        
+        // Credit score
+        const scoreMatch = transcript.match(/(\d{3})\s*(?:score|credit|fico)/i);
+        if (scoreMatch) {
+            result.creditScore = scoreMatch[1];
+        }
+        
+        // Occupancy
+        if (/investment/i.test(transcript)) {
+            result.occupancy = 'Investment Property';
+        } else if (/second home|vacation/i.test(transcript)) {
+            result.occupancy = 'Second Home';
+        }
+        
+        result.hasData = result.clientName || result.homeValue > 0 || result.helocAmount > 0;
+        return result;
+    }
+
+    function parseAmount(numberStr, suffix) {
+        let val = parseFloat(numberStr.replace(/,/g, ''));
+        if (suffix) {
+            if (suffix.toLowerCase() === 'k') val *= 1000;
+            if (suffix.toLowerCase() === 'm') val *= 1000000;
+        }
+        return val;
+    }
+
+    function showVoiceQuoteConfirmation(parsed) {
+        const summary = [];
+        if (parsed.clientName) summary.push(`<strong>Client:</strong> ${parsed.clientName}`);
+        if (parsed.homeValue) summary.push(`<strong>Property Value:</strong> $${parsed.homeValue.toLocaleString()}`);
+        if (parsed.mortgageBalance) summary.push(`<strong>Mortgage Balance:</strong> $${parsed.mortgageBalance.toLocaleString()}`);
+        if (parsed.helocAmount) summary.push(`<strong>HELOC Amount:</strong> $${parsed.helocAmount.toLocaleString()}`);
+        if (parsed.creditScore) summary.push(`<strong>Credit Score:</strong> ${parsed.creditScore}`);
+        
+        addMessage('assistant', `
+\ud83c\udfa4 **Voice Quote Detected**
+
+I heard:
+${summary.join('\n')}
+
+Would you like me to fill in the quote form with these details?`, { model: 'local' });
+
+        // Add quick action buttons
+        setTimeout(() => {
+            const btnDiv = document.createElement('div');
+            btnDiv.style.cssText = 'padding:4px 12px 12px;text-align:center;';
+            btnDiv.innerHTML = `
+                <button onclick="window.applyVoiceQuoteData()" style="background:linear-gradient(135deg,#c5a059,#a68543);color:#0f172a;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;margin-right:8px;">\u2705 Yes, Fill Form</button>
+                <button onclick="window.discardVoiceQuote()" style="background:rgba(255,255,255,0.1);color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer;">\u274c No, Cancel</button>
+            `;
+            document.getElementById('ezra-messages').appendChild(btnDiv);
+            document.getElementById('ezra-messages').scrollTop = document.getElementById('ezra-messages').scrollHeight;
+        }, 100);
+        
+        // Store for later application
+        window._pendingVoiceQuote = parsed;
+    }
+
+    window.applyVoiceQuoteData = function() {
+        const data = window._pendingVoiceQuote;
+        if (!data) return;
+        
+        function setField(id, value) {
+            const field = document.getElementById(id);
+            if (!field || !value) return;
+            field.value = value;
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            field.style.transition = 'background 0.3s';
+            field.style.background = '#dcfce7';
+            setTimeout(() => field.style.background = '', 1500);
+        }
+        
+        if (data.clientName) setField('in-client-name', data.clientName);
+        if (data.creditScore) setField('in-client-credit', data.creditScore);
+        if (data.homeValue) setField('in-home-value', data.homeValue);
+        if (data.mortgageBalance) setField('in-mortgage-balance', data.mortgageBalance);
+        if (data.helocAmount) setField('in-net-cash', data.helocAmount);
+        if (data.occupancy) setField('in-property-type', data.occupancy);
+        
+        // Trigger calculations
+        if (typeof updateQuote === 'function') setTimeout(updateQuote, 100);
+        if (typeof autoSave === 'function') setTimeout(autoSave, 300);
+        
+        addMessage('assistant', '\u2705 **Quote form filled!** I\'ve populated the fields with the details you dictated. You can now add rates or generate the client link.', { model: 'local' });
+        
+        window._pendingVoiceQuote = null;
+    };
+
+    window.discardVoiceQuote = function() {
+        window._pendingVoiceQuote = null;
+        addMessage('assistant', 'Quote data discarded. What would you like to do instead?', { model: 'local' });
+    };
 
     // ============================================
     // WIDGET CONTROLS
@@ -2883,6 +3440,17 @@ RESPONSE RULES
 
         // Add user message
         addMessage('user', message);
+
+        // Check if we're in onboarding mode
+        if (EzraState.onboardingStep && EzraState.onboardingStep > 0) {
+            showTypingIndicator();
+            const onboardingResponse = processOnboardingStep(message);
+            hideTypingIndicator();
+            if (onboardingResponse) {
+                addMessage('assistant', onboardingResponse, { model: 'local' });
+                return;
+            }
+        }
 
         // Show typing indicator
         showTypingIndicator();
@@ -2976,6 +3544,30 @@ RESPONSE RULES
     function handleQuickCommand(action) {
         if (action === 'deal_radar') {
             showDealRadar();
+            return;
+        }
+
+        // Lead briefing — runs directly (async, fetches from DB)
+        if (action === 'lead_briefing') {
+            runLeadBriefing();
+            return;
+        }
+
+        // Compliance check — opens inline prompt for message text
+        if (action === 'compliance_check') {
+            const input = document.getElementById('ezra-input');
+            input.value = '';
+            input.placeholder = 'Paste the message you want to compliance-check...';
+            input.focus();
+            addMessage('assistant', '**Compliance Guardrails**\n\nPaste the SMS or email text you want me to review. I\'ll check for TILA/RESPA red flags, missing disclosures, and risky language before you send it.');
+            // Set a flag so the next message gets routed to compliance
+            EzraState._pendingComplianceCheck = true;
+            return;
+        }
+
+        // Handle Quick Quote Wizard
+        if (action === 'quick_quote_wizard') {
+            window.ezraStartOnboarding();
             return;
         }
 
@@ -3247,6 +3839,18 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
     // AI ROUTING (Task 3)
     // ============================================
     async function routeToAI(message) {
+        // Compliance check intercept — if user just pasted text to review
+        if (EzraState._pendingComplianceCheck) {
+            EzraState._pendingComplianceCheck = false;
+            // Reset placeholder
+            const input = document.getElementById('ezra-input');
+            if (input) input.placeholder = EZRA_CONFIG.placeholderText;
+            return {
+                content: runComplianceCheck(message),
+                metadata: { model: 'local', intent: 'compliance_check' }
+            };
+        }
+
         // Check for pasted lender portal data FIRST (Figure, etc.) — most specific
         const portalData = parseLenderPortalData(message);
         if (portalData) {
@@ -3459,6 +4063,38 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
 
         // Fall back to AI service for non-command queries
         const intent = determineIntent(message);
+
+        // ── LOCAL-ONLY INTELLIGENCE FEATURES (no API cost) ──
+        const ctx = getFormContext();
+        const localIntents = {
+            quote_narrator: () => narrateQuote(ctx),
+            draft_message: () => generateMessageDrafts(ctx),
+            scenario_comparison: () => compareScenarios(ctx),
+            question_predictor: () => predictClientQuestions(ctx),
+            compliance_check: () => runComplianceCheck(message)
+        };
+
+        if (localIntents[intent]) {
+            return { content: localIntents[intent](), metadata: { model: 'local', intent } };
+        }
+
+        // Follow-up coach and lead briefing are async (DB queries)
+        if (intent === 'followup_coach') {
+            const coachResult = await getFollowUpCoach();
+            return { content: coachResult, metadata: { model: 'local', intent } };
+        }
+        if (intent === 'lead_briefing') {
+            // Lead briefing handles its own messaging
+            await runLeadBriefing();
+            return null;
+        }
+
+        // Smart objection responses — use local when intent matches, enrich with quote data
+        if (intent === 'objection_handling') {
+            const objCtx = parseMessageContext(message, ctx);
+            return { content: getSmartObjectionResponse(message, objCtx), metadata: { model: 'local', intent } };
+        }
+
         let model = EzraState.currentModel;
 
         if (intent === 'deal_architect' || intent === 'quote_calculation' || intent === 'quote_creation') {
@@ -3766,9 +4402,37 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         if (/strategy|optimize|approval|probability/i.test(lower)) {
             return 'complex_strategy';
         }
-        // Objection handling
-        if (/objection|handle|respond|concern|pushback/i.test(lower)) {
+        // Objection handling (smart — context-aware)
+        if (/objection|handle|respond|concern|pushback|too high|too expensive|not sure|hesitat/i.test(lower)) {
             return 'objection_handling';
+        }
+        // Quote narrator — plain English summary
+        if (/narrate|narrator|plain english|explain.*quote|summarize.*quote|summary.*quote|break.*down.*quote/i.test(lower)) {
+            return 'quote_narrator';
+        }
+        // Follow-up timing coach
+        if (/follow.?up|when.*call|when.*text|when.*reach|timing|coach.*follow|re.?engage/i.test(lower)) {
+            return 'followup_coach';
+        }
+        // SMS/Email draft generator
+        if (/draft|write.*sms|write.*text|write.*email|compose.*message|message.*client|send.*text|send.*sms/i.test(lower)) {
+            return 'draft_message';
+        }
+        // Scenario comparison
+        if (/compare|scenario|what.*if|difference.*between|side.*by.*side|vs\b/i.test(lower)) {
+            return 'scenario_comparison';
+        }
+        // Lead briefing
+        if (/briefing|morning.*brief|lead.*digest|lead.*summary|hot.*leads|priority.*leads|daily.*brief/i.test(lower)) {
+            return 'lead_briefing';
+        }
+        // Compliance guardrails
+        if (/compliance|compliant|check.*message|review.*message|tila|respa|safe.*to.*send|risky.*language/i.test(lower)) {
+            return 'compliance_check';
+        }
+        // Client question predictor
+        if (/predict.*question|what.*will.*ask|client.*question|faq|anticipate|common.*question|likely.*ask/i.test(lower)) {
+            return 'question_predictor';
         }
         // Sales coach / explain to client
         if (/explain|script|say|tell|presentation|how.*present|how.*explain/i.test(lower)) {
@@ -4159,25 +4823,33 @@ Or tell me: "How should I present a $100K HELOC for debt consolidation?"`;
 **Step 5 — Offer Selection** — Borrower reviews structures, chooses best fit.
 **Step 6 — Final Approval & Closing** — Some loans fund in as little as 5 days.${hasData && ctx.helocAmount > 0 ? `\n\n**For ${ctx.clientName}'s Deal**\n• HELOC: ${fmt(ctx.helocAmount)} | CLTV: ${ctx.cltv}%\n• ${ctx.cltv <= 85 ? 'CLTV within guidelines — should move through underwriting smoothly.' : '⚠️ CLTV exceeds 85% — may require additional review.'}` : ''}`;
 
+        // ── NEW INTELLIGENCE SUITE RESPONSES ──
+        responses.quote_narrator = narrateQuote(ctx);
+        responses.draft_message = generateMessageDrafts(ctx);
+        responses.scenario_comparison = compareScenarios(ctx);
+        responses.compliance_check = '**Compliance Guardrails**\n\nPaste the SMS or email text you want me to review. I\'ll check for TILA/RESPA red flags, missing disclosures, and risky language.\n\n*Type or paste your message, then press Enter.*';
+        responses.question_predictor = predictClientQuestions(ctx);
+
         // ── SIMPLE CHAT ──
         responses.simple_chat = `I'm Ezra, your AI loan structuring co-pilot.${hasData ? `\n\n**Current Quote**: ${ctx.clientName !== 'Borrower' ? ctx.clientName + ' — ' : ''}${ctx.helocAmount > 0 ? fmt(ctx.helocAmount) + ' HELOC' : 'No amount set'}${ctx.homeValue > 0 ? ' | ' + fmt(ctx.homeValue) + ' property' : ''}${ctx.cltv > 0 ? ' | ' + ctx.cltv + '% CLTV' : ''}` : ''}
 
 Here's what I can do:
-• **Build Quote** — auto-fill quote from borrower data
-• **Structure Deal** — full deal analysis with recommendations
-• **Recommend Program** — best program for borrower's goal
-• **Calculate Payment** — run numbers on any scenario
-• **Handle Objections** — scripts for common concerns
-• **Client Scripts** — word-for-word presentation scripts
+• **Build Quote** — auto-fill from borrower data
+• **Structure Deal** — full deal analysis
+• **Recommend Program** — best fit for goals
+• **Handle Objections** — smart counters with real numbers
+• **Narrate Quote** — plain-English quote summary
+• **Draft Message** — personalized SMS & email
+• **Compare Scenarios** — side-by-side term comparison
+• **Lead Briefing** — your daily lead digest
+• **Compliance Check** — review messages before sending
+• **Predict Questions** — anticipate client FAQs
 
 **Quick Commands** — talk to me like a colleague:
 • "Go with tier 2" or "tier 1 at 30" — switch tiers/terms
 • "Change cash to $150K" — adjust any field
 • "Switch to interest only" — toggle IO mode
-• "Show me tier 3" — highlight a tier's rates
-• "More cash" / "Lower the rate" — quick adjustments
-• **Paste lender portal data** — I'll parse rates and fill all tiers
-• **Tell me rates per tier** — e.g., "For 4.99 orig, 30yr is 7.45..."
+• **Paste lender portal data** — auto-parse rates
 
 ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal"** or **"Build Quote"** for a full analysis.' : 'Enter borrower details in the quote form, then ask me to structure the deal.'}`;
 
@@ -4469,6 +5141,306 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
     }
 
     // ============================================
+    // EZRA INTELLIGENCE SUITE — 8 Smart Features
+    // ============================================
+
+    // ── FEATURE 1: Smart Objection Responses ──
+    function getSmartObjectionResponse(objectionText, ctx) {
+        const lower = (objectionText || '').toLowerCase();
+        const fmt = (n) => '$' + Number(n).toLocaleString();
+        const hasData = ctx.hasFormData && ctx.helocAmount > 0;
+        const bestRate = ctx.rates.fixed15 || ctx.rates.fixed30 || ctx.rates.fixed10 || 8.25;
+        const payment15 = hasData ? calcAmortizedPayment(ctx.helocAmount, bestRate, 15) : 0;
+        const payment30 = hasData ? calcAmortizedPayment(ctx.helocAmount, bestRate, 30) : 0;
+        const ioPayment = hasData ? calcInterestOnlyPayment(ctx.helocAmount, ctx.rates.var10 || bestRate) : 0;
+        const clientFirst = (ctx.clientName || 'Borrower').split(' ')[0];
+        const responses = [];
+
+        if (/rate|high|expensive|interest|too much/i.test(lower)) {
+            responses.push({
+                objection: '"The rate seems too high"',
+                response: hasData
+                    ? `"${clientFirst}, I hear you. At ${bestRate}%, your payment on ${fmt(ctx.helocAmount)} is ${fmt(payment30)}/mo on a 30-year — less than most car payments. Compare that to credit cards at 22-29%. Plus, a soft check lets you see offers with zero impact to your score."`
+                    : '"A HELOC at 8-9% is significantly lower than credit cards at 22%+. See your actual offers with just a soft credit check — no commitment."',
+                tip: 'Reframe against credit card rates. Anchor to the monthly payment, not the rate.'
+            });
+        }
+        if (/payment|afford|monthly|budget|cash flow/i.test(lower)) {
+            responses.push({
+                objection: '"The payment is too high"',
+                response: hasData
+                    ? `"${clientFirst}, we have flexibility. The 30-year at ${fmt(payment30)}/mo is the lowest fixed option. The variable program is ${fmt(ioPayment)}/mo interest-only during draw. Which fits your budget?"`
+                    : '"We offer structures from 5-year rapid payoff to 30-year low payment, plus interest-only variable options."',
+                tip: 'Offer the 30yr or IO variable as a lower-payment alternative.'
+            });
+        }
+        if (/wait|not.*now|think.*about|later|not ready|not sure/i.test(lower)) {
+            responses.push({
+                objection: '"I want to wait / I\'m not sure"',
+                response: hasData
+                    ? `"${clientFirst}, that's fine. At ${ctx.cltv}% CLTV, you have ${fmt(ctx.maxEquityAt85)} in accessible equity. A soft check today doesn't commit you — you'd just see what's available."`
+                    : '"A soft credit check has zero impact on your score and zero commitment. Just shows you what\'s available."',
+                tip: 'Create awareness of opportunity cost without pressure.'
+            });
+        }
+        if (/safe|trust|scam|legit|data|privacy|information/i.test(lower)) {
+            responses.push({
+                objection: '"Is my information safe?"',
+                response: '"Bank-grade security — same encryption as major financial institutions. We never sell your data. You maintain full control and see all options transparently."',
+                tip: 'Lead with institutional security. Emphasize borrower control.'
+            });
+        }
+        if (/refi|refinance|why.*not.*refi/i.test(lower)) {
+            responses.push({
+                objection: '"Why not just refinance?"',
+                response: hasData
+                    ? `"${clientFirst}, a refinance replaces your first mortgage — you'd give up your current rate on ${fmt(ctx.mortgageBalance)}. A HELOC accesses ${fmt(ctx.helocAmount)} without touching your first."`
+                    : '"A refinance replaces your entire first mortgage. A HELOC adds a second lien, so your first mortgage stays untouched."',
+                tip: 'Emphasize preserving their existing rate — #1 HELOC advantage.'
+            });
+        }
+        if (responses.length === 0) {
+            responses.push(
+                { objection: '"The rate seems too high"', response: hasData ? `"At ${bestRate}%, your ${fmt(ctx.helocAmount)} HELOC is ${fmt(payment15)}/mo on 15 years. Credit cards would cost ${fmt(Math.round(ctx.helocAmount * 0.24 / 12))}/mo at 24%."` : '"Compare a HELOC at 8-9% to credit cards at 22%+."', tip: 'Reframe against what they\'re already paying.' },
+                { objection: '"I need to think about it"', response: '"A soft check today — zero commitment, zero score impact — just shows you what\'s available."', tip: 'Remove friction.' },
+                { objection: '"My bank offered me a better deal"', response: hasData ? `"Compare side by side. Our ${bestRate}% on ${fmt(ctx.helocAmount)} comes with ${ctx.origFee}% origination. Does their offer include closing costs?"` : '"Bring their offer and let\'s compare total cost — rate, fees, draw period, and terms."', tip: 'Compare total cost, not just rate.' }
+            );
+        }
+
+        let output = '**Smart Objection Responses**\n';
+        if (hasData) output += `*For ${ctx.clientName} — ${fmt(ctx.helocAmount)} at ${bestRate}%*\n`;
+        output += '\n';
+        responses.forEach(r => { output += `**${r.objection}**\n${r.response}\n*Tip: ${r.tip}*\n\n---\n\n`; });
+        return output.trim();
+    }
+
+    // ── FEATURE 2: Quote Summary Narrator ──
+    function narrateQuote(ctx) {
+        const fmt = (n) => '$' + Number(n).toLocaleString();
+        if (!ctx.hasFormData || ctx.helocAmount <= 0) return '**Quote Narrator**\n\nNo quote data. Fill in the form first.';
+        const bestRate = ctx.rates.fixed15 || ctx.rates.fixed30 || ctx.rates.fixed10 || 8.25;
+        const p15 = calcAmortizedPayment(ctx.helocAmount, bestRate, 15);
+        const p30 = calcAmortizedPayment(ctx.helocAmount, bestRate, 30);
+        const pio = calcInterestOnlyPayment(ctx.helocAmount, ctx.rates.var10 || bestRate);
+        const ti15 = Math.round(p15 * 180 - ctx.helocAmount);
+        const ti30 = Math.round(p30 * 360 - ctx.helocAmount);
+        const eqPct = ctx.homeValue > 0 ? Math.round((1 - ctx.mortgageBalance / ctx.homeValue) * 100) : 0;
+        const cf = (ctx.clientName || 'Borrower').split(' ')[0];
+
+        let n = `**Quote Summary for ${ctx.clientName}**\n\n`;
+        n += `"${cf}, here's what this means in plain English:\n\n`;
+        n += `Your home is worth ${fmt(ctx.homeValue)}`;
+        if (ctx.mortgageBalance > 0) n += `, and you owe ${fmt(ctx.mortgageBalance)} — about ${eqPct}% equity built up`;
+        n += `.\n\nWe're looking at a ${fmt(ctx.helocAmount)} HELOC, bringing total borrowing to ${ctx.cltv}% of your home's value`;
+        n += ctx.cltv <= 85 ? ' — well within guidelines.\n\n' : ' — above the typical 85% max, so we may adjust.\n\n';
+        n += `**What does this cost?**\n`;
+        n += `• 15-year: ${fmt(p15)}/mo — paid in 15 years (${fmt(ti15)} total interest)\n`;
+        n += `• 30-year: ${fmt(p30)}/mo — lower payment, but ${fmt(ti30)} total interest\n`;
+        n += `• Variable IO: ${fmt(pio)}/mo during draw — lowest but no principal paydown\n\n`;
+        n += `**Bottom line:** `;
+        n += ctx.helocAmount <= 100000
+            ? `For less than ${fmt(Math.ceil(p15 / 10) * 10)}/mo, you unlock ${fmt(ctx.helocAmount)} in equity.`
+            : `You're accessing ${fmt(ctx.helocAmount)} with payments as low as ${fmt(p30)}/mo.`;
+        n += `"\n\n*Copy this script for your client conversation.*`;
+        return n;
+    }
+
+    // ── FEATURE 3: Follow-Up Timing Coach ──
+    async function getFollowUpCoach() {
+        let output = '**Follow-Up Timing Coach**\n\n';
+        let hotLeads = [], staleLeads = [], recentClicks = [];
+        if (EzraState.supabase && EzraState.user) {
+            try {
+                const [hotRes, clickRes, staleRes] = await Promise.all([
+                    EzraState.supabase.rpc('get_hot_leads', { score_threshold: 10, hours_window: 48 }).catch(() => ({ data: null })),
+                    EzraState.supabase.from('clicks').select('link_id, clicked_at, device_type, links!inner(short_code, lead_id)').eq('links.user_id', EzraState.user.id).gte('clicked_at', new Date(Date.now() - 86400000).toISOString()).order('clicked_at', { ascending: false }).limit(20).catch(() => ({ data: null })),
+                    EzraState.supabase.from('leads').select('id, first_name, last_name, email, updated_at, stage').eq('user_id', EzraState.user.id).lt('updated_at', new Date(Date.now() - 604800000).toISOString()).in('stage', ['new', 'contacted', 'nurturing']).order('updated_at', { ascending: true }).limit(10).catch(() => ({ data: null }))
+                ]);
+                hotLeads = hotRes?.data || []; recentClicks = clickRes?.data || []; staleLeads = staleRes?.data || [];
+            } catch (e) { console.warn('Ezra: Follow-up data fetch failed', e.message); }
+        }
+        if (hotLeads.length > 0) {
+            output += `**Hot Leads — Call NOW (${hotLeads.length})**\n`;
+            hotLeads.slice(0, 5).forEach(l => { output += `• **${[l.first_name, l.last_name].filter(Boolean).join(' ') || l.email || 'Unknown'}** — score: ${l.engagement_score || 'high'}\n`; });
+            output += '*Call immediately. They\'re actively thinking about this.*\n\n---\n\n';
+        } else output += '**Hot Leads** — None in the last 48 hours.\n\n';
+        if (recentClicks.length > 0) {
+            output += `**Quote Views Today (${recentClicks.length} clicks)**\n`;
+            const mob = recentClicks.filter(c => c.device_type === 'mobile').length;
+            if (mob > 0) output += `${mob} from mobile — text works best.\n`;
+            output += '\n---\n\n';
+        }
+        if (staleLeads.length > 0) {
+            output += `**Stale Leads — Re-Engage (${staleLeads.length})**\n`;
+            staleLeads.slice(0, 5).forEach(l => { const d = Math.round((Date.now() - new Date(l.updated_at).getTime()) / 86400000); output += `• **${[l.first_name, l.last_name].filter(Boolean).join(' ') || l.email || 'Unknown'}** — ${d} days silent\n`; });
+            output += '*Send a check-in text or fresh quote link.*\n\n---\n\n';
+        } else output += '**Stale Leads** — All leads have recent activity!\n\n';
+        output += '**Best Practices**\n• **3+ opens today** — Call NOW\n• **Opened 2-3 days ago** — Check-in text\n• **7+ days silent** — Re-send with fresh angle\n• **Mobile opens** — Text first, then call\n• **Best call times**: Tue-Thu, 10am-12pm or 4-6pm\n• **Best text times**: Mon-Wed, 9-11am or after 5pm';
+        return output;
+    }
+
+    // ── FEATURE 4: SMS/Email Draft Generator ──
+    function generateMessageDrafts(ctx) {
+        const fmt = (n) => '$' + Number(n).toLocaleString();
+        if (!ctx.hasFormData || ctx.helocAmount <= 0) return '**Message Drafts**\n\nFill in the quote form first.';
+        const bestRate = ctx.rates.fixed15 || ctx.rates.fixed30 || ctx.rates.fixed10 || 8.25;
+        const p30 = calcAmortizedPayment(ctx.helocAmount, bestRate, 30);
+        const p15 = calcAmortizedPayment(ctx.helocAmount, bestRate, 15);
+        let cf = (ctx.clientName || 'there').split(' ')[0];
+        if (cf === 'Borrower') cf = 'there';
+
+        let o = `**Personalized Messages for ${ctx.clientName}**\n\n`;
+        o += '**SMS 1 — Initial Outreach:**\n';
+        o += `"Hi ${cf}! I put together a HELOC comparison — you could access ${fmt(ctx.helocAmount)} in equity with payments as low as ${fmt(p30)}/mo. Want the details? No hard credit pull needed."\n\n`;
+        o += '**SMS 2 — Follow-Up:**\n';
+        o += `"Hey ${cf}, I ran the numbers on your equity. At ${bestRate}%, the 15-year is ${fmt(p15)}/mo and pays off in full. Quick call?"\n\n`;
+        o += '**SMS 3 — Re-Engagement:**\n';
+        o += `"Hi ${cf}! Rates have been moving — your ${fmt(ctx.helocAmount)} HELOC quote is still available. Want me to refresh the numbers?"\n\n---\n\n`;
+        o += '**Email Draft**\n\n';
+        o += `**Subject:** ${cf}, your HELOC options are ready\n\n`;
+        o += `Hi ${cf},\n\nI put together a personalized HELOC comparison. Quick snapshot:\n\n`;
+        o += `• **Equity access:** ${fmt(ctx.helocAmount)}\n• **Rate:** ${bestRate}% fixed\n`;
+        o += `• **Payment:** As low as ${fmt(p30)}/mo (30yr) or ${fmt(p15)}/mo (15yr)\n`;
+        if (ctx.cltv > 0) o += `• **CLTV:** ${ctx.cltv}% — ${ctx.cltv <= 85 ? 'within guidelines' : 'we can discuss'}\n`;
+        o += `\nView your offers with a **soft credit check** — no impact, no commitment.\n\nWould a quick 10-minute call work this week?\n\nBest,\n[Your Name]\n\n---\n\n*Ensure contact has opted in before sending SMS (TCPA).*`;
+        return o;
+    }
+
+    // ── FEATURE 5: Scenario Comparison ──
+    function compareScenarios(ctx) {
+        const fmt = (n) => '$' + Number(n).toLocaleString();
+        if (!ctx.hasFormData || ctx.helocAmount <= 0) return '**Scenario Comparison**\n\nFill in the quote form first.';
+        const r = ctx.rates.fixed15 || ctx.rates.fixed30 || ctx.rates.fixed10 || 8.25;
+        const vr = ctx.rates.var10 || r;
+        const p5 = calcAmortizedPayment(ctx.helocAmount, r, 5), p10 = calcAmortizedPayment(ctx.helocAmount, r, 10);
+        const p15 = calcAmortizedPayment(ctx.helocAmount, r, 15), p30 = calcAmortizedPayment(ctx.helocAmount, r, 30);
+        const pio = calcInterestOnlyPayment(ctx.helocAmount, vr);
+        const ti5 = Math.round(p5*60-ctx.helocAmount), ti10 = Math.round(p10*120-ctx.helocAmount);
+        const ti15 = Math.round(p15*180-ctx.helocAmount), ti30 = Math.round(p30*360-ctx.helocAmount);
+        const cf = (ctx.clientName || 'your client').split(' ')[0];
+
+        let o = `**Scenario Comparison — ${fmt(ctx.helocAmount)} at ${r}%**\n*For ${ctx.clientName}*\n\n`;
+        o += `**5-Year Fixed** — ${fmt(p5)}/mo\n"Fastest payoff. ${fmt(ti5)} total interest. Done in 5 years."\n\n`;
+        o += `**10-Year Fixed** — ${fmt(p10)}/mo\n"Solid middle ground. ${fmt(ti10)} total interest."\n\n`;
+        o += `**15-Year Fixed** — ${fmt(p15)}/mo\n"Most popular. ${fmt(p5-p15)} less than 5yr. ${fmt(ti15)} interest."\n\n`;
+        o += `**30-Year Fixed** — ${fmt(p30)}/mo\n"Lowest fixed at ${fmt(p30)}. But ${fmt(ti30)} total interest."\n\n`;
+        o += `**Variable IO** — ${fmt(pio)}/mo *(draw period)*\n"Interest-only. Cheapest monthly but no principal paydown."\n\n---\n\n`;
+        o += `**Key Trade-Offs:**\n`;
+        o += `• 30yr → 15yr: **saves ${fmt(ti30-ti15)}** interest, costs ${fmt(p15-p30)}/mo more\n`;
+        o += `• 15yr → 10yr: **saves ${fmt(ti15-ti10)}** more, adds ${fmt(p10-p15)}/mo\n`;
+        o += `• Variable IO is cheapest monthly but doesn't build equity\n`;
+        o += `\n*Present all options. Let ${cf} choose.*`;
+        return o;
+    }
+
+    // ── FEATURE 6: Lead Priority Briefing ──
+    async function runLeadBriefing() {
+        addMessage('user', 'Give me my lead briefing');
+        showTypingIndicator();
+        let output = '**Your Lead Briefing**\n\n';
+        const now = new Date();
+        output += `*${now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })} — ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}*\n\n`;
+
+        if (!EzraState.supabase || !EzraState.user) { hideTypingIndicator(); addMessage('assistant', output + 'Not authenticated.'); return; }
+        try {
+            const uid = EzraState.user.id;
+            const [newR, hotR, staleR, totalR] = await Promise.all([
+                EzraState.supabase.from('leads').select('id, first_name, last_name, email, source, created_at').eq('user_id', uid).gte('created_at', new Date(Date.now()-86400000).toISOString()).order('created_at', { ascending: false }),
+                EzraState.supabase.rpc('get_hot_leads', { score_threshold: 8, hours_window: 72 }).catch(() => ({ data: null })),
+                EzraState.supabase.from('leads').select('id, first_name, last_name, email, updated_at, stage').eq('user_id', uid).lt('updated_at', new Date(Date.now()-604800000).toISOString()).in('stage', ['new','contacted','nurturing']).order('updated_at', { ascending: true }).limit(10),
+                EzraState.supabase.from('leads').select('id', { count: 'exact', head: true }).eq('user_id', uid).in('stage', ['new','contacted','nurturing','qualified'])
+            ]);
+            const nl = newR.data||[], hl = hotR.data||[], sl = staleR.data||[], tot = totalR.count||0;
+            output += `**Pipeline:** ${tot} active leads\n\n`;
+            output += `**New (24h): ${nl.length}**\n`;
+            if (nl.length > 0) { nl.slice(0,5).forEach(l => { output += `• **${[l.first_name,l.last_name].filter(Boolean).join(' ')||l.email||'Unknown'}** — ${l.source||'manual'} at ${new Date(l.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}\n`; }); if (nl.length > 5) output += `  *(+${nl.length-5} more)*\n`; output += '*Reach out within the first hour.*\n'; } else output += 'None.\n';
+            output += '\n';
+            output += `**Hot (High Engagement): ${hl.length}**\n`;
+            if (hl.length > 0) { hl.slice(0,5).forEach(l => { output += `• **${[l.first_name,l.last_name].filter(Boolean).join(' ')||l.email||'Unknown'}** — score: ${l.engagement_score||'—'}\n`; }); output += '*Call or text today.*\n'; } else output += 'None right now.\n';
+            output += '\n';
+            output += `**Re-Engage: ${sl.length}**\n`;
+            if (sl.length > 0) { sl.slice(0,5).forEach(l => { const d = Math.round((Date.now()-new Date(l.updated_at).getTime())/86400000); output += `• **${[l.first_name,l.last_name].filter(Boolean).join(' ')||l.email||'Unknown'}** — ${d} days silent\n`; }); output += '*Send a check-in text.*\n'; } else output += 'All active!\n';
+            output += '\n---\n\n**Priorities:**\n';
+            let s = 1;
+            if (hl.length > 0) output += `${s++}. Call ${hl.length} hot lead(s)\n`;
+            if (nl.length > 0) output += `${s++}. Follow up with ${nl.length} new lead(s)\n`;
+            if (sl.length > 0) output += `${s++}. Re-engage ${Math.min(sl.length,3)} stale leads\n`;
+            if (s === 1) output += 'Pipeline quiet — great time to prospect.\n';
+        } catch (e) { output += `*Error: ${e.message}*`; }
+
+        hideTypingIndicator();
+        addMessage('assistant', output, { model: 'local', intent: 'lead_briefing' });
+        saveMessageToSupabase('user', 'Give me my lead briefing');
+        saveMessageToSupabase('assistant', output, { model: 'local' });
+    }
+
+    // ── FEATURE 7: Compliance Guardrails ──
+    function runComplianceCheck(messageText) {
+        const text = messageText || '', lower = text.toLowerCase();
+        const issues = [], warnings = [], passed = [];
+
+        if (/guarantee[d]?\s*(approval|approv|funding|loan|rate)/i.test(lower) || /100%\s*approv/i.test(lower))
+            issues.push({ rule: 'No Guaranteed Outcomes', detail: 'Never guarantee approval/funding/rates.', fix: 'Use "potential" or "you may qualify"' });
+        if (/\d+\.?\d*\s*%/.test(text) && !/apr|annual percentage|subject to|may vary|based on/i.test(lower))
+            warnings.push({ rule: 'Rate Disclosure', detail: 'Rate without qualification context.', fix: 'Add: "Rate for illustration. Actual depends on credit/LTV."' });
+        if (/no\s*(closing\s*)?fees|free\s*(loan|heloc|mortgage)|zero\s*cost/i.test(lower))
+            issues.push({ rule: 'Fee Disclosure', detail: '"No fees"/"free" is misleading.', fix: 'Be specific: "No application fee"' });
+        if (/no\s*credit\s*check|won\'?t\s*(check|pull|affect)\s*(your\s*)?credit/i.test(lower) && !/soft/i.test(lower))
+            issues.push({ rule: 'Credit Check Disclosure', detail: '"No credit check" is misleading.', fix: '"Soft credit check with no score impact"' });
+        if (/last\s*chance|act\s*now|offer\s*expires|limited\s*time|only\s*\d+\s*left|hurry/i.test(lower))
+            warnings.push({ rule: 'Pressure Tactics', detail: 'High-pressure urgency.', fix: '"Rates can change, locking in sooner is beneficial"' });
+        if (/no\s*(income|doc|documentation)\s*(needed|required|verification)/i.test(lower))
+            issues.push({ rule: 'Documentation Requirements', detail: '"No doc" is misleading.', fix: '"Streamlined digital income verification"' });
+        if (/worse\s*than|rip\s*off|scam|don\'?t\s*trust|avoid\s*(them|that|your\s*bank)/i.test(lower))
+            warnings.push({ rule: 'Competitor Disparagement', detail: 'Negative competitor language.', fix: 'Focus on your own value.' });
+        if (/tax\s*(deduct|benefit|write.?off|advantage|savings)/i.test(lower) && !/consult|advisor|accountant|may\s*be/i.test(lower))
+            warnings.push({ rule: 'Tax Advice Disclaimer', detail: 'Tax benefits without disclaimer.', fix: '"Consult your tax advisor"' });
+
+        if (/soft\s*(credit\s*)?check|soft\s*pull|no\s*impact/i.test(lower)) passed.push('Soft credit check mentioned');
+        if (/subject\s*to|may\s*vary|based\s*on/i.test(lower)) passed.push('Qualification language');
+        if (/no\s*(obligation|commitment)/i.test(lower)) passed.push('No obligation stated');
+        if (/consult|advisor/i.test(lower)) passed.push('Professional advice referenced');
+
+        let o = `**Compliance Check**\n\nReviewed ${text.length} characters.\n\n`;
+        if (!issues.length && !warnings.length) o += '**ALL CLEAR** — No issues.\n\n';
+        if (issues.length) { o += `**Issues (${issues.length})** — Fix before sending:\n\n`; issues.forEach((x,i) => { o += `${i+1}. **${x.rule}** — ${x.detail}\n   *Fix: ${x.fix}*\n\n`; }); }
+        if (warnings.length) { o += `**Warnings (${warnings.length})** — Consider revising:\n\n`; warnings.forEach((x,i) => { o += `${i+1}. **${x.rule}** — ${x.detail}\n   *Fix: ${x.fix}*\n\n`; }); }
+        if (passed.length) { o += '**Good Practices:**\n'; passed.forEach(p => { o += `• ${p}\n`; }); o += '\n'; }
+        o += issues.length ? `---\n\n**DO NOT SEND** — Fix ${issues.length} issue(s).` : warnings.length ? `---\n\n**REVIEW** — ${warnings.length} warning(s).` : '---\n\n**SAFE TO SEND**';
+        return o;
+    }
+
+    // ── FEATURE 8: Client Question Predictor ──
+    function predictClientQuestions(ctx) {
+        const fmt = (n) => '$' + Number(n).toLocaleString();
+        if (!ctx.hasFormData || ctx.helocAmount <= 0) return '**Question Predictor**\n\nBuild a quote first.';
+        const bestRate = ctx.rates.fixed15 || ctx.rates.fixed30 || ctx.rates.fixed10 || 8.25;
+        const p15 = calcAmortizedPayment(ctx.helocAmount, bestRate, 15);
+        const p30 = calcAmortizedPayment(ctx.helocAmount, bestRate, 30);
+        const ti30 = Math.round(p30 * 360 - ctx.helocAmount);
+        const cf = (ctx.clientName || 'the client').split(' ')[0];
+
+        let o = `**Predicted Questions for ${ctx.clientName}**\n*${fmt(ctx.helocAmount)} at ${bestRate}%, ${ctx.cltv}% CLTV*\n\n`;
+        const qs = [
+            { q: '"What\'s my monthly payment?"', a: `"30-year: ${fmt(p30)}/mo (lowest). 15-year: ${fmt(p15)}/mo (pays off faster)."`, l: 'Very High' },
+            { q: '"Will this hurt my credit?"', a: '"Soft pull only — zero score impact. Hard pull only if you proceed."', l: 'Very High' },
+            { q: '"How long does it take?"', a: '"AI underwriting + digital verification. Some fund in as little as 5 days."', l: 'High' },
+            { q: '"Can I pay it off early?"', a: `"Yes — no prepayment penalty. Extra ${fmt(Math.round(p30*0.25))}/mo on the 30yr shaves years off."`, l: 'High' },
+            { q: '"What if rates go up?"', a: `"Fixed locks you at ${bestRate}% for the full term. Won't change."`, l: 'Medium' },
+            { q: '"How much total?"', a: `"30yr: ${fmt(ti30)} total interest. 15yr: ${fmt(Math.round(p15*180-ctx.helocAmount))} — much less."`, l: 'Medium' }
+        ];
+        if (bestRate > 7) qs.splice(2, 0, { q: '"Can I get a lower rate?"', a: '"Higher origination tier = lower rate. I\'ll show you all three."', l: 'High' });
+        if (ctx.cltv > 75) qs.push({ q: '"Am I borrowing too much?"', a: `"${ctx.cltv}% CLTV — ${ctx.cltv <= 85 ? 'within guidelines' : 'near limit'}. ${fmt(ctx.homeValue-ctx.mortgageBalance-ctx.helocAmount)} equity untouched."`, l: 'Medium' });
+        if (ctx.helocAmount > 100000) qs.push({ q: `"Is ${fmt(ctx.helocAmount)} a lot?"`, a: `"Not for a ${fmt(ctx.homeValue)} property. HELOCs are the most cost-effective equity access."`, l: 'Medium' });
+
+        const ord = { 'Very High': 0, 'High': 1, 'Medium': 2 };
+        qs.sort((a, b) => ord[a.l] - ord[b.l]);
+        qs.forEach((q, i) => { o += `**${i+1}. ${q.q}** *(${q.l})*\n**Answer:** ${q.a}\n\n`; });
+        o += `---\n\n*Have these ready before calling ${cf}.*`;
+        return o;
+    }
+
+    // ============================================
     // UTILITY FUNCTIONS
     // ============================================
     function showToast(message, type = 'info') {
@@ -4516,6 +5488,194 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
     }
 
     // ============================================
+    // ONBOARDING & FIRST-TIME USER WIZARD
+    // ============================================
+    
+    // Check if user is new (no quotes created yet)
+    async function checkIfNewUser() {
+        if (!EzraState.supabase) return false;
+        try {
+            const { data: { session } } = await EzraState.supabase.auth.getSession();
+            if (!session?.user) return false;
+            
+            // Check if user has any quotes
+            const { data: quotes, error } = await EzraState.supabase
+                .from('quote_links')
+                .select('id')
+                .eq('user_id', session.user.id)
+                .limit(1);
+            
+            if (error) return false;
+            return !quotes || quotes.length === 0;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    // Show onboarding for new users
+    async function showOnboardingIfNew() {
+        const isNew = await checkIfNewUser();
+        const onboardingEl = document.getElementById('ezra-onboarding');
+        if (isNew && onboardingEl) {
+            onboardingEl.style.display = 'block';
+        }
+    }
+
+    // Start the onboarding wizard
+    window.ezraStartOnboarding = function() {
+        const messagesContainer = document.getElementById('ezra-messages');
+        const welcomeEl = document.getElementById('ezra-welcome');
+        
+        if (welcomeEl) welcomeEl.style.display = 'none';
+        
+        // Add onboarding message
+        addMessage('assistant', `
+\ud83d\ude80 **Welcome to Above All Carbon!**
+
+I'm Ezra, your AI loan structuring assistant. Let me help you create your first HELOC quote in just a few steps.
+
+**Step 1 of 4: Client Information**
+
+Tell me about your client. You can type naturally like:
+• "Client is John Smith, credit score 740"
+• "Borrower has $800k home, $400k mortgage, wants $100k cash"
+• "Primary residence, 780 FICO, need $150k"
+
+Or just paste what you know and I'll guide you!`, { model: 'local' });
+
+        // Set onboarding mode
+        EzraState.onboardingStep = 1;
+        EzraState.onboardingData = {};
+        
+        // Focus input
+        setTimeout(() => {
+            const input = document.getElementById('ezra-input');
+            if (input) {
+                input.placeholder = "Describe your client's situation...";
+                input.focus();
+            }
+        }, 100);
+    };
+
+    // Process onboarding step
+    function processOnboardingStep(message) {
+        const step = EzraState.onboardingStep || 1;
+        const ctx = parseMessageContext(message, getFormContext());
+        
+        // Merge new data
+        Object.assign(EzraState.onboardingData, ctx);
+        const data = EzraState.onboardingData;
+        
+        switch (step) {
+            case 1:
+                // After getting client info
+                if (data.clientName && data.homeValue > 0 && data.mortgageBalance > 0 && data.helocAmount > 0) {
+                    // We have everything, auto-fill and move to rates
+                    applyOnboardingData(data);
+                    EzraState.onboardingStep = 3;
+                    return `\u2705 **Great! I've filled in the client details.**
+
+**Property Value:** $${data.homeValue.toLocaleString()}
+**Mortgage Balance:** $${data.mortgageBalance.toLocaleString()}
+**HELOC Amount:** $${data.helocAmount.toLocaleString()}
+**CLTV:** ${data.cltv}%
+
+**Step 3 of 4: Add Rates**
+
+Now let's add your lender rates. You can:
+• Paste from Figure portal (Ctrl+A, Ctrl+C, paste here)
+• Type rates like "30yr at 7.5%, 20yr at 7.25%"
+• Or paste any lender rate sheet`;
+                } else {
+                    // Missing some info, ask for it
+                    const missing = [];
+                    if (!data.clientName) missing.push("client name");
+                    if (data.homeValue <= 0) missing.push("property value");
+                    if (data.mortgageBalance <= 0) missing.push("mortgage balance");
+                    if (data.helocAmount <= 0) missing.push("cash needed");
+                    
+                    return `Thanks! I have some information. To continue, I still need: **${missing.join(', ')}**.
+
+Just tell me what you know, like "property is worth $750k" or "they owe $350k on their mortgage".`;
+                }
+                
+            case 3:
+                // Handle rates input
+                const portalData = parseLenderPortalData(message);
+                if (portalData) {
+                    applyPortalData(portalData);
+                    EzraState.onboardingStep = 4;
+                    return `\u2705 **Rates imported successfully!**
+
+**Step 4 of 4: Generate Quote**
+
+Your quote is ready! Click **"Generate Client Link"** in the Presentation section to create a shareable quote page for your client.
+
+**What happens next:**
+• Your client gets a beautiful, branded quote page
+• They can ask me (Ezra) questions about the quote
+• You get notified when they view it
+• They can apply directly from the quote
+
+**Need help?** Just ask me anything about the quote or HELOCs in general!`;
+                }
+                
+                const convRates = parseConversationalRates(message);
+                if (convRates.tiers.length > 0) {
+                    applyConversationalRates(convRates);
+                    EzraState.onboardingStep = 4;
+                    return `\u2705 **Rates added!**
+
+**Step 4 of 4: Generate Quote**
+
+Your quote is ready! Click **"Generate Client Link"** in the Presentation section to create a shareable quote page.
+
+**Pro tip:** The quote includes:
+• Interactive rate comparison
+• AI assistant (me!) to answer client questions
+• Apply button for instant applications
+• Analytics to track client engagement`;
+                }
+                
+                return `I need to add rates to complete the quote. You can:
+
+1. **Paste from Figure:** Go to Figure Lead Portal, press Ctrl+A, Ctrl+C, then paste here
+2. **Type rates:** "For 1.5% orig, 30yr is 7.5%, 20yr is 7.25%..."
+3. **Upload rate sheet:** Copy/paste from any lender portal
+
+What would you like to do?`;
+                
+            default:
+                return null; // Not in onboarding
+        }
+    }
+
+    // Apply onboarding data to form
+    function applyOnboardingData(data) {
+        function setField(id, value) {
+            const field = document.getElementById(id);
+            if (!field || !value) return;
+            field.value = value;
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            field.style.transition = 'background 0.3s';
+            field.style.background = '#dcfce7';
+            setTimeout(() => field.style.background = '', 1500);
+        }
+        
+        if (data.clientName) setField('in-client-name', data.clientName);
+        if (data.creditScore) setField('in-client-credit', data.creditScore);
+        if (data.homeValue) setField('in-home-value', data.homeValue);
+        if (data.mortgageBalance) setField('in-mortgage-balance', data.mortgageBalance);
+        if (data.helocAmount) setField('in-net-cash', data.helocAmount);
+        if (data.occupancy) setField('in-property-type', data.occupancy);
+        
+        // Trigger calculations
+        if (typeof updateQuote === 'function') setTimeout(updateQuote, 100);
+        if (typeof autoSave === 'function') setTimeout(autoSave, 300);
+    }
+
+    // ============================================
     // PUBLIC API
     // ============================================
     window.Ezra = {
@@ -4538,8 +5698,185 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
         scanDealRadar: scanDealRadar,
         showDealDashboard: showDealDashboard,
         createQuoteFromDeal: createQuoteFromDeal,
-        viewDealDetails: viewDealDetails
+        viewDealDetails: viewDealDetails,
+        // Position API
+        moveWidget: moveWidgetToPosition,
+        showPositionSelector: showPositionModal,
+        // Onboarding API
+        startOnboarding: window.ezraStartOnboarding,
+        checkIfNewUser: checkIfNewUser,
+        // Intelligence Suite API
+        narrateQuote: () => { const ctx = getFormContext(); addMessage('assistant', narrateQuote(ctx), { model: 'local' }); },
+        draftMessage: () => { const ctx = getFormContext(); addMessage('assistant', generateMessageDrafts(ctx), { model: 'local' }); },
+        compareScenarios: () => { const ctx = getFormContext(); addMessage('assistant', compareScenarios(ctx), { model: 'local' }); },
+        leadBriefing: runLeadBriefing,
+        complianceCheck: (text) => { addMessage('assistant', runComplianceCheck(text), { model: 'local' }); },
+        predictQuestions: () => { const ctx = getFormContext(); addMessage('assistant', predictClientQuestions(ctx), { model: 'local' }); },
+        followUpCoach: async () => { const r = await getFollowUpCoach(); addMessage('assistant', r, { model: 'local' }); },
+        smartObjection: (text) => { const ctx = getFormContext(); addMessage('assistant', getSmartObjectionResponse(text, ctx), { model: 'local' }); },
+        // Follow-Up Sequence API
+        generateFollowUpSequence: generateFollowUpSequence,
+        previewFollowUpMessage: previewFollowUpMessage,
+        scheduleFollowUps: scheduleFollowUpSequence
     };
+
+    // ============================================
+    // FOLLOW-UP SEQUENCE FUNCTIONS
+    // ============================================
+    function generateFollowUpSequence(sequenceType, quoteData, loInfo) {
+        const sequence = FOLLOW_UP_SEQUENCES[sequenceType];
+        if (!sequence) {
+            return { error: 'Unknown sequence type: ' + sequenceType };
+        }
+
+        // Calculate send times
+        const now = Date.now();
+        const scheduledMessages = sequence.map((step, index) => {
+            const sendTime = now + step.delay;
+            const message = populateTemplate(step.message, quoteData, loInfo);
+            const subject = step.subject ? populateTemplate(step.subject, quoteData, loInfo) : null;
+            
+            return {
+                id: `${sequenceType}_${index}`,
+                channel: step.channel,
+                subject: subject,
+                message: message,
+                scheduledFor: new Date(sendTime).toISOString(),
+                status: 'pending'
+            };
+        });
+
+        return {
+            type: sequenceType,
+            messages: scheduledMessages,
+            totalMessages: scheduledMessages.length
+        };
+    }
+
+    function populateTemplate(template, quoteData, loInfo) {
+        if (!template) return '';
+        
+        const d = quoteData || {};
+        const lo = loInfo || {};
+        
+        // Calculate monthly savings estimate
+        const helocAmount = parseFloat(d.netCash) || 0;
+        const monthlySavings = Math.round(helocAmount * 0.15 / 12); // Rough estimate: 15% avg CC rate vs HELOC
+        
+        return template
+            .replace(/\{\{clientName\}\}/g, d.clientName || 'there')
+            .replace(/\{\{loName\}\}/g, lo.name || 'Your Loan Officer')
+            .replace(/\{\{company\}\}/g, lo.company || 'Our Company')
+            .replace(/\{\{quoteLink\}\}/g, d.quoteLink || '[Quote Link]')
+            .replace(/\{\{applyLink\}\}/g, lo.applyLink || '[Apply Link]')
+            .replace(/\{\{portalLink\}\}/g, lo.applyLink || '[Portal Link]')
+            .replace(/\{\{loPhone\}\}/g, lo.phone || '[Phone]')
+            .replace(/\{\{loEmail\}\}/g, lo.email || '[Email]')
+            .replace(/\{\{cashBack\}\}/g, helocAmount.toLocaleString())
+            .replace(/\{\{rate\}\}/g, d.rate || '[Rate]')
+            .replace(/\{\{monthlySavings\}\}/g, monthlySavings.toLocaleString())
+            .replace(/\{\{payment\}\}/g, d.payment || '[Payment]');
+    }
+
+    function previewFollowUpMessage(sequenceType, stepIndex, quoteData, loInfo) {
+        const sequence = FOLLOW_UP_SEQUENCES[sequenceType];
+        if (!sequence || !sequence[stepIndex]) {
+            return { error: 'Invalid sequence or step' };
+        }
+        
+        const step = sequence[stepIndex];
+        return {
+            channel: step.channel,
+            subject: step.subject ? populateTemplate(step.subject, quoteData, loInfo) : null,
+            message: populateTemplate(step.message, quoteData, loInfo),
+            delay: step.delay,
+            sendTime: new Date(Date.now() + step.delay).toLocaleString()
+        };
+    }
+
+    async function scheduleFollowUpSequence(sequenceType, quoteId, quoteData, loInfo) {
+        const sequence = generateFollowUpSequence(sequenceType, quoteData, loInfo);
+        
+        if (sequence.error) {
+            return sequence;
+        }
+
+        // Store in Supabase if available
+        if (EzraState.supabase && EZRA_TABLES_DEPLOYED) {
+            try {
+                const { error } = await EzraState.supabase
+                    .from('ezra_follow_up_schedules')
+                    .insert(sequence.messages.map(msg => ({
+                        quote_id: quoteId,
+                        user_id: EzraState.user?.id,
+                        sequence_type: sequenceType,
+                        message_id: msg.id,
+                        channel: msg.channel,
+                        subject: msg.subject,
+                        message: msg.message,
+                        scheduled_for: msg.scheduledFor,
+                        status: 'pending'
+                    })));
+                
+                if (error) throw error;
+            } catch (e) {
+                console.warn('Failed to save follow-up schedule:', e);
+            }
+        }
+
+        // Also store in localStorage as backup
+        const existing = JSON.parse(localStorage.getItem('ezraFollowUpSchedules') || '[]');
+        const newSchedule = {
+            quoteId: quoteId,
+            type: sequenceType,
+            createdAt: new Date().toISOString(),
+            messages: sequence.messages
+        };
+        existing.push(newSchedule);
+        localStorage.setItem('ezraFollowUpSchedules', JSON.stringify(existing));
+
+        return {
+            success: true,
+            message: `Scheduled ${sequence.totalMessages} follow-up messages`,
+            schedule: sequence
+        };
+    }
+
+    // Quick command for follow-up sequences
+    function showFollowUpSequenceOptions() {
+        const ctx = getFormContext();
+        const hasClient = ctx.clientName !== 'Borrower';
+        
+        if (!hasClient) {
+            addMessage('assistant', 'To set up follow-up sequences, please enter a client name first. Then I can help you schedule personalized messages.', { model: 'local' });
+            return;
+        }
+
+        addMessage('assistant', `
+**Automated Follow-Up Sequences**
+
+I can schedule a series of messages to keep {{clientName}} engaged. Choose a sequence:
+
+1. **New Lead** - 4 messages over 7 days (recommended)
+2. **Quote Viewed** - 2 messages after they view the quote
+3. **Application Started** - 2 messages during application
+4. **No Activity** - Re-engagement after 14 days
+
+Which sequence would you like to set up?`, { model: 'local' });
+
+        // Add quick action buttons
+        setTimeout(() => {
+            const btnDiv = document.createElement('div');
+            btnDiv.style.cssText = 'padding:4px 12px 12px;display:flex;flex-wrap:wrap;gap:8px;';
+            btnDiv.innerHTML = `
+                <button onclick="window.Ezra.generateFollowUpSequence('new_lead', getFormContext(), {}).then(s => window.Ezra.scheduleFollowUps('new_lead', 'temp', getFormContext(), {}))" style="background:linear-gradient(135deg,#c5a059,#a68543);color:#0f172a;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-size:11px;">\ud83d\ude80 New Lead</button>
+                <button onclick="window.Ezra.generateFollowUpSequence('quote_viewed', getFormContext(), {})" style="background:rgba(255,255,255,0.1);color:white;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:11px;">\ud83d\udc40 Quote Viewed</button>
+                <button onclick="window.Ezra.generateFollowUpSequence('application_started', getFormContext(), {})" style="background:rgba(255,255,255,0.1);color:white;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:11px;">\ud83d\udccb Application</button>
+            `;
+            document.getElementById('ezra-messages').appendChild(btnDiv);
+            document.getElementById('ezra-messages').scrollTop = document.getElementById('ezra-messages').scrollHeight;
+        }, 100);
+    }
 
     // Auto-initialize when DOM is ready
     if (document.readyState === 'loading') {
