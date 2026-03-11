@@ -16,6 +16,13 @@
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Hide PWA prompts when onboarding wizard is open */
+#ob-overlay.visible ~ #pwa-install-prompt,
+#ob-overlay.visible ~ #pwa-push-prompt,
+#ob-overlay.visible ~ #pwa-ios-prompt {
+    display: none !important;
+}
+
 #pwa-install-prompt.pwa-prompt-visible,
 #pwa-push-prompt.pwa-prompt-visible {
     transform: translateX(-50%) translateY(0);

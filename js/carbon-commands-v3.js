@@ -338,13 +338,6 @@
         // Handled in createPaletteHTML via overlay click
     }
 
-    function initVoiceRecognition() {
-        // Voice recognition stub - to be implemented
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            state.voiceEnabled = true;
-        }
-    }
-
     function detectContext() {
         // Detect current page context
         const path = window.location.pathname;
@@ -877,18 +870,6 @@
         
         list.innerHTML = recent.map(cmd => `
             <button class="carbon-quick-item" onclick="CarbonCommands.execute('${cmd}')">
-                ${getCommandIcon(cmd)} ${formatCommandName(cmd)}
-            </button>
-        `).join('');
-    }
-
-    function updatePalettePredictions() {
-        const container = document.getElementById('palette-predictions');
-        if (!container) return;
-        
-        const predictions = getPredictions().slice(0, 3);
-        container.innerHTML = predictions.map(cmd => `
-            <button class="carbon-pred-chip" onclick="CarbonCommands.execute('${cmd}'); closePalette();">
                 ${getCommandIcon(cmd)} ${formatCommandName(cmd)}
             </button>
         `).join('');

@@ -57,20 +57,6 @@
 
     // ==================== INSTALL PROMPT ====================
     function setupInstallPrompt() {
-        // Check if iOS Safari (which doesn't support beforeinstallprompt)
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-        
-        if (isIOS && isSafari) {
-            // iOS Safari - show manual instructions after delay
-            setTimeout(() => {
-                if (!isInstalled && !getInstallDismissed() && !isRunningStandalone()) {
-                    showIOSInstallPrompt();
-                }
-            }, 8000);
-            return;
-        }
-        
         // Capture the install prompt event (Android/Chrome)
         window.addEventListener('beforeinstallprompt', (e) => {
             // Prevent the mini-infobar from appearing on mobile
@@ -78,12 +64,8 @@
             // Store the event for later use
             deferredPrompt = e;
             
-            // Show custom install prompt after a delay
-            setTimeout(() => {
-                if (!isInstalled && !getInstallDismissed()) {
-                    showInstallPrompt();
-                }
-            }, 5000);
+            // Update UI in profile tab if it exists
+            updateInstallButtonUI();
         });
 
         // Handle app installed
@@ -91,9 +73,43 @@
             console.log('[PWA] App installed');
             isInstalled = true;
             deferredPrompt = null;
-            hideInstallPrompt();
             showToast('🎉 App installed! Access it from your home screen.', 'success');
+            updateInstallButtonUI();
         });
+        
+        // Update UI on load
+        updateInstallButtonUI();
+    }
+    
+    // Update the install button in Profile tab
+    function updateInstallButtonUI() {
+        const installBtn = document.getElementById('pwa-install-btn');
+        const installStatus = document.getElementById('pwa-install-status');
+        
+        if (isRunningStandalone()) {
+            // Already installed
+            if (installBtn) {
+                installBtn.textContent = '✅ Installed';
+                installBtn.disabled = true;
+                installBtn.style.background = '#10b981';
+            }
+            if (installStatus) installStatus.textContent = 'App is installed on your device';
+        } else if (deferredPrompt) {
+            // Can install (Android/Chrome)
+            if (installBtn) {
+                installBtn.textContent = '📱 Install App';
+                installBtn.disabled = false;
+                installBtn.style.background = '';
+            }
+            if (installStatus) installStatus.textContent = 'Click to add to home screen';
+        } else {
+            // iOS or can't install
+            if (installBtn) {
+                installBtn.textContent = '📱 View Install Instructions';
+                installBtn.disabled = false;
+            }
+            if (installStatus) installStatus.textContent = 'iOS: Use Share → Add to Home Screen';
+        }
     }
     
     // ==================== iOS SPECIFIC ====================
@@ -103,7 +119,9 @@
     }
     
     function showIOSInstallPrompt() {
-        if (getInstallDismissed()) return;
+        // Remove any existing prompt first
+        const existing = document.getElementById('pwa-ios-prompt');
+        if (existing) existing.remove();
         
         const prompt = document.createElement('div');
         prompt.id = 'pwa-ios-prompt';
@@ -453,6 +471,28 @@
         }, 4000);
     }
 
+    // ==================== PROFILE TAB UI ====================
+    function showInstallUI() {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        
+        if (isRunningStandalone()) {
+            showToast('✅ App is already installed!', 'success');
+            return;
+        }
+        
+        if (deferredPrompt) {
+            // Android/Chrome - trigger install
+            installApp();
+        } else if (isIOS && isSafari) {
+            // iOS - show instructions modal
+            showIOSInstallPrompt();
+        } else {
+            // Other browsers
+            showToast('📱 Use your browser\'s menu to add this page to your home screen', 'info');
+        }
+    }
+
     // ==================== PUBLIC API ====================
     window.PWA = {
         install: installApp,
@@ -463,6 +503,7 @@
         unsubscribeFromPush: unsubscribeFromPush,
         isInstalled: () => isInstalled,
         getRegistration: () => swRegistration,
+        showInstallUI: showInstallUI,
         // iOS specific
         dismissIOSPrompt: dismissIOSPrompt,
         showIOSInstallPrompt: showIOSInstallPrompt,

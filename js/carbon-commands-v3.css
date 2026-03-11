@@ -866,19 +866,9 @@
         font-size: 11px;
     }
     
-    /* Prediction bar */
+    /* Prediction bar - Hidden on mobile to avoid blocking content */
     .carbon-prediction-bar {
-        bottom: 80px;
-        left: 10px;
-        right: 10px;
-        transform: none;
-        flex-wrap: wrap;
-        border-radius: 16px;
-        padding: 10px 14px;
-    }
-    
-    .carbon-prediction-bar:hover {
-        transform: none;
+        display: none;
     }
     
     .carbon-pred-label {
@@ -890,14 +880,9 @@
         padding: 6px 12px;
     }
     
-    /* Quick widget */
+    /* Quick widget - Hidden on mobile to avoid blocking content */
     .carbon-quick-widget {
-        top: auto;
-        bottom: 80px;
-        right: 10px;
-        left: 10px;
-        width: auto;
-        max-height: 60vh;
+        display: none;
     }
     
     /* Cheatsheet */

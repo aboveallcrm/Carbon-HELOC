@@ -31,6 +31,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
     <link rel="apple-touch-icon" href="/apple-touch-icon-152x152.png" sizes="152x152">
     <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="./js/pwa-styles.css">
     
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -6051,17 +6052,28 @@
                     <p style="font-size: 7px; color: rgba(255,255,255,0.4); margin: 6px 0 0 0;">When clients ask Ezra to "call me" or schedule a call, you'll be notified instantly via your preferred methods.</p>
                 </div>
 
-                <!-- Push Notifications Settings -->
+                <!-- PWA & Push Notifications -->
                 <div
                     style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(139,92,246,0.3);">
-                    <h5 style="font-family: var(--font-heading); font-size: 10px; color: #a78bfa; margin: 0 0 8px 0;">🔔
-                        Push Notifications</h5>
+                    <h5 style="font-family: var(--font-heading); font-size: 10px; color: #a78bfa; margin: 0 0 8px 0;">📱
+                        Mobile App & Notifications</h5>
                     
+                    <!-- Install App Button -->
+                    <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <button class="btn" id="pwa-install-btn" onclick="PWA.showInstallUI()" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); font-size: 11px; padding: 10px 20px; width: 100%; margin-bottom: 8px;">
+                            📱 Install App
+                        </button>
+                        <div id="pwa-install-status" style="font-size: 10px; color: #64748b; text-align: center;">
+                            Add to home screen for instant access
+                        </div>
+                    </div>
+                    
+                    <!-- Push Notifications Toggle -->
                     <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 10px;">
                         <div class="toggle-container">
                             <div class="toggle-switch" id="toggle-push-notif"
                                 onclick="togglePushNotifications(this)"></div>
-                            <span class="toggle-label">Enable browser push notifications</span>
+                            <span class="toggle-label">Enable push notifications</span>
                         </div>
                     </div>
                     
@@ -6069,11 +6081,11 @@
                         Status: Not subscribed
                     </div>
                     
-                    <button class="btn" id="btn-test-push" onclick="testPushNotification()" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); font-size: 11px; padding: 8px 16px; display: none;">
+                    <button class="btn" id="btn-test-push" onclick="testPushNotification()" style="background: linear-gradient(135deg, #6366f1, #4f46e5); font-size: 11px; padding: 8px 16px; display: none;">
                         🔔 Test Notification
                     </button>
                     
-                    <p style="font-size: 7px; color: rgba(255,255,255,0.4); margin: 6px 0 0 0;">Get instant alerts on your phone/computer when clients request calls, even when the app is closed.</p>
+                    <p style="font-size: 7px; color: rgba(255,255,255,0.4); margin: 6px 0 0 0;">Install the app and enable notifications to get instant alerts when clients request calls, even when the app is closed.</p>
                 </div>
 
                 <!-- Email Send Preferences -->
@@ -17565,6 +17577,9 @@ Sent via Above All Carbon HELOC Tool`;
     <div class="carbon-cmd-hint">
         Press <kbd>Cmd</kbd>+<kbd>K</kbd> or say <kbd>Hey Ezra</kbd>
     </div>
+    
+    <!-- PWA Install Manager -->
+    <script src="./js/pwa-install.js"></script>
 </body>
 
 </html>
