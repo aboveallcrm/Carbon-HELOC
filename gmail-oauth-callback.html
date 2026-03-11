@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gmail Connected — Above All Carbon</title>
+<style>
+  body { margin: 0; background: #0f172a; color: white; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center; }
+  .card { background: #1e293b; border-radius: 16px; padding: 40px; max-width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); border: 1px solid rgba(16,185,129,0.3); }
+  .icon { font-size: 48px; margin-bottom: 16px; }
+  h2 { font-size: 18px; margin: 0 0 8px; }
+  p { font-size: 13px; color: rgba(255,255,255,0.5); margin: 0; }
+  .error { border-color: rgba(239,68,68,0.4); }
+  .error h2 { color: #ef4444; }
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="icon" id="icon">⏳</div>
+  <h2 id="heading">Connecting Gmail...</h2>
+  <p id="message">Please wait while we complete the connection.</p>
+</div>
+<script>
+  (function() {
+    var params = new URLSearchParams(window.location.search);
+    var code = params.get('code');
+    var error = params.get('error');
+
+    if (error) {
+      document.getElementById('icon').textContent = '❌';
+      document.getElementById('heading').textContent = 'Connection cancelled';
+      document.getElementById('message').textContent = error === 'access_denied'
+        ? 'You cancelled the Gmail connection. You can try again anytime.'
+        : 'OAuth error: ' + error;
+      document.getElementById('card').classList.add('error');
+      setTimeout(function() { window.close(); }, 3000);
+      return;
+    }
+
+    if (!code) {
+      document.getElementById('icon').textContent = '❌';
+      document.getElementById('heading').textContent = 'No code received';
+      document.getElementById('message').textContent = 'Something went wrong. Please try connecting again.';
+      document.getElementById('card').classList.add('error');
+      setTimeout(function() { window.close(); }, 3000);
+      return;
+    }
+
+    // Send the code back to the opener window
+    if (window.opener) {
+      window.opener.postMessage({ type: 'gmail_oauth_code', code: code }, window.location.origin);
+      document.getElementById('icon').textContent = '✅';
+      document.getElementById('heading').textContent = 'Gmail connected!';
+      document.getElementById('message').textContent = 'This window will close automatically.';
+    } else {
+      document.getElementById('icon').textContent = '⚠️';
+      document.getElementById('heading').textContent = 'Connected — please close this window';
+      document.getElementById('message').textContent = 'Return to the app and refresh the Gmail status.';
+    }
+
+    setTimeout(function() { window.close(); }, 2000);
+  })();
+</script>
+</body>
+</html>

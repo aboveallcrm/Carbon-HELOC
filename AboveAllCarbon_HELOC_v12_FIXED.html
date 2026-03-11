@@ -6602,6 +6602,29 @@ Best regards,
                             onclick="regenerateWebhookToken()">🔄 Regenerate Token</button>
                     </div>
 
+                    <!-- Gmail OAuth Direct Send -->
+                    <div id="int-gmail"
+                        style="background: rgba(0,0,0,0.15); border-radius: 6px; padding: 10px; margin-bottom: 10px;">
+                        <h6 style="font-family: var(--font-heading); font-size: 9px; color: #ea4335; margin: 0 0 8px 0;">
+                            📧 Gmail (Direct Send via OAuth)</h6>
+                        <div id="gmail-status-row" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                            <span id="gmail-status-badge" style="font-size:8px;padding:2px 8px;border-radius:10px;background:rgba(239,68,68,0.2);color:#ef4444;">Not connected</span>
+                            <span id="gmail-connected-email" style="font-size:8px;color:rgba(255,255,255,0.4);"></span>
+                        </div>
+                        <p style="font-size:8px;color:rgba(255,255,255,0.5);margin:0 0 8px 0;">Connect your Gmail account to send quote emails directly — no clipboard paste needed. Uses Google OAuth; your password is never stored.</p>
+                        <div class="input-group" style="margin-bottom:8px;">
+                            <div class="input-field" style="flex:1;">
+                                <label>Google OAuth Client ID <span class="help-tip">?<span class="help-tip-text">Your Google Cloud OAuth 2.0 Client ID. Found in Google Cloud Console → APIs & Services → Credentials. This is the same Client ID configured in your Supabase Auth → Google provider settings.</span></span></label>
+                                <input type="text" id="google-client-id" placeholder="xxxxxxxx.apps.googleusercontent.com" style="font-size:9px;">
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn" id="gmail-connect-btn" style="background:#ea4335;font-size:9px;padding:4px 12px;" onclick="connectGmail()">🔗 Connect Gmail</button>
+                            <button class="btn" id="gmail-disconnect-btn" style="background:#6b7280;font-size:9px;padding:4px 12px;display:none;" onclick="disconnectGmail()">✕ Disconnect</button>
+                        </div>
+                        <p style="font-size:7.5px;color:rgba(255,255,255,0.3);margin:6px 0 0 0;">Requires Gmail or Google Workspace account. Only sends on your behalf — we never read your inbox. Make sure <code style="color:#ea4335;">https://your-domain/gmail-oauth-callback.html</code> is an authorized redirect URI in your Google Cloud Console.</p>
+                    </div>
+
                     <!-- Bonzo CRM -->
                     <div id="int-bonzo"
                         style="background: rgba(0,0,0,0.15); border-radius: 6px; padding: 10px; margin-bottom: 10px;">
@@ -7874,7 +7897,7 @@ Best regards,
             if (level === -1) level = 0;
 
             // Start by hiding ALL integration subsections
-            var allIds = ['int-ghl', 'int-n8n', 'int-radar', 'int-ai', 'int-heygen', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks'];
+            var allIds = ['int-ghl', 'int-n8n', 'int-radar', 'int-ai', 'int-heygen', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks', 'int-gmail'];
             allIds.forEach(function (id) {
                 var el = document.getElementById(id);
                 if (el) el.style.display = 'none';
@@ -7890,13 +7913,17 @@ Best regards,
             var saveBtn = document.querySelector('#integrations-section > button[onclick="saveIntegrations()"]');
             if (saveBtn) saveBtn.style.display = 'none';
 
-            // ---- TITANIUM+ (level >= 1): Radar address autocomplete + AI status only ----
+            // ---- TITANIUM+ (level >= 1): Radar, AI, Gmail OAuth ----
             if (level >= 1) {
                 var intRadar = document.getElementById('int-radar');
                 if (intRadar) intRadar.style.display = '';
                 var intAi = document.getElementById('int-ai');
                 if (intAi) intAi.style.display = '';
+                var intGmail = document.getElementById('int-gmail');
+                if (intGmail) intGmail.style.display = '';
                 if (saveBtn) saveBtn.style.display = '';
+                // Load Gmail connection status
+                _checkGmailStatus();
             }
 
             // ---- PLATINUM+ (level >= 2): GHL, Bonzo, CRM inbound, FUB, Outbound Webhooks ----
@@ -12527,9 +12554,28 @@ Generate the sales strategy and phone script now.`;
             const prepared = checkTemplateBeforeSend();
             if (!prepared) return;
             var html = buildRichEmailHTML();
+            var fromName = document.getElementById('lo-name')?.value || '';
+            var fromEmail = document.getElementById('lo-email')?.value || '';
+
+            // Try direct Gmail API send first
+            try {
+                showToast('Sending via Gmail...', 'info');
+                await _sendViaGmailAPI(prepared.to, prepared.subject, html, fromName, fromEmail);
+                showToast('Email sent via Gmail!', 'success', 5000);
+                return;
+            } catch (e) {
+                if (e.message && e.message.includes('not connected')) {
+                    // Gmail not connected — fall back to clipboard + compose
+                    showToast('Gmail not connected. Connect in Settings → Integrations. Opening compose...', 'warning', 6000);
+                } else {
+                    showToast('Gmail API error: ' + e.message + '. Opening compose as fallback.', 'warning', 6000);
+                }
+            }
+
+            // Fallback: clipboard + open compose tab
             await copyRichHTMLToClipboard(html);
             window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(prepared.to) + '&su=' + encodeURIComponent(prepared.subject));
-            showToast('Rich HTML email copied! Paste into Gmail with Ctrl+V.', 'info', 5000);
+            showToast('Rich HTML copied — paste into Gmail with Ctrl+V.', 'info', 5000);
         }
 
         async function copyRichEmailHTML() {
@@ -13753,13 +13799,27 @@ Sent via Above All Carbon HELOC Tool`;
         async function sendQuoteViaGmailDirect(e) {
             if (e) e.stopPropagation();
             document.getElementById('sq-email-dropdown')?.classList.remove('show');
-            var link = await ensureQuoteLink();
+            await ensureQuoteLink();
             var html = buildRichEmailHTML();
-            await copyRichHTMLToClipboard(html);
             var to = document.getElementById('client-email')?.value || '';
             var clientName = document.getElementById('in-client-name')?.value || 'Client';
-            window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(to) + '&su=' + encodeURIComponent('Your Personalized HELOC Quote — ' + clientName));
-            showToast('Rich email copied! Paste into Gmail with Ctrl+V.', 'info', 5000);
+            var subject = 'Your Personalized HELOC Quote — ' + clientName;
+            var fromName = document.getElementById('lo-name')?.value || '';
+            var fromEmail = document.getElementById('lo-email')?.value || '';
+
+            try {
+                showToast('Sending via Gmail...', 'info');
+                await _sendViaGmailAPI(to, subject, html, fromName, fromEmail);
+                showToast('Quote emailed via Gmail!', 'success', 5000);
+                return;
+            } catch (e2) {
+                if (!e2.message?.includes('not connected')) {
+                    showToast('Gmail send error: ' + e2.message + '. Opening compose...', 'warning', 6000);
+                }
+            }
+            await copyRichHTMLToClipboard(html);
+            window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(to) + '&su=' + encodeURIComponent(subject));
+            showToast('Rich email copied — paste into Gmail with Ctrl+V.', 'info', 5000);
         }
 
         async function copyQuoteEmailHTML(e) {
@@ -14083,7 +14143,7 @@ Sent via Above All Carbon HELOC Tool`;
             box.style.cssText = 'background:#1e293b;border:1px solid #6366f1;border-radius:12px;padding:30px 40px;max-width:420px;width:90%;font-family:var(--font-heading);color:white;text-align:center;';
             const heading = document.createElement('div');
             heading.style.cssText = 'font-size:20px;margin-bottom:12px;';
-            heading.textContent = '📧 Sending to Bonzo...';
+            heading.textContent = '📧 Sending via Bonzo API...';
             box.appendChild(heading);
             const statusLog = document.createElement('div');
             statusLog.id = 'bonzo-status';
@@ -14161,10 +14221,30 @@ Sent via Above All Carbon HELOC Tool`;
                     }
                 }
 
-                // Step 2: Send data via webhook if configured (include rich HTML email for automations)
-                const webhookUrl = document.getElementById('bonzo-inbound-url')?.value;
+                // Step 2: Send email directly via Bonzo API
                 var _bonzoRichHtml = buildRichEmailHTML();
                 var _bonzoEmailSubject = processTemplate(document.getElementById('email-subject').value);
+                var _bonzoContactId = contactData?.id || contactData?.data?.id;
+                if (_bonzoContactId) {
+                    log('⏳ Sending email via Bonzo API...');
+                    try {
+                        await _bonzoProxy('send_email', {
+                            contactId: _bonzoContactId,
+                            payload: {
+                                subject: _bonzoEmailSubject,
+                                html: _bonzoRichHtml,
+                                from_name: document.getElementById('lo-name')?.value || '',
+                                from_email: document.getElementById('lo-email')?.value || ''
+                            }
+                        });
+                        log('✅ Email sent via Bonzo!');
+                    } catch (emailErr) {
+                        log('⚠️ Bonzo email API error: ' + emailErr.message + ' (use manual send below)');
+                    }
+                }
+
+                // Step 3: Send data via webhook if configured (include rich HTML email for automations)
+                const webhookUrl = document.getElementById('bonzo-inbound-url')?.value;
                 if (webhookUrl) {
                     log('⏳ Sending via webhook...');
                     try {
@@ -14196,7 +14276,7 @@ Sent via Above All Carbon HELOC Tool`;
                     }
                 }
 
-                // Step 3: Cross-CRM tag sync (push tags to GHL + webhook if configured)
+                // Step 4: Cross-CRM tag sync (push tags to GHL + webhook if configured)
                 log('⏳ Syncing tags to linked CRMs...');
                 await syncQuoteTagsToCRMs(tags, {
                     email: contactEmail, name: contactName, phone: contactPhone,
@@ -14207,7 +14287,7 @@ Sent via Above All Carbon HELOC Tool`;
                 log('');
                 log('🎉 <strong>Bonzo send complete!</strong> (' + tags.length + ' tags applied)');
                 log('');
-                log('Choose how to send the email:');
+                log('Need to resend or open in email client?');
 
                 // Gmail button
                 var gmailBtn = document.createElement('button');
@@ -14663,9 +14743,24 @@ Sent via Above All Carbon HELOC Tool`;
             if (clientEmailField) clientEmailField.value = toEmail;
             var subject = processTemplate(document.getElementById('email-subject').value);
             var html = buildRichEmailHTML({ screenshotDataUrl: _esmScreenshotDataUrl });
+            var fromName = document.getElementById('lo-name')?.value || '';
+            var fromEmail = document.getElementById('lo-email')?.value || '';
+
+            try {
+                _esmShowStatus('Sending via Gmail API...', 'info');
+                await _sendViaGmailAPI(toEmail, subject, html, fromName, fromEmail);
+                closeEmailSendModal();
+                showToast('Email sent via Gmail!', 'success', 5000);
+                return;
+            } catch (e) {
+                if (!e.message?.includes('not connected')) {
+                    _esmShowStatus('Gmail error: ' + e.message + '. Falling back to compose...', 'warning');
+                    await new Promise(r => setTimeout(r, 1500));
+                }
+            }
             await copyRichHTMLToClipboard(html);
             window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(toEmail) + '&su=' + encodeURIComponent(subject));
-            _esmShowStatus('✅ Rich HTML copied! Paste into Gmail with Ctrl+V.', 'success');
+            _esmShowStatus('✅ Rich HTML copied — paste into Gmail with Ctrl+V.', 'success');
         }
 
         async function esmSendGHL() {
@@ -14897,6 +14992,120 @@ Sent via Above All Carbon HELOC Tool`;
             }
         }
 
+        // ===== GMAIL OAUTH =====
+        // Google OAuth client ID — stored as env var on edge function, but we need it
+        // client-side to build the OAuth URL. Store in a hidden field or constant here.
+        // This is the SAME client you have in Supabase Auth → Google provider settings.
+        var GMAIL_GOOGLE_CLIENT_ID = '';  // populated from _applyIntegrationData or env
+
+        async function _callGmailSend(payload) {
+            var sb = window._supabase;
+            var session = await sb.auth.getSession();
+            var token = session?.data?.session?.access_token;
+            if (!token) throw new Error('Not authenticated');
+            var resp = await fetch('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/gmail-send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(payload)
+            });
+            var data = await resp.json();
+            if (!resp.ok) throw new Error(data.error || 'Gmail send error');
+            return data;
+        }
+
+        async function _checkGmailStatus() {
+            try {
+                var result = await _callGmailSend({ action: 'status' });
+                _updateGmailStatusUI(result.connected, result.connected_email);
+            } catch (e) {
+                console.warn('Gmail status check failed:', e.message);
+            }
+        }
+
+        function _updateGmailStatusUI(connected, email) {
+            var badge = document.getElementById('gmail-status-badge');
+            var emailEl = document.getElementById('gmail-connected-email');
+            var connectBtn = document.getElementById('gmail-connect-btn');
+            var disconnectBtn = document.getElementById('gmail-disconnect-btn');
+            if (!badge) return;
+            if (connected) {
+                badge.textContent = '✅ Connected';
+                badge.style.background = 'rgba(16,185,129,0.2)';
+                badge.style.color = '#10b981';
+                if (emailEl) emailEl.textContent = email || '';
+                if (connectBtn) connectBtn.style.display = 'none';
+                if (disconnectBtn) disconnectBtn.style.display = '';
+            } else {
+                badge.textContent = 'Not connected';
+                badge.style.background = 'rgba(239,68,68,0.2)';
+                badge.style.color = '#ef4444';
+                if (emailEl) emailEl.textContent = '';
+                if (connectBtn) connectBtn.style.display = '';
+                if (disconnectBtn) disconnectBtn.style.display = 'none';
+            }
+        }
+
+        function connectGmail() {
+            var clientId = _val('google-client-id') || GMAIL_GOOGLE_CLIENT_ID;
+            if (!clientId) {
+                showToast('Enter your Google OAuth Client ID in the Gmail section first.', 'warning');
+                document.getElementById('google-client-id')?.focus();
+                return;
+            }
+            GMAIL_GOOGLE_CLIENT_ID = clientId;
+
+            var redirectUri = window.location.origin + '/gmail-oauth-callback.html';
+            var scope = encodeURIComponent('https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email');
+            var oauthUrl = 'https://accounts.google.com/o/oauth2/v2/auth'
+                + '?client_id=' + encodeURIComponent(clientId)
+                + '&redirect_uri=' + encodeURIComponent(redirectUri)
+                + '&response_type=code'
+                + '&scope=' + scope
+                + '&access_type=offline'
+                + '&prompt=consent'
+                + '&state=' + encodeURIComponent(JSON.stringify({ userId: window.currentUserId }));
+
+            // Open OAuth window
+            var popup = window.open(oauthUrl, 'gmail_oauth', 'width=500,height=600,scrollbars=yes');
+
+            // Listen for the code returned via postMessage from callback page
+            function onMessage(event) {
+                if (event.data && event.data.type === 'gmail_oauth_code') {
+                    window.removeEventListener('message', onMessage);
+                    if (popup && !popup.closed) popup.close();
+                    _handleGmailOAuthCode(event.data.code, redirectUri);
+                }
+            }
+            window.addEventListener('message', onMessage);
+        }
+
+        async function _handleGmailOAuthCode(code, redirectUri) {
+            showToast('Connecting Gmail...', 'info');
+            try {
+                var result = await _callGmailSend({ action: 'exchange_code', code, redirectUri });
+                _updateGmailStatusUI(true, result.connected_email);
+                showToast('Gmail connected! Sending as ' + (result.connected_email || 'your account'), 'success', 5000);
+            } catch (e) {
+                showToast('Gmail connect failed: ' + e.message, 'error', 7000);
+            }
+        }
+
+        async function disconnectGmail() {
+            if (!confirm('Disconnect Gmail? You can reconnect anytime.')) return;
+            try {
+                await _callGmailSend({ action: 'disconnect' });
+                _updateGmailStatusUI(false, '');
+                showToast('Gmail disconnected.', 'info');
+            } catch (e) {
+                showToast('Disconnect error: ' + e.message, 'error');
+            }
+        }
+
+        // Send email directly via Gmail API (used by sendViaGmail and esmSendGmail)
+        async function _sendViaGmailAPI(to, subject, html, fromName, fromEmail) {
+            return _callGmailSend({ action: 'send', to, subject, html, fromName, fromEmail });
+        }
+
         // --- Outbound Webhooks ---
         function addOutboundWebhook() {
             outboundWebhooks.push({
@@ -15097,6 +15306,7 @@ Sent via Above All Carbon HELOC Tool`;
                 bonzo: { apiKey: _val('bonzo-api-key'), apiKey2: _val('bonzo-api-key-2') },
                 fub: { apiKey: _val('fub-api-key') },
                 heygen: { apiKey: _val('heygen-api-key'), avatarId: _val('heygen-avatar-id'), voiceId: _val('heygen-voice-id') },
+                gmail: { clientId: _val('google-client-id') },
                 outboundWebhooks: outboundWebhooks
             };
         }
@@ -15130,6 +15340,10 @@ Sent via Above All Carbon HELOC Tool`;
                 _setVal('heygen-api-key', data.heygen.apiKey);
                 _setVal('heygen-avatar-id', data.heygen.avatarId);
                 _setVal('heygen-voice-id', data.heygen.voiceId);
+            }
+            if (data.gmail) {
+                _setVal('google-client-id', data.gmail.clientId);
+                if (data.gmail.clientId) GMAIL_GOOGLE_CLIENT_ID = data.gmail.clientId;
             }
             if (data.outboundWebhooks && Array.isArray(data.outboundWebhooks)) {
                 outboundWebhooks = data.outboundWebhooks;
