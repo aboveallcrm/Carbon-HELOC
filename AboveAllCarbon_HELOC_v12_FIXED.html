@@ -25,8 +25,12 @@
     <meta property="og:image:height" content="630">
     <meta name="twitter:image" content="https://carbon-heloc.vercel.app/images/og-image.jpg">
     <meta name="twitter:site" content="@aboveallcrm">
-    <link rel="icon" type="image/png" href="/favicon.png">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+    <link rel="apple-touch-icon" href="/apple-touch-icon-152x152.png" sizes="152x152">
+    <link rel="manifest" href="/manifest.json">
     
     <!-- Structured Data -->
     <script type="application/ld+json">
@@ -5117,6 +5121,7 @@
             <button class="settings-tab" onclick="switchTab('parser')">📧 Lead Parser</button>
             <button class="settings-tab" onclick="switchTab('email')">✉️ Email/Share</button>
             <button class="settings-tab" onclick="switchTab('integrations')">🔌 Integrations</button>
+            <button class="settings-tab" onclick="switchTab('notifications')">🔔 Notifications</button>
             <button class="settings-tab" id="tab-btn-superadmin" onclick="switchTab('superadmin')"
                 style="display:none; background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">🛡️ Super
                 Admin</button>
@@ -6046,6 +6051,31 @@
                     <p style="font-size: 7px; color: rgba(255,255,255,0.4); margin: 6px 0 0 0;">When clients ask Ezra to "call me" or schedule a call, you'll be notified instantly via your preferred methods.</p>
                 </div>
 
+                <!-- Push Notifications Settings -->
+                <div
+                    style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(139,92,246,0.3);">
+                    <h5 style="font-family: var(--font-heading); font-size: 10px; color: #a78bfa; margin: 0 0 8px 0;">🔔
+                        Push Notifications</h5>
+                    
+                    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 10px;">
+                        <div class="toggle-container">
+                            <div class="toggle-switch" id="toggle-push-notif"
+                                onclick="togglePushNotifications(this)"></div>
+                            <span class="toggle-label">Enable browser push notifications</span>
+                        </div>
+                    </div>
+                    
+                    <div id="push-status" style="font-size: 11px; color: #64748b; margin-bottom: 8px;">
+                        Status: Not subscribed
+                    </div>
+                    
+                    <button class="btn" id="btn-test-push" onclick="testPushNotification()" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); font-size: 11px; padding: 8px 16px; display: none;">
+                        🔔 Test Notification
+                    </button>
+                    
+                    <p style="font-size: 7px; color: rgba(255,255,255,0.4); margin: 6px 0 0 0;">Get instant alerts on your phone/computer when clients request calls, even when the app is closed.</p>
+                </div>
+
                 <!-- Email Send Preferences -->
                 <div
                     style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(59,130,246,0.2);">
@@ -6638,6 +6668,63 @@ Best regards,
                 <button class="btn"
                     style="background: linear-gradient(135deg, #ef4444, #dc2626); width: 100%; justify-content: center; margin-top: 10px;"
                     onclick="saveIntegrations()">💾 Save All Integration Settings</button>
+            </div>
+        </div>
+
+        <!-- NOTIFICATIONS TAB -->
+        <div id="tab-notifications" class="settings-content">
+            <div class="control-section"
+                style="background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(124,58,237,0.1)); border-color: #8b5cf6;">
+                <h4 style="font-family: var(--font-heading); color: #a78bfa; margin: 0 0 15px 0; font-size: 13px;">
+                    🔔 Notification History
+                </h4>
+                
+                <!-- Stats Row -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 15px;">
+                    <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #c5a059;" id="notif-total">0</div>
+                        <div style="font-size: 10px; color: #94a3b8;">Total Notifications</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #10b981;" id="notif-today">0</div>
+                        <div style="font-size: 10px; color: #94a3b8;">Today</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #3b82f6;" id="notif-pending">0</div>
+                        <div style="font-size: 10px; color: #94a3b8;">Pending</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: #ef4444;" id="notif-urgent">0</div>
+                        <div style="font-size: 10px; color: #94a3b8;">Urgent</div>
+                    </div>
+                </div>
+                
+                <!-- Filter Buttons -->
+                <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <button class="btn" style="background: #8b5cf6; font-size: 10px;" onclick="loadNotificationHistory('all')">All</button>
+                    <button class="btn" style="background: rgba(255,255,255,0.1); font-size: 10px;" onclick="loadNotificationHistory('call_me_now')">📞 Call Requests</button>
+                    <button class="btn" style="background: rgba(255,255,255,0.1); font-size: 10px;" onclick="loadNotificationHistory('schedule_call')">📅 Schedule</button>
+                    <button class="btn" style="background: rgba(255,255,255,0.1); font-size: 10px;" onclick="loadNotificationHistory('today')">Today</button>
+                </div>
+                
+                <!-- Notification List -->
+                <div id="notification-list" style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; max-height: 400px; overflow-y: auto;">
+                    <div style="text-align: center; color: #64748b; padding: 40px;">
+                        <div style="font-size: 32px; margin-bottom: 10px;">🔔</div>
+                        <div>Loading notifications...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Push Subscriptions -->
+            <div class="control-section"
+                style="background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(5,150,105,0.1)); border-color: #10b981; margin-top: 12px;">
+                <h4 style="font-family: var(--font-heading); color: #34d399; margin: 0 0 15px 0; font-size: 13px;">
+                    📱 Active Devices
+                </h4>
+                <div id="push-devices-list" style="font-size: 11px;">
+                    <div style="color: #64748b;">Loading devices...</div>
+                </div>
             </div>
         </div>
 
@@ -16693,10 +16780,393 @@ Sent via Above All Carbon HELOC Tool`;
                 var emailPref = localStorage.getItem('emailPref') || 'gmail';
                 var emailPrefEl = document.getElementById('pref-email-client');
                 if (emailPrefEl) emailPrefEl.value = emailPref;
+                
+                // Check push notification status
+                checkPushNotificationStatus();
             } catch (e) {
                 console.log('Could not load notification prefs:', e.message);
             }
         }
+        
+        // ===== PUSH NOTIFICATION MANAGEMENT =====
+        async function checkPushNotificationStatus() {
+            if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+                updatePushStatus('Not supported on this browser', 'disabled');
+                return;
+            }
+            
+            const permission = Notification.permission;
+            const statusEl = document.getElementById('push-status');
+            const toggleEl = document.getElementById('toggle-push-notif');
+            const testBtn = document.getElementById('btn-test-push');
+            
+            if (permission === 'granted') {
+                // Check if we have a subscription
+                try {
+                    const registration = await navigator.serviceWorker.ready;
+                    const subscription = await registration.pushManager.getSubscription();
+                    
+                    if (subscription) {
+                        updatePushStatus('✅ Active - You will receive push notifications', 'active');
+                        if (toggleEl) toggleEl.classList.add('active');
+                        if (testBtn) testBtn.style.display = 'inline-block';
+                    } else {
+                        updatePushStatus('⚠️ Permission granted but not subscribed', 'warning');
+                        if (toggleEl) toggleEl.classList.remove('active');
+                        if (testBtn) testBtn.style.display = 'none';
+                    }
+                } catch (e) {
+                    updatePushStatus('Error checking subscription', 'error');
+                }
+            } else if (permission === 'denied') {
+                updatePushStatus('❌ Blocked - Please enable in browser settings', 'error');
+                if (toggleEl) toggleEl.classList.remove('active');
+                if (testBtn) testBtn.style.display = 'none';
+            } else {
+                updatePushStatus('Not subscribed - Click toggle to enable', 'inactive');
+                if (toggleEl) toggleEl.classList.remove('active');
+                if (testBtn) testBtn.style.display = 'none';
+            }
+        }
+        
+        function updatePushStatus(message, type) {
+            const statusEl = document.getElementById('push-status');
+            if (statusEl) {
+                statusEl.textContent = 'Status: ' + message;
+                statusEl.style.color = type === 'active' ? '#10b981' : 
+                                      type === 'error' ? '#ef4444' : 
+                                      type === 'warning' ? '#f59e0b' : '#64748b';
+            }
+        }
+        
+        async function togglePushNotifications(el) {
+            const isEnabling = !el.classList.contains('active');
+            
+            if (isEnabling) {
+                // Request permission
+                const permission = await Notification.requestPermission();
+                
+                if (permission === 'granted') {
+                    try {
+                        await subscribeToPushNotifications();
+                        el.classList.add('active');
+                        updatePushStatus('✅ Active - You will receive push notifications', 'active');
+                        document.getElementById('btn-test-push').style.display = 'inline-block';
+                        showToast('🔔 Push notifications enabled!', 'success');
+                    } catch (e) {
+                        console.error('Push subscription error:', e);
+                        showToast('Error enabling push notifications', 'error');
+                    }
+                } else {
+                    showToast('Permission denied for notifications', 'warning');
+                }
+            } else {
+                // Unsubscribe
+                try {
+                    await unsubscribeFromPushNotifications();
+                    el.classList.remove('active');
+                    updatePushStatus('Not subscribed - Click toggle to enable', 'inactive');
+                    document.getElementById('btn-test-push').style.display = 'none';
+                    showToast('Push notifications disabled', 'info');
+                } catch (e) {
+                    console.error('Push unsubscribe error:', e);
+                }
+            }
+        }
+        
+        async function subscribeToPushNotifications() {
+            const registration = await navigator.serviceWorker.ready;
+            
+            // Get VAPID key from server
+            const response = await fetch('/functions/v1/push-config');
+            const config = await response.json();
+            
+            if (!config.vapidPublicKey) {
+                throw new Error('VAPID key not configured');
+            }
+            
+            // Subscribe
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(config.vapidPublicKey)
+            });
+            
+            // Save to server
+            const sb = window._supabase;
+            if (sb && window.currentUserId) {
+                await sb.from('push_subscriptions').upsert({
+                    user_id: window.currentUserId,
+                    subscription: subscription.toJSON(),
+                    device_info: {
+                        userAgent: navigator.userAgent,
+                        platform: navigator.platform,
+                        timestamp: new Date().toISOString()
+                    },
+                    is_active: true,
+                    updated_at: new Date().toISOString()
+                }, {
+                    onConflict: 'user_id'
+                });
+            }
+            
+            return subscription;
+        }
+        
+        async function unsubscribeFromPushNotifications() {
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.getSubscription();
+            
+            if (subscription) {
+                await subscription.unsubscribe();
+                
+                // Update server
+                const sb = window._supabase;
+                if (sb && window.currentUserId) {
+                    await sb.from('push_subscriptions')
+                        .update({ is_active: false, updated_at: new Date().toISOString() })
+                        .eq('user_id', window.currentUserId);
+                }
+            }
+        }
+        
+        async function testPushNotification() {
+            try {
+                const response = await fetch('/functions/v1/push-notify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: window.currentUserId,
+                        title: '🔔 Test Notification',
+                        body: 'Push notifications are working! You will receive alerts when clients request calls.',
+                        type: 'test',
+                        data: { url: window.location.href }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Test notification sent! Check your device.', 'success');
+                } else {
+                    showToast('Could not send test: ' + result.message, 'warning');
+                }
+            } catch (e) {
+                console.error('Test push error:', e);
+                showToast('Error sending test notification', 'error');
+            }
+        }
+        
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+
+        // ===== NOTIFICATION HISTORY =====
+        async function loadNotificationHistory(filter = 'all') {
+            const sb = window._supabase;
+            const userId = window.currentUserId;
+            if (!sb || !userId) return;
+            
+            const listEl = document.getElementById('notification-list');
+            if (listEl) {
+                listEl.innerHTML = '<div style="text-align: center; color: #64748b; padding: 40px;"><div class="loading-spinner"></div><div>Loading...</div></div>';
+            }
+            
+            try {
+                // Build query
+                let query = sb.from('schedule_requests')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: false });
+                
+                if (filter === 'today') {
+                    const today = new Date().toISOString().split('T')[0];
+                    query = query.gte('created_at', today);
+                } else if (filter === 'call_me_now') {
+                    query = query.eq('request_type', 'call_me_now');
+                } else if (filter === 'schedule_call') {
+                    query = query.eq('request_type', 'schedule_call');
+                }
+                
+                const { data, error } = await query.limit(50);
+                
+                if (error) throw error;
+                
+                // Update stats
+                updateNotificationStats(data || []);
+                
+                // Render list
+                renderNotificationList(data || []);
+                
+            } catch (e) {
+                console.error('Error loading notifications:', e);
+                if (listEl) {
+                    listEl.innerHTML = '<div style="text-align: center; color: #ef4444; padding: 40px;">Error loading notifications</div>';
+                }
+            }
+        }
+        
+        function updateNotificationStats(notifications) {
+            const total = notifications.length;
+            const today = notifications.filter(n => {
+                const notifDate = new Date(n.created_at).toISOString().split('T')[0];
+                const todayDate = new Date().toISOString().split('T')[0];
+                return notifDate === todayDate;
+            }).length;
+            const pending = notifications.filter(n => n.status === 'pending').length;
+            const urgent = notifications.filter(n => n.metadata?.urgent).length;
+            
+            document.getElementById('notif-total').textContent = total;
+            document.getElementById('notif-today').textContent = today;
+            document.getElementById('notif-pending').textContent = pending;
+            document.getElementById('notif-urgent').textContent = urgent;
+        }
+        
+        function renderNotificationList(notifications) {
+            const listEl = document.getElementById('notification-list');
+            if (!listEl) return;
+            
+            if (notifications.length === 0) {
+                listEl.innerHTML = `
+                    <div style="text-align: center; color: #64748b; padding: 40px;">
+                        <div style="font-size: 32px; margin-bottom: 10px;">📭</div>
+                        <div>No notifications yet</div>
+                        <div style="font-size: 11px; margin-top: 8px;">When clients request calls, they will appear here</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const html = notifications.map(n => {
+                const isCallNow = n.request_type === 'call_me_now';
+                const isUrgent = n.metadata?.urgent;
+                const timeAgo = getTimeAgo(new Date(n.created_at));
+                const statusColor = n.status === 'pending' ? '#f59e0b' : 
+                                   n.status === 'notified' ? '#3b82f6' : '#10b981';
+                
+                return `
+                    <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; margin-bottom: 8px; border-left: 3px solid ${isUrgent ? '#ef4444' : isCallNow ? '#c5a059' : '#3b82f6'};">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 16px;">${isCallNow ? '📞' : '📅'}</span>
+                                <span style="font-weight: 600; font-size: 12px; color: #f8fafc;">
+                                    ${isCallNow ? 'Call Request' : 'Schedule Request'}
+                                    ${isUrgent ? '<span style="color: #ef4444; margin-left: 4px;">⚠️ URGENT</span>' : ''}
+                                </span>
+                            </div>
+                            <span style="font-size: 10px; color: #64748b;">${timeAgo}</span>
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-bottom: 6px;">
+                            <strong>${escapeHtml(n.client_name || 'Unknown')}</strong> • ${escapeHtml(n.client_phone || 'No phone')}
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 10px; color: ${statusColor}; text-transform: uppercase; font-weight: 600;">
+                                ${n.status}
+                            </span>
+                            <div style="display: flex; gap: 6px;">
+                                ${n.client_phone ? `<a href="tel:${n.client_phone.replace(/\D/g, '')}" class="btn" style="background: #10b981; font-size: 9px; padding: 4px 10px; text-decoration: none;">📞 Call</a>` : ''}
+                                ${n.quote_code ? `<button class="btn" style="background: #3b82f6; font-size: 9px; padding: 4px 10px;" onclick="viewQuote('${n.quote_code}')">View Quote</button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            listEl.innerHTML = html;
+        }
+        
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            if (seconds < 60) return 'Just now';
+            const minutes = Math.floor(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.floor(hours / 24);
+            return `${days}d ago`;
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        async function loadPushDevices() {
+            const sb = window._supabase;
+            const userId = window.currentUserId;
+            if (!sb || !userId) return;
+            
+            try {
+                const { data, error } = await sb.from('push_subscriptions')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .eq('is_active', true);
+                
+                const listEl = document.getElementById('push-devices-list');
+                if (!listEl) return;
+                
+                if (error || !data || data.length === 0) {
+                    listEl.innerHTML = '<div style="color: #64748b;">No active push devices</div>';
+                    return;
+                }
+                
+                const html = data.map((sub, i) => {
+                    const deviceInfo = sub.device_info || {};
+                    const deviceName = deviceInfo.platform || `Device ${i + 1}`;
+                    const lastUsed = sub.last_used_at ? getTimeAgo(new Date(sub.last_used_at)) : 'Never';
+                    
+                    return `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 6px; margin-bottom: 6px;">
+                            <div>
+                                <div style="font-weight: 600; color: #f8fafc;">📱 ${escapeHtml(deviceName)}</div>
+                                <div style="font-size: 10px; color: #64748b;">Last active: ${lastUsed}</div>
+                            </div>
+                            <button class="btn" style="background: #ef4444; font-size: 9px; padding: 4px 10px;" onclick="removePushDevice('${sub.id}')">Remove</button>
+                        </div>
+                    `;
+                }).join('');
+                
+                listEl.innerHTML = html;
+                
+            } catch (e) {
+                console.error('Error loading push devices:', e);
+            }
+        }
+        
+        async function removePushDevice(subscriptionId) {
+            const sb = window._supabase;
+            if (!sb) return;
+            
+            try {
+                await sb.from('push_subscriptions')
+                    .update({ is_active: false })
+                    .eq('id', subscriptionId);
+                
+                showToast('Device removed', 'success');
+                loadPushDevices();
+            } catch (e) {
+                showToast('Error removing device', 'error');
+            }
+        }
+        
+        // Load notifications when tab is opened
+        document.addEventListener('DOMContentLoaded', function() {
+            const notifTab = document.querySelector('.settings-tab[onclick="switchTab(\'notifications\')"]');
+            if (notifTab) {
+                notifTab.addEventListener('click', function() {
+                    loadNotificationHistory();
+                    loadPushDevices();
+                });
+            }
+        });
 
         // ===== QUOTE VIEW NOTIFICATIONS =====
         var _notifPollTimer = null;

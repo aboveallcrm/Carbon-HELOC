@@ -48,154 +48,94 @@
 ---
 
 #### Scenario C: "Not Sure If I Qualify"
-**Trigger phrases:** "do I qualify", "will I get approved", "credit score", "income"
+**Trigger phrases:** "not sure if I qualify", "credit issues", "self employed", "complicated"
 
 **Conversation flow:**
-1. Normalizes the concern
-2. Breaks down their actual numbers (CLTV calculation)
-3. Explains 85% rule with their specific data
-4. Details credit score tiers
-5. Asks about specific concern area
+1. Validates concern as normal
+2. Explains soft credit check (no harm in trying)
+3. Addresses specific situations:
+   - Credit issues → Explains manual underwriting
+   - Self-employed → Bank statement programs
+   - Complicated → Complex deal expertise
+4. Reframes as "let's explore together"
 
 **Key responses:**
-- `concern_credit` → Credit tier breakdown, soft pull advantage
-- `concern_income` → W-2 vs self-employed verification paths
-- `concern_dti` → Debt-to-income explanations
-- `concern_property` → Property type considerations
-
-**Income verification branches:**
-- W-2: Simple, fast, digital verification
-- Self-employed: 2 years history, but automated now
-- Variable: Multiple job handling
-- Retired: Asset-based options
+- `credit_concern` → Manual underwriting, compensating factors
+- `self_employed` → Bank statement programs, 12-24 month options
+- `complex` → Complex deal team, creative structures
+- `just_checking` → No pressure, educational conversation
 
 ---
 
-### 2. **Analytics Tracking System**
+### 2. **Smart Conversation Flow**
 
-#### Tracked Events
-| Event | Data Captured |
-|-------|---------------|
-| `widget_opened` | messageCount, stage |
-| `widget_closed` | messageCount, stage |
-| `conversation_started` | quoteData |
-| `message_sent` | sender, stage, hasChips, messageLength |
-| `chip_clicked` | label, value, stage |
-| `user_input` | text (truncated), length, stage |
+```
+Welcome → Goal Discovery → Education → Specific Answer → Handoff
+   ↓           ↓              ↓            ↓            ↓
+Greeting   Chip choices   Contextual   Quote-aware   Apply/Call
+           (4 options)    response     numbers       buttons
+```
 
-#### Analytics API
+**Goal Detection:**
+- `goal_debt` → Debt consolidation focus
+- `goal_renovation` → Home improvement
+- `goal_investment` → Investment opportunity (with risk warning)
+- `goal_emergency` → Urgent need
+- `goal_exploring` → Just browsing
+
+---
+
+### 3. **UI Components**
+
+#### Quick Action Chips (4 visible, context-aware)
+- Primary: "Apply Now" (always)
+- Secondary: "Schedule Call" (always)
+- Tertiary: Context-dependent (Compare options, Check rates, etc.)
+- Quaternary: Educational (How does this work?)
+
+#### Message Bubbles
+- User: Right-aligned, accent color
+- Ezra: Left-aligned, gradient background
+- System: Center, subtle (typing indicator)
+
+#### Input Area
+- Text input with auto-resize
+- Send button (paper plane icon)
+- Voice input button (microphone)
+
+---
+
+### 4. **Analytics Tracking**
+
+**Automatic Events:**
 ```javascript
-// Access from browser console
-window.EzraClient.analytics.track('custom_event', { data: 'value' });
-window.EzraClient.getSummary();
-window.EzraClient.export();
+// Widget lifecycle
+'ezra_widget_opened'
+'ezra_widget_closed'
+'ezra_conversation_started'
+
+// User actions
+'ezra_message_sent'        // { messageLength, detectedIntent }
+'ezra_chip_clicked'        // { chipType, chipLabel }
+'ezra_apply_clicked'       // { source: 'chip' | 'message' }
+'ezra_call_scheduled'      // { fromStage }
+
+// Conversation flow
+'ezra_goal_detected'       // { goal: 'debt' | 'renovation' | ... }
+'ezra_stage_reached'       // { stage: 'education' | 'comparison' | ... }
+'ezra_handoff_triggered'   // { handoffType, reason }
+
+// Errors/timeouts
+'ezra_error'               // { errorType, message }
 ```
 
-#### Summary Metrics
-- Total conversations
-- Average messages per conversation
-- Drop-off points
-- Most common user goals
-- Conversation flow patterns
-- Session duration
-
-#### Data Storage
-- LocalStorage persistence
-- Session ID tracking
-- Parent window messaging (for embedded use)
-- Export to JSON
-
----
-
-### 3. **Ezra Admin Panel** (`js/ezra-admin.js`)
-
-#### Features
-
-**General Settings Tab:**
-- Your Name
-- Phone
-- Email
-- Accent Color picker
-- Auto-open toggle
-
-**Messages Tab:**
-- Welcome Message (with {clientName} variable)
-- Handoff Message (with {loName} variable)
-- Live preview capability
-
-**Topics Tab:**
-- Enable/disable conversation topics:
-  - HELOC Basics
-  - Debt Consolidation
-  - Rate Comparison
-  - Qualification
-  - Timeline
-  - Risks
-
-**Analytics Tab:**
-- Total Conversations counter
-- Average Messages per conversation
-- Completion Rate
-- Top User Goals (ranked list)
-- Export Analytics Data button
-
-#### UI Design
-- Glassmorphism modal
-- Tabbed interface
-- Real-time save
-- Toast notifications
-- Export to JSON
-
----
-
-## 📁 File Structure
-
-```
-js/
-├── ezra-client.js          # Client-facing chat widget
-├── ezra-admin.js           # LO customization panel
-└── (existing ezra files)   # Unchanged
-
-html/
-├── client-quote.html       # Updated with Ezra integration
-├── ezra-client-demo.html   # Feature showcase
-└── EZRA_CLIENT_VISION.md   # Strategy document
-```
-
----
-
-## 🎯 How to Use
-
-### For Clients
-1. Open their quote link
-2. See floating Ezra button (bottom-right)
-3. Click to start conversation
-4. Ezra guides them through understanding their quote
-5. Seamless handoff to loan officer
-
-### For Loan Officers
-1. Open any client quote page
-2. See gear icon (top-right) = Ezra Admin
-3. Click to customize:
-   - Your contact info
-   - Welcome message
-   - Which topics to enable
-4. View analytics to see:
-   - How many clients used Ezra
-   - What they asked about
-   - Where they dropped off
-
----
-
-## 📊 Analytics Access
-
-### In Browser Console
+**Access via Console:**
 ```javascript
-// Get conversation summary
-window.EzraClient.getSummary()
+// View summary
+window.EzraClient.analytics.getSummary()
 
-// Export all data
-window.EzraClient.export()
+// Export data
+window.EzraClient.analytics.export()
 
 // Access raw events
 window.EzraClient.analytics.events
@@ -234,6 +174,65 @@ Detects when to transition to human (complex questions, specific advice).
 
 ### 5. **Privacy-First**
 Analytics truncate user input, no PII stored permanently.
+
+---
+
+## 🤖 AI Provider Hierarchy (Cost-First)
+
+Ezra uses a cost-first fallback chain to minimize API costs while maintaining quality:
+
+### Execution Order
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  CLIENT-SIDE (FREE)                                         │
+│  └── KB templates → Cached responses → Learned objections   │
+└─────────────────────────────────────────────────────────────┘
+                              ↓ (if no KB match)
+┌─────────────────────────────────────────────────────────────┐
+│  SERVER-SIDE: FREE TIER                                     │
+│  1. Gemini (flash/pro)     - $0 (Google free tier)          │
+│  2. OpenRouter (free)      - $0 (Llama, etc.)               │
+└─────────────────────────────────────────────────────────────┘
+                              ↓ (if no API key / fails)
+┌─────────────────────────────────────────────────────────────┐
+│  SERVER-SIDE: LOW COST ($0.10-0.50/M)                       │
+│  3. Groq                   - $0.10/M (FASTEST + CHEAPEST)   │
+│  4. Kimi 8k                - $0.50/M                        │
+│  5. DeepSeek               - $0.50/M                        │
+└─────────────────────────────────────────────────────────────┘
+                              ↓ (if all above fail)
+┌─────────────────────────────────────────────────────────────┐
+│  SERVER-SIDE: MEDIUM ($0.60/M)                              │
+│  6. OpenAI GPT-4o-mini     - $0.60/M                        │
+└─────────────────────────────────────────────────────────────┘
+                              ↓ (last resort)
+┌─────────────────────────────────────────────────────────────┐
+│  SERVER-SIDE: EXPENSIVE ($$$)                               │
+│  7. Grok (xAI)             - $$$                            │
+│  8. Anthropic (Claude)     - $$$                            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Cost Summary
+
+| Tier | Providers | Cost | When Used |
+|------|-----------|------|-----------|
+| **KB** | Templates, cache | **FREE** | Always first |
+| **Free** | Gemini, OpenRouter | **$0** | 90%+ of calls |
+| **Low** | Groq, Kimi 8k, DeepSeek | **$0.10-0.50/M** | If free fails |
+| **Medium** | OpenAI | **$0.60/M** | Rare |
+| **Expensive** | Grok, Anthropic | **$$$** | Emergency only |
+
+### Key Optimizations
+
+- **KB First** - Client-side templates handle common objections/follow-ups (zero API cost)
+- **Gemini Flash** - Default for most tasks (free)
+- **Kimi 8k** - Cheapest model only, no 32k/128k unless explicitly requested
+- **Groq** - Cheapest paid option at $0.10/M tokens
+- **Expensive providers last** - Grok and Anthropic only if everything else fails
+
+> The proxy will exhaust all free options before spending a penny. 💰
 
 ---
 

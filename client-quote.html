@@ -28,8 +28,12 @@
     <meta name="twitter:image" content="https://carbon-heloc.vercel.app/images/og-image.jpg">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+    <link rel="apple-touch-icon" href="/apple-touch-icon-152x152.png" sizes="152x152">
+    <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0f2b4c">
     
     <!-- Structured Data -->
@@ -2089,6 +2093,63 @@
             transform: none;
         }
 
+        /* ===== Voice Input Button ===== */
+        .eq-voice-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: #a78bfa;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            font-size: 16px;
+            margin-right: 8px;
+        }
+
+        .eq-voice-btn:hover {
+            background: rgba(139, 92, 246, 0.3);
+            transform: scale(1.05);
+        }
+
+        .eq-voice-btn.recording {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border-color: rgba(239, 68, 68, 0.5);
+            color: white;
+            animation: eq-voice-pulse 1.5s ease infinite;
+        }
+
+        @keyframes eq-voice-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+        }
+
+        .eq-voice-hint {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.95);
+            color: #a78bfa;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            margin-bottom: 4px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .eq-voice-btn:hover .eq-voice-hint {
+            opacity: 1;
+        }
+
         /* ===== Ezra Position Bar ===== */
         .eq-position-bar {
             padding: 8px 12px;
@@ -3171,6 +3232,17 @@
 
             .floating-bar button {
                 padding: 10px 16px;
+            }
+
+            .eq-voice-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .eq-input-area {
+                padding: 12px;
+            }
                 font-size: 10px;
             }
 
@@ -3190,6 +3262,11 @@
                 height: calc(100vh - 60px);
                 max-height: calc(100vh - 60px);
                 border-radius: 16px 16px 0 0;
+                padding-bottom: env(safe-area-inset-bottom, 0);
+            }
+
+            .eq-panel-content {
+                padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
             }
 
             .eq-chips {
@@ -3197,10 +3274,23 @@
                 flex-wrap: nowrap;
                 scrollbar-width: none;
                 -webkit-overflow-scrolling: touch;
+                padding-left: 16px;
+                padding-right: 16px;
             }
 
             .eq-chips::-webkit-scrollbar {
                 display: none;
+            }
+
+            /* Mobile touch improvements */
+            .eq-orb, .eq-chip, .eq-send-btn, .eq-close {
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+
+            /* Prevent zoom on input focus for iOS */
+            .eq-input {
+                font-size: 16px;
             }
 
             /* Enhancement responsive overrides */
@@ -4236,6 +4326,26 @@
 
             .rec-grid {
                 grid-template-columns: repeat(2, 1fr) !important;
+            }
+            
+            /* Mobile Modal Optimizations */
+            .modal-box {
+                margin: 16px;
+                padding: 24px 20px;
+                max-width: calc(100vw - 32px);
+                max-height: calc(100vh - 100px);
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .modal-box h3 {
+                font-size: 18px;
+            }
+            
+            .modal-box input,
+            .modal-box textarea {
+                font-size: 16px; /* Prevents zoom on iOS */
+                padding: 12px 14px;
             }
         }
 
@@ -6586,7 +6696,7 @@
                     '<div class="eq-chips" id="eq-chips"></div>' +
                     '<div class="eq-messages" id="eq-messages"></div>' +
                     '<div class="eq-typing" id="eq-typing"><span class="eq-dot"></span><span class="eq-dot"></span><span class="eq-dot"></span></div>' +
-                    '<div class="eq-input-area"><textarea id="eq-input" class="eq-input" placeholder="Ask about your quote..." rows="1"></textarea><button class="eq-send" id="eq-send" onclick="eqSend()" disabled>&#9654;</button></div>' +
+                    '<div class="eq-input-area"><button class="eq-voice-btn" id="eq-voice-btn" onclick="eqStartVoiceInput()" title="Voice input">&#127908;</button><textarea id="eq-input" class="eq-input" placeholder="Ask about your quote..." rows="1"></textarea><button class="eq-send" id="eq-send" onclick="eqSend()" disabled>&#9654;</button></div>' +
                     '<div class="eq-position-bar" id="eq-position-bar">' +
                     '<span class="eq-pos-label">Position:</span>' +
                     '<button class="eq-pos-btn" onclick="eqMoveWidget(\'bottom-right\')" title="Bottom Right">&#8598;</button>' +
@@ -6703,20 +6813,187 @@
                     eqSend();
                 };
 
+                // ===== LOCAL KB FALLBACK — Zero API Cost Responses =====
+                // Handles common client questions without calling the server.
+                // Returns a response string or null (null = send to API).
+                function localKBResponse(msg) {
+                    var lower = msg.toLowerCase();
+                    var cn = (quoteData.clientName || 'there').split(' ')[0];
+                    if (cn === 'Borrower') cn = 'there';
+                    var cashStr = '$' + Number(quoteData.cashBack || 0).toLocaleString();
+                    var rateStr = quoteData.rate || 'your quoted';
+                    var pmtStr = quoteData.payment || 'your quoted payment';
+                    var termStr = quoteData.term || '15';
+                    var homeStr = '$' + Number(quoteData.homeValue || 0).toLocaleString();
+                    var loN = loInfo.name || 'your loan officer';
+                    var loP = loInfo.phone ? ' at ' + loInfo.phone : '';
+
+                    // How does a HELOC work / what is a HELOC
+                    if (/how does.*(heloc|this) work|what is a heloc|explain.*(heloc|this loan)/i.test(lower)) {
+                        return cn + ", great question! A HELOC — Home Equity Line of Credit — lets you access the equity you've built in your home.\n\n" +
+                            "Here's how it works:\n" +
+                            "**1. Your equity** — Your home is worth " + homeStr + ", and after your mortgage, you have " + cashStr + " in accessible equity.\n" +
+                            "**2. Draw period** — During the first few years, you can access your funds. Your quoted payment of " + pmtStr + " applies during this phase.\n" +
+                            "**3. Repayment** — After the draw period, the loan enters repayment based on whatever balance remains.\n" +
+                            "**4. No prepayment penalty** — You can pay it off anytime with zero penalties.\n\n" +
+                            "Think of it as **money sitting in your walls** — a HELOC lets you unlock it at a fraction of what credit cards or personal loans would cost. Ready to get started? Just tap the **Apply Now** button below!";
+                    }
+
+                    // Payment / monthly payment question
+                    if (/what.*(payment|pay|cost|monthly)|how much.*(month|pay)/i.test(lower)) {
+                        return "Based on your personalized quote, " + cn + ":\n\n" +
+                            "Your recommended option is **" + rateStr + "% for " + termStr + " years** with a monthly payment of **" + pmtStr + "**.\n\n" +
+                            (quoteData.tiers && quoteData.tiers.length > 0 ? "You also have other options available — scroll down to see all rate tiers and terms. Each tier balances upfront costs vs ongoing rate differently.\n\n" : "") +
+                            "That payment covers **both principal and interest**, so your balance pays down from day one. And you can always pay extra with **zero prepayment penalty**.\n\n" +
+                            "Want to lock this in? Tap **Apply Now** below — it only takes a minute!";
+                    }
+
+                    // Rate question / why this rate / is this a good rate
+                    if (/rate|good.*rate|competitive|why.*(this|my).*rate|high.*rate|lower.*rate/i.test(lower)) {
+                        return "Your rate of **" + rateStr + "%** is highly competitive, " + cn + ".\n\n" +
+                            "To put it in perspective:\n" +
+                            "- Credit cards: **22-29%**\n" +
+                            "- Personal loans: **12-18%**\n" +
+                            "- Your HELOC: **" + rateStr + "%**\n\n" +
+                            "That's a massive difference. On " + cashStr + ", you'd pay roughly **$" + Math.round(Number(quoteData.cashBack || 50000) * 0.24 / 12).toLocaleString() + "/mo** in credit card interest alone. Your HELOC payment of " + pmtStr + " covers principal AND interest.\n\n" +
+                            (quoteData.tiers && quoteData.tiers.length > 1 ? "You can also see other rate tiers in your quote — a higher origination fee gets you an even lower rate if you're planning to hold long-term.\n\n" : "") +
+                            "When you're ready, tap **Apply Now** to secure your rate!";
+                    }
+
+                    // Credit score / will this hurt my credit
+                    if (/credit.*score|hurt.*credit|affect.*credit|credit.*check|hard.*pull|soft.*pull/i.test(lower)) {
+                        return "Great question, " + cn + "! The initial check is a **soft credit pull** — it has **zero impact** on your credit score.\n\n" +
+                            "A hard pull only happens if you decide to officially proceed with an application. So there's no risk in seeing your options.\n\n" +
+                            "Think of it like window shopping — you get to see exactly what's available to you without any commitment. Ready to take a look? Tap **Apply Now** below!";
+                    }
+
+                    // How long / timeline / how fast
+                    if (/how long|how fast|timeline|when.*fund|how quickly|days|weeks|process.*take/i.test(lower)) {
+                        return "The process is faster than most people expect, " + cn + "!\n\n" +
+                            "Our platform uses **AI-assisted underwriting** and **digital income verification** — no stacks of paperwork or weeks of waiting.\n\n" +
+                            "Some loans fund in **as little as 5 days**, and most don't even require a traditional appraisal (we use technology to pull your home's value automatically).\n\n" +
+                            "The longest part is usually just getting started — and that takes about 2 minutes. Tap **Apply Now** to kick things off!";
+                    }
+
+                    // Apply / get started / next steps / how do I apply
+                    if (/apply|get started|next step|how.*start|what.*next|sign up|begin|move forward/i.test(lower)) {
+                        return "I love that you're ready, " + cn + "! Here's how easy it is:\n\n" +
+                            "**Step 1:** Tap the **Apply Now** button at the bottom of your screen\n" +
+                            "**Step 2:** Fill in a few quick details (takes about 2 minutes)\n" +
+                            "**Step 3:** We run a soft credit check — no impact to your score\n" +
+                            "**Step 4:** You'll see your actual offers and choose what works best\n\n" +
+                            "Some approvals fund in as little as 5 days. " + cashStr + " in equity is waiting for you — let's make it happen!\n\n" +
+                            "You can also reach out to " + loN + loP + " if you'd like to discuss anything first.";
+                    }
+
+                    // Debt consolidation
+                    if (/debt.*consol|credit.*card|pay.*off.*debt|combine.*debt|high.*interest/i.test(lower)) {
+                        return "Debt consolidation is one of the smartest uses of a HELOC, " + cn + ".\n\n" +
+                            "Here's the math: Credit cards charge **22-29%** interest and never actually pay off with minimums. Your HELOC at **" + rateStr + "%** gives you a structured payoff with a real end date.\n\n" +
+                            "On " + cashStr + ", you could save **hundreds per month** compared to credit card minimum payments — AND actually be debt-free in " + termStr + " years.\n\n" +
+                            "You're not adding debt — you're **restructuring it into something cheaper** with a real payoff date. That's a debt *reduction* strategy.\n\n" +
+                            "Ready to start saving? Tap **Apply Now** below!";
+                    }
+
+                    // Home improvement
+                    if (/home.*improv|renovati|remodel|kitchen|bathroom|upgrade|repair|addition/i.test(lower)) {
+                        return "A HELOC is the smartest way to fund home improvements, " + cn + "!\n\n" +
+                            "You're borrowing against equity you already own — at **" + rateStr + "%**, that's a fraction of what a contractor financing plan or personal loan would cost.\n\n" +
+                            "Plus, improvements can **increase your home's value**, which means your equity grows even more. Kitchen remodels alone typically return 60-80% of the cost in home value.\n\n" +
+                            "It's like using your home to **invest in your home**. Ready to get started? Tap **Apply Now**!";
+                    }
+
+                    // Prepayment / early payoff
+                    if (/prepay|early.*pay|pay.*off.*early|penalty|payoff/i.test(lower)) {
+                        return "Great news, " + cn + " — there's **absolutely no prepayment penalty**!\n\n" +
+                            "You can make extra payments, pay it down faster, or pay it off completely at any time with **zero fees**. Total flexibility.\n\n" +
+                            "For example, even adding an extra $" + Math.round(Number(String(quoteData.payment || '$500').replace(/[^0-9.]/g, '') || 500) * 0.25).toLocaleString() + "/mo to your payment would shave years off the payoff.\n\n" +
+                            "That's one of the best things about this product — you're always in control. Ready to lock in your rate? Tap **Apply Now**!";
+                    }
+
+                    // Refinance comparison
+                    if (/refin|refi|cash.out|vs.*refi|instead.*refi/i.test(lower)) {
+                        return "Great question, " + cn + "! Here's why a HELOC often beats a cash-out refinance:\n\n" +
+                            "**A refinance** replaces your entire first mortgage — you'd give up your current rate.\n" +
+                            "**A HELOC** accesses equity **without touching your first mortgage**.\n\n" +
+                            "Plus:\n" +
+                            "- Faster: as little as 5 days vs 30-45 for a refi\n" +
+                            "- Lower closing costs\n" +
+                            "- Usually no appraisal needed\n" +
+                            "- You **keep your existing mortgage rate**\n\n" +
+                            "It's the best of both worlds — access your equity AND keep your current mortgage. Tap **Apply Now** to get started!";
+                    }
+
+                    // Appraisal
+                    if (/apprais|home.*valu|property.*valu|AVM/i.test(lower)) {
+                        return "Good news, " + cn + " — in most cases, **no traditional appraisal is needed**!\n\n" +
+                            "We use an AVM (Automated Valuation Model) to determine your home's value automatically. No scheduling, no waiting for an appraiser to come out.\n\n" +
+                            "It speeds up the entire process significantly. Your home is currently valued at **" + homeStr + "** based on available data.\n\n" +
+                            "One less thing to worry about! Ready to move forward? Tap **Apply Now**!";
+                    }
+
+                    // Safety / trust / scam
+                    if (/safe|trust|scam|legit|secure|privacy|sell.*data|information/i.test(lower)) {
+                        return "I completely understand wanting to be sure, " + cn + ". Your security is the top priority.\n\n" +
+                            "**Bank-grade encryption** — the same level used by major financial institutions\n" +
+                            "**Never sold** — your information is NEVER shared with or sold to third parties\n" +
+                            "**Full transparency** — you see all options and choose what works best\n" +
+                            "**No obligation** — you can review offers and walk away at any time\n\n" +
+                            "Your loan officer " + loN + " is here to answer any questions personally" + loP + ". You're in good hands!";
+                    }
+
+                    // Fees / closing costs / origination
+                    if (/fee|closing.*cost|origin|points|cost.*upfront/i.test(lower)) {
+                        var origStr = quoteData.origination ? quoteData.origination + '%' : 'varies by tier';
+                        return cn + ", let me break down the costs for you.\n\n" +
+                            "Your origination fee is **" + origStr + "** — this is the main upfront cost. It's built into your loan, so there's no out-of-pocket expense at closing.\n\n" +
+                            (quoteData.tiers && quoteData.tiers.length > 1 ? "You'll notice in your quote that different tiers trade off origination vs rate:\n- **Higher origination** = lower monthly rate (best for long-term)\n- **Lower origination** = higher rate (best for short-term)\n\n" : "") +
+                            "Most HELOCs have **significantly lower closing costs** than a refinance, and there's **no appraisal fee** in most cases.\n\n" +
+                            "Want to discuss which tier makes the most sense for you? Tap **Apply Now** or reach out to " + loN + loP + "!";
+                    }
+
+                    // Thank you / goodbye
+                    if (/^(thanks|thank you|ty|thx|appreciate|great|awesome|perfect|got it|ok|okay)/i.test(lower)) {
+                        return "You're welcome, " + cn + "! I'm glad I could help.\n\n" +
+                            "Remember, you've got **" + cashStr + " in accessible equity** and a great rate locked in. When you're ready, the **Apply Now** button is right there for you.\n\n" +
+                            "And " + loN + " is always available" + loP + " if you'd like to discuss anything further. Have a great day!";
+                    }
+
+                    // No match — return null to send to API
+                    return null;
+                }
+
                 window.eqSend = function () {
                     var inp = document.getElementById('eq-input');
                     if (!inp || !inp.value.trim() || isSending) return;
                     var msg = inp.value.trim();
                     inp.value = ''; inp.style.height = 'auto'; document.getElementById('eq-send').disabled = true;
-                    addMsg('user', msg); showTyping(); isSending = true;
+                    addMsg('user', msg);
                     trackEvent('chat_message_sent', { code: quoteCode, len: msg.length });
+
+                    // Try local KB first — zero API cost
+                    var localResponse = localKBResponse(msg);
+                    if (localResponse) {
+                        showTyping();
+                        // Simulate brief typing delay (300-800ms) for natural feel
+                        var delay = 300 + Math.random() * 500;
+                        setTimeout(function() {
+                            hideTyping();
+                            addMsg('assistant', localResponse);
+                            updateSmartChips();
+                        }, delay);
+                        return;
+                    }
+
+                    // No local match — send to AI service
+                    showTyping(); isSending = true;
 
                     fetch(CHAT_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            quoteCode: quoteCode, 
-                            message: msg, 
+                        body: JSON.stringify({
+                            quoteCode: quoteCode,
+                            message: msg,
                             conversationHistory: chatHistory.slice(-10),
                             language: window._ezraLanguage || 'en'
                         })
@@ -6798,10 +7075,28 @@
                             var successMsg = requestType === 'call_me_now' 
                                 ? "✅ Perfect! I've sent your number to " + esc(loName) + ". They'll call you as soon as possible — usually within the next few minutes. Keep your phone nearby!"
                                 : "✅ Great! I've notified " + esc(loName) + " that you'd like to schedule a call. They'll reach out to you at " + esc(phone) + " to find a time that works.";
+                            
+                            // Add click-to-call and SMS buttons for mobile if LO phone is available
+                            if (loInfo.phone) {
+                                var contactButtons = window.eqShowContactButtons(loInfo.phone, 
+                                    'Hi ' + loName + ', I just requested a call through your quote page. - ' + (quoteData.clientName || 'A client'));
+                                if (contactButtons) {
+                                    successMsg += "<br><br>Or contact directly:<br>" + contactButtons;
+                                }
+                            }
+                            
                             addMsg('assistant', successMsg);
                             trackEvent('schedule_request_sent', { code: quoteCode, type: requestType });
                         } else {
-                            addMsg('assistant', "I had trouble sending that request. You can reach " + esc(loName) + " directly" + (loInfo.phone ? " at " + esc(loInfo.phone) : "") + ".");
+                            var errorMsg = "I had trouble sending that request. You can reach " + esc(loName) + " directly" + (loInfo.phone ? " at " + esc(loInfo.phone) : "") + ".";
+                            // Add click-to-call for mobile on error too
+                            if (loInfo.phone) {
+                                var callButton = window.eqShowCallButton(loInfo.phone);
+                                if (callButton) {
+                                    errorMsg += "<br><br>" + callButton;
+                                }
+                            }
+                            addMsg('assistant', errorMsg);
                         }
                     })
                     .catch(function(err) {
@@ -6850,12 +7145,31 @@
                             scheduleRequestType = schedulingIntent.type;
                             inp.value = '';
                             addMsg('user', msg);
+                            
+                            // Mobile-optimized message with input hint
+                            var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+                            var phoneHint = isMobile ? " (tap the number row on your keyboard)" : "";
+                            
                             var askMsg = schedulingIntent.type === 'call_me_now'
                                 ? (schedulingIntent.urgent 
-                                    ? "I understand this is urgent! I'll have " + esc(loName) + " call you right away. What's the best number to reach you at?"
-                                    : "I can have " + esc(loName) + " call you! What's the best number to reach you at?")
-                                : "I'd be happy to help you schedule a call with " + esc(loName) + ". What's the best phone number to reach you at?";
+                                    ? "I understand this is urgent! I'll have " + esc(loName) + " call you right away. What's the best number to reach you at" + phoneHint + "?"
+                                    : "I can have " + esc(loName) + " call you! What's the best number to reach you at" + phoneHint + "?")
+                                : "I'd be happy to help you schedule a call with " + esc(loName) + ". What's the best phone number to reach you at" + phoneHint + "?";
+                            
                             addMsg('assistant', askMsg);
+                            
+                            // Focus input for mobile
+                            setTimeout(function() {
+                                var inputEl = document.getElementById('eq-input');
+                                if (inputEl) {
+                                    inputEl.focus();
+                                    // On mobile, scroll to keep input visible
+                                    if (isMobile) {
+                                        inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    }
+                                }
+                            }, 100);
+                            
                             return;
                         }
                     }
@@ -6866,6 +7180,38 @@
                 
                 // Add Call Me Now chip to default chips
                 defaultChips.push('📞 Call me now');
+                
+                // Mobile optimization: Add tel: link support for click-to-call
+                window.eqShowCallButton = function(phone) {
+                    if (!phone) return;
+                    var cleanPhone = phone.replace(/\D/g, '');
+                    var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+                    if (isMobile) {
+                        return '<a href="tel:' + cleanPhone + '" style="display:inline-block;background:linear-gradient(135deg,#10b981,#059669);color:white;padding:10px 20px;border-radius:8px;text-decoration:none;margin-top:8px;font-weight:600;">📞 Tap to Call</a>';
+                    }
+                    return '';
+                };
+                
+                // SMS Deep Link support - allows clients to text the LO
+                window.eqShowSMSButton = function(phone, message) {
+                    if (!phone) return;
+                    var cleanPhone = phone.replace(/\D/g, '');
+                    var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+                    if (!isMobile) return '';
+                    
+                    var smsBody = message ? encodeURIComponent(message) : '';
+                    var smsUrl = 'sms:' + cleanPhone + (smsBody ? '?body=' + smsBody : '');
+                    
+                    return '<a href="' + smsUrl + '" style="display:inline-block;background:linear-gradient(135deg,#3b82f6,#2563eb);color:white;padding:10px 20px;border-radius:8px;text-decoration:none;margin-top:8px;font-weight:600;margin-left:8px;">💬 Text</a>';
+                };
+                
+                // Combined call/text buttons for mobile
+                window.eqShowContactButtons = function(phone, message) {
+                    var callBtn = window.eqShowCallButton(phone);
+                    var smsBtn = window.eqShowSMSButton(phone, message);
+                    if (!callBtn && !smsBtn) return '';
+                    return '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">' + callBtn + smsBtn + '</div>';
+                };
                 
                 // Handle Call Me Now chip click
                 var originalEqChip = window.eqChip;
@@ -6892,6 +7238,111 @@
                     }
                     return originalEqChip(text);
                 };
+
+                // ===== VOICE INPUT FOR EZRA =====
+                var voiceRecognition = null;
+                var isRecording = false;
+                
+                // Initialize speech recognition
+                function initVoiceRecognition() {
+                    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    if (!SpeechRecognition) {
+                        console.log('[Ezra] Voice recognition not supported');
+                        // Hide voice button if not supported
+                        var voiceBtn = document.getElementById('eq-voice-btn');
+                        if (voiceBtn) voiceBtn.style.display = 'none';
+                        return;
+                    }
+                    
+                    voiceRecognition = new SpeechRecognition();
+                    voiceRecognition.continuous = false;
+                    voiceRecognition.interimResults = true;
+                    voiceRecognition.lang = 'en-US';
+                    
+                    voiceRecognition.onstart = function() {
+                        isRecording = true;
+                        var voiceBtn = document.getElementById('eq-voice-btn');
+                        if (voiceBtn) voiceBtn.classList.add('recording');
+                        addMsg('assistant', '<span style="color:#a78bfa;">🎤 Listening... Speak now</span>');
+                    };
+                    
+                    voiceRecognition.onresult = function(event) {
+                        var transcript = '';
+                        var isFinal = false;
+                        
+                        for (var i = event.resultIndex; i < event.results.length; i++) {
+                            transcript += event.results[i][0].transcript;
+                            if (event.results[i].isFinal) {
+                                isFinal = true;
+                            }
+                        }
+                        
+                        if (isFinal && transcript.trim()) {
+                            // Set the input value
+                            var inputEl = document.getElementById('eq-input');
+                            var sendBtn = document.getElementById('eq-send');
+                            if (inputEl) {
+                                inputEl.value = transcript.trim();
+                                inputEl.dispatchEvent(new Event('input'));
+                                if (sendBtn) sendBtn.disabled = false;
+                            }
+                        }
+                    };
+                    
+                    voiceRecognition.onerror = function(event) {
+                        console.error('[Ezra] Voice recognition error:', event.error);
+                        isRecording = false;
+                        var voiceBtn = document.getElementById('eq-voice-btn');
+                        if (voiceBtn) voiceBtn.classList.remove('recording');
+                        
+                        if (event.error !== 'aborted') {
+                            addMsg('assistant', '<span style="color:#ef4444;">Sorry, I didn\'t catch that. Please try typing or speak more clearly.</span>');
+                        }
+                    };
+                    
+                    voiceRecognition.onend = function() {
+                        isRecording = false;
+                        var voiceBtn = document.getElementById('eq-voice-btn');
+                        if (voiceBtn) voiceBtn.classList.remove('recording');
+                        
+                        // Auto-send if we have text
+                        var inputEl = document.getElementById('eq-input');
+                        if (inputEl && inputEl.value.trim()) {
+                            setTimeout(function() {
+                                eqSend();
+                            }, 500);
+                        }
+                    };
+                }
+                
+                // Start voice input
+                window.eqStartVoiceInput = function() {
+                    if (!voiceRecognition) {
+                        initVoiceRecognition();
+                    }
+                    
+                    if (!voiceRecognition) {
+                        addMsg('assistant', 'Voice input is not supported on your device. Please type your message.');
+                        return;
+                    }
+                    
+                    if (isRecording) {
+                        // Stop recording
+                        voiceRecognition.stop();
+                        isRecording = false;
+                    } else {
+                        // Start recording
+                        try {
+                            voiceRecognition.start();
+                        } catch (e) {
+                            console.error('[Ezra] Voice start error:', e);
+                            addMsg('assistant', 'Could not start voice input. Please check microphone permissions.');
+                        }
+                    }
+                };
+                
+                // Initialize voice recognition on load
+                setTimeout(initVoiceRecognition, 1000);
 
                 // ===== WIDGET POSITION & DRAG =====
                 window.eqMoveWidget = function (position) {
