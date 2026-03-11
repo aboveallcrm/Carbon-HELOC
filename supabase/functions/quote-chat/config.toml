@@ -1,0 +1,2 @@
+[functions.quote-chat]
+verify_jwt = false

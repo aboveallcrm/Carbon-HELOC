@@ -301,12 +301,57 @@
         
         console.log('🎯 Carbon Command Palette v3.0 - Ultimate Edition');
         console.log('💡 Natural Language: ENABLED');
-        console.log('🎤 Voice Control: Say "Hey Ezra" (or "Hey Carbon")');
+        console.log('🎤 Voice Control: ACTIVE - Say "Hey Ezra" or "Hey Carbon"');
         console.log('⚡ Smart Predictions: ENABLED');
         console.log('🎬 Workflow Recorder: /record [name]');
         
         // Auto-save every 30 seconds
         setInterval(saveState, CONFIG.autoSaveInterval);
+    }
+
+    function bindGlobalShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // Cmd/Ctrl + K to open
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                openPalette();
+            }
+            // / to open (if not in input)
+            if (e.key === '/' && !isInputActive()) {
+                e.preventDefault();
+                openPalette();
+            }
+            // Escape to close
+            if (e.key === 'Escape' && paletteOpen) {
+                e.preventDefault();
+                closePalette();
+            }
+        });
+    }
+
+    function isInputActive() {
+        const active = document.activeElement;
+        return active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
+    }
+
+    function bindClickOutside() {
+        // Handled in createPaletteHTML via overlay click
+    }
+
+    function initVoiceRecognition() {
+        // Voice recognition stub - to be implemented
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            state.voiceEnabled = true;
+        }
+    }
+
+    function detectContext() {
+        // Detect current page context
+        const path = window.location.pathname;
+        if (path.includes('quote')) state.context = 'quote';
+        else if (path.includes('lead')) state.context = 'lead';
+        else if (path.includes('client')) state.context = 'client';
+        else state.context = 'general';
     }
 
     // ==================== NATURAL LANGUAGE ENGINE ====================
@@ -582,6 +627,16 @@
         
         // 1. Context-based predictions
         const contextCommands = getContextCommands(state.context);
+        
+        function getContextCommands(context) {
+            const contextMap = {
+                'quote': ['new quote', 'save quote', 'export pdf', 'email quote'],
+                'lead': ['new lead', 'find lead', 'import leads', 'export leads'],
+                'client': ['view quotes', 'contact lo', 'schedule call'],
+                'general': ['new quote', 'new lead', 'view rates', 'help']
+            };
+            return contextMap[context] || contextMap['general'];
+        }
         predictions.push(...contextCommands.slice(0, 2));
         
         // 2. Time-based predictions
@@ -841,8 +896,10 @@
 
     // ==================== INPUT HANDLING (Enhanced) ====================
     function handleInput(value) {
+        selectedIndex = 0;
+        
         // Try natural language first
-        if (state.naturalLanguageMode && value.length > 3) {
+        if (state.naturalLanguageMode && value.length > 3 && !value.startsWith('/')) {
             const nlResult = tryNaturalLanguage(value);
             if (nlResult) {
                 showNLConfirmation(nlResult);
@@ -857,7 +914,16 @@
         }
         
         // Regular filter
-        filterCommands(value);
+        updateCommandList(value);
+    }
+
+    function handleSlashCommand(value) {
+        const cmd = value.slice(1).toLowerCase();
+        updateCommandList(cmd);
+    }
+
+    function filterCommands(query) {
+        updateCommandList(query);
     }
 
     function tryNaturalLanguage(input) {
@@ -931,6 +997,339 @@
             </div>
         `;
         document.body.appendChild(cheatsheet);
+    }
+
+    // ==================== CORE PALETTE FUNCTIONS ====================
+    let paletteOpen = false;
+    let selectedIndex = 0;
+    let filteredCommands = [];
+
+    function openPalette() {
+        let palette = document.getElementById('carbon-command-palette');
+        if (!palette) {
+            createPaletteHTML();
+            palette = document.getElementById('carbon-command-palette');
+        }
+        palette.classList.add('carbon-palette-active');
+        paletteOpen = true;
+        selectedIndex = 0;
+        
+        const input = palette.querySelector('.carbon-palette-input');
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
+        
+        updateCommandList('');
+    }
+
+    function closePalette() {
+        const palette = document.getElementById('carbon-command-palette');
+        if (palette) {
+            palette.classList.remove('carbon-palette-active');
+        }
+        paletteOpen = false;
+    }
+
+    function openPaletteWithQuery(query) {
+        openPalette();
+        const input = document.querySelector('.carbon-palette-input');
+        if (input) {
+            input.value = query;
+            handleInput(query);
+        }
+    }
+
+    // ==================== VOICE RECOGNITION ====================
+    let recognition = null;
+    let voiceListening = false;
+    let wakeWordDetected = false;
+    const WAKE_WORDS = ['hey ezra', 'hey carbon', 'hey assistant', 'ok ezra', 'ok carbon'];
+    
+    function initVoiceRecognition() {
+        // Check for browser support
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            console.log('🎤 Voice recognition not supported in this browser');
+            return;
+        }
+        
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = CONFIG.voiceLang;
+        
+        recognition.onresult = handleVoiceResult;
+        recognition.onerror = handleVoiceError;
+        recognition.onend = handleVoiceEnd;
+        
+        // Start listening for wake word
+        startWakeWordListening();
+        
+        console.log('🎤 Voice recognition initialized. Say "Hey Ezra" or "Hey Carbon" to activate');
+    }
+    
+    function startWakeWordListening() {
+        if (!recognition || voiceListening) return;
+        
+        try {
+            recognition.start();
+            voiceListening = true;
+            wakeWordDetected = false;
+        } catch (e) {
+            console.log('Voice recognition start error:', e);
+        }
+    }
+    
+    function handleVoiceResult(event) {
+        const results = event.results;
+        const lastResult = results[results.length - 1];
+        const transcript = lastResult[0].transcript.toLowerCase().trim();
+        
+        if (lastResult.isFinal) {
+            if (!wakeWordDetected) {
+                // Check for wake word
+                const detectedWakeWord = WAKE_WORDS.find(wake => transcript.includes(wake));
+                if (detectedWakeWord) {
+                    wakeWordDetected = true;
+                    showToast('🎤 Yes, I\'m listening...', 'success');
+                    
+                    // Visual feedback
+                    showVoiceActiveIndicator();
+                    
+                    // Reset after 5 seconds if no command given
+                    setTimeout(() => {
+                        if (wakeWordDetected) {
+                            wakeWordDetected = false;
+                            hideVoiceActiveIndicator();
+                        }
+                    }, 5000);
+                }
+            } else {
+                // Process command after wake word
+                wakeWordDetected = false;
+                hideVoiceActiveIndicator();
+                processVoiceCommand(transcript);
+            }
+        } else {
+            // Interim results - show live transcription if wake word detected
+            if (wakeWordDetected) {
+                updateVoiceTranscript(transcript);
+            }
+        }
+    }
+    
+    function processVoiceCommand(transcript) {
+        // Remove wake words from transcript
+        let command = transcript;
+        WAKE_WORDS.forEach(wake => {
+            command = command.replace(wake, '');
+        });
+        command = command.trim();
+        
+        if (!command) {
+            showToast('🎤 I heard the wake word but no command. Try: "Create quote for John"', 'info');
+            return;
+        }
+        
+        showToast(`🎤 Heard: "${command}"`, 'success');
+        
+        // Try natural language processing first
+        if (state.naturalLanguageMode) {
+            const nlResult = tryNaturalLanguage(command);
+            if (nlResult) {
+                executeCommand(nlResult.command, ...nlResult.params);
+                return;
+            }
+        }
+        
+        // Try direct command matching
+        const bestMatch = findBestNLMatch(command);
+        if (bestMatch && bestMatch.score > 0.6) {
+            executeCommand(bestMatch.name);
+        } else {
+            // Open palette with the voice input
+            openPaletteWithQuery(command);
+        }
+    }
+    
+    function handleVoiceError(event) {
+        if (event.error === 'no-speech') {
+            // Normal - no speech detected
+            return;
+        }
+        if (event.error === 'audio-capture') {
+            console.log('No microphone found or microphone not working');
+        } else if (event.error === 'not-allowed') {
+            console.log('Microphone permission denied');
+        } else {
+            console.log('Voice recognition error:', event.error);
+        }
+    }
+    
+    function handleVoiceEnd() {
+        voiceListening = false;
+        // Restart listening after a short delay
+        setTimeout(() => {
+            if (!voiceListening) {
+                startWakeWordListening();
+            }
+        }, 500);
+    }
+    
+    function toggleVoice() {
+        if (!recognition) {
+            showToast('🎤 Voice recognition not supported in this browser', 'error');
+            return;
+        }
+        
+        if (voiceListening) {
+            recognition.stop();
+            voiceListening = false;
+            hideVoiceActiveIndicator();
+            showToast('🎤 Voice recognition paused', 'info');
+        } else {
+            startWakeWordListening();
+            showToast('🎤 Voice recognition active. Say "Hey Ezra" to start', 'success');
+        }
+    }
+    
+    function showVoiceActiveIndicator() {
+        let indicator = document.getElementById('carbon-voice-indicator');
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'carbon-voice-indicator';
+            indicator.className = 'carbon-voice-indicator';
+            indicator.innerHTML = `
+                <div class="carbon-voice-pulse"></div>
+                <span class="carbon-voice-text">Listening...</span>
+                <span class="carbon-voice-transcript"></span>
+            `;
+            document.body.appendChild(indicator);
+        }
+        indicator.classList.add('carbon-voice-active');
+    }
+    
+    function hideVoiceActiveIndicator() {
+        const indicator = document.getElementById('carbon-voice-indicator');
+        if (indicator) {
+            indicator.classList.remove('carbon-voice-active');
+        }
+    }
+    
+    function updateVoiceTranscript(text) {
+        const indicator = document.getElementById('carbon-voice-indicator');
+        if (indicator) {
+            const transcriptEl = indicator.querySelector('.carbon-voice-transcript');
+            if (transcriptEl) {
+                transcriptEl.textContent = text;
+            }
+        }
+    }
+
+    function executeCommand(cmd, ...args) {
+        const command = COMMANDS[cmd];
+        if (command && command.action) {
+            try {
+                command.action(...args);
+                // Track in history
+                state.commandHistory.unshift(cmd);
+                if (state.commandHistory.length > CONFIG.maxHistory) {
+                    state.commandHistory.pop();
+                }
+                saveState();
+            } catch (err) {
+                showToast('Error executing command: ' + err.message, 'error');
+            }
+        } else {
+            showToast('Command not found: ' + cmd, 'error');
+        }
+    }
+
+    function handleInputKeydown(e) {
+        if (!paletteOpen) return;
+        
+        switch(e.key) {
+            case 'Escape':
+                e.preventDefault();
+                closePalette();
+                break;
+            case 'ArrowDown':
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, filteredCommands.length - 1);
+                updateSelection();
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, 0);
+                updateSelection();
+                break;
+            case 'Enter':
+                e.preventDefault();
+                if (filteredCommands[selectedIndex]) {
+                    const cmd = filteredCommands[selectedIndex];
+                    executeCommand(cmd.name);
+                    closePalette();
+                }
+                break;
+        }
+    }
+
+    function updateCommandList(query) {
+        const container = document.querySelector('.carbon-palette-sections');
+        if (!container) return;
+        
+        filteredCommands = [];
+        const q = query.toLowerCase().trim();
+        
+        for (const [name, data] of Object.entries(COMMANDS)) {
+            if (!q || name.includes(q) || (data.description && data.description.toLowerCase().includes(q))) {
+                filteredCommands.push({ name, ...data });
+            }
+        }
+        
+        if (filteredCommands.length === 0) {
+            container.innerHTML = '<div class="carbon-palette-empty">No commands found. Try natural language!</div>';
+            return;
+        }
+        
+        container.innerHTML = filteredCommands.map((cmd, idx) => `
+            <div class="carbon-palette-item ${idx === selectedIndex ? 'carbon-palette-selected' : ''}" data-index="${idx}">
+                <span class="carbon-palette-cmd-icon">${getCommandIcon(cmd.name)}</span>
+                <div class="carbon-palette-cmd-info">
+                    <div class="carbon-palette-cmd-name">${formatCommandName(cmd.name)}</div>
+                    <div class="carbon-palette-cmd-desc">${cmd.description || ''}</div>
+                </div>
+                ${cmd.alias ? `<span class="carbon-palette-cmd-alias">${cmd.alias.split(',')[0]}</span>` : ''}
+            </div>
+        `).join('');
+        
+        // Click handlers
+        container.querySelectorAll('.carbon-palette-item').forEach((item, idx) => {
+            item.addEventListener('click', () => {
+                executeCommand(filteredCommands[idx].name);
+                closePalette();
+            });
+        });
+    }
+
+    function updateSelection() {
+        const items = document.querySelectorAll('.carbon-palette-item');
+        items.forEach((item, idx) => {
+            item.classList.toggle('carbon-palette-selected', idx === selectedIndex);
+        });
+    }
+
+    function updatePalettePredictions() {
+        const container = document.getElementById('palette-predictions');
+        if (!container) return;
+        
+        const predictions = getPredictions().slice(0, 3);
+        container.innerHTML = predictions.map(cmd => `
+            <button class="carbon-pred-chip" onclick="CarbonCommands.execute('${cmd}'); CarbonCommands.close();">
+                ${getCommandIcon(cmd)} ${formatCommandName(cmd)}
+            </button>
+        `).join('');
     }
 
     // ==================== UTILITY FUNCTIONS ====================

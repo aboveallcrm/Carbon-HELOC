@@ -3,8 +3,278 @@
  * Natural Language + Workflow + Predictions + Team + Automation
  */
 
-/* Import v2.0 base styles */
-@import url('carbon-commands-v2.css');
+/* Carbon Command Palette v3.0 - Standalone Styles */
+
+/* ==================== BASE PALETTE STYLES ==================== */
+.carbon-palette {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 100px;
+}
+
+.carbon-palette-active {
+    display: flex !important;
+}
+
+.carbon-palette-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+.carbon-palette-container {
+    position: relative;
+    width: 90%;
+    max-width: 640px;
+    background: linear-gradient(145deg, #1e293b, #0f172a);
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    animation: carbon-palette-in 0.2s ease-out;
+}
+
+@keyframes carbon-palette-in {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.carbon-palette-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(15, 23, 42, 0.8);
+}
+
+.carbon-palette-icon {
+    font-size: 20px;
+    color: #c5a059;
+    font-weight: 600;
+}
+
+.carbon-palette-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #f8fafc;
+    font-size: 16px;
+    outline: none;
+    font-family: inherit;
+}
+
+.carbon-palette-input::placeholder {
+    color: #64748b;
+}
+
+.carbon-palette-voice,
+.carbon-palette-record {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.carbon-palette-voice:hover,
+.carbon-palette-record:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+}
+
+.carbon-palette-hint {
+    font-size: 11px;
+    color: #64748b;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.carbon-palette-content {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.carbon-palette-sections {
+    padding: 8px 0;
+}
+
+.carbon-palette-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+}
+
+.carbon-palette-item:hover,
+.carbon-palette-selected {
+    background: rgba(197, 160, 89, 0.1);
+    border-left-color: #c5a059;
+}
+
+.carbon-palette-cmd-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(197, 160, 89, 0.15);
+    color: #c5a059;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.carbon-palette-cmd-info {
+    flex: 1;
+}
+
+.carbon-palette-cmd-name {
+    color: #f8fafc;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.carbon-palette-cmd-desc {
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.carbon-palette-cmd-alias {
+    font-size: 11px;
+    color: #475569;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.carbon-palette-empty {
+    padding: 40px;
+    text-align: center;
+    color: #64748b;
+}
+
+.carbon-palette-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(15, 23, 42, 0.8);
+}
+
+.carbon-palette-footer-hint {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.carbon-palette-footer-hint kbd {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 11px;
+}
+
+.carbon-voice-hint {
+    margin-left: 16px;
+    color: #c5a059;
+}
+
+.carbon-cheat-sheet-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: rgba(197, 160, 89, 0.15);
+    color: #c5a059;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* Context Badge */
+.carbon-palette-context {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    background: rgba(15, 23, 42, 0.6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.carbon-context-badge {
+    background: linear-gradient(135deg, #c5a059, #a68543);
+    color: #0f172a;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.carbon-prediction-label {
+    font-size: 11px;
+    color: #64748b;
+}
+
+.carbon-palette-predictions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* Toast */
+.carbon-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: linear-gradient(145deg, #10b981, #059669);
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10000;
+    max-width: 400px;
+}
+
+.carbon-toast-error {
+    background: linear-gradient(145deg, #ef4444, #dc2626);
+}
+
+.carbon-toast-show {
+    transform: translateY(0);
+    opacity: 1;
+}
 
 /* ==================== V3.0 ENHANCEMENTS ==================== */
 
@@ -526,6 +796,81 @@
     .carbon-nl-examples {
         font-size: 10px;
     }
+}
+
+/* ==================== VOICE RECOGNITION INDICATOR ==================== */
+.carbon-voice-indicator {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+    padding: 16px 24px;
+    border-radius: 50px;
+    box-shadow: 0 8px 32px rgba(139, 92, 246, 0.4);
+    z-index: 99999;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.carbon-voice-indicator.carbon-voice-active {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.carbon-voice-pulse {
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    animation: carbon-voice-pulse-anim 1.5s ease infinite;
+    flex-shrink: 0;
+}
+
+@keyframes carbon-voice-pulse-anim {
+    0%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+    50% { 
+        opacity: 0.8; 
+        transform: scale(1.1);
+        box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+    }
+}
+
+.carbon-voice-text {
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.carbon-voice-transcript {
+    font-size: 12px;
+    opacity: 0.8;
+    font-style: italic;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Voice active state for palette voice button */
+.carbon-palette-voice.carbon-voice-listening {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+    animation: carbon-voice-btn-pulse 2s ease infinite;
+}
+
+@keyframes carbon-voice-btn-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(139, 92, 246, 0); }
 }
 
 /* Animation for new features */

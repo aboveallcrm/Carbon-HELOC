@@ -6070,11 +6070,11 @@
                             value="#1e293b" onchange="applyWhiteLabel()"></div>
                 </div>
                 <div class="input-group" style="margin-top: 10px;">
-                    <div class="input-field"><label>Apply Link URL <span class="help-tip">?<span class="help-tip-text">The URL where clients can start their HELOC application. This link is embedded in quotes, emails, and the "Apply Now" button.</span></span></label><input type="text" id="wl-apply-link"
-                            value="https://heloc.westcapitallending.com/account/heloc/register?referrer=1748723f-4b74-4399-a79c-4cc2a4c8da20"
+                    <div class="input-field"><label>Apply Link URL <span class="help-tip">?<span class="help-tip-text">The URL where clients can start their HELOC application. This link is embedded in quotes, emails, and the "Apply Now" button. Leave empty to use your profile's apply link.</span></span></label><input type="text" id="wl-apply-link"
+                            placeholder="https://your-application-link.com"
                             oninput="debouncedApplyWhiteLabel()"></div>
                     <div class="input-field"><label>Apply Link Text</label><input type="text" id="wl-apply-text"
-                            value="heloc.westcapitallending.com" oninput="debouncedApplyWhiteLabel()"></div>
+                            placeholder="Apply Now" oninput="debouncedApplyWhiteLabel()"></div>
                 </div>
                 <div class="quick-actions">
                     <button class="btn" style="background: #0f2b4c;" onclick="loadPreset('westcap')">West Cap
@@ -7338,9 +7338,9 @@ Best regards,
             </div>
 
             <div id="cta-section" class="cta-container">
-                <a href="https://heloc.westcapitallending.com/account/heloc/register?referrer=1748723f-4b74-4399-a79c-4cc2a4c8da20"
+                <a href="#"
                     target="_blank" class="btn-apply" id="apply-btn">🚀 Start Your Application</a>
-                <span class="cta-link-text" id="apply-link-text">heloc.westcapitallending.com</span>
+                <span class="cta-link-text" id="apply-link-text">Apply Now</span>
             </div>
 
             <!-- SEND THIS QUOTE — moved to toolbar area above proposal -->
