@@ -1,0 +1,4681 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your HELOC Quote</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        @property --gradient-angle {
+            syntax: '<angle>';
+            initial-value: 0deg;
+            inherits: false;
+        }
+
+        :root {
+            --primary-color: #0f2b4c;
+            --accent-color: #c5a059;
+            --accent-dark: #a68543;
+            --accent-light: #d4b872;
+            --header-bg: #0f2b4c;
+            --font-color: #1e293b;
+            --slate: #1e293b;
+            --paper: #FDFBF7;
+            --white: #ffffff;
+            --highlight-bg: #fffbf0;
+            --font-heading: 'DM Sans', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --accent-glow: rgba(197, 160, 89, 0.15);
+            --green: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: linear-gradient(160deg, #0a1628 0%, #132240 40%, #0f2b4c 70%, #0d2340 100%);
+            color: var(--font-color);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            padding: 40px 20px 80px;
+            line-height: 1.5;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 20% 50%, rgba(197, 160, 89, 0.05) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(99, 102, 241, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Floating Action Bar */
+        .floating-bar {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px) saturate(1.4);
+            padding: 14px 28px;
+            border-radius: 60px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(197, 160, 89, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            display: flex;
+            gap: 12px;
+            z-index: 1000;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 95vw;
+            animation: floatBarIn 0.6s 1.5s ease both;
+        }
+
+        @keyframes floatBarIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .floating-bar button {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-family: var(--font-heading);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .floating-bar button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(197, 160, 89, 0.5);
+        }
+
+        .floating-bar button.secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .floating-bar button.secondary:hover {
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-box {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(197, 160, 89, 0.25);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 480px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), 0 0 60px rgba(197, 160, 89, 0.05);
+            animation: modalSlideIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-box h3 {
+            color: var(--accent-color);
+            font-family: var(--font-heading);
+            margin: 0 0 16px 0;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .modal-box input,
+        .modal-box textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 14px 16px;
+            color: white;
+            font-family: var(--font-body);
+            font-size: 14px;
+            margin-bottom: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .modal-box input:focus,
+        .modal-box textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.12);
+        }
+
+        /* Savings Badge */
+        .savings-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Confetti Animation */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: var(--accent-color);
+            animation: confetti-fall 3s ease-out forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Loading & Error */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .loading .spinner {
+            width: 56px;
+            height: 56px;
+            border: 3px solid rgba(197, 160, 89, 0.15);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .loading div:last-child {
+            color: rgba(148, 163, 184, 0.8);
+            font-family: var(--font-heading);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-page {
+            text-align: center;
+            padding: 80px 24px;
+        }
+
+        .error-page h1 {
+            color: var(--accent-color);
+            font-family: var(--font-heading);
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+
+        .error-page p {
+            color: #94a3b8;
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        /* Main Layout */
+        .quote-page {
+            max-width: 860px;
+            margin: 0 auto;
+            background: var(--paper);
+            border-radius: 20px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(15, 43, 76, 0.06), 0 0 100px rgba(197, 160, 89, 0.05);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .quote-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--accent-dark), var(--accent-color), var(--accent-light, #d4b872), var(--accent-color), var(--accent-dark));
+            background-size: 200% 100%;
+            animation: shimmer-bar 4s linear infinite;
+        }
+
+        @keyframes shimmer-bar {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        /* Premium Header — Hero Style */
+        .header {
+            background: linear-gradient(160deg, #0a1628 0%, var(--header-bg) 50%, #132240 100%);
+            color: white;
+            padding: 48px 44px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 50% 100%, rgba(197, 160, 89, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(197, 160, 89, 0.4), transparent);
+        }
+
+        .header h1 {
+            font-family: var(--font-heading);
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .header .subtitle {
+            font-family: var(--font-heading);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .header .lo-info {
+            margin-top: 20px;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.7;
+            position: relative;
+        }
+
+        .header .lo-info strong {
+            color: white;
+            font-weight: 700;
+        }
+
+        /* Personalized Greeting Banner */
+        .greeting-banner {
+            background: linear-gradient(135deg, var(--highlight-bg), #fff8e6);
+            padding: 18px 28px;
+            text-align: center;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.12);
+            font-family: var(--font-heading);
+            animation: greetSlideDown 0.6s 0.5s ease both;
+            overflow: hidden;
+        }
+
+        .greeting-banner .greeting-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .greeting-banner .greeting-sub {
+            font-size: 12px;
+            color: var(--slate);
+            opacity: 0.6;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        @keyframes greetSlideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+                padding: 0 28px;
+            }
+
+            to {
+                opacity: 1;
+                max-height: 100px;
+                padding: 18px 28px;
+            }
+        }
+
+        /* Header Property Watermark */
+        .header-watermark {
+            position: absolute;
+            right: -20px;
+            bottom: -10px;
+            width: 220px;
+            height: 220px;
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .header h1,
+        .header .subtitle,
+        .header .lo-info {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Content Body */
+        .body-content {
+            padding: 36px 44px 40px;
+        }
+
+        .section {
+            margin-bottom: 36px;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 17px;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid transparent;
+            border-image: linear-gradient(90deg, var(--accent-color), transparent) 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: attr(data-icon);
+            font-size: 16px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            color: white;
+            border-radius: 8px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(197, 160, 89, 0.25);
+        }
+
+        /* Client Grid */
+        .client-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .client-grid .item {
+            background: rgba(15, 43, 76, 0.03);
+            border-radius: 12px;
+            padding: 16px 18px;
+            border: 1px solid rgba(15, 43, 76, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .client-grid .item:hover {
+            background: rgba(15, 43, 76, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .client-grid .label {
+            font-family: var(--font-heading);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--accent-dark);
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .client-grid .value {
+            font-family: var(--font-body);
+            font-size: 15px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* Valuation Blocks */
+        .val-blocks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        .val-block {
+            background: var(--white);
+            border-radius: 14px;
+            padding: 22px 18px;
+            text-align: center;
+            border: 1px solid rgba(15, 43, 76, 0.06);
+            transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 2px 8px rgba(15, 43, 76, 0.04);
+        }
+
+        .val-block:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(15, 43, 76, 0.1);
+        }
+
+        .val-block .val-label {
+            font-family: var(--font-heading);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--slate);
+            opacity: 0.5;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .val-block .val-value {
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+
+        .val-block.highlight {
+            border: 2px solid var(--accent-color);
+            background: linear-gradient(135deg, #fffbf0, #fff8e6);
+            box-shadow: 0 4px 20px rgba(197, 160, 89, 0.15);
+        }
+
+        .val-block.highlight .val-value {
+            color: var(--accent-color);
+            font-size: 24px;
+        }
+
+        .val-block.highlight:hover {
+            box-shadow: 0 12px 36px rgba(197, 160, 89, 0.2);
+        }
+
+        /* Micro-Interactions */
+        .val-block:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 32px rgba(15, 43, 76, 0.1), 0 0 20px var(--accent-glow);
+        }
+
+        .val-block.highlight .val-value {
+            animation: cash-pulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes cash-pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                text-shadow: 0 0 30px rgba(197, 160, 89, 0.15);
+            }
+
+            50% {
+                transform: scale(1.06);
+                text-shadow: 0 0 40px rgba(197, 160, 89, 0.35);
+            }
+        }
+
+        .floating-bar button:active {
+            transform: translateY(1px) scale(0.96) !important;
+            box-shadow: 0 2px 8px rgba(197, 160, 89, 0.3) !important;
+            transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }
+
+        .rec-item {
+            transition: transform 0.2s ease;
+        }
+
+        .rec-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .rec-item:hover .rec-value {
+            color: var(--accent-color);
+            transition: color 0.3s ease;
+        }
+
+        /* Equity Donut Chart */
+        .equity-chart-section {
+            margin-bottom: 36px;
+            text-align: center;
+        }
+
+        .equity-chart-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 36px;
+            flex-wrap: wrap;
+        }
+
+        .equity-donut {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            position: relative;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .equity-donut:hover {
+            transform: scale(1.04);
+        }
+
+        .equity-donut-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--paper);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .equity-donut-center .ed-label {
+            font-family: var(--font-heading);
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--slate);
+            opacity: 0.5;
+            font-weight: 700;
+        }
+
+        .equity-donut-center .ed-value {
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--accent-color);
+        }
+
+        .equity-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            text-align: left;
+        }
+
+        .equity-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-body);
+            font-size: 13px;
+            color: var(--slate);
+        }
+
+        .equity-legend-swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .equity-legend-val {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-left: auto;
+            font-family: var(--font-heading);
+        }
+
+        /* Recommendation Box */
+        .recommendation {
+            background: linear-gradient(135deg, #fffdf7, var(--white));
+            border: none;
+            border-radius: 18px;
+            padding: 36px 32px 30px;
+            text-align: center;
+            margin-bottom: 36px;
+            position: relative;
+            box-shadow: 0 8px 40px rgba(197, 160, 89, 0.1);
+            z-index: 0;
+        }
+
+        .recommendation::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 20px;
+            background: conic-gradient(from var(--gradient-angle, 0deg), var(--accent-dark), var(--accent-color), var(--accent-light), #d4af37, var(--accent-color), var(--accent-dark));
+            z-index: -2;
+            animation: rotate-gradient 4s linear infinite;
+        }
+
+        .recommendation::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #fffdf7, var(--white));
+            z-index: -1;
+        }
+
+        @keyframes rotate-gradient {
+            to {
+                --gradient-angle: 360deg;
+            }
+        }
+
+        @keyframes shimmer-border {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            100% {
+                background-position: 300% 50%;
+            }
+        }
+
+        .recommendation .cert-icon {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--accent-color), #d4af37);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            border: 4px solid var(--paper);
+            box-shadow: 0 4px 12px rgba(197, 160, 89, 0.3);
+            z-index: 1;
+        }
+
+        .recommendation h3 {
+            font-family: var(--font-heading);
+            color: var(--primary-color);
+            font-size: 15px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            margin-bottom: 24px;
+        }
+
+        .rec-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .rec-item {
+            padding: 8px 0;
+        }
+
+        .rec-item .rec-label {
+            font-family: var(--font-heading);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--slate);
+            opacity: 0.5;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .rec-item .rec-value {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+
+        .rec-item.final .rec-value {
+            color: var(--accent-color);
+            font-size: 28px;
+            text-shadow: 0 0 30px rgba(197, 160, 89, 0.15);
+        }
+
+        /* Rate Matrix */
+        .tier {
+            margin-bottom: 20px;
+            background: var(--white);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(15, 43, 76, 0.06);
+            box-shadow: 0 2px 12px rgba(15, 43, 76, 0.04);
+            transition: all 0.3s ease;
+        }
+
+        .tier:hover {
+            box-shadow: 0 6px 24px rgba(15, 43, 76, 0.08);
+        }
+
+        .tier-header {
+            font-family: var(--font-heading);
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 0;
+            padding: 14px 20px;
+            background: linear-gradient(135deg, var(--highlight-bg), #fff8e6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .tier-header .pts {
+            font-size: 11px;
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .rate-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            font-family: var(--font-body);
+        }
+
+        .rate-table th {
+            text-align: left;
+            padding: 12px 20px;
+            font-family: var(--font-heading);
+            color: var(--slate);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            border-bottom: 1px solid rgba(15, 43, 76, 0.08);
+            opacity: 0.5;
+        }
+
+        .rate-table td {
+            padding: 14px 20px;
+            border-bottom: 1px solid rgba(15, 43, 76, 0.04);
+            color: var(--font-color);
+            font-weight: 500;
+        }
+
+        .rate-table tr.recommended {
+            background: linear-gradient(135deg, #fffbf0, #fff8e6);
+            animation: recGlow 3s ease-in-out infinite;
+        }
+
+        .rate-table tr.recommended td {
+            color: var(--primary-color);
+            font-weight: 800;
+            font-size: 15px;
+            border-top: 2px solid var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .rate-table tr.recommended td:first-child {
+            border-left: 2px solid var(--accent-color);
+            border-radius: 6px 0 0 6px;
+        }
+
+        .rate-table tr.recommended td:last-child {
+            border-right: 2px solid var(--accent-color);
+            border-radius: 0 6px 6px 0;
+        }
+
+        .rec-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-color), #d4af37);
+            color: white;
+            font-family: var(--font-heading);
+            font-size: 9px;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 12px;
+            margin-left: 8px;
+            vertical-align: middle;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            box-shadow: 0 2px 8px rgba(197, 160, 89, 0.3);
+        }
+
+        /* Rate Row Click Expansion */
+        .rate-table tr {
+            cursor: pointer;
+            transition: background 0.25s ease;
+        }
+
+        .rate-table tr:hover:not(.recommended):not(.rate-detail-tr) {
+            background: rgba(197, 160, 89, 0.05);
+        }
+
+        .rate-detail-tr td {
+            padding: 0 !important;
+            border: none !important;
+        }
+
+        .rate-row-detail {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+            background: rgba(197, 160, 89, 0.03);
+            font-size: 13px;
+            color: var(--slate);
+            padding: 0 20px;
+        }
+
+        .rate-row-detail.expanded {
+            max-height: 200px;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.1);
+        }
+
+        .rate-detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .rate-detail-item .rd-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--slate);
+            opacity: 0.5;
+            font-weight: 700;
+        }
+
+        .rate-detail-item .rd-value {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 15px;
+        }
+
+        @keyframes recGlow {
+
+            0%,
+            100% {
+                box-shadow: inset 0 0 0 rgba(197, 160, 89, 0);
+            }
+
+            50% {
+                box-shadow: inset 0 0 24px rgba(197, 160, 89, 0.06);
+            }
+        }
+
+        /* CTA */
+        /* CTA section removed — actions handled by floating bar */
+
+        /* Disclosure */
+        .client-disclaimer {
+            background: linear-gradient(135deg, #fef3c7, #fefce8);
+            border: 1px solid #fcd34d;
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin: 16px 0 0;
+            font-size: 11px;
+            color: #92400e;
+            text-align: center;
+            line-height: 1.7;
+        }
+
+        .client-disclaimer strong {
+            font-weight: 700;
+        }
+
+        /* Trust Badges */
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            padding: 20px 28px;
+            background: linear-gradient(135deg, rgba(15, 43, 76, 0.02), rgba(197, 160, 89, 0.03));
+            border-top: 1px solid rgba(15, 43, 76, 0.06);
+            border-bottom: 1px solid rgba(15, 43, 76, 0.06);
+        }
+
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-heading);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--slate);
+            opacity: 0.55;
+            transition: opacity 0.3s ease;
+        }
+
+        .trust-badge:hover {
+            opacity: 0.85;
+        }
+
+        .trust-badge-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(15, 43, 76, 0.06), rgba(15, 43, 76, 0.03));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        /* Dark Footer */
+        .quote-footer {
+            margin-top: 0;
+            padding: 24px 36px;
+            background-color: var(--slate);
+            color: #cbd5e1;
+            font-size: 11px;
+        }
+
+        .footer-main {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .footer-headshot {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            border: 3px solid var(--accent-color);
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #ccc;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .footer-avatar-fallback {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            border: 3px solid var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color), #d4af37);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            font-size: 22px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 16px rgba(197, 160, 89, 0.3);
+        }
+
+        .footer-info {
+            flex-grow: 1;
+            line-height: 1.6;
+        }
+
+        .footer-name {
+            font-family: var(--font-heading);
+            font-weight: 800;
+            color: var(--accent-color);
+            font-size: 16px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .footer-stars {
+            margin-top: 4px;
+            color: #fde047;
+            font-weight: 700;
+            font-size: 10px;
+        }
+
+        .company-logo-footer {
+            height: 48px;
+            max-width: 140px;
+            object-fit: contain;
+            flex-shrink: 0;
+            background: white;
+            padding: 6px;
+            border-radius: 4px;
+        }
+
+        .footer-legal {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 14px;
+            margin-top: 14px;
+            font-size: 9px;
+            line-height: 1.5;
+            color: #94a3b8;
+        }
+
+        .footer-legal .ehl-icon {
+            height: 28px;
+            flex-shrink: 0;
+            background: white;
+            padding: 3px;
+            border-radius: 3px;
+        }
+
+        .proprietary-notice {
+            text-align: center;
+            padding: 8px 28px;
+            background: rgba(254, 226, 226, 0.8);
+            border: 1px solid #fca5a5;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 8px;
+            color: #991b1b;
+            font-family: var(--font-body);
+        }
+
+        .footer-powered {
+            text-align: center;
+            padding: 14px;
+            font-size: 10px;
+            color: rgba(148, 163, 184, 0.7);
+            font-family: var(--font-heading);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: transparent;
+            border-radius: 0 0 20px 20px;
+        }
+
+        /* --- Scroll Progress Bar --- */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-color), #d4af37, var(--accent-color));
+            z-index: 1500;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 8px rgba(197, 160, 89, 0.5);
+        }
+
+        /* --- Scroll Reveal Animations --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-delay-1 {
+            transition-delay: 0.1s;
+        }
+
+        .reveal-delay-2 {
+            transition-delay: 0.2s;
+        }
+
+        .reveal-delay-3 {
+            transition-delay: 0.3s;
+        }
+
+        /* Stagger Children Animation */
+        .stagger-children>* {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.45s ease, transform 0.45s ease;
+        }
+
+        .stagger-children.visible>*:nth-child(1) {
+            transition-delay: 0s;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stagger-children.visible>*:nth-child(2) {
+            transition-delay: 0.06s;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stagger-children.visible>*:nth-child(3) {
+            transition-delay: 0.12s;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stagger-children.visible>*:nth-child(4) {
+            transition-delay: 0.18s;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stagger-children.visible>*:nth-child(5) {
+            transition-delay: 0.24s;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stagger-children.visible>*:nth-child(6) {
+            transition-delay: 0.30s;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Progress Stepper */
+        .progress-stepper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            padding: 20px 0 28px;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-heading);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #94a3b8;
+            transition: color 0.4s ease;
+        }
+
+        .step.active {
+            color: var(--primary-color);
+        }
+
+        .step.completed {
+            color: var(--accent-color);
+        }
+
+        .step-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.4s ease;
+            background: var(--white);
+            font-family: var(--font-heading);
+            font-weight: 800;
+        }
+
+        .step.active .step-dot {
+            border-color: var(--accent-color);
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            color: white;
+            box-shadow: 0 0 12px rgba(197, 160, 89, 0.3);
+        }
+
+        .step.completed .step-dot {
+            border-color: var(--accent-color);
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .step-line {
+            width: 48px;
+            height: 2px;
+            background: #e2e8f0;
+            margin: 0 8px;
+            transition: background 0.4s ease;
+        }
+
+        .step-line.filled {
+            background: var(--accent-color);
+        }
+
+        /* --- Page Entrance --- */
+        .quote-page.entering {
+            animation: pageEntrance 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes pageEntrance {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: rotate(20deg);
+        }
+
+        /* Full-Light Theme */
+        body.theme-light {
+            background: linear-gradient(160deg, #f1f5f9 0%, #e2e8f0 40%, #f8fafc 100%);
+        }
+
+        body.theme-light::before {
+            background: radial-gradient(ellipse at 20% 50%, rgba(197, 160, 89, 0.04) 0%, transparent 60%);
+        }
+
+        body.theme-light .quote-page {
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(15, 43, 76, 0.08);
+        }
+
+        body.theme-light .floating-bar {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(15, 43, 76, 0.08);
+        }
+
+        body.theme-light .floating-bar button.secondary {
+            background: rgba(15, 43, 76, 0.06);
+            border-color: rgba(15, 43, 76, 0.12);
+            color: var(--primary-color);
+        }
+
+        body.theme-light .theme-toggle {
+            background: rgba(15, 43, 76, 0.08);
+            border-color: rgba(15, 43, 76, 0.15);
+            color: var(--accent-color);
+        }
+
+        /* Full-Dark Theme */
+        body.theme-dark .quote-page {
+            background: #1e293b;
+            color: #e2e8f0;
+        }
+
+        body.theme-dark .body-content {
+            color: #cbd5e1;
+        }
+
+        body.theme-dark .section-title {
+            color: var(--accent-color);
+        }
+
+        body.theme-dark .section-title::before {
+            box-shadow: 0 2px 8px rgba(197, 160, 89, 0.4);
+        }
+
+        body.theme-dark .client-grid .item {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body.theme-dark .client-grid .label {
+            color: var(--accent-light);
+        }
+
+        body.theme-dark .client-grid .value {
+            color: #e2e8f0;
+        }
+
+        body.theme-dark .val-block {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body.theme-dark .val-block .val-label {
+            color: #94a3b8;
+        }
+
+        body.theme-dark .val-block .val-value {
+            color: #e2e8f0;
+        }
+
+        body.theme-dark .val-block.highlight {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.1), rgba(197, 160, 89, 0.05));
+            border-color: var(--accent-color);
+        }
+
+        body.theme-dark .recommendation::after {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.98), #1e293b);
+        }
+
+        body.theme-dark .recommendation h3 {
+            color: var(--accent-color);
+        }
+
+        body.theme-dark .rec-item .rec-label {
+            color: #94a3b8;
+        }
+
+        body.theme-dark .rec-item .rec-value {
+            color: #e2e8f0;
+        }
+
+        body.theme-dark .tier {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body.theme-dark .tier-header {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.08), rgba(255, 255, 255, 0.02));
+            color: var(--accent-color);
+        }
+
+        body.theme-dark .rate-table th {
+            color: #94a3b8;
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        body.theme-dark .rate-table td {
+            color: #cbd5e1;
+            border-color: rgba(255, 255, 255, 0.04);
+        }
+
+        body.theme-dark .rate-table tr.recommended {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.1), rgba(197, 160, 89, 0.05));
+        }
+
+        body.theme-dark .rate-table tr.recommended td {
+            color: var(--accent-color);
+        }
+
+        body.theme-dark .client-disclaimer {
+            background: linear-gradient(135deg, rgba(250, 204, 21, 0.08), rgba(250, 204, 21, 0.03));
+            border-color: rgba(250, 204, 21, 0.2);
+            color: #fcd34d;
+        }
+
+        body.theme-dark .equity-donut-center {
+            background: #1e293b;
+        }
+
+        body.theme-dark .equity-legend-item {
+            color: #94a3b8;
+        }
+
+        body.theme-dark .equity-legend-val {
+            color: #e2e8f0;
+        }
+
+        body.theme-dark .greeting-banner {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.06), rgba(255, 255, 255, 0.02));
+            border-color: rgba(197, 160, 89, 0.1);
+        }
+
+        body.theme-dark .greeting-banner .greeting-text {
+            color: #e2e8f0;
+        }
+
+        body.theme-dark .greeting-banner .greeting-sub {
+            color: #94a3b8;
+        }
+
+        body.theme-dark .trust-badges {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(197, 160, 89, 0.02));
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        body.theme-dark .trust-badge {
+            color: #94a3b8;
+        }
+
+        body.theme-dark .trust-badge-icon {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        body.theme-dark .progress-stepper .step {
+            color: #64748b;
+        }
+
+        body.theme-dark .progress-stepper .step.active {
+            color: var(--accent-color);
+        }
+
+        body.theme-dark .progress-stepper .step.completed {
+            color: var(--accent-color);
+        }
+
+        body.theme-dark .step-dot {
+            border-color: #475569;
+            background: #334155;
+            color: #94a3b8;
+        }
+
+        body.theme-dark .step-line {
+            background: #334155;
+        }
+
+        body.theme-dark .rate-row-detail {
+            background: rgba(197, 160, 89, 0.05);
+        }
+
+        body.theme-dark .rate-detail-item .rd-label {
+            color: #94a3b8;
+        }
+
+        body.theme-dark .rate-detail-item .rd-value {
+            color: #e2e8f0;
+        }
+
+        /* Psychology Video Funnel Dark Mode */
+        body.theme-dark .pvf-social-text {
+            color: #cbd5e1;
+        }
+
+        body.theme-dark .pvf-social-text strong {
+            color: var(--accent-color);
+        }
+
+        body.theme-dark .pvf-rating {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body.theme-dark .pvf-rating-text {
+            color: #cbd5e1;
+        }
+
+        body.theme-dark .pvf-funnel-stage {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-color: rgba(197, 160, 89, 0.2);
+        }
+
+        body.theme-dark .pvf-funnel-title {
+            color: var(--accent-color);
+        }
+
+        body.theme-dark .pvf-funnel-subtitle {
+            color: #94a3b8;
+        }
+
+        body.theme-dark .pvf-commitment-step {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body.theme-dark .pvf-commitment-step.recommended {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.1), rgba(197, 160, 89, 0.05));
+        }
+
+        body.theme-dark .pvf-step-title {
+            color: #e2e8f0;
+        }
+
+        body.theme-dark .pvf-step-desc {
+            color: #94a3b8;
+        }
+
+        body.theme-dark .pvf-widget {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body.theme-dark .pvf-widget-title {
+            color: var(--accent-color);
+        }
+
+        body.theme-dark .pvf-trust-bar {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.05), rgba(197, 160, 89, 0.02));
+        }
+
+        body.theme-dark .pvf-trust-item {
+            color: #94a3b8;
+        }
+
+        /* --- Particle Canvas --- */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== Ezra AI Chat Widget ===== */
+        .eq-orb {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(135deg, #c5a059, #d4af37, #c5a059);
+            color: #1e293b;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4), 0 0 60px rgba(212, 175, 55, 0.15), 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1100;
+        }
+
+        .eq-orb:hover {
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.6), 0 12px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        .eq-orb-ring {
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(212, 175, 55, 0.4);
+            animation: eq-pulse 2.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes eq-pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.6;
+            }
+
+            50% {
+                transform: scale(1.15);
+                opacity: 0;
+            }
+        }
+
+        @keyframes eq-bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .eq-panel {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 380px;
+            max-width: calc(100vw - 40px);
+            height: 520px;
+            max-height: calc(100vh - 140px);
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: 16px;
+            border: 1px solid rgba(197, 160, 89, 0.25);
+            box-shadow: 0 0 40px rgba(197, 160, 89, 0.12), 0 25px 50px rgba(0, 0, 0, 0.5);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1200;
+        }
+
+        .eq-panel.open {
+            display: flex;
+            animation: eq-in 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes eq-in {
+            from {
+                opacity: 0;
+                transform: translateY(16px) scale(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .eq-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.25);
+        }
+
+        .eq-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .eq-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #c5a059, #d4af37);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #1e293b;
+            font-weight: 700;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .eq-title {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 2px;
+            color: #c5a059;
+        }
+
+        .eq-subtitle {
+            font-size: 10px;
+            color: #94a3b8;
+        }
+
+        .eq-close {
+            width: 28px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            color: #94a3b8;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .eq-close:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+        }
+
+        .eq-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .eq-chip {
+            background: rgba(197, 160, 89, 0.1);
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            color: #c5a059;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-family: var(--font-heading);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .eq-chip:hover {
+            background: rgba(197, 160, 89, 0.2);
+            border-color: #c5a059;
+            transform: translateY(-1px);
+        }
+
+        .eq-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(197, 160, 89, 0.3) transparent;
+        }
+
+        .eq-msg {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            line-height: 1.6;
+            animation: eq-msg-in 0.3s ease;
+            word-wrap: break-word;
+        }
+
+        @keyframes eq-msg-in {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .eq-msg.assistant {
+            align-self: flex-start;
+            background: rgba(197, 160, 89, 0.1);
+            border: 1px solid rgba(197, 160, 89, 0.15);
+            color: #e2e8f0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .eq-msg.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #c5a059, #a68543);
+            color: #0f172a;
+            font-weight: 500;
+            border-bottom-right-radius: 4px;
+        }
+
+        .eq-msg strong {
+            color: #d4af37;
+        }
+
+        .eq-msg ul,
+        .eq-msg ol {
+            margin: 4px 0 4px 16px;
+        }
+
+        .eq-typing {
+            display: none;
+            gap: 4px;
+            padding: 10px 14px;
+            align-self: flex-start;
+        }
+
+        .eq-typing.active {
+            display: flex;
+        }
+
+        .eq-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #c5a059;
+            opacity: 0.4;
+            animation: eq-dot 1.4s ease-in-out infinite;
+        }
+
+        .eq-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .eq-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes eq-dot {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0.8);
+                opacity: 0.4;
+            }
+
+            40% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        .eq-input-area {
+            padding: 10px 14px;
+            border-top: 1px solid rgba(197, 160, 89, 0.15);
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .eq-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 12px;
+            color: white;
+            font-size: 12px;
+            font-family: var(--font-body);
+            resize: none;
+            max-height: 80px;
+            outline: none;
+        }
+
+        .eq-input:focus {
+            border-color: rgba(197, 160, 89, 0.4);
+        }
+
+        .eq-input::placeholder {
+            color: #64748b;
+        }
+
+        .eq-send {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #c5a059, #a68543);
+            border: none;
+            color: #0f172a;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+
+        .eq-send:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 12px rgba(197, 160, 89, 0.4);
+        }
+
+        .eq-send:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Tour Highlight */
+        .eq-tour-hl {
+            position: fixed;
+            z-index: 1050;
+            border: 2px solid #c5a059;
+            border-radius: 10px;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6), 0 0 30px rgba(197, 160, 89, 0.3);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            display: none;
+        }
+
+        .eq-tour-dots {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            padding: 6px 0 2px;
+        }
+
+        .eq-tour-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s;
+        }
+
+        .eq-tour-dot.active {
+            background: #c5a059;
+            width: 18px;
+            border-radius: 3px;
+        }
+
+        /* ============================================
+           PSYCHOLOGY VIDEO FUNNEL STYLES
+           ============================================ */
+
+        /* Urgency Bar */
+        .pvf-urgency-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #ef4444;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            animation: urgencyPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes urgencyPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
+            50% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+        }
+
+        .pvf-urgency-bar .dot {
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: dotPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        /* Social Proof */
+        .pvf-social-proof {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.05), rgba(197, 160, 89, 0.02));
+            border-radius: 12px;
+            border: 1px solid rgba(197, 160, 89, 0.1);
+        }
+
+        .pvf-avatar-stack {
+            display: flex;
+            align-items: center;
+        }
+
+        .pvf-avatar-item {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            color: white;
+            font-family: var(--font-heading);
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white;
+            margin-left: -10px;
+        }
+
+        .pvf-avatar-item:first-child { margin-left: 0; }
+        .pvf-avatar-item:last-child { background: #64748b; }
+
+        .pvf-social-text {
+            font-size: 13px;
+            color: var(--slate);
+            line-height: 1.5;
+        }
+
+        .pvf-social-text strong {
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .pvf-rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            margin-left: auto;
+        }
+
+        .pvf-stars {
+            color: #fbbf24;
+            font-size: 13px;
+            letter-spacing: -1px;
+        }
+
+        .pvf-rating-text {
+            font-size: 11px;
+            color: var(--slate);
+            font-weight: 600;
+        }
+
+        /* Video Container Enhancements */
+        .pvf-video-wrapper {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(197, 160, 89, 0.15);
+        }
+
+        .pvf-video-thumbnail {
+            position: relative;
+            background: linear-gradient(135deg, #0a1628 0%, #1e293b 50%, #0f2b4c 100%);
+        }
+
+        .pvf-video-thumbnail::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 30% 70%, rgba(197, 160, 89, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 40%);
+        }
+
+        .pvf-video-pattern {
+            position: absolute;
+            inset: 0;
+            opacity: 0.1;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(197, 160, 89, 0.1) 35px, rgba(197, 160, 89, 0.1) 70px),
+                repeating-linear-gradient(-45deg, transparent, transparent 35px, rgba(255,255,255,0.05) 35px, rgba(255,255,255,0.05) 70px);
+            animation: patternMove 20s linear infinite;
+        }
+
+        @keyframes patternMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(70px, 70px); }
+        }
+
+        /* LO Presence */
+        .pvf-lo-presence {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .pvf-lo-avatar-wrap {
+            position: relative;
+        }
+
+        .pvf-lo-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 3px solid var(--accent-color);
+            object-fit: cover;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .pvf-lo-avatar-fallback {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            color: white;
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid var(--accent-color);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .pvf-lo-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 18px;
+            height: 18px;
+            background: #10b981;
+            border-radius: 50%;
+            border: 2px solid #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: white;
+        }
+
+        .pvf-lo-info {
+            text-align: left;
+        }
+
+        .pvf-lo-name {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .pvf-lo-title {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        /* Video Caption */
+        .pvf-video-caption {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            max-width: 260px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
+        }
+
+        .pvf-caption-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent-color);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .pvf-caption-text {
+            font-size: 13px;
+            color: white;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        /* Enhanced Play Button */
+        .pvf-play-trigger {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+        }
+
+        .pvf-play-btn {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 8px 32px rgba(197, 160, 89, 0.5),
+                0 0 0 16px rgba(197, 160, 89, 0.1),
+                0 0 0 32px rgba(197, 160, 89, 0.05);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: playPulse 2s ease-in-out infinite;
+            position: relative;
+        }
+
+        @keyframes playPulse {
+            0%, 100% { 
+                box-shadow: 
+                    0 8px 32px rgba(197, 160, 89, 0.5),
+                    0 0 0 16px rgba(197, 160, 89, 0.1),
+                    0 0 0 32px rgba(197, 160, 89, 0.05);
+            }
+            50% { 
+                box-shadow: 
+                    0 12px 40px rgba(197, 160, 89, 0.6),
+                    0 0 0 20px rgba(197, 160, 89, 0.15),
+                    0 0 0 40px rgba(197, 160, 89, 0.08);
+            }
+        }
+
+        .pvf-play-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 
+                0 12px 40px rgba(197, 160, 89, 0.7),
+                0 0 0 24px rgba(197, 160, 89, 0.2),
+                0 0 0 48px rgba(197, 160, 89, 0.1);
+        }
+
+        .pvf-pulse-ring {
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-color);
+            animation: pvfPulseRing 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        @keyframes pvfPulseRing {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .pvf-play-icon {
+            color: white;
+            font-size: 32px;
+            margin-left: 4px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .pvf-play-label {
+            position: absolute;
+            bottom: -36px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-family: var(--font-heading);
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        /* Duration Badge */
+        .pvf-duration-badge {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: var(--font-heading);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .pvf-record-dot {
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: recordPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Video Player & Progress */
+        .pvf-progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            z-index: 30;
+        }
+
+        .pvf-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
+            width: 0%;
+            transition: width 0.1s linear;
+            position: relative;
+        }
+
+        .pvf-progress-bar::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Funnel Stage */
+        .pvf-funnel-stage {
+            margin-top: 24px;
+            padding: 28px;
+            background: linear-gradient(135deg, #fff, #f8fafc);
+            border-radius: 16px;
+            border: 1px solid rgba(197, 160, 89, 0.15);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pvf-funnel-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .pvf-funnel-title {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 6px;
+        }
+
+        .pvf-funnel-subtitle {
+            font-size: 13px;
+            color: var(--slate);
+            opacity: 0.7;
+        }
+
+        /* Commitment Ladder */
+        .pvf-commitment-ladder {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .pvf-commitment-step {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 20px 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pvf-commitment-step::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .pvf-commitment-step:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-color);
+            box-shadow: 0 12px 32px rgba(197, 160, 89, 0.2);
+        }
+
+        .pvf-commitment-step:hover::before {
+            transform: scaleX(1);
+        }
+
+        .pvf-commitment-step.recommended {
+            border-color: var(--accent-color);
+            background: linear-gradient(135deg, #fffbf0, #fff8e6);
+        }
+
+        .pvf-commitment-step.recommended::before {
+            transform: scaleX(1);
+        }
+
+        .pvf-commitment-step.recommended::after {
+            content: 'RECOMMENDED';
+            position: absolute;
+            top: 6px;
+            right: -24px;
+            background: var(--accent-color);
+            color: white;
+            font-size: 7px;
+            font-weight: 800;
+            padding: 3px 20px;
+            transform: rotate(45deg);
+        }
+
+        .pvf-step-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            color: white;
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            box-shadow: 0 4px 12px rgba(197, 160, 89, 0.3);
+        }
+
+        .pvf-step-title {
+            font-family: var(--font-heading);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .pvf-step-desc {
+            font-size: 11px;
+            color: var(--slate);
+            opacity: 0.7;
+            line-height: 1.5;
+        }
+
+        /* Engagement Widgets */
+        .pvf-engagement-widgets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .pvf-widget {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .pvf-widget-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .pvf-widget-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.15), rgba(197, 160, 89, 0.05));
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .pvf-widget-title {
+            font-family: var(--font-heading);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .pvf-quick-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .pvf-chip {
+            background: rgba(197, 160, 89, 0.1);
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            color: var(--accent-dark);
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            font-family: var(--font-body);
+        }
+
+        .pvf-chip:hover {
+            background: var(--accent-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .pvf-savings-calc {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border: 1px solid #a7f3d0;
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        .pvf-savings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .pvf-savings-row:last-child { margin-bottom: 0; }
+
+        .pvf-savings-label {
+            font-size: 11px;
+            color: #065f46;
+        }
+
+        .pvf-savings-value {
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 700;
+            color: #059669;
+        }
+
+        /* Trust Bar */
+        .pvf-trust-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.05), rgba(197, 160, 89, 0.02));
+            border-radius: 12px;
+            border: 1px solid rgba(197, 160, 89, 0.1);
+            margin-top: 20px;
+        }
+
+        .pvf-trust-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--slate);
+        }
+
+        .pvf-trust-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        /* Legacy Video Styles (keep for compatibility) */
+        .video-container {
+            position: relative;
+            width: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 12px 32px rgba(15, 43, 76, 0.1);
+            margin-bottom: 16px;
+            background: #0f172a;
+            border: 1px solid rgba(197, 160, 89, 0.2);
+        }
+
+        .video-thumbnail {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .video-frame-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: black;
+            display: none;
+        }
+
+        .video-frame-wrapper.playing {
+            display: block;
+            animation: videoFadeIn 0.5s ease;
+        }
+
+        @keyframes videoFadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .fake-video-player {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            position: relative;
+        }
+
+        .fake-video-player .loader {
+            margin-bottom: 16px;
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Tablet */
+        @media (max-width: 900px) {
+            body {
+                padding: 20px 12px 80px;
+            }
+
+            .header {
+                padding: 36px 28px 32px;
+            }
+
+            .header h1 {
+                font-size: 26px;
+                letter-spacing: 2px;
+            }
+
+            .body-content {
+                padding: 28px 28px 32px;
+            }
+
+            .client-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .rec-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 600px) {
+            body {
+                padding: 0;
+            }
+
+            .quote-page {
+                border-radius: 0;
+                max-width: 100%;
+            }
+
+            .quote-page::before {
+                border-radius: 0;
+            }
+
+            .header {
+                padding: 32px 20px 28px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+                letter-spacing: 1.5px;
+            }
+
+            .header .subtitle {
+                font-size: 11px;
+                letter-spacing: 2px;
+            }
+
+            .body-content {
+                padding: 24px 18px 28px;
+            }
+
+            .section {
+                margin-bottom: 28px;
+            }
+
+            .section-title {
+                font-size: 14px;
+                margin-bottom: 16px;
+            }
+
+            .client-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .client-grid .item {
+                padding: 12px 14px;
+            }
+
+            .val-blocks {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .val-block {
+                padding: 16px 12px;
+                border-radius: 10px;
+            }
+
+            .val-block .val-value {
+                font-size: 18px;
+            }
+
+            .val-block.highlight .val-value {
+                font-size: 20px;
+            }
+
+            .recommendation {
+                padding: 28px 18px 22px;
+                border-radius: 14px;
+            }
+
+            .rec-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .rec-item .rec-value {
+                font-size: 20px;
+            }
+
+            .rec-item.final .rec-value {
+                font-size: 22px;
+            }
+
+            .tier {
+                border-radius: 10px;
+            }
+
+            .tier-header {
+                padding: 12px 16px;
+                font-size: 11px;
+            }
+
+            .rate-table {
+                font-size: 13px;
+            }
+
+            .rate-table th {
+                padding: 10px 14px;
+                font-size: 9px;
+            }
+
+            .rate-table td {
+                padding: 12px 14px;
+            }
+
+            .quote-footer {
+                padding: 18px 18px;
+            }
+
+            .footer-main {
+                gap: 12px;
+            }
+
+            .footer-headshot,
+            .footer-avatar-fallback {
+                width: 52px;
+                height: 52px;
+                font-size: 18px;
+            }
+
+            .footer-name {
+                font-size: 14px;
+            }
+
+            .company-logo-footer {
+                height: 36px;
+                max-width: 100px;
+            }
+
+            .footer-legal {
+                font-size: 7px;
+                gap: 8px;
+            }
+
+            .client-disclaimer {
+                font-size: 10px;
+                padding: 12px 16px;
+            }
+
+            .proprietary-notice {
+                padding: 6px 16px;
+                font-size: 7px;
+            }
+
+            .floating-bar {
+                padding: 10px 16px;
+                gap: 8px;
+                bottom: 16px;
+            }
+
+            .floating-bar button {
+                padding: 10px 16px;
+                font-size: 10px;
+            }
+
+            .eq-orb {
+                bottom: 80px;
+                right: 10px;
+                width: 46px;
+                height: 46px;
+                font-size: 18px;
+            }
+
+            .eq-panel {
+                bottom: 0;
+                right: 0;
+                width: 100vw;
+                max-width: 100vw;
+                height: calc(100vh - 60px);
+                max-height: calc(100vh - 60px);
+                border-radius: 16px 16px 0 0;
+            }
+
+            .eq-chips {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .eq-chips::-webkit-scrollbar {
+                display: none;
+            }
+
+            /* Enhancement responsive overrides */
+            .section-title::before {
+                width: 26px;
+                height: 26px;
+                font-size: 13px;
+                border-radius: 6px;
+            }
+
+            .section-title {
+                gap: 8px;
+            }
+
+            .header-watermark {
+                width: 140px;
+                height: 140px;
+                right: -10px;
+                bottom: -5px;
+            }
+
+            .theme-toggle {
+                width: 34px;
+                height: 34px;
+                font-size: 15px;
+                top: 12px;
+                right: 12px;
+            }
+
+            .greeting-banner {
+                padding: 14px 18px;
+            }
+
+            .greeting-banner .greeting-text {
+                font-size: 16px;
+            }
+
+            .greeting-banner .greeting-sub {
+                font-size: 11px;
+            }
+
+            .progress-stepper {
+                padding: 16px 0 20px;
+            }
+
+            .step span:not(.step-dot) {
+                font-size: 9px;
+                letter-spacing: 0.5px;
+            }
+
+            .step-dot {
+                width: 24px;
+                height: 24px;
+                font-size: 10px;
+            }
+
+            .step-line {
+                width: 24px;
+            }
+
+            .equity-chart-wrap {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .equity-donut {
+                width: 150px;
+                height: 150px;
+            }
+
+            .equity-donut-center {
+                width: 84px;
+                height: 84px;
+            }
+
+            .equity-legend-item {
+                font-size: 12px;
+            }
+
+            .trust-badges {
+                gap: 12px;
+                padding: 16px 18px;
+            }
+
+            .trust-badge {
+                font-size: 8px;
+                gap: 4px;
+            }
+
+            .trust-badge-icon {
+                width: 22px;
+                height: 22px;
+                font-size: 11px;
+            }
+
+            .recommendation::before {
+                border-radius: 16px;
+            }
+
+            .recommendation::after {
+                border-radius: 12px;
+            }
+
+            /* Psychology Video Funnel Mobile Styles */
+            .pvf-urgency-bar {
+                font-size: 10px;
+                padding: 6px 12px;
+                margin-bottom: 16px;
+            }
+
+            .pvf-social-proof {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+                padding: 12px;
+            }
+
+            .pvf-rating {
+                margin-left: 0;
+            }
+
+            .pvf-lo-presence {
+                top: 12px;
+                left: 12px;
+            }
+
+            .pvf-lo-avatar, .pvf-lo-avatar-fallback {
+                width: 40px;
+                height: 40px;
+                font-size: 14px;
+            }
+
+            .pvf-lo-name {
+                font-size: 12px;
+            }
+
+            .pvf-lo-title {
+                font-size: 10px;
+            }
+
+            .pvf-video-caption {
+                position: relative;
+                top: auto;
+                right: auto;
+                max-width: none;
+                margin: 12px;
+                margin-top: 60px;
+            }
+
+            .pvf-caption-text {
+                font-size: 12px;
+            }
+
+            .pvf-play-btn {
+                width: 70px;
+                height: 70px;
+            }
+
+            .pvf-play-icon {
+                font-size: 24px;
+            }
+
+            .pvf-play-label {
+                font-size: 10px;
+            }
+
+            .pvf-duration-badge {
+                bottom: 12px;
+                right: 12px;
+                font-size: 11px;
+                padding: 6px 10px;
+            }
+
+            .pvf-funnel-stage {
+                padding: 20px 16px;
+            }
+
+            .pvf-funnel-title {
+                font-size: 18px;
+            }
+
+            .pvf-commitment-ladder {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .pvf-commitment-step {
+                padding: 16px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                text-align: left;
+            }
+
+            .pvf-step-number {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+                margin: 0;
+                flex-shrink: 0;
+            }
+
+            .pvf-step-title {
+                font-size: 14px;
+                margin-bottom: 2px;
+            }
+
+            .pvf-step-desc {
+                font-size: 12px;
+            }
+
+            .pvf-engagement-widgets {
+                grid-template-columns: 1fr;
+            }
+
+            .pvf-trust-bar {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+
+/* === SALES PSYCHOLOGY SECTIONS === */
+.savings-compare { background: linear-gradient(135deg, #f0fdf4, #ecfdf5); border: 1px solid rgba(16,185,129,0.15); border-radius: 16px; padding: 28px 32px; margin-bottom: 36px; }
+.savings-compare .sc-title { font-family: var(--font-heading); font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--primary-color); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+.savings-compare .sc-title span { font-size: 20px; }
+.sc-bars { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+.sc-bar-row { display: flex; align-items: center; gap: 14px; }
+.sc-bar-label { font-family: var(--font-heading); font-size: 11px; font-weight: 700; color: var(--slate); min-width: 110px; text-align: right; }
+.sc-bar-track { flex: 1; height: 32px; border-radius: 8px; background: rgba(15,43,76,0.06); position: relative; overflow: hidden; }
+.sc-bar-fill { height: 100%; border-radius: 8px; display: flex; align-items: center; padding: 0 12px; font-family: var(--font-heading); font-size: 13px; font-weight: 800; color: white; transition: width 1.5s cubic-bezier(0.4,0,0.2,1); width: 0; }
+.sc-bar-fill.heloc { background: linear-gradient(135deg, #10b981, #059669); }
+.sc-bar-fill.credit { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.sc-bar-fill.personal { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.sc-savings-box { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; padding: 16px; background: white; border-radius: 12px; border: 2px solid rgba(16,185,129,0.2); }
+.sc-savings-item { text-align: center; }
+.sc-savings-item .sc-big { font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: #059669; }
+.sc-savings-item .sc-sub { font-family: var(--font-body); font-size: 11px; color: var(--slate); opacity: 0.6; margin-top: 2px; }
+
+.social-proof { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 24px 0; margin-bottom: 36px; }
+.sp-item { text-align: center; padding: 16px 12px; background: rgba(15,43,76,0.03); border-radius: 12px; border: 1px solid rgba(15,43,76,0.06); transition: transform 0.3s ease; }
+.sp-item:hover { transform: translateY(-2px); }
+.sp-item .sp-number { font-family: var(--font-heading); font-size: 28px; font-weight: 900; color: var(--primary-color); }
+.sp-item .sp-label { font-family: var(--font-body); font-size: 11px; color: var(--slate); opacity: 0.6; margin-top: 4px; line-height: 1.4; }
+
+.funds-carousel { margin-bottom: 36px; position: relative; overflow: hidden; border-radius: 16px; background: linear-gradient(135deg, var(--primary-color), #132240); padding: 0; color: white; min-height: 160px; }
+.funds-carousel::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 80% 20%, rgba(197,160,89,0.1) 0%, transparent 60%); pointer-events: none; }
+.fc-slide { position: absolute; inset: 0; padding: 32px; display: flex; align-items: center; gap: 20px; opacity: 0; transform: translateX(40px); transition: opacity 0.5s ease, transform 0.5s ease; pointer-events: none; }
+.fc-slide.active { opacity: 1; transform: translateX(0); pointer-events: auto; position: relative; }
+.fc-icon { font-size: 40px; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3)); }
+.fc-text { flex: 1; }
+.fc-text .fc-headline { font-family: var(--font-heading); font-size: 18px; font-weight: 800; margin-bottom: 6px; line-height: 1.3; }
+.fc-text .fc-sub { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+.fc-dots { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
+.fc-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.3s ease; }
+.fc-dot.active { background: var(--accent-color); transform: scale(1.3); }
+.fc-cta { display: inline-block; margin-top: 12px; background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: #0f172a; padding: 8px 20px; border-radius: 20px; font-family: var(--font-heading); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; cursor: pointer; border: none; transition: transform 0.2s, box-shadow 0.2s; }
+.fc-cta:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(197,160,89,0.4); }
+
+.urgency-banner { position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(135deg, #0f2b4c, #1e3a5f); color: white; padding: 10px 20px; text-align: center; z-index: 1200; transform: translateY(-100%); transition: transform 0.5s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 4px 20px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+.urgency-banner.visible { transform: translateY(0); }
+.urgency-banner .ub-text { font-family: var(--font-heading); font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
+.urgency-banner .ub-countdown { display: inline-flex; gap: 6px; }
+.urgency-banner .ub-unit { background: rgba(197,160,89,0.2); border: 1px solid rgba(197,160,89,0.3); border-radius: 6px; padding: 4px 8px; min-width: 40px; text-align: center; }
+.urgency-banner .ub-num { font-family: var(--font-heading); font-size: 16px; font-weight: 900; color: var(--accent-color); display: block; }
+.urgency-banner .ub-lbl { font-size: 8px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.6; }
+.urgency-banner .ub-btn { background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: #0f172a; border: none; padding: 8px 18px; border-radius: 20px; font-family: var(--font-heading); font-size: 11px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; animation: pulse 2s infinite; }
+
+.daily-cost-badge { margin-top: 6px; font-family: var(--font-body); font-size: 12px; color: var(--accent-dark); font-weight: 600; opacity: 0.8; }
+.daily-cost-badge .dcb-amount { font-weight: 800; color: #059669; }
+
+@media (max-width: 600px) {
+    .social-proof { grid-template-columns: 1fr; gap: 10px; }
+    .sc-bar-row { flex-direction: column; align-items: stretch; gap: 4px; }
+    .sc-bar-label { text-align: left; min-width: unset; }
+    .sc-savings-box { flex-direction: column; gap: 12px; }
+    .funds-carousel { min-height: 180px; }
+    .fc-slide { padding: 24px 20px; flex-direction: column; text-align: center; }
+    .fc-icon { font-size: 32px; }
+    .fc-text .fc-headline { font-size: 15px; }
+    .urgency-banner { padding: 8px 12px; gap: 8px; }
+    .urgency-banner .ub-text { font-size: 10px; }
+    .rec-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+    </style>
+</head>
+
+<body>
+
+    <!-- Urgency Banner (slides in after delay) -->
+    <div class="urgency-banner" id="urgency-banner">
+        <div class="ub-text">This quote is valid for a limited time</div>
+        <div class="ub-countdown" id="ub-countdown"></div>
+        <button class="ub-btn" onclick="openApplyModal()">Lock In Your Rate</button>
+    </div>
+
+    <!-- Scroll Progress -->
+    <div class="scroll-progress" id="scroll-progress" style="width: 0%;"></div>
+
+    <!-- Particle Background -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Floating Action Bar -->
+    <div class="floating-bar" id="floating-bar" style="display: none;">
+        <button onclick="openApplyModal()">&#10024; Apply Now</button>
+        <button class="secondary" id="btn-ask" onclick="askQuestion()">&#9679; Ask Question</button>
+        <button class="secondary" onclick="downloadPDF()">&#128196; Save PDF</button>
+        <button class="secondary" onclick="shareQuote()">&#128279; Share</button>
+    </div>
+
+    <!-- Apply Modal -->
+    <div id="apply-modal" class="modal-overlay" onclick="if(event.target===this)closeApplyModal()">
+        <div class="modal-box">
+            <h3>Start Your Application</h3>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 4px;">You're one step away from unlocking your home equity.</p>
+            <p style="color: rgba(197,160,89,0.8); font-size: 11px; margin-bottom: 16px; font-family: var(--font-heading); font-weight: 600;">&#9201; Takes less than 2 minutes &#8226; No obligation &#8226; No credit pull</p>
+            <input type="text" id="apply-name" placeholder="Your Full Name">
+            <input type="email" id="apply-email" placeholder="Email Address">
+            <input type="tel" id="apply-phone" placeholder="Phone Number">
+            <textarea id="apply-message" rows="3" placeholder="Any questions or notes? (optional)"></textarea>
+            <div style="text-align: center; padding: 8px 0 4px; font-size: 10px; color: rgba(255,255,255,0.4); font-family: var(--font-heading);">&#128274; Your information is encrypted and secure</div>
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+                <button onclick="closeApplyModal()"
+                    style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer;">Cancel</button>
+                <button onclick="submitApplication()"
+                    style="flex: 1; background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: #0f172a; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer;">Submit
+                    Application</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="modal-overlay" onclick="if(event.target===this)closeContactModal()">
+        <div class="modal-box">
+            <h3>Ask a Question</h3>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 16px;">Have questions about your
+                quote? Send a message to your loan officer.</p>
+            <input type="text" id="contact-name" placeholder="Your Name">
+            <input type="email" id="contact-email" placeholder="Email Address">
+            <textarea id="contact-message" rows="4" placeholder="Your question..."></textarea>
+            <div style="display: flex; gap: 10px; margin-top: 16px;">
+                <button onclick="closeContactModal()"
+                    style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer;">Cancel</button>
+                <button onclick="submitQuestion()"
+                    style="flex: 1; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer;">Send
+                    Message</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal-overlay" onclick="if(event.target===this)closeShareModal()">
+        <div class="modal-box">
+            <h3>Share Your Quote</h3>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 16px;">Share this quote with your
+                partner, advisor, or family member.</p>
+            <input type="text" id="share-url" readonly style="background: rgba(0,0,0,0.3); color: #a78bfa;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0;">
+                <button onclick="shareVia('email')"
+                    style="background: #ea4335; color: white; border: none; padding: 10px; border-radius: 8px; font-family: var(--font-heading); font-size: 10px; cursor: pointer;">Email</button>
+                <button onclick="shareVia('sms')"
+                    style="background: #34d399; color: #0f172a; border: none; padding: 10px; border-radius: 8px; font-family: var(--font-heading); font-size: 10px; cursor: pointer;">SMS</button>
+                <button onclick="shareVia('copy')"
+                    style="background: #6366f1; color: white; border: none; padding: 10px; border-radius: 8px; font-family: var(--font-heading); font-size: 10px; cursor: pointer;">Copy</button>
+            </div>
+            <button onclick="closeShareModal()"
+                style="width: 100%; background: rgba(255,255,255,0.1); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer;">Close</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast"
+        style="display: none; position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 14px 20px; border-radius: 10px; font-family: var(--font-heading); font-size: 12px; font-weight: 600; box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 3000;">
+    </div>
+
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <div>Loading your quote...</div>
+    </div>
+
+    <div id="error" class="error-page" style="display:none;">
+        <h1>Quote Not Found</h1>
+        <p>This quote link may have expired or is invalid.<br>Please contact your loan officer for a new quote.</p>
+    </div>
+
+    <div id="content" class="quote-page entering" style="display:none;">
+        <!-- Shimmer accent bar handled by CSS ::before -->
+        <div class="header" id="sec-header">
+            <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Switch theme">&#9790;</button>
+            <svg class="header-watermark" viewBox="0 0 200 200" fill="white" xmlns="http://www.w3.org/2000/svg">
+                <path d="M100 20L20 80V180H75V130H125V180H180V80L100 20Z" />
+                <rect x="85" y="130" width="30" height="50" />
+                <rect x="40" y="100" width="25" height="20" rx="2" />
+                <rect x="135" y="100" width="25" height="20" rx="2" />
+                <polygon points="100,10 15,75 25,75 100,20 175,75 185,75" />
+            </svg>
+            <h1 id="q-title">Your HELOC Proposal</h1>
+            <div class="subtitle">Personalized Home Equity Line of Credit</div>
+            <div class="lo-info" id="q-lo-info"></div>
+        </div>
+        <div class="greeting-banner" id="greeting-banner"></div>
+        <div class="body-content">
+            <div class="progress-stepper" id="progress-stepper">
+                <div class="step completed" id="step-1"><span class="step-dot">&#10003;</span><span>Review Quote</span></div>
+                <div class="step-line filled" id="step-line-1"></div>
+                <div class="step active" id="step-2"><span class="step-dot">2</span><span>Quick Application</span></div>
+                <div class="step-line" id="step-line-2"></div>
+                <div class="step" id="step-3"><span class="step-dot">Get Funded</span></div>
+            </div>
+            <!-- PSYCHOLOGY VIDEO FUNNEL - Stage 1: The Hook -->
+            <div class="section reveal" id="sec-personal-video">
+                <div class="pvf-urgency-bar" id="pvf-urgency-bar" style="display: none;">
+                    <span class="dot"></span>
+                    <span>Rates change daily — This quote expires in <strong id="pvf-countdown">48:00:00</strong></span>
+                </div>
+                
+                <div class="section-title" data-icon="🎥">Watch This Before Your Quote Expires</div>
+                
+                <!-- Social Proof Bar -->
+                <div class="pvf-social-proof" id="pvf-social-proof">
+                    <div class="pvf-avatar-stack">
+                        <div class="pvf-avatar-item">JD</div>
+                        <div class="pvf-avatar-item">MK</div>
+                        <div class="pvf-avatar-item">SR</div>
+                        <div class="pvf-avatar-item">+</div>
+                    </div>
+                    <div class="pvf-social-text">
+                        <strong id="pvf-homeowners-count">247 homeowners</strong> in your area<br>
+                        saved an average of <strong id="pvf-savings-avg">$487/month</strong> last month
+                    </div>
+                    <div class="pvf-rating">
+                        <span class="pvf-stars">★★★★★</span>
+                        <span class="pvf-rating-text">4.9/5 from 1,200+ reviews</span>
+                    </div>
+                </div>
+
+                <!-- Video Container -->
+                <div class="video-container pvf-video-wrapper">
+                    <!-- Thumbnail State -->
+                    <div class="video-thumbnail pvf-video-thumbnail" id="video-thumbnail" onclick="playPsychVideo()">
+                        <div class="pvf-video-pattern"></div>
+                        
+                        <!-- LO Presence (Authority Builder) -->
+                        <div class="pvf-lo-presence" id="pvf-lo-presence">
+                            <div class="pvf-lo-avatar-wrap">
+                                <div class="pvf-lo-avatar-fallback" id="pvf-lo-avatar">👤</div>
+                                <span class="pvf-lo-badge">✓</span>
+                            </div>
+                            <div class="pvf-lo-info">
+                                <div class="pvf-lo-name" id="pvf-lo-name">Your Advisor</div>
+                                <div class="pvf-lo-title">Senior Loan Advisor</div>
+                            </div>
+                        </div>
+
+                        <!-- Video Caption (Curiosity Gap) -->
+                        <div class="pvf-video-caption" id="pvf-video-caption">
+                            <div class="pvf-caption-label">Your Personalized Strategy</div>
+                            <div class="pvf-caption-text" id="pvf-caption-text">
+                                "Based on your home value, I found a way to access your equity while potentially lowering your monthly payments..."
+                            </div>
+                        </div>
+
+                        <!-- Enhanced Play Button -->
+                        <div class="pvf-play-trigger">
+                            <div class="pvf-play-btn">
+                                <div class="pvf-pulse-ring"></div>
+                                <span class="pvf-play-icon">▶</span>
+                            </div>
+                            <div class="pvf-play-label">Watch Now</div>
+                        </div>
+
+                        <!-- Duration Badge -->
+                        <div class="pvf-duration-badge">
+                            <span class="pvf-record-dot"></span>
+                            <span id="pvf-video-duration">2:15</span>
+                        </div>
+                    </div>
+
+                    <!-- Player State -->
+                    <div class="video-frame-wrapper" id="video-frame-wrapper">
+                        <div class="fake-video-player" id="fake-video-player">
+                            <div class="loader"></div>
+                            <div style="font-family: var(--font-heading); font-size: 14px; color: var(--accent-light);">
+                                Loading Personal Video Message...
+                            </div>
+                        </div>
+                        <!-- Progress Bar (shown during playback) -->
+                        <div class="pvf-progress-container" id="pvf-progress-container" style="display: none;">
+                            <div class="pvf-progress-bar" id="pvf-progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post-Video Funnel (Hidden until video completes) -->
+                <div class="pvf-funnel-stage" id="pvf-funnel-stage" style="display: none;">
+                    <div class="pvf-funnel-header">
+                        <h3 class="pvf-funnel-title">Ready to Move Forward?</h3>
+                        <p class="pvf-funnel-subtitle">Choose how you'd like to proceed. No pressure — just options.</p>
+                    </div>
+
+                    <div class="pvf-commitment-ladder">
+                        <div class="pvf-commitment-step" onclick="handleCommitmentStep(1)">
+                            <div class="pvf-step-number">1</div>
+                            <div class="pvf-step-title">Ask a Question</div>
+                            <div class="pvf-step-desc">Send a quick message and get a response within 2 hours.</div>
+                        </div>
+                        
+                        <div class="pvf-commitment-step recommended" onclick="handleCommitmentStep(2)">
+                            <div class="pvf-step-number">2</div>
+                            <div class="pvf-step-title">Schedule a Call</div>
+                            <div class="pvf-step-desc">15-minute strategy session. No obligation.</div>
+                        </div>
+                        
+                        <div class="pvf-commitment-step" onclick="handleCommitmentStep(3)">
+                            <div class="pvf-step-number">3</div>
+                            <div class="pvf-step-title">Start Application</div>
+                            <div class="pvf-step-desc">Lock in this rate. Takes just 5 minutes.</div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Engagement Widgets -->
+                    <div class="pvf-engagement-widgets">
+                        <div class="pvf-widget">
+                            <div class="pvf-widget-header">
+                                <div class="pvf-widget-icon">💬</div>
+                                <div class="pvf-widget-title">Common Questions</div>
+                            </div>
+                            <div class="pvf-quick-chips">
+                                <button class="pvf-chip" onclick="askQuickQuestion('Will this affect my credit score?')">Credit impact?</button>
+                                <button class="pvf-chip" onclick="askQuickQuestion('How long does approval take?')">Timeline?</button>
+                                <button class="pvf-chip" onclick="askQuickQuestion('Can I pay it off early?')">Early payoff?</button>
+                                <button class="pvf-chip" onclick="askQuickQuestion('What are the closing costs?')">Closing costs?</button>
+                            </div>
+                        </div>
+
+                        <div class="pvf-widget">
+                            <div class="pvf-widget-header">
+                                <div class="pvf-widget-icon">💰</div>
+                                <div class="pvf-widget-title">Your Potential Savings</div>
+                            </div>
+                            <div class="pvf-savings-calc" id="pvf-savings-calc">
+                                <div class="pvf-savings-row">
+                                    <span class="pvf-savings-label">Available equity</span>
+                                    <span class="pvf-savings-value" id="pvf-equity-amount">$0</span>
+                                </div>
+                                <div class="pvf-savings-row">
+                                    <span class="pvf-savings-label">Estimated monthly payment</span>
+                                    <span class="pvf-savings-value" id="pvf-payment-amount">$0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trust Reinforcement -->
+                <div class="pvf-trust-bar">
+                    <div class="pvf-trust-item">
+                        <div class="pvf-trust-icon">🔒</div>
+                        <span>256-bit Encryption</span>
+                    </div>
+                    <div class="pvf-trust-item">
+                        <div class="pvf-trust-icon">✓</div>
+                        <span>No Credit Check Required</span>
+                    </div>
+                    <div class="pvf-trust-item">
+                        <div class="pvf-trust-icon">↩</div>
+                        <span>Cancel Anytime</span>
+                    </div>
+                </div>
+            </div>
+            <div class="section reveal" id="sec-client">
+                <div class="section-title" data-icon="&#128100;">Client Details</div>
+                <div class="client-grid stagger-children" id="q-client-grid"></div>
+            </div>
+            <div class="section reveal" id="sec-valuation">
+                <div class="section-title" data-icon="&#127968;">Valuation &amp; Liquidity Summary</div>
+                <div class="val-blocks stagger-children" id="q-val-blocks"></div>
+            </div>
+            <div class="equity-chart-section reveal" id="sec-equity-chart"></div>
+            <!-- Social Proof Strip -->
+            <div class="social-proof reveal" id="sec-social-proof">
+                <div class="sp-item"><div class="sp-number" data-target="2500" data-suffix="+">0</div><div class="sp-label">Homeowners Funded This Year</div></div>
+                <div class="sp-item"><div class="sp-number" data-target="21" data-suffix=" days">0</div><div class="sp-label">Average Time to Funding</div></div>
+                <div class="sp-item"><div class="sp-number" data-target="97" data-suffix="%">0</div><div class="sp-label">Client Satisfaction Rating</div></div>
+            </div>
+            <div class="recommendation reveal" id="sec-recommendation">
+                <div class="cert-icon">&#9733;</div>
+                <h3>Recommended Option</h3>
+                <div class="rec-grid stagger-children" id="q-rec-grid"></div>
+            </div>
+            <!-- Savings Comparison (Anchoring) -->
+            <div class="savings-compare reveal" id="sec-savings"></div>
+            <!-- Use of Funds Carousel -->
+            <div class="funds-carousel reveal" id="sec-funds-carousel"></div>
+            <div class="section reveal" id="sec-rates">
+                <div class="section-title" data-icon="&#128200;">Rate Options</div>
+                <div id="q-tiers"></div>
+            </div>
+        </div>
+        <!-- CTA handled by floating action bar -->
+        <div class="body-content reveal" style="padding-top:0; padding-bottom:0;">
+            <div class="client-disclaimer" id="client-disclaimer">
+                <strong>&#9888;&#65039; IMPORTANT DISCLOSURE:</strong> This quote is for informational purposes only and
+                does not
+                constitute a commitment to lend. All loan programs are subject to credit approval, income verification,
+                and
+                underwriting guidelines. Rates and terms are subject to change without notice. Contact your loan officer
+                for
+                current rates and eligibility requirements.
+            </div>
+        </div>
+        <div class="trust-badges reveal" id="trust-badges">
+            <div class="trust-badge"><span class="trust-badge-icon">&#128274;</span>Licensed Lender</div>
+            <div class="trust-badge"><span class="trust-badge-icon">&#9989;</span>Insured</div>
+            <div class="trust-badge"><span class="trust-badge-icon">&#127942;</span>BBB Accredited</div>
+            <div class="trust-badge"><span class="trust-badge-icon">&#128196;</span>NMLS Registered</div>
+            <div class="trust-badge"><span class="trust-badge-icon">&#128197;</span>Est. 2018</div>
+        </div>
+        <div class="quote-footer reveal" id="sec-footer"></div>
+        <div class="footer-powered">Powered by Above All Carbon</div>
+    </div>
+
+    <!-- Ezra Chat Widget (injected by JS) -->
+    <div id="eq-root"></div>
+    <!-- Tour Highlight Overlay -->
+    <div id="eq-tour-hl" class="eq-tour-hl"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        (function () {
+            var SUPABASE_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co';
+            var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6emFidmZ6dXhocGRjb3dndmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjgwNTYsImV4cCI6MjA4NDc0NDA1Nn0.tFliE-x2Tz9ET3A38R4y7eSo6bUu-bYY47XkWeX1xHY';
+            var TRACK_URL = SUPABASE_URL + '/functions/v1/track-quote-view';
+            var CHAT_URL = SUPABASE_URL + '/functions/v1/quote-chat';
+
+            var params = new URLSearchParams(window.location.search);
+            var code = params.get('id') || params.get('code');
+
+            if (!code) {
+    code = 'demo_user_123';
+}
+    // Mock the Supabase fetch
+    sb.from = function() {
+        return {
+            select: function() {
+                return {
+                    eq: function() {
+                        return {
+                            maybeSingle: function() {
+                                return Promise.resolve({
+                                    data: {
+                                        code: 'demo_user_123',
+                                        quote_data: {
+                                            clientName: "Alex",
+                                            homeValue: 850000,
+                                            mortgageBalance: 420000,
+                                            cashBack: 125000,
+                                            rate: "7.99",
+                                            term: 15,
+                                            payment: "$1,195/mo",
+                                            creditScore: "740",
+                                            tiers: [
+                                                { tier: "Elite", origPts: 1.0, rates: { "15": { rate: "7.99%", payment: "$1,195/mo" }, "30": { rate: "8.25%", payment: "$935/mo" } } },
+                                                { tier: "Standard", origPts: 0.0, rates: { "15": { rate: "8.50%", payment: "$1,230/mo" }, "30": { rate: "8.75%", payment: "$975/mo" } } }
+                                            ]
+                                        },
+                                        lo_info: {
+                                            name: "Eddie Omen",
+                                            title: "Senior Home Equity Advisor",
+                                            company: "Above All Carbon",
+                                            headshot: "https://ui-avatars.com/api/?name=Eddie+Omen&background=c5a059&color=fff&size=200"
+                                        }
+                                    }
+                                });
+                            }
+                        };
+                    }
+                };
+            }
+        };
+    };
+
+
+            var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            sb.from('quote_links').select('*').eq('code', code).maybeSingle().then(function (res) {
+                if (res.error || !res.data) { showError(); return; }
+                var link = res.data;
+                if (link.expires_at && new Date(link.expires_at) < new Date()) { showError(); return; }
+
+                sb.rpc('increment_quote_view', { p_code: code }).then(function () { });
+                trackEvent('quote_opened', { code: code });
+                window._quoteExpiry = link.expires_at || null;
+                renderQuote(link.quote_data, link.lo_info || {}, link.user_id, link.lead_id);
+
+                // Initialize visual enhancements
+                setTimeout(function () {
+                    initScrollProgress();
+                    initScrollReveal();
+                    initCounters();
+                    initParticles();
+                    initProgressStepper();
+                    // Initialize Ezra AI Chat (default on unless explicitly disabled)
+                    if (!link.quote_data.linkOptions || link.quote_data.linkOptions.showAiChat !== false) {
+                        initEzraChat(link.quote_data, link.lo_info || {}, code);
+                    }
+                }, 300);
+
+                // Track time on page
+                var startTime = Date.now();
+                window.addEventListener('beforeunload', function () {
+                    trackEvent('time_on_page', { duration_sec: Math.round((Date.now() - startTime) / 1000), code: code });
+                });
+
+                // Track section views
+                if (window.IntersectionObserver) {
+                    var viewedSections = {};
+                    new IntersectionObserver(function (entries) {
+                        entries.forEach(function (entry) {
+                            if (entry.isIntersecting && !viewedSections[entry.target.id]) {
+                                viewedSections[entry.target.id] = true;
+                                trackEvent('section_viewed', { section: entry.target.id, code: code });
+                            }
+                        });
+                    }, { threshold: 0.5 }).observe && document.querySelectorAll('[id^="sec-"]').forEach(function (sec) {
+                        new IntersectionObserver(function (entries) {
+                            entries.forEach(function (entry) {
+                                if (entry.isIntersecting && !viewedSections[entry.target.id]) {
+                                    viewedSections[entry.target.id] = true;
+                                    trackEvent('section_viewed', { section: entry.target.id, code: code });
+                                }
+                            });
+                        }, { threshold: 0.5 }).observe(sec);
+                    });
+                }
+            });
+
+            // ===== TRACKING =====
+            var _userId = null, _leadId = null;
+            function trackEvent(type, data) {
+                if (!_userId) return;
+                var url = TRACK_URL + '?lead_id=' + (_leadId || 'none') + '&user_id=' + _userId + '&event=' + type;
+                if (type === 'time_on_page' && navigator.sendBeacon) {
+                    navigator.sendBeacon(url + '&duration=' + (data.duration_sec || 0));
+                } else {
+                    fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).catch(function () { });
+                }
+            }
+
+            // ===== RENDERING =====
+            function renderQuote(data, lo, userId, leadId) {
+                _userId = userId;
+                _leadId = leadId;
+
+                document.getElementById('loading').style.display = 'none';
+                var content = document.getElementById('content');
+                content.style.display = 'block';
+                content.classList.add('entering');
+                document.getElementById('floating-bar').style.display = 'flex';
+
+                // Title
+                var title = lo.company ? lo.company + ' HELOC Proposal' : 'Your HELOC Proposal';
+                document.getElementById('q-title').textContent = title;
+                document.title = title + ' - ' + (data.clientName || 'Client');
+
+                // LO Info in header
+                var loHtml = '';
+                if (lo.name) loHtml += '<div>Prepared by: <strong>' + esc(lo.name) + '</strong></div>';
+                if (lo.nmls) loHtml += '<div>NMLS# ' + esc(lo.nmls) + '</div>';
+                document.getElementById('q-lo-info').innerHTML = loHtml;
+
+                // Personalized Greeting
+                var hour = new Date().getHours();
+                var timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+                var greetName = data.clientName ? data.clientName.split(' ')[0] : '';
+                var greetEl = document.getElementById('greeting-banner');
+                if (greetEl) {
+                    greetEl.innerHTML = '<div class="greeting-text">' + esc(timeGreeting) + (greetName ? ', ' + esc(greetName) : '') + '! &#128075;</div>' +
+                        '<div class="greeting-sub">Your personalized HELOC quote is ready for review</div>';
+                }
+
+                // Dark footer
+                var fHtml = '';
+                if (lo.name) {
+                    var initials = lo.name.split(' ').map(function (n) { return n.charAt(0).toUpperCase(); }).join('').substring(0, 2);
+                    fHtml += '<div class="footer-main">';
+                    if (lo.headshot) {
+                        fHtml += '<img src="' + esc(lo.headshot) + '" alt="' + esc(lo.name) + '" class="footer-headshot" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">';
+                        fHtml += '<div class="footer-avatar-fallback" style="display:none;">' + initials + '</div>';
+                    } else {
+                        fHtml += '<div class="footer-avatar-fallback">' + initials + '</div>';
+                    }
+                    fHtml += '<div class="footer-info">';
+                    fHtml += '<span class="footer-name">' + esc(lo.name) + '</span>';
+                    if (lo.title) fHtml += esc(lo.title) + '<br>';
+                    var licStr = '';
+                    if (lo.nmls) licStr += 'NMLS# ' + esc(lo.nmls);
+                    if (lo.dre) licStr += (licStr ? ' | ' : '') + 'DRE# ' + esc(lo.dre);
+                    if (licStr) fHtml += licStr + '<br>';
+                    var conStr = '';
+                    if (lo.phone) conStr += esc(lo.phone);
+                    if (lo.email) conStr += (conStr ? ' | ' : '') + esc(lo.email);
+                    if (conStr) fHtml += conStr + '<br>';
+                    if (lo.website) fHtml += esc(lo.website);
+                    if (lo.googleRating) fHtml += '<div class="footer-stars">&#9733;&#9733;&#9733;&#9733;&#9733; ' + esc(lo.googleRating) + ' Google Rating</div>';
+                    fHtml += '</div>';
+                    if (lo.logo) fHtml += '<img src="' + esc(lo.logo) + '" alt="' + esc(lo.company || 'Company') + '" class="company-logo-footer" onerror="this.style.display=\'none\';">';
+                    fHtml += '</div>';
+                }
+                fHtml += '<div class="footer-legal">';
+                fHtml += '<img src="https://assets.cdn.filesafe.space/eVB3bUDr8bdQfRu6ae03/media/693bb403ed957f64da26426c.jpg" class="ehl-icon" alt="Equal Housing Lender">';
+                fHtml += '<div>';
+                if (lo.company) {
+                    fHtml += '<strong style="color:#cbd5e1;">' + esc(lo.company) + '</strong>';
+                    if (lo.coNmls) fHtml += ' | NMLS# ' + esc(lo.coNmls);
+                    if (lo.coDre) fHtml += ' | DRE# ' + esc(lo.coDre);
+                    fHtml += '<br>';
+                }
+                if (lo.address) fHtml += esc(lo.address) + '<br>';
+                fHtml += 'Equal Housing Lender. All loan programs subject to credit approval. Rates, terms, and conditions are subject to change without notice. This is not a commitment to lend. Licensed by the California Department of Financial Protection and Innovation under the California Residential Mortgage Lending Act.';
+                fHtml += '</div></div>';
+                fHtml += '<div class="proprietary-notice">PROPRIETARY TOOL NOTICE: This Above All Carbon HELOC Quote Tool is proprietary software owned by Above All CRM / ' + esc(lo.company || 'West Capital Lending') + '. Unauthorized copying, distribution, modification, or reverse engineering is strictly prohibited. &copy; 2024-2026 Above All CRM. All rights reserved.</div>';
+                document.getElementById('sec-footer').innerHTML = fHtml;
+
+                // Client Grid
+                var clientItems = [];
+                if (data.clientName) clientItems.push({ label: 'Prepared For', value: data.clientName });
+                if (data.creditScore) clientItems.push({ label: 'Credit Score', value: data.creditScore });
+                if (data.date) clientItems.push({ label: 'Date', value: data.date });
+                if (data.propertyAddress) clientItems.push({ label: 'Property', value: data.propertyAddress });
+                if (data.propertyType) clientItems.push({ label: 'Occupancy', value: data.propertyType });
+                document.getElementById('q-client-grid').innerHTML = clientItems.map(function (i) {
+                    return '<div class="item"><div class="label">' + esc(i.label) + '</div><div class="value">' + esc(i.value) + '</div></div>';
+                }).join('');
+
+                // Valuation Blocks
+                var valBlocks = [];
+                if (data.homeValue) valBlocks.push({ label: 'Home Value', value: '$' + num(data.homeValue) });
+                if (data.mortgageBalance !== undefined) valBlocks.push({ label: 'Current Mortgage', value: '$' + num(data.mortgageBalance) });
+                if (data.helocPayoff && parseFloat(data.helocPayoff) > 0) valBlocks.push({ label: 'HELOC Payoff', value: '$' + num(data.helocPayoff) });
+                if (data.cashBack) valBlocks.push({ label: 'Cash Available', value: '$' + num(data.cashBack), highlight: true });
+                if (data.cltv) valBlocks.push({ label: 'CLTV', value: data.cltv });
+                document.getElementById('q-val-blocks').innerHTML = valBlocks.map(function (b) {
+                    return '<div class="val-block' + (b.highlight ? ' highlight' : '') + '"><div class="val-label">' + esc(b.label) + '</div><div class="val-value">' + esc(b.value) + '</div></div>';
+                }).join('');
+
+                // Equity Breakdown Chart
+                (function () {
+                    var chartEl = document.getElementById('sec-equity-chart');
+                    if (!chartEl) return;
+                    var hv = parseFloat(String(data.homeValue || 0).replace(/[$,]/g, '')) || 0;
+                    if (!hv) return;
+                    var mb = parseFloat(String(data.mortgageBalance || 0).replace(/[$,]/g, '')) || 0;
+                    var hp = parseFloat(String(data.helocPayoff || 0).replace(/[$,]/g, '')) || 0;
+                    var cb = parseFloat(String(data.cashBack || 0).replace(/[$,]/g, '')) || 0;
+                    var remaining = Math.max(0, hv - mb - hp - cb);
+                    var pMortgage = (mb / hv) * 100, pHeloc = (hp / hv) * 100, pCash = (cb / hv) * 100;
+                    var pRemaining = Math.max(0, 100 - pMortgage - pHeloc - pCash);
+                    var gradientStops = [], pos = 0;
+                    var segments = [
+                        { pct: pMortgage, color: '#0f2b4c' },
+                        { pct: pHeloc, color: '#64748b' },
+                        { pct: pCash, color: '#c5a059' },
+                        { pct: pRemaining, color: '#e2e8f0' }
+                    ];
+                    segments.forEach(function (s) {
+                        if (s.pct > 0) { gradientStops.push(s.color + ' ' + pos + '%'); pos += s.pct; gradientStops.push(s.color + ' ' + pos + '%'); }
+                    });
+                    var cltvDisplay = data.cltv || (Math.round(((mb + hp) / hv) * 100) + '%');
+                    var html = '<div class="section-title" data-icon="&#128202;">Equity Breakdown</div>';
+                    html += '<div class="equity-chart-wrap">';
+                    html += '<div class="equity-donut" style="background: conic-gradient(' + gradientStops.join(', ') + ');">';
+                    html += '<div class="equity-donut-center"><span class="ed-label">CLTV</span><span class="ed-value">' + esc(cltvDisplay) + '</span></div>';
+                    html += '</div><div class="equity-legend">';
+                    if (mb) html += '<div class="equity-legend-item"><span class="equity-legend-swatch" style="background:#0f2b4c;"></span>Mortgage Balance<span class="equity-legend-val">$' + mb.toLocaleString() + '</span></div>';
+                    if (hp) html += '<div class="equity-legend-item"><span class="equity-legend-swatch" style="background:#64748b;"></span>HELOC Payoff<span class="equity-legend-val">$' + hp.toLocaleString() + '</span></div>';
+                    if (cb) html += '<div class="equity-legend-item"><span class="equity-legend-swatch" style="background:#c5a059;"></span>Cash Available<span class="equity-legend-val">$' + cb.toLocaleString() + '</span></div>';
+                    html += '<div class="equity-legend-item"><span class="equity-legend-swatch" style="background:#e2e8f0;"></span>Remaining Equity<span class="equity-legend-val">$' + remaining.toLocaleString() + '</span></div>';
+                    html += '</div></div>';
+                    chartEl.innerHTML = html;
+                })();
+
+                // Recommendation
+                var recItems = [];
+                if (data.totalLoan) recItems.push({ label: 'Total Loan', value: data.totalLoan });
+                if (data.rate) recItems.push({ label: 'Rate', value: data.rate + '%' });
+                if (data.term) recItems.push({ label: 'Term', value: data.term + ' yr' });
+                if (data.payment) recItems.push({ label: 'Payment', value: data.payment, final: true });
+                document.getElementById('q-rec-grid').innerHTML = recItems.map(function (r) {
+                    return '<div class="rec-item' + (r.final ? ' final' : '') + '"><div class="rec-label">' + esc(r.label) + '</div><div class="rec-value">' + esc(r.value) + '</div></div>';
+                }).join('');
+
+                // Rate Tiers with expandable rows
+                var recPayment = parseFloat((data.payment || '').replace(/[$,\/mo]/g, '')) || 0;
+                var loanAmt = parseFloat((data.totalLoan || data.cashBack || '').toString().replace(/[$,]/g, '')) || 0;
+                var tiersHtml = '';
+                if (data.tiers && data.tiers.length > 0) {
+                    data.tiers.forEach(function (tier) {
+                        tiersHtml += '<div class="tier"><div class="tier-header"><span>Tier ' + tier.tier + '</span><span class="pts">' + esc(tier.origPts) + '% Points</span></div>';
+                        tiersHtml += '<table class="rate-table"><thead><tr><th>Term</th><th>Rate</th><th>Payment</th></tr></thead><tbody>';
+                        Object.entries(tier.rates).forEach(function (e) {
+                            var isRec = data.rate && e[1].rate && e[1].rate.replace('%', '') === data.rate;
+                            var rateVal = parseFloat((e[1].rate || '').replace('%', '')) || 0;
+                            var payVal = parseFloat((e[1].payment || '').replace(/[$,\/mo]/g, '')) || 0;
+                            var termYrs = parseInt(e[0]) || 10;
+                            var totalInterest = Math.max(0, Math.round((payVal * termYrs * 12) - loanAmt));
+                            var annualCost = Math.round(payVal * 12);
+                            var vsDiff = Math.round(Math.abs(payVal - recPayment));
+                            var vsLabel = isRec ? 'This is recommended' : (payVal > recPayment ? '$' + vsDiff + '/mo more' : '$' + vsDiff + '/mo less');
+
+                            tiersHtml += '<tr' + (isRec ? ' class="recommended"' : '') + ' onclick="toggleRateDetail(this)">';
+                            tiersHtml += '<td>' + esc(e[0]) + '</td><td>' + esc(e[1].rate) + (isRec ? '<span class="rec-badge">REC</span>' : '') + '</td><td>' + esc(e[1].payment) + '</td></tr>';
+                            tiersHtml += '<tr class="rate-detail-tr"><td colspan="3"><div class="rate-row-detail"><div class="rate-detail-grid">';
+                            tiersHtml += '<div class="rate-detail-item"><div class="rd-label">Total Interest</div><div class="rd-value">$' + totalInterest.toLocaleString() + '</div></div>';
+                            tiersHtml += '<div class="rate-detail-item"><div class="rd-label">Annual Cost</div><div class="rd-value">$' + annualCost.toLocaleString() + '/yr</div></div>';
+                            tiersHtml += '<div class="rate-detail-item"><div class="rd-label">Daily Rate Cost</div><div class="rd-value">$' + ((rateVal / 100 / 365) * loanAmt).toFixed(2) + '/day</div></div>';
+                            tiersHtml += '<div class="rate-detail-item"><div class="rd-label">vs Recommended</div><div class="rd-value">' + vsLabel + '</div></div>';
+                            tiersHtml += '</div></div></td></tr>';
+                        });
+                        tiersHtml += '</tbody></table></div>';
+                    });
+                }
+                document.getElementById('q-tiers').innerHTML = tiersHtml;
+
+                // CTA handled by floating action bar — wire buttons with LO data
+                window._loInfo = lo;
+
+                // === SALES PSYCHOLOGY SECTIONS ===
+                (function buildSalesSections() {
+                    var cashVal = parseFloat(String(data.cashBack || 0).replace(/[$,]/g, '')) || 0;
+                    var payVal = parseFloat(String(data.payment || '').replace(/[$,\/mo]/g, '')) || 0;
+                    var rateVal = parseFloat(data.rate) || 7;
+
+                    // 1. Savings Comparison (anchoring against credit cards & personal loans)
+                    var ccMinPayment = Math.round(cashVal * 0.03); // ~3% minimum payment on credit cards at ~24% APR
+                    var plPayment = Math.round((cashVal * (0.12/12) * Math.pow(1 + 0.12/12, 60)) / (Math.pow(1 + 0.12/12, 60) - 1)); // 12% personal loan 5yr
+                    var monthSavingsCC = Math.max(0, ccMinPayment - payVal);
+                    var monthSavingsPL = Math.max(0, plPayment - payVal);
+                    var yearSavingsCC = monthSavingsCC * 12;
+                    var maxBar = Math.max(ccMinPayment, plPayment, payVal);
+
+                    var savEl = document.getElementById('sec-savings');
+                    if (savEl && cashVal > 0 && payVal > 0) {
+                        savEl.innerHTML =
+                            '<div class="sc-title"><span>&#128176;</span> Why a HELOC Saves You Thousands</div>' +
+                            '<div class="sc-bars">' +
+                                '<div class="sc-bar-row"><div class="sc-bar-label">Your HELOC</div><div class="sc-bar-track"><div class="sc-bar-fill heloc" data-width="' + Math.round((payVal / maxBar) * 100) + '" style="width:0">$' + payVal.toLocaleString() + '/mo</div></div></div>' +
+                                '<div class="sc-bar-row"><div class="sc-bar-label">Credit Cards</div><div class="sc-bar-track"><div class="sc-bar-fill credit" data-width="' + Math.round((ccMinPayment / maxBar) * 100) + '" style="width:0">$' + ccMinPayment.toLocaleString() + '/mo</div></div></div>' +
+                                '<div class="sc-bar-row"><div class="sc-bar-label">Personal Loan</div><div class="sc-bar-track"><div class="sc-bar-fill personal" data-width="' + Math.round((plPayment / maxBar) * 100) + '" style="width:0">$' + plPayment.toLocaleString() + '/mo</div></div></div>' +
+                            '</div>' +
+                            '<div class="sc-savings-box">' +
+                                '<div class="sc-savings-item"><div class="sc-big">$' + monthSavingsCC.toLocaleString() + '</div><div class="sc-sub">saved per month vs credit cards</div></div>' +
+                                '<div class="sc-savings-item"><div class="sc-big">$' + yearSavingsCC.toLocaleString() + '</div><div class="sc-sub">saved per year</div></div>' +
+                                '<div class="sc-savings-item"><div class="sc-big">' + rateVal + '%</div><div class="sc-sub">fixed rate vs 24%+ credit cards</div></div>' +
+                            '</div>';
+                    }
+
+                    // 2. Use of Funds Carousel
+                    var cashStr = '$' + cashVal.toLocaleString();
+                    var slides = [
+                        { icon: '&#128179;', headline: 'Consolidate High-Interest Debt', sub: 'Pay off ' + cashStr + ' in credit cards and save thousands in interest. One simple payment instead of juggling multiple bills.' },
+                        { icon: '&#127968;', headline: 'Renovate Your Home', sub: 'Invest ' + cashStr + ' into your property and potentially increase its value by 10-15%. Your home works for you.' },
+                        { icon: '&#128188;', headline: 'Start or Grow a Business', sub: 'Use ' + cashStr + ' in startup capital to launch your next venture. Lower rates than any business loan.' },
+                        { icon: '&#128170;', headline: 'Build a Safety Net', sub: 'Access ' + cashStr + ' for emergencies, education, or major life events. Peace of mind, on your terms.' }
+                    ];
+                    var fcEl = document.getElementById('sec-funds-carousel');
+                    if (fcEl && cashVal > 0) {
+                        var slidesHtml = slides.map(function(s, i) {
+                            return '<div class="fc-slide' + (i === 0 ? ' active' : '') + '">' +
+                                '<div class="fc-icon">' + s.icon + '</div>' +
+                                '<div class="fc-text"><div class="fc-headline">' + s.headline + '</div><div class="fc-sub">' + s.sub + '</div>' +
+                                '<button class="fc-cta" onclick="openApplyModal()">Get Started Now</button></div></div>';
+                        }).join('');
+                        var dotsHtml = slides.map(function(s, i) {
+                            return '<div class="fc-dot' + (i === 0 ? ' active' : '') + '" onclick="fcGoTo(' + i + ')"></div>';
+                        }).join('');
+                        fcEl.innerHTML = slidesHtml + '<div class="fc-dots">' + dotsHtml + '</div>';
+
+                        // Auto-rotate carousel
+                        var fcIdx = 0;
+                        window.fcGoTo = function(idx) {
+                            fcIdx = idx;
+                            fcEl.querySelectorAll('.fc-slide').forEach(function(s, i) { s.classList.toggle('active', i === idx); });
+                            fcEl.querySelectorAll('.fc-dot').forEach(function(d, i) { d.classList.toggle('active', i === idx); });
+                        };
+                        setInterval(function() { fcIdx = (fcIdx + 1) % slides.length; window.fcGoTo(fcIdx); }, 5000);
+                    }
+
+                    // 3. Daily Cost Badge on recommendation payment
+                    var dailyCost = (payVal / 30).toFixed(2);
+                    var recFinal = document.querySelector('.rec-item.final');
+                    if (recFinal && payVal > 0) {
+                        var badge = document.createElement('div');
+                        badge.className = 'daily-cost-badge';
+                        badge.innerHTML = 'That\'s only <span class="dcb-amount">$' + dailyCost + '/day</span>';
+                        recFinal.appendChild(badge);
+                    }
+                })();
+
+                // 4. Social Proof — Animated counters on scroll
+                (function initSocialProofCounters() {
+                    var spEl = document.getElementById('sec-social-proof');
+                    if (!spEl) return;
+                    var counted = false;
+                    var observer = new IntersectionObserver(function(entries) {
+                        entries.forEach(function(entry) {
+                            if (entry.isIntersecting && !counted) {
+                                counted = true;
+                                spEl.querySelectorAll('.sp-number').forEach(function(numEl) {
+                                    var target = parseInt(numEl.getAttribute('data-target')) || 0;
+                                    var suffix = numEl.getAttribute('data-suffix') || '';
+                                    var duration = 2000;
+                                    var start = 0;
+                                    var startTime = null;
+                                    function animate(ts) {
+                                        if (!startTime) startTime = ts;
+                                        var progress = Math.min((ts - startTime) / duration, 1);
+                                        var eased = 1 - Math.pow(1 - progress, 3);
+                                        var current = Math.round(eased * target);
+                                        numEl.textContent = current.toLocaleString() + suffix;
+                                        if (progress < 1) requestAnimationFrame(animate);
+                                    }
+                                    requestAnimationFrame(animate);
+                                });
+                            }
+                        });
+                    }, { threshold: 0.3 });
+                    observer.observe(spEl);
+                })();
+
+                // 5. Savings bars animation on scroll
+                (function initSavingsBars() {
+                    var savEl = document.getElementById('sec-savings');
+                    if (!savEl) return;
+                    var animated = false;
+                    var observer = new IntersectionObserver(function(entries) {
+                        entries.forEach(function(entry) {
+                            if (entry.isIntersecting && !animated) {
+                                animated = true;
+                                savEl.querySelectorAll('.sc-bar-fill').forEach(function(bar, i) {
+                                    setTimeout(function() {
+                                        bar.style.width = bar.getAttribute('data-width') + '%';
+                                    }, i * 200);
+                                });
+                            }
+                        });
+                    }, { threshold: 0.3 });
+                    observer.observe(savEl);
+                })();
+
+                // 6. Urgency Banner — show after 30 seconds
+                (function initUrgencyBanner() {
+                    var banner = document.getElementById('urgency-banner');
+                    var cdEl = document.getElementById('ub-countdown');
+                    if (!banner) return;
+
+                    // Calculate countdown from expiry date
+                    var expiryStr = window._quoteExpiry;
+                    if (expiryStr) {
+                        var expiry = new Date(expiryStr);
+                        var now = new Date();
+                        var diff = expiry - now;
+                        if (diff > 0) {
+                            var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                            var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            cdEl.innerHTML =
+                                '<div class="ub-unit"><span class="ub-num">' + days + '</span><span class="ub-lbl">Days</span></div>' +
+                                '<div class="ub-unit"><span class="ub-num">' + hours + '</span><span class="ub-lbl">Hours</span></div>';
+                        }
+                    }
+                    // If no expiry, show generic urgency
+                    if (!cdEl.innerHTML) {
+                        cdEl.innerHTML =
+                            '<div class="ub-unit"><span class="ub-num">7</span><span class="ub-lbl">Days</span></div>' +
+                            '<div class="ub-unit"><span class="ub-num">0</span><span class="ub-lbl">Hours</span></div>';
+                    }
+
+                    setTimeout(function() {
+                        banner.classList.add('visible');
+                        trackEvent('urgency_banner_shown', { code: code });
+                    }, 30000);
+
+                    // Close on scroll past 90%
+                    var dismissed = false;
+                    window.addEventListener('scroll', function() {
+                        if (dismissed) return;
+                        var scrollPct = (window.scrollY + window.innerHeight) / document.body.scrollHeight;
+                        if (scrollPct > 0.95) { banner.classList.remove('visible'); dismissed = true; }
+                    });
+                })();
+
+                // Set LO Name in Video
+                document.getElementById('video-lo-name').textContent = lo.name ? lo.name : "Your Advisor";
+
+                // Initialize Psychology Video Funnel
+                initPsychVideoFunnel(data, lo);
+
+                // Apply scroll reveal classes
+                ['sec-client', 'sec-valuation', 'sec-recommendation', 'sec-rates'].forEach(function (id, i) {
+                    var el = document.getElementById(id);
+                    if (el) { el.classList.add('reveal'); if (i > 0) el.classList.add('reveal-delay-' + Math.min(i, 3)); }
+                });
+            }
+
+            function showError() {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            }
+
+            // ===== INTERACTIVE FEATURES =====
+            window.trackCTA = function (btn) { trackEvent('button_clicked', { button_name: btn, code: code }); };
+
+            window.toggleRateDetail = function (row) {
+                var next = row.nextElementSibling;
+                if (!next) return;
+                var detail = next.querySelector('.rate-row-detail');
+                if (!detail) return;
+                document.querySelectorAll('.rate-row-detail.expanded').forEach(function (el) { if (el !== detail) el.classList.remove('expanded'); });
+                detail.classList.toggle('expanded');
+                if (detail.classList.contains('expanded')) trackEvent('rate_detail_viewed', { code: code });
+            };
+
+            setTimeout(function () { document.getElementById('floating-bar').style.display = 'flex'; }, 1500);
+
+            // Modal Functions
+            window.openApplyModal = function () { document.getElementById('apply-modal').classList.add('visible'); trackEvent('modal_opened', { modal: 'apply', code: code }); };
+            window.closeApplyModal = function () { document.getElementById('apply-modal').classList.remove('visible'); };
+            window.openContactModal = function () { document.getElementById('contact-modal').classList.add('visible'); trackEvent('modal_opened', { modal: 'contact', code: code }); };
+            window.closeContactModal = function () { document.getElementById('contact-modal').classList.remove('visible'); };
+            window.openShareModal = function () { document.getElementById('share-url').value = window.location.href; document.getElementById('share-modal').classList.add('visible'); trackEvent('modal_opened', { modal: 'share', code: code }); };
+            window.closeShareModal = function () { document.getElementById('share-modal').classList.remove('visible'); };
+            // Ask Question — prefer Ezra chat if available, else fall back to contact modal
+            window.askQuestion = function () {
+                var orb = document.getElementById('eq-orb');
+                if (orb && typeof window.eqToggle === 'function') { window.eqToggle(); }
+                else { openContactModal(); }
+            };
+
+            window.submitApplication = function () {
+                var n = document.getElementById('apply-name').value.trim(), e = document.getElementById('apply-email').value.trim(), p = document.getElementById('apply-phone').value.trim();
+                if (!n || !e || !p) { showToast('Please fill in all required fields'); return; }
+                trackEvent('application_submitted', { code: code, name: n, email: e }); createConfetti(); closeApplyModal();
+
+                // Save application lead data via RPC (fire and forget)
+                // Uses SECURITY DEFINER function so anon clients can save lead data
+                if (sb && _userId) {
+                    sb.rpc('submit_quote_application', {
+                        p_user_id: _userId,
+                        p_lead_id: _leadId || null,
+                        p_name: n,
+                        p_email: e,
+                        p_phone: p,
+                        p_quote_code: code
+                    }).then(function () { });
+                }
+
+                // Redirect to LO's apply link if available
+                var applyUrl = window._loInfo && window._loInfo.applyLink;
+                if (applyUrl) {
+                    // Ensure URL has protocol
+                    if (!/^https?:\/\//i.test(applyUrl)) applyUrl = 'https://' + applyUrl;
+                    showToast('Great move! Redirecting you to start your application...');
+                    setTimeout(function () { window.open(applyUrl, '_blank'); }, 1200);
+                } else {
+                    showToast('You\'re on your way! Your loan officer will reach out shortly.');
+                }
+            };
+            window.submitQuestion = function () {
+                var n = document.getElementById('contact-name').value.trim(), e = document.getElementById('contact-email').value.trim(), m = document.getElementById('contact-message').value.trim();
+                if (!n || !e || !m) { showToast('Please fill in all fields'); return; }
+                trackEvent('question_submitted', { code: code, name: n }); closeContactModal();
+                showToast('Message sent! Your loan officer will respond shortly.');
+            };
+            window.shareQuote = function () { openShareModal(); };
+            // ============================================
+            // PSYCHOLOGY VIDEO FUNNEL FUNCTIONS
+            // ============================================
+            
+            var _videoProgress = 0;
+            var _videoInterval;
+            var _videoCompleted = false;
+
+            // Initialize Psychology Video Funnel
+            window.initPsychVideoFunnel = function(data, lo) {
+                // Show urgency bar
+                var urgencyBar = document.getElementById('pvf-urgency-bar');
+                if (urgencyBar) urgencyBar.style.display = 'inline-flex';
+                
+                // Start countdown
+                startCountdown();
+                
+                // Update LO info
+                var loName = lo.name || 'Your Advisor';
+                var loAvatar = document.getElementById('pvf-lo-avatar');
+                var loNameEl = document.getElementById('pvf-lo-name');
+                var captionText = document.getElementById('pvf-caption-text');
+                
+                if (loNameEl) loNameEl.textContent = loName;
+                if (loAvatar && lo.name) {
+                    var initials = lo.name.split(' ').map(function(n) { return n.charAt(0).toUpperCase(); }).join('').substring(0, 2);
+                    loAvatar.textContent = initials;
+                }
+                
+                // Update caption with personalized data
+                if (captionText && data) {
+                    var homeValue = data.homeValue ? parseFloat(String(data.homeValue).replace(/[$,]/g, '')) : 0;
+                    var cashBack = data.cashBack ? parseFloat(String(data.cashBack).replace(/[$,]/g, '')) : 0;
+                    if (homeValue && cashBack) {
+                        captionText.innerHTML = '"Based on your <strong>$' + (homeValue/1000000 >= 1 ? (homeValue/1000000).toFixed(2) + 'M' : (homeValue/1000).toFixed(0) + 'k') + '</strong> home value, I found a way to access <strong>$' + (cashBack/1000).toFixed(0) + 'k</strong> in equity while keeping your payments manageable..."';
+                    }
+                }
+                
+                // Update savings calculator
+                var equityAmount = document.getElementById('pvf-equity-amount');
+                var paymentAmount = document.getElementById('pvf-payment-amount');
+                if (equityAmount && data.cashBack) {
+                    equityAmount.textContent = '$' + num(data.cashBack);
+                }
+                if (paymentAmount && data.payment) {
+                    paymentAmount.textContent = data.payment;
+                }
+            };
+
+            // Countdown Timer
+            function startCountdown() {
+                var expiry = localStorage.getItem('quoteExpiry_' + code);
+                if (!expiry) {
+                    expiry = Date.now() + (48 * 60 * 60 * 1000);
+                    localStorage.setItem('quoteExpiry_' + code, expiry);
+                }
+
+                function update() {
+                    var countdownEl = document.getElementById('pvf-countdown');
+                    if (!countdownEl) return;
+                    
+                    var remaining = Math.max(0, parseInt(expiry) - Date.now());
+                    var hours = Math.floor(remaining / (60 * 60 * 1000));
+                    var minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+                    var seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+                    
+                    countdownEl.textContent = String(hours).padStart(2, '0') + ':' + 
+                                               String(minutes).padStart(2, '0') + ':' + 
+                                               String(seconds).padStart(2, '0');
+                    
+                    if (remaining > 0) {
+                        setTimeout(update, 1000);
+                    }
+                }
+                update();
+            }
+
+            // Play Video with Psychology Funnel
+            window.playPsychVideo = function() {
+                trackEvent('video_played', { code: code });
+                
+                var thumb = document.getElementById('video-thumbnail');
+                var wrapper = document.getElementById('video-frame-wrapper');
+                var fakePlayer = document.getElementById('fake-video-player');
+                var progressContainer = document.getElementById('pvf-progress-container');
+                
+                thumb.style.display = 'none';
+                wrapper.classList.add('playing');
+                if (progressContainer) progressContainer.style.display = 'block';
+
+                // Simulate video load
+                setTimeout(function () {
+                    var loName = window._loInfo && window._loInfo.name ? window._loInfo.name : 'Your Advisor';
+                    fakePlayer.innerHTML = '<div style="text-align: center; padding: 20px;"><div style="font-size:48px; margin-bottom:16px;">👤</div><div style="font-family: var(--font-heading); font-size: 18px; color: white; margin-bottom:8px;">Playing Personal Message from ' + esc(loName) + '</div><div style="font-size: 14px; color: #94a3b8; max-width: 400px; margin: 0 auto; line-height: 1.5;">This is a demonstration of the psychological video funnel. In production, a recorded Loom, YouTube, or native video would play here.</div></div>';
+                    
+                    // Start progress simulation
+                    simulateVideoProgress();
+                }, 1500);
+            };
+
+            // Simulate Video Progress
+            function simulateVideoProgress() {
+                _videoProgress = 0;
+                var progressBar = document.getElementById('pvf-progress-bar');
+                
+                _videoInterval = setInterval(function() {
+                    _videoProgress += 0.8;
+                    if (progressBar) progressBar.style.width = _videoProgress + '%';
+                    
+                    if (_videoProgress >= 100) {
+                        clearInterval(_videoInterval);
+                        onVideoComplete();
+                    }
+                }, 100);
+            }
+
+            // Video Complete Handler
+            function onVideoComplete() {
+                if (_videoCompleted) return;
+                _videoCompleted = true;
+                
+                trackEvent('video_completed', { code: code });
+                
+                // Show funnel stage
+                var funnelStage = document.getElementById('pvf-funnel-stage');
+                if (funnelStage) {
+                    funnelStage.style.display = 'block';
+                    funnelStage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+                
+                // Create confetti celebration
+                createConfetti();
+            }
+
+            // Commitment Step Handler
+            window.handleCommitmentStep = function(step) {
+                var actions = {
+                    1: function() { 
+                        trackEvent('ask_question_clicked', { code: code }); 
+                        askQuestion(); 
+                    },
+                    2: function() { 
+                        trackEvent('schedule_call_clicked', { code: code }); 
+                        scheduleCall(); 
+                    },
+                    3: function() { 
+                        trackEvent('start_application_clicked', { code: code }); 
+                        openApplyModal(); 
+                    }
+                };
+                
+                if (actions[step]) actions[step]();
+                createConfetti();
+            };
+
+            // Quick Question Handler
+            window.askQuickQuestion = function(question) {
+                trackEvent('quick_question_clicked', { code: code, question: question });
+                // Pre-fill the contact modal with the question
+                var contactMessage = document.getElementById('contact-message');
+                if (contactMessage) contactMessage.value = question;
+                openContactModal();
+            };
+
+            // Schedule Call Handler
+            window.scheduleCall = function() {
+                if (window._loInfo && window._loInfo.calendarLink) {
+                    window.open(window._loInfo.calendarLink, '_blank');
+                } else {
+                    showToast('Calendar link not configured. Please use Ask Question to schedule.');
+                    openContactModal();
+                }
+            };
+
+            // Legacy function for backward compatibility
+            window.playMockVideo = function () {
+                playPsychVideo();
+            };
+
+            window.shareVia = function (method) {
+                var url = window.location.href;
+                if (method === 'email') window.open('mailto:?subject=My HELOC Quote&body=' + encodeURIComponent('Check out my HELOC quote: ' + url));
+                else if (method === 'sms') window.open('sms:?body=' + encodeURIComponent('Check out my HELOC quote: ' + url));
+                else if (method === 'copy') navigator.clipboard.writeText(url).then(function () { showToast('Link copied to clipboard!'); });
+                trackEvent('share_clicked', { method: method, code: code });
+            };
+            window.downloadPDF = function () { trackEvent('pdf_download_clicked', { code: code }); window.print(); };
+
+            // Theme Toggle
+            window.toggleTheme = function () {
+                var body = document.body, btn = document.getElementById('theme-toggle');
+                var themes = ['', 'theme-light', 'theme-dark'];
+                var current = body.classList.contains('theme-light') ? 1 : body.classList.contains('theme-dark') ? 2 : 0;
+                var next = (current + 1) % 3;
+                body.classList.remove('theme-light', 'theme-dark');
+                if (themes[next]) body.classList.add(themes[next]);
+                var icons = ['\u263E', '\u2600', '\u2726'];
+                if (btn) btn.textContent = icons[next];
+                try { localStorage.setItem('cq-theme', themes[next]); } catch (e) { }
+            };
+            (function () {
+                try {
+                    var saved = localStorage.getItem('cq-theme');
+                    if (saved) document.body.classList.add(saved);
+                    var btn = document.getElementById('theme-toggle');
+                    if (btn) { var icons = { '': '\u263E', 'theme-light': '\u2600', 'theme-dark': '\u2726' }; btn.textContent = icons[saved] || '\u263E'; }
+                } catch (e) { }
+            })();
+
+            function showToast(msg) {
+                var t = document.getElementById('toast'); t.textContent = msg; t.style.display = 'block';
+                setTimeout(function () { t.style.display = 'none'; }, 4000);
+            }
+            function createConfetti() {
+                var colors = ['#c5a059', '#10b981', '#3b82f6', '#f59e0b', '#ec4899'];
+                for (var i = 0; i < 50; i++) {
+                    var c = document.createElement('div'); c.className = 'confetti';
+                    c.style.left = Math.random() * 100 + 'vw'; c.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    c.style.animationDelay = Math.random() * 0.5 + 's'; c.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    document.body.appendChild(c); setTimeout(function () { c.remove(); }, 3000);
+                }
+            }
+
+            // ===== VISUAL ENHANCEMENTS =====
+            function initScrollProgress() {
+                var bar = document.getElementById('scroll-progress');
+                if (!bar) return;
+                window.addEventListener('scroll', function () {
+                    var pct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+                    bar.style.width = Math.min(pct, 100) + '%';
+                }, { passive: true });
+            }
+
+            function initScrollReveal() {
+                if (!window.IntersectionObserver) return;
+                var obs = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+                }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+                document.querySelectorAll('.reveal, .stagger-children').forEach(function (el) { obs.observe(el); });
+            }
+
+            function initCounters() {
+                if (!window.IntersectionObserver) return;
+                var counted = {};
+                var obs = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (!entry.isIntersecting || counted[entry.target.id]) return;
+                        counted[entry.target.id] = true;
+                        var text = entry.target.textContent;
+                        var match = text.match(/^\$?([\d,]+)/);
+                        if (!match) return;
+                        var target = parseInt(match[1].replace(/,/g, '')), prefix = text.startsWith('$') ? '$' : '', suffix = text.replace(/^\$?[\d,]+/, '');
+                        entry.target.textContent = prefix + '0' + suffix;
+                        entry.target.style.transition = 'transform 0.1s ease';
+                        var duration = 2000, start = null;
+                        function step(ts) {
+                            if (!start) start = ts;
+                            var p = Math.min((ts - start) / duration, 1);
+                            var ease = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);
+                            var current = Math.round(ease * target);
+                            entry.target.textContent = prefix + current.toLocaleString() + suffix;
+                            if (p < 0.8) entry.target.style.transform = 'scale(' + (1 + (1 - p) * 0.04) + ')';
+                            else entry.target.style.transform = 'scale(1)';
+                            if (p < 1) requestAnimationFrame(step);
+                            else entry.target.style.transform = '';
+                        }
+                        requestAnimationFrame(step);
+                        obs.unobserve(entry.target);
+                    });
+                }, { threshold: 0.5 });
+                document.querySelectorAll('.val-block .val-value, .rec-item .rec-value').forEach(function (el, i) { el.id = el.id || ('vc-' + i); obs.observe(el); });
+            }
+
+            function initParticles() {
+                var canvas = document.getElementById('particle-canvas');
+                if (!canvas) return;
+                var ctx = canvas.getContext('2d'), particles = [];
+                function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+                resize(); window.addEventListener('resize', resize);
+                for (var i = 0; i < 25; i++) {
+                    particles.push({
+                        x: Math.random() * canvas.width, y: Math.random() * canvas.height, size: Math.random() * 2 + 0.5,
+                        speedY: -Math.random() * 0.3 - 0.1, speedX: (Math.random() - 0.5) * 0.2, opacity: Math.random() * 0.4 + 0.1,
+                        flickerSpeed: Math.random() * 0.02 + 0.005, flickerPhase: Math.random() * Math.PI * 2
+                    });
+                }
+                function draw() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    var t = Date.now() * 0.001;
+                    particles.forEach(function (p) {
+                        p.x += p.speedX; p.y += p.speedY;
+                        if (p.y < -10) { p.y = canvas.height + 10; p.x = Math.random() * canvas.width; }
+                        if (p.x < -10) p.x = canvas.width + 10; if (p.x > canvas.width + 10) p.x = -10;
+                        var flicker = (Math.sin(t * p.flickerSpeed * 100 + p.flickerPhase) + 1) / 2;
+                        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(212, 175, 55, ' + (p.opacity * (0.5 + flicker * 0.5)) + ')'; ctx.fill();
+                    });
+                    requestAnimationFrame(draw);
+                }
+                draw();
+            }
+
+            // ===== PROGRESS STEPPER =====
+            function initProgressStepper() {
+                if (!window.IntersectionObserver) return;
+                var sections = [
+                    { ids: ['sec-client', 'sec-valuation'], step: 1 },
+                    { ids: ['sec-recommendation', 'sec-rates'], step: 2 },
+                    { ids: ['sec-footer'], step: 3 }
+                ];
+                var currentStep = 1;
+                function updateStepper(step) {
+                    if (step === currentStep) return;
+                    currentStep = step;
+                    for (var i = 1; i <= 3; i++) {
+                        var el = document.getElementById('step-' + i);
+                        if (!el) continue;
+                        el.classList.remove('active', 'completed');
+                        if (i < step) el.classList.add('completed');
+                        else if (i === step) el.classList.add('active');
+                    }
+                    for (var j = 1; j <= 2; j++) {
+                        var line = document.getElementById('step-line-' + j);
+                        if (line) { if (j < step) line.classList.add('filled'); else line.classList.remove('filled'); }
+                    }
+                }
+                sections.forEach(function (sec) {
+                    sec.ids.forEach(function (id) {
+                        var el = document.getElementById(id);
+                        if (!el) return;
+                        new IntersectionObserver(function (entries) {
+                            entries.forEach(function (entry) { if (entry.isIntersecting) updateStepper(sec.step); });
+                        }, { threshold: 0.3 }).observe(el);
+                    });
+                });
+            }
+
+            // ===== EZRA AI CHAT WIDGET =====
+            function initEzraChat(quoteData, loInfo, quoteCode) {
+                var chatHistory = [], isOpen = false, isSending = false, tourActive = false, tourStep = 0;
+                var loName = loInfo.name || 'your loan officer';
+
+                var defaultChips = [
+                    'Walk me through my quote',
+                    'Why is this rate good for me?',
+                    'How does a HELOC work?',
+                    'Compare my rate options',
+                    'What happens after I apply?'
+                ];
+
+                var tourSteps = [
+                    {
+                        target: '#sec-client', label: 'Your Details',
+                        text: "Let's start with your details. This quote was prepared for **" + esc(quoteData.clientName || 'you') + "** with a credit score of **" + esc(quoteData.creditScore || 'N/A') + "**. Your loan officer has tailored these options specifically for your profile."
+                    },
+                    {
+                        target: '#sec-valuation', label: 'Your Equity',
+                        text: "Here's your equity position. Your home is valued at **$" + num(quoteData.homeValue) + "** with a mortgage balance of **$" + num(quoteData.mortgageBalance) + "**. That gives you **$" + num(quoteData.cashBack) + "** in accessible cash through a HELOC."
+                    },
+                    {
+                        target: '#sec-recommendation', label: 'Recommended Option',
+                        text: "This is the option your loan officer recommends. At **" + esc(quoteData.rate) + "%** for **" + esc(quoteData.term) + " years**, your monthly payment would be **" + esc(quoteData.payment) + "**. This balances the best rate with manageable payments."
+                    },
+                    {
+                        target: '#sec-rates', label: 'All Rate Options',
+                        text: "Here you can see all available rate options across different tiers and terms. Each tier has different origination points which affect your upfront cost vs ongoing rate. **Click any row** to see detailed breakdowns."
+                    },
+                    {
+                        target: '#sec-footer', label: 'Next Steps',
+                        text: "Ready to move forward? Use the **Apply Now** button at the bottom of your screen to start your application, or schedule a call with **" + esc(loName) + "** to discuss any questions. There's no obligation \u2014 it's just the next step to explore your options."
+                    }
+                ];
+
+                // Build chat widget HTML
+                var root = document.getElementById('eq-root');
+                if (!root) return;
+                root.innerHTML =
+                    '<button class="eq-orb" id="eq-orb" onclick="eqToggle()"><span style="font-size:20px;filter:drop-shadow(0 0 4px rgba(212,175,55,0.6));">&#10022;</span><span class="eq-orb-ring"></span></button>' +
+                    '<div class="eq-panel" id="eq-panel">' +
+                    '<div class="eq-header"><div class="eq-header-left"><div class="eq-avatar">&#10022;</div><div><div class="eq-title">EZRA</div><div class="eq-subtitle">Your Quote Assistant</div></div></div><button class="eq-close" onclick="eqToggle()">&times;</button></div>' +
+                    '<div class="eq-chips" id="eq-chips"></div>' +
+                    '<div class="eq-messages" id="eq-messages"></div>' +
+                    '<div class="eq-typing" id="eq-typing"><span class="eq-dot"></span><span class="eq-dot"></span><span class="eq-dot"></span></div>' +
+                    '<div class="eq-input-area"><textarea id="eq-input" class="eq-input" placeholder="Ask about your quote..." rows="1"></textarea><button class="eq-send" id="eq-send" onclick="eqSend()" disabled>&#9654;</button></div>' +
+                    '</div>';
+
+                renderChips(['Take a guided tour'].concat(defaultChips));
+
+                // Input handling
+                var inputEl = document.getElementById('eq-input'), sendBtn = document.getElementById('eq-send');
+                inputEl.addEventListener('input', function () {
+                    sendBtn.disabled = !this.value.trim();
+                    this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+                });
+                inputEl.addEventListener('keydown', function (ev) {
+                    if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); if (this.value.trim()) eqSend(); }
+                });
+
+                function renderChips(chips) {
+                    var el = document.getElementById('eq-chips');
+                    if (!el) return;
+                    el.innerHTML = chips.map(function (c) {
+                        return '<button class="eq-chip" onclick="eqChip(\'' + c.replace(/'/g, "\\'") + '\')">' + esc(c) + '</button>';
+                    }).join('');
+                }
+
+                function addMsg(role, text) {
+                    var el = document.getElementById('eq-messages');
+                    if (!el) return;
+                    var div = document.createElement('div');
+                    div.className = 'eq-msg ' + role;
+                    div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>').replace(/^- (.+)/gm, '&bull; $1');
+                    el.appendChild(div);
+                    el.scrollTop = el.scrollHeight;
+                    chatHistory.push({ role: role, content: text });
+                    if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+                }
+
+                function showTyping() { var t = document.getElementById('eq-typing'); if (t) t.classList.add('active'); }
+                function hideTyping() { var t = document.getElementById('eq-typing'); if (t) t.classList.remove('active'); }
+
+                // Global handlers
+                window.eqToggle = function () {
+                    var panel = document.getElementById('eq-panel');
+                    isOpen = !isOpen;
+                    if (isOpen) {
+                        panel.classList.add('open');
+                        if (chatHistory.length === 0) {
+                            addMsg('assistant', "Hi " + esc(quoteData.clientName || 'there') + "! I'm **Ezra**, your personal HELOC advisor. I'm here to walk you through your quote and answer any questions you have.\n\nYou've got **$" + num(quoteData.cashBack) + "** in available equity — let me help you understand your options! I can give you a **guided tour** of your quote, or just ask me anything.");
+                        }
+                        trackEvent('chat_opened', { code: quoteCode });
+                        setTimeout(function () { var inp = document.getElementById('eq-input'); if (inp) inp.focus(); }, 400);
+                    } else {
+                        panel.classList.remove('open');
+                        if (tourActive) endTour();
+                    }
+                };
+
+                window.eqChip = function (text) {
+                    if (text === 'Take a guided tour') { startTour(); return; }
+                    if (text === 'Next step' || text === 'Finish tour') { advanceTour(); return; }
+                    if (text === 'End tour') { endTour(); addMsg('assistant', "Tour ended. Feel free to ask me anything about your quote!"); renderChips(['Take a guided tour'].concat(defaultChips)); return; }
+                    if (text === 'Start my application') { window.openApplyModal(); return; }
+                    if (text === 'Schedule a call' && loInfo.calendarLink) { window.open(loInfo.calendarLink, '_blank'); return; }
+                    document.getElementById('eq-input').value = text;
+                    document.getElementById('eq-input').dispatchEvent(new Event('input'));
+                    eqSend();
+                };
+
+                window.eqSend = function () {
+                    var inp = document.getElementById('eq-input');
+                    if (!inp || !inp.value.trim() || isSending) return;
+                    var msg = inp.value.trim();
+                    inp.value = ''; inp.style.height = 'auto'; document.getElementById('eq-send').disabled = true;
+                    addMsg('user', msg); showTyping(); isSending = true;
+                    trackEvent('chat_message_sent', { code: quoteCode, len: msg.length });
+
+                    fetch(CHAT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ quoteCode: quoteCode, message: msg, conversationHistory: chatHistory.slice(-10) })
+                    })
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            hideTyping(); isSending = false;
+                            if (data.error) {
+                                addMsg('assistant', "I apologize, but I encountered an issue. " + (data.error === 'Rate limited. Please try again later.' ? "You've reached the daily message limit." : data.error) + " Please contact " + esc(loName) + (loInfo.phone ? " at " + esc(loInfo.phone) : "") + " directly.");
+                            } else {
+                                addMsg('assistant', data.text || 'I received your message but had trouble generating a response. Please try again.');
+                                if (data.remainingMessages !== undefined && data.remainingMessages <= 5) {
+                                    addMsg('assistant', "**Note:** You have " + data.remainingMessages + " messages remaining today.");
+                                }
+                            }
+                        })
+                        .catch(function () {
+                            hideTyping(); isSending = false;
+                            addMsg('assistant', "I'm having trouble connecting right now. Please try again in a moment, or contact " + esc(loName) + (loInfo.phone ? " at " + esc(loInfo.phone) : "") + " directly.");
+                        });
+                };
+
+                // ===== GUIDED TOUR ENGINE =====
+                function startTour() {
+                    tourActive = true; tourStep = 0;
+                    addMsg('assistant', "Let's walk through your quote together! I'll highlight each section and explain what it means for you.\n\n**Step 1 of " + tourSteps.length + "**: " + tourSteps[0].label);
+                    renderChips(['Next step', 'End tour']);
+                    highlightSection(tourSteps[0].target);
+                    setTimeout(function () { addMsg('assistant', tourSteps[0].text); }, 600);
+                    trackEvent('guided_tour_started', { code: quoteCode });
+                }
+
+                function advanceTour() {
+                    tourStep++;
+                    if (tourStep >= tourSteps.length) {
+                        endTour();
+                        addMsg('assistant', "That's the complete tour of your quote! Do you have any questions about what we covered?\n\nWhen you're ready, you can **start your application** or **schedule a call** with " + esc(loName) + ".");
+                        renderChips(['Start my application', 'Schedule a call', 'I have a question', 'Compare my rate options']);
+                        trackEvent('guided_tour_completed', { code: quoteCode });
+                        return;
+                    }
+                    var step = tourSteps[tourStep];
+                    addMsg('assistant', "**Step " + (tourStep + 1) + " of " + tourSteps.length + "**: " + step.label);
+                    highlightSection(step.target);
+                    renderChips(tourStep < tourSteps.length - 1 ? ['Next step', 'End tour'] : ['Finish tour']);
+                    setTimeout(function () { addMsg('assistant', step.text); }, 500);
+                }
+
+                function endTour() {
+                    tourActive = false; tourStep = 0;
+                    var hl = document.getElementById('eq-tour-hl');
+                    if (hl) hl.style.display = 'none';
+                }
+
+                function highlightSection(selector) {
+                    var target = document.querySelector(selector);
+                    var hl = document.getElementById('eq-tour-hl');
+                    if (!target || !hl) return;
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(function () {
+                        var rect = target.getBoundingClientRect();
+                        hl.style.display = 'block';
+                        hl.style.top = (rect.top - 8) + 'px';
+                        hl.style.left = (rect.left - 8) + 'px';
+                        hl.style.width = (rect.width + 16) + 'px';
+                        hl.style.height = (rect.height + 16) + 'px';
+                    }, 400);
+                }
+
+                // Auto-bounce orb after 5 seconds
+                setTimeout(function () {
+                    var orb = document.getElementById('eq-orb');
+                    if (orb && !isOpen) { orb.style.animation = 'eq-bounce 0.5s ease'; setTimeout(function () { orb.style.animation = ''; }, 600); }
+                }, 5000);
+            }
+
+            function esc(s) { return s ? String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : ''; }
+            function num(v) { return Number(v).toLocaleString(); }
+        })();
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /client-quote.html
+Disallow: /admin.html
+Disallow: /login.html
+Disallow: /register.html
+Disallow: /AboveAllCarbon_HELOC_v12_FIXED.html
+
+# Sitemap
+Sitemap: https://carbon-heloc.vercel.app/sitemap.xml
+
+# Crawl rate
+Crawl-delay: 1
