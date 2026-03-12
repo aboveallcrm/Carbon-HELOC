@@ -5406,16 +5406,16 @@
                             <label
                                 style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8);"><input
                                     type="checkbox" id="chk-rate-lock" style="margin-right: 6px;"
-                                    onchange="document.getElementById('rate-lock-days').disabled=!this.checked; document.getElementById('rate-lock-label').style.opacity=this.checked?'1':'0.4'"> Rate
+                                    onchange="document.getElementById('rate-lock-days').disabled=!this.checked; document.getElementById('rate-lock-days').style.opacity=this.checked?'1':'0.4'; document.getElementById('rate-lock-label').style.opacity=this.checked?'1':'0.4'"> Rate
                                 Lock</label>
-                            <select id="rate-lock-days"
-                                style="background: rgba(0,0,0,0.4); border: 1px solid rgba(197,160,89,0.3); color: #c5a059; border-radius: 4px; padding: 2px 6px; font-size: 9px; font-family: var(--font-heading);">
+                            <select id="rate-lock-days" disabled
+                                style="background: rgba(0,0,0,0.4); border: 1px solid rgba(197,160,89,0.3); color: #c5a059; border-radius: 4px; padding: 2px 6px; font-size: 9px; font-family: var(--font-heading); opacity: 0.4;">
                                 <option value="15">15 days</option>
                                 <option value="30" selected>30 days</option>
                                 <option value="45">45 days</option>
                                 <option value="60">60 days</option>
                             </select>
-                            <span id="rate-lock-label" style="font-size: 7px; color: rgba(255,255,255,0.4);">🔒</span>
+                            <span id="rate-lock-label" style="font-size: 7px; color: rgba(255,255,255,0.4); opacity: 0.4;">🔒</span>
                         </div>
                     </div>
                     <div>
@@ -13381,6 +13381,25 @@ Sent via Above All Carbon HELOC Tool`;
                 if (Object.keys(tier.rates).length > 0 || Object.keys(tier.varRates).length > 0) quoteData.tiers.push(tier);
             }
 
+            // Generate borrower-focused strategy for the client quote
+            var strategyCtx = {
+                clientName: quoteData.clientName,
+                creditScore: quoteData.creditScore,
+                propertyType: quoteData.propertyType,
+                homeValue: parseFloat((quoteData.homeValue || '0').replace(/[^0-9.-]/g, '')) || 0,
+                mortgageBalance: parseFloat((quoteData.mortgageBalance || '0').replace(/[^0-9.-]/g, '')) || 0,
+                helocPayoff: parseFloat((quoteData.helocPayoff || '0').replace(/[^0-9.-]/g, '')) || 0,
+                cashBack: parseFloat((quoteData.cashBack || '0').replace(/[^0-9.-]/g, '')) || 0,
+                cltv: quoteData.cltv,
+                rate: quoteData.rate,
+                term: quoteData.term,
+                payment: quoteData.payment,
+                recType: quoteData.recType,
+                netMonthlySavings: g('out-net-savings'),
+                loName: g('lo-name')
+            };
+            quoteData.borrowerStrategy = generateBorrowerStrategy(strategyCtx);
+
             // LO info
             var loInfo = {
                 name: g('lo-name'),
@@ -13467,6 +13486,25 @@ Sent via Above All Carbon HELOC Tool`;
                 });
                 if (Object.keys(tier.rates).length > 0 || Object.keys(tier.varRates).length > 0) quoteData.tiers.push(tier);
             }
+
+            // Generate borrower-focused strategy for the client quote
+            var strategyCtx = {
+                clientName: quoteData.clientName,
+                creditScore: quoteData.creditScore,
+                propertyType: quoteData.propertyType,
+                homeValue: parseFloat((quoteData.homeValue || '0').replace(/[^0-9.-]/g, '')) || 0,
+                mortgageBalance: parseFloat((quoteData.mortgageBalance || '0').replace(/[^0-9.-]/g, '')) || 0,
+                helocPayoff: parseFloat((quoteData.helocPayoff || '0').replace(/[^0-9.-]/g, '')) || 0,
+                cashBack: parseFloat((quoteData.cashBack || '0').replace(/[^0-9.-]/g, '')) || 0,
+                cltv: quoteData.cltv,
+                rate: quoteData.rate,
+                term: quoteData.term,
+                payment: quoteData.payment,
+                recType: quoteData.recType,
+                netMonthlySavings: g('out-net-savings'),
+                loName: g('lo-name')
+            };
+            quoteData.borrowerStrategy = generateBorrowerStrategy(strategyCtx);
 
             // LO info
             var loInfo = {

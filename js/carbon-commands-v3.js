@@ -40,7 +40,7 @@
             alias: 'record,/record',
             action: (name) => startRecording(name),
             category: 'workflow',
-            description: 'Start recording a workflow'
+            description: 'Record a workflow: /record my-workflow-name'
         },
         'stop recording': {
             alias: 'stop,/stop',
@@ -508,7 +508,9 @@
     // ==================== WORKFLOW RECORDER ====================
     function startRecording(name) {
         if (!name) {
-            showToast('Please provide a workflow name: /record my-workflow', 'error');
+            // Open palette with pre-filled command so user can type name
+            openPaletteWithQuery('/record ');
+            showToast('Type a name for your workflow: /record my-workflow', 'info');
             return;
         }
         
@@ -516,7 +518,7 @@
         state.recordingName = name;
         state.recordingSteps = [];
         
-        showToast(`🎬 Recording started: "${name}"`);
+        showToast(`🎬 Recording started: "${name}". Do your actions, then type /stop to save.`);
         showRecordingIndicator();
     }
 
