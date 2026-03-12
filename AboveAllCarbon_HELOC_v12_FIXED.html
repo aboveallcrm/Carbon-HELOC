@@ -4812,31 +4812,7 @@
         </div>
     </div>
 
-    <div id="floating-toolbar">
-        <div class="toolbar-drag-handle" title="Drag to move">&#x22ee;&#x22ee;</div>
-        <button class="toolbar-btn" onclick="toggleAdminPanel()" id="btn-toggle-admin">⚙️ Settings</button>
-        <button class="toolbar-btn" onclick="captureAndCopy()" title="Screenshot &amp; Copy">📸 Copy</button>
-        <button class="toolbar-btn" onclick="printPDF()">📄 PDF</button>
-        <button class="toolbar-btn" onclick="openEmailSendModal()" title="One-click email with quote"
-            style="background:linear-gradient(135deg,#0078d4,#005a9e);">✉️ Email</button>
-        <button class="toolbar-btn" onclick="toggleSendQuotePanel()" title="Send quote via SMS, Email, or CRM"
-            style="background:linear-gradient(135deg,#10b981,#059669);" id="btn-send-quote">📲 Send</button>
-        <button class="toolbar-btn" id="btn-download-pdf"
-            style="display:none; background: linear-gradient(135deg, #06b6d4, #0891b2);" onclick="exportBrandedPDF()">⬇
-            Download</button>
-        <button class="toolbar-btn" id="btn-notif-bell" onclick="toggleNotifPanel()" title="Quote view alerts" style="position:relative; background: transparent; border: 1px solid rgba(255,255,255,0.15); font-size: 14px; padding: 5px 10px;">🔔<span id="notif-badge" style="display:none; position:absolute; top:-4px; right:-4px; background:#ef4444; color:white; font-size:9px; font-weight:800; min-width:16px; height:16px; border-radius:8px; display:none; align-items:center; justify-content:center; font-family:var(--font-heading);">0</span></button>
-        <span class="autosave-indicator" id="autosave-status">✓ Saved</span>
-        <button class="toolbar-btn-help" onclick="WalkthroughTour.restart()" title="Restart guided tour">❓ Tour</button>
-        <button class="toolbar-btn-help" onclick="InteractiveDemo.start()" title="Watch interactive demo">🎬
-            Demo</button>
-        <button class="toolbar-btn-help" onclick="OnboardingWizard.reopen()" title="Re-run setup wizard"
-            id="btn-rerun-setup" style="display:none;">🚀 Setup</button>
-        <span id="toolbar-user-info"
-            style="display:none; font-family: var(--font-heading); font-size: 9px; color: rgba(255,255,255,0.6); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
-        <button class="toolbar-btn" id="btn-logout"
-            style="display:none; background: #ef4444; font-size: 10px; padding: 5px 10px;"
-            onclick="if(window.logoutUser) window.logoutUser()">Logout</button>
-    </div>
+
 
     <!-- SEND THIS QUOTE SECTION (toolbar-level, outside proposal container) -->
     <div id="send-quote-section" class="send-quote-section">
@@ -9888,9 +9864,7 @@ Best regards,
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                 },
-                );
-                    }
-                },
+
                 {
                     title: 'Connect Your CRM',
                     icon: '🔌',
