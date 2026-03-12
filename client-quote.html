@@ -1808,10 +1808,10 @@
 
         .eq-panel {
             position: fixed;
-            width: 320px;
+            width: 280px;
             max-width: calc(100vw - 32px);
-            height: 440px;
-            max-height: calc(100vh - 120px);
+            height: 360px;
+            max-height: calc(100vh - 160px);
             background: linear-gradient(135deg, #1e293b, #0f172a);
             border-radius: 16px;
             border: 1px solid rgba(197, 160, 89, 0.25);
@@ -1823,10 +1823,10 @@
         }
 
         /* Panel position variants - match orb positions */
-        .eq-panel.pos-bottom-right { bottom: 150px; right: 20px; }
-        .eq-panel.pos-bottom-left { bottom: 150px; left: 20px; }
-        .eq-panel.pos-top-right { top: 150px; right: 20px; }
-        .eq-panel.pos-top-left { top: 150px; left: 20px; }
+        .eq-panel.pos-bottom-right { bottom: 100px; right: 20px; }
+        .eq-panel.pos-bottom-left { bottom: 100px; left: 20px; }
+        .eq-panel.pos-top-right { top: 100px; right: 20px; }
+        .eq-panel.pos-top-left { top: 100px; left: 20px; }
         .eq-panel.pos-custom { /* Uses inline styles from drag */ }
 
         .eq-panel.open {
@@ -3259,8 +3259,8 @@
                 right: 0;
                 width: 100vw;
                 max-width: 100vw;
-                height: calc(100vh - 60px);
-                max-height: calc(100vh - 60px);
+                height: calc(100vh - 120px);
+                max-height: calc(100vh - 120px);
                 border-radius: 16px 16px 0 0;
                 padding-bottom: env(safe-area-inset-bottom, 0);
             }
@@ -4357,7 +4357,7 @@
             /* --- Page Setup --- */
             @page {
                 size: letter;
-                margin: 0.5in 0.45in;
+                margin: 0.3in 0.35in;
             }
 
             /* --- Global Resets --- */
@@ -4392,6 +4392,7 @@
             #particle-canvas,
             #floating-bar,
             .floating-bar,
+            #preview-floating-bar,
             #apply-modal,
             #contact-modal,
             #share-modal,
@@ -4399,8 +4400,15 @@
             #toast,
             #eq-root,
             .eq-orb,
+            .eq-orb-ring,
             .eq-panel,
             #eq-tour-hl,
+            .eq-tour-hl,
+            .eq-hint,
+            .eq-shortcut,
+            .eq-nudge,
+            #eq-nudge,
+            .eq-voice-hint,
             .theme-toggle,
             .ub-btn,
             .pvf-play-trigger,
@@ -4413,7 +4421,21 @@
             .fc-dots,
             .fc-cta,
             .confetti,
-            .pvf-video-pattern {
+            .pvf-video-pattern,
+            .command-palette,
+            #command-palette,
+            .cmd-hint,
+            .kbd-hint,
+            .keyboard-hint,
+            .key-hint,
+            [class*="hint"][class*="cmd"],
+            [class*="shortcut"],
+            [id*="hint"],
+            [class*="cmd"][class*="k"],
+            div[class*="ezra"],
+            div[id*="ezra"],
+            span[class*="ezra"],
+            span[id*="ezra"] {
                 display: none !important;
             }
 
@@ -4425,6 +4447,8 @@
                 border-radius: 0 !important;
                 overflow: visible !important;
                 background: white !important;
+                transform: scale(0.92) !important;
+                transform-origin: top center !important;
             }
 
             .quote-page::before {
@@ -4455,7 +4479,7 @@
             /* --- Header --- */
             .header {
                 background: var(--primary-color) !important;
-                padding: 28px 32px 24px !important;
+                padding: 16px 24px 14px !important;
                 border-radius: 0 !important;
             }
 
@@ -4469,65 +4493,80 @@
             }
 
             .header h1 {
-                font-size: 22px !important;
+                font-size: 18px !important;
+                margin-bottom: 4px !important;
+            }
+
+            .header .subtitle {
+                font-size: 10px !important;
+                letter-spacing: 2px !important;
+            }
+
+            .header .lo-info {
+                margin-top: 10px !important;
+                font-size: 11px !important;
             }
 
             /* --- Sections --- */
             .section {
-                margin-bottom: 20px !important;
+                margin-bottom: 12px !important;
                 page-break-inside: avoid;
                 break-inside: avoid;
             }
 
             .section-title {
-                font-size: 14px !important;
-                margin-bottom: 12px !important;
-                padding-bottom: 6px !important;
+                font-size: 11px !important;
+                margin-bottom: 8px !important;
+                padding-bottom: 4px !important;
+                letter-spacing: 1px !important;
             }
 
             .section-title::before {
-                width: 24px !important;
-                height: 24px !important;
-                font-size: 12px !important;
+                width: 20px !important;
+                height: 20px !important;
+                font-size: 10px !important;
             }
 
             /* --- Client Details Grid --- */
             .client-grid {
                 grid-template-columns: repeat(3, 1fr) !important;
-                gap: 8px !important;
+                gap: 6px !important;
             }
 
             .client-grid .item {
-                padding: 8px 10px !important;
+                padding: 6px 8px !important;
             }
 
             .client-grid .label {
-                font-size: 8px !important;
+                font-size: 7px !important;
+                margin-bottom: 2px !important;
             }
 
             .client-grid .value {
-                font-size: 13px !important;
+                font-size: 11px !important;
             }
 
             /* --- Valuation Blocks --- */
             .val-blocks {
-                gap: 8px !important;
+                gap: 6px !important;
             }
 
             .val-block {
-                padding: 10px !important;
+                padding: 8px !important;
+                border-radius: 10px !important;
             }
 
-            .val-label {
-                font-size: 8px !important;
+            .val-block .val-label {
+                font-size: 7px !important;
+                margin-bottom: 4px !important;
             }
 
-            .val-value {
-                font-size: 16px !important;
+            .val-block .val-value {
+                font-size: 13px !important;
             }
 
-            .highlight .val-value {
-                font-size: 18px !important;
+            .val-block.highlight .val-value {
+                font-size: 15px !important;
             }
 
             /* --- Equity Donut Chart --- */
@@ -4548,15 +4587,20 @@
 
             /* --- Social Proof --- */
             .social-proof {
-                gap: 12px !important;
+                gap: 8px !important;
+                margin-bottom: 12px !important;
+            }
+
+            .sp-item {
+                padding: 8px !important;
             }
 
             .sp-number {
-                font-size: 22px !important;
+                font-size: 16px !important;
             }
 
             .sp-label {
-                font-size: 10px !important;
+                font-size: 8px !important;
             }
 
             /* --- Recommendation Box --- */
@@ -4564,7 +4608,9 @@
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 border: 2px solid var(--accent-color) !important;
-                padding: 20px !important;
+                padding: 12px !important;
+                margin-bottom: 16px !important;
+                border-radius: 12px !important;
             }
 
             .recommendation::before,
@@ -4573,15 +4619,24 @@
             }
 
             .rec-grid {
-                gap: 10px !important;
+                gap: 8px !important;
             }
 
-            .rec-label {
-                font-size: 8px !important;
+            .rec-item {
+                padding: 4px 0 !important;
             }
 
-            .rec-value {
-                font-size: 18px !important;
+            .rec-item .rec-label {
+                font-size: 7px !important;
+                margin-bottom: 2px !important;
+            }
+
+            .rec-item .rec-value {
+                font-size: 14px !important;
+            }
+
+            .rec-item.final .rec-value {
+                font-size: 16px !important;
             }
 
             /* --- Savings Comparison --- */
@@ -4589,10 +4644,41 @@
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 border: 1px solid #d1fae5 !important;
+                padding: 12px 16px !important;
+                margin-bottom: 16px !important;
+            }
+
+            .savings-compare .sc-title {
+                font-size: 10px !important;
+                margin-bottom: 10px !important;
+            }
+
+            .sc-bar-row {
+                margin-bottom: 6px !important;
+            }
+
+            .sc-bar-label {
+                font-size: 9px !important;
+                width: 80px !important;
             }
 
             .sc-bar-fill {
+                font-size: 9px !important;
+                padding: 3px 6px !important;
                 transition: none !important;
+            }
+
+            .sc-savings-box {
+                margin-top: 10px !important;
+                padding-top: 10px !important;
+            }
+
+            .sc-savings-item .sc-big {
+                font-size: 14px !important;
+            }
+
+            .sc-savings-item .sc-sub {
+                font-size: 8px !important;
             }
 
             /* --- Funds Carousel --- */
@@ -4600,13 +4686,27 @@
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 min-height: auto !important;
-                padding: 16px 20px !important;
+                padding: 10px 14px !important;
+                margin-bottom: 12px !important;
             }
 
             .fc-slide {
                 position: relative !important;
                 opacity: 1 !important;
                 transform: none !important;
+            }
+
+            .fc-icon {
+                font-size: 24px !important;
+                margin-bottom: 6px !important;
+            }
+
+            .fc-text .fc-headline {
+                font-size: 12px !important;
+            }
+
+            .fc-text .fc-sub {
+                font-size: 10px !important;
             }
 
             /* Show only the active slide */
@@ -4622,24 +4722,28 @@
             .tier {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
-                margin-bottom: 12px !important;
+                margin-bottom: 8px !important;
                 border: 1px solid #e2e8f0 !important;
-                border-radius: 8px !important;
+                border-radius: 6px !important;
             }
 
             .tier-header {
-                padding: 8px 14px !important;
-                font-size: 12px !important;
+                padding: 6px 10px !important;
+                font-size: 9px !important;
+            }
+
+            .tier-header .pts {
+                font-size: 8px !important;
             }
 
             .rate-table th {
-                font-size: 9px !important;
-                padding: 6px 10px !important;
+                font-size: 7px !important;
+                padding: 4px 8px !important;
             }
 
             .rate-table td {
-                font-size: 12px !important;
-                padding: 8px 10px !important;
+                font-size: 10px !important;
+                padding: 5px 8px !important;
             }
 
             tr.recommended td {
@@ -4696,27 +4800,37 @@
 
             /* --- Greeting Banner --- */
             #greeting-banner {
-                padding: 10px 16px !important;
+                padding: 8px 12px !important;
+                font-size: 11px !important;
+            }
+
+            .greeting-banner .greeting-text {
                 font-size: 13px !important;
+            }
+
+            .greeting-banner .greeting-sub {
+                font-size: 9px !important;
             }
 
             /* --- Disclaimer --- */
             #client-disclaimer {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
-                font-size: 9px !important;
-                padding: 10px 14px !important;
+                font-size: 7px !important;
+                padding: 8px 12px !important;
+                margin-top: 12px !important;
             }
 
             /* --- Trust Badges --- */
             #trust-badges {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
+                margin: 10px 0 !important;
             }
 
             .trust-badge {
                 opacity: 0.7 !important;
-                font-size: 10px !important;
+                font-size: 9px !important;
             }
 
             /* --- Footer --- */
@@ -4724,25 +4838,30 @@
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 background: var(--slate) !important;
-                padding: 16px 24px !important;
+                padding: 12px 20px !important;
             }
 
             .footer-headshot {
-                width: 52px !important;
-                height: 52px !important;
+                width: 40px !important;
+                height: 40px !important;
             }
 
             .footer-name {
-                font-size: 14px !important;
+                font-size: 12px !important;
+            }
+
+            .footer-title,
+            .footer-contact {
+                font-size: 9px !important;
             }
 
             .footer-legal {
-                font-size: 8px !important;
+                font-size: 7px !important;
             }
 
             .proprietary-notice {
-                font-size: 7px !important;
-                padding: 4px 8px !important;
+                font-size: 6px !important;
+                padding: 3px 6px !important;
             }
 
             /* --- Links: show URL after link text --- */
@@ -4754,9 +4873,13 @@
             }
 
             /* --- Padding for inner content --- */
+            .body-content {
+                padding: 20px 24px !important;
+            }
+
             .quote-page>div:not(.header):not(.quote-footer):not(#sec-personal-video) {
-                padding-left: 28px !important;
-                padding-right: 28px !important;
+                padding-left: 24px !important;
+                padding-right: 24px !important;
             }
 
             /* --- Savings Badge: stop pulse --- */
@@ -4769,6 +4892,15 @@
                 position: static !important;
                 display: inline-block !important;
                 margin-bottom: 8px !important;
+                width: 28px !important;
+                height: 28px !important;
+                font-size: 14px !important;
+            }
+
+            /* --- Ensure Single Page Fit --- */
+            .quote-page {
+                page-break-after: avoid !important;
+                break-after: avoid !important;
             }
         }
     </style>

@@ -306,14 +306,21 @@
         initScheduler();
         detectContext();
         
-        console.log('🎯 Carbon Command Palette v3.0 - Ultimate Edition');
-        console.log('💡 Natural Language: ENABLED');
-        console.log('🎤 Voice Control: ACTIVE - Say "Hey Ezra" or "Hey Carbon"');
-        console.log('⚡ Smart Predictions: ENABLED');
-        console.log('🎬 Workflow Recorder: /record [name]');
+        if (CONFIG.debug) {
+            console.log('🎯 Carbon Command Palette v3.0 - Ultimate Edition');
+            console.log('💡 Natural Language: ENABLED');
+            console.log('🎤 Voice Control: ACTIVE - Say "Hey Ezra" or "Hey Carbon"');
+            console.log('⚡ Smart Predictions: ENABLED');
+            console.log('🎬 Workflow Recorder: /record [name]');
+        }
         
         // Auto-save every 30 seconds
-        setInterval(saveState, CONFIG.autoSaveInterval);
+        const autoSaveIntervalId = setInterval(saveState, CONFIG.autoSaveInterval);
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            clearInterval(autoSaveIntervalId);
+        });
     }
 
     // ==================== VOICE ORB ====================
@@ -612,7 +619,12 @@
     // ==================== SCHEDULER ====================
     function initScheduler() {
         // Check every minute for scheduled commands
-        setInterval(checkSchedules, 60000);
+        const schedulerIntervalId = setInterval(checkSchedules, 60000);
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            clearInterval(schedulerIntervalId);
+        });
     }
 
     function checkSchedules() {

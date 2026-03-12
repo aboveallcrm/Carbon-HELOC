@@ -8341,7 +8341,7 @@ Best regards,
                 if (info.tools && info.tools.length > 0) {
                     const toolsEl = document.createElement('div');
                     toolsEl.className = 'tier-tools';
-                    toolsEl.innerHTML = info.tools.map(function(t) { return '<span class="tier-tool-tag">' + t + '</span>'; }).join('');
+                    toolsEl.innerHTML = info.tools.map(function(t) { return '<span class="tier-tool-tag">' + escapeHtml(t) + '</span>'; }).join('');
                     card.appendChild(toolsEl);
                 }
 
@@ -9123,8 +9123,8 @@ Best regards,
             // ===== STEP 2: COMPANY & BRANDING =====
             function renderCompany() {
                 var headshotSrc = wizardData.headshotUrl;
-                var headshotHtml = headshotSrc ? '<img style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--accent-color);" src="' + headshotSrc + '" onerror="this.style.display=\'none\'">' : '<div style="width:60px;height:60px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto;">&#128100;</div>';
-                var logoHtml = wizardData.logoUrl ? '<img class="ob-preview-logo" src="' + wizardData.logoUrl + '" onerror="this.style.display=\'none\'">' : '';
+                var headshotHtml = headshotSrc ? '<img style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--accent-color);" src="' + headshotSrc + '" alt="Loan Officer Headshot" onerror="this.style.display=\'none\'">' : '<div style="width:60px;height:60px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto;">&#128100;</div>';
+                var logoHtml = wizardData.logoUrl ? '<img class="ob-preview-logo" src="' + wizardData.logoUrl + '" alt="Company Logo" onerror="this.style.display=\'none\'">' : '';
                 var namePreview = wizardData.loName || 'Your Name';
                 var companyPreview = wizardData.loCompany || 'Your Company';
                 return '<div class="ob-header">' +
@@ -9611,7 +9611,7 @@ Best regards,
                         ? 'width:48px;height:48px;border-radius:50%;object-fit:cover;'
                         : 'height:40px;max-width:120px;object-fit:contain;';
                     previewEl.innerHTML = '<div class="ob-upload-preview">' +
-                        '<img style="' + imgStyle + '" src="' + url + '" onerror="this.style.display=\'none\'">' +
+                        '<img style="' + imgStyle + '" src="' + url + '" alt="Uploaded Image" onerror="this.style.display=\'none\'">' +
                         '<span style="font-size:10px;color:#10b981;font-weight:600;">Uploaded</span>' +
                         '<button class="ob-upload-remove" onclick="OnboardingWizard._removeUpload(\'' + fieldKey + '\')" title="Remove">&times;</button>' +
                         '</div>';
@@ -9630,10 +9630,10 @@ Best regards,
                 if (nameEl) nameEl.textContent = wizardData.loName || 'Your Name';
                 if (companyEl) companyEl.textContent = wizardData.loCompany || 'Your Company';
                 if (headshotContainer && wizardData.headshotUrl) {
-                    headshotContainer.innerHTML = '<img style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--accent-color);" src="' + wizardData.headshotUrl + '" onerror="this.style.display=\'none\'">';
+                    headshotContainer.innerHTML = '<img style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--accent-color);" src="' + wizardData.headshotUrl + '" alt="Headshot Preview" onerror="this.style.display=\'none\'">';
                 }
                 if (logoContainer) {
-                    logoContainer.innerHTML = wizardData.logoUrl ? '<img class="ob-preview-logo" src="' + wizardData.logoUrl + '" onerror="this.style.display=\'none\'">' : '';
+                    logoContainer.innerHTML = wizardData.logoUrl ? '<img class="ob-preview-logo" src="' + wizardData.logoUrl + '" alt="Logo Preview" onerror="this.style.display=\'none\'">' : '';
                 }
             }
 
@@ -9662,15 +9662,15 @@ Best regards,
                     window.showToast = originalShowToast;
 
                     if (testResult.success) {
-                        if (statusEl) statusEl.innerHTML = '<span style="color:#10b981;">&#9989; Connected! ' + testResult.message + '</span>';
+                        if (statusEl) statusEl.innerHTML = '<span style="color:#10b981;">&#9989; Connected! ' + escapeHtml(testResult.message) + '</span>';
                         if (iconEl) iconEl.textContent = '\u2705';
                     } else {
-                        if (statusEl) statusEl.innerHTML = '<span style="color:#f87171;">&#10060; ' + (testResult.message || 'Connection test failed') + '</span>';
+                        if (statusEl) statusEl.innerHTML = '<span style="color:#f87171;">&#10060; ' + escapeHtml(testResult.message || 'Connection test failed') + '</span>';
                         if (iconEl) iconEl.textContent = '\u274C';
                     }
                 } catch (e) {
                     window.showToast = originalShowToast;
-                    if (statusEl) statusEl.innerHTML = '<span style="color:#f87171;">&#10060; Error: ' + e.message + '</span>';
+                    if (statusEl) statusEl.innerHTML = '<span style="color:#f87171;">&#10060; Error: ' + escapeHtml(e.message) + '</span>';
                     if (iconEl) iconEl.textContent = '\u274C';
                 }
             }
@@ -11921,7 +11921,7 @@ Best regards,
                 const rateLockDays = document.getElementById('rate-lock-days')?.value || '30';
                 if (rateLockEnabled) {
                     rateLockNotice.style.display = 'block';
-                    rateLockNotice.innerHTML = '🔒 Rate locked for ' + rateLockDays + ' days';
+                    rateLockNotice.innerHTML = '🔒 Rate locked for ' + escapeHtml(String(rateLockDays)) + ' days';
                 } else {
                     rateLockNotice.style.display = 'none';
                 }
@@ -12610,7 +12610,7 @@ Generate the sales strategy and phone script now.`;
                 '<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">' +
                 // Header
                 '<tr><td style="background:linear-gradient(135deg,#1e293b,#0f172a);padding:24px 30px;text-align:center;">' +
-                (loLogo ? '<img src="' + loLogo + '" alt="Logo" style="max-height:40px;margin-bottom:10px;"><br>' : '') +
+                (loLogo ? '<img src="' + loLogo + '" alt="Company Logo" style="max-height:40px;margin-bottom:10px;"><br>' : '') +
                 '<h1 style="color:#ffffff;font-size:22px;margin:0;font-weight:800;">Your Personalized HELOC Quote</h1>' +
                 '<p style="color:rgba(255,255,255,0.7);font-size:13px;margin:6px 0 0;">Prepared exclusively for ' + data.CLIENT_NAME + '</p>' +
                 '</td></tr>' +
@@ -12659,7 +12659,7 @@ Generate the sales strategy and phone script now.`;
                 (opts.skipSignature ? '' :
                 '<tr><td style="background:#f8fafc;padding:20px 30px;border-top:1px solid #e2e8f0;">' +
                 '<table width="100%" cellpadding="0" cellspacing="0"><tr>' +
-                (loHeadshot ? '<td width="60" style="vertical-align:top;padding-right:14px;"><img src="' + loHeadshot + '" alt="" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0;"></td>' : '') +
+                (loHeadshot ? '<td width="60" style="vertical-align:top;padding-right:14px;"><img src="' + loHeadshot + '" alt="Loan Officer" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0;"></td>' : '') +
                 '<td style="vertical-align:top;">' +
                 '<div style="font-size:14px;font-weight:700;color:#1e293b;">' + data.LO_NAME + '</div>' +
                 '<div style="font-size:12px;color:#64748b;margin-top:2px;">' + (document.getElementById('lo-title')?.value || 'Loan Officer') + '</div>' +
@@ -13106,7 +13106,7 @@ Sent via Above All Carbon HELOC Tool`;
 
             } catch (e) {
                 statusDiv.style.background = 'rgba(239,68,68,0.95)';
-                statusDiv.innerHTML = '<div style="font-size:48px;margin-bottom:15px;">❌</div><div style="font-size:14px;">Error: ' + e.message + '</div>';
+                statusDiv.innerHTML = '<div style="font-size:48px;margin-bottom:15px;">❌</div><div style="font-size:14px;">Error: ' + escapeHtml(e.message) + '</div>';
                 console.error('GHL Error:', e);
             }
 
@@ -13866,7 +13866,7 @@ Sent via Above All Carbon HELOC Tool`;
                 showToast('Quote SMS sent via Bonzo!', 'success');
                 setTimeout(function() { statusDiv.innerHTML = ''; }, 4000);
             } catch (e) {
-                statusDiv.innerHTML = '<span style="color:#ef4444;">Bonzo error: ' + e.message + '</span>';
+                statusDiv.innerHTML = '<span style="color:#ef4444;">Bonzo error: ' + escapeHtml(e.message) + '</span>';
                 showToast('Bonzo SMS error: ' + e.message, 'error');
             }
         }
@@ -13935,7 +13935,7 @@ Sent via Above All Carbon HELOC Tool`;
                 showToast('Quote SMS sent via GHL!', 'success');
                 setTimeout(function() { statusDiv.innerHTML = ''; }, 4000);
             } catch (e) {
-                statusDiv.innerHTML = '<span style="color:#ef4444;">GHL error: ' + e.message + '</span>';
+                statusDiv.innerHTML = '<span style="color:#ef4444;">GHL error: ' + escapeHtml(e.message) + '</span>';
                 showToast('GHL SMS error: ' + e.message, 'error');
             }
         }
@@ -15360,6 +15360,39 @@ Sent via Above All Carbon HELOC Tool`;
             return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
 
+        /**
+         * Safely set innerHTML with automatic sanitization of dynamic content
+         * @param {HTMLElement} element - The element to set innerHTML on
+         * @param {string} html - The HTML content (will be sanitized if contains dynamic data)
+         * @param {Object} vars - Optional variables to interpolate (will be escaped)
+         */
+        function safeInnerHTML(element, html, vars) {
+            if (!element) return;
+            
+            // If vars provided, escape them and interpolate
+            if (vars) {
+                let safeHtml = html;
+                for (const [key, value] of Object.entries(vars)) {
+                    const escaped = escapeHtml(String(value ?? ''));
+                    safeHtml = safeHtml.replace(new RegExp('{{' + key + '}}', 'g'), escaped);
+                }
+                element.innerHTML = safeHtml;
+            } else {
+                // For static HTML without variables, set directly
+                element.innerHTML = html;
+            }
+        }
+
+        /**
+         * Escape HTML entities to prevent XSS
+         */
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         function updateOutboundWebhook(id, field, value) {
             const wh = outboundWebhooks.find(w => w.id === id);
             if (wh) wh[field] = value;
@@ -15977,7 +16010,7 @@ Sent via Above All Carbon HELOC Tool`;
                 if (qSearchVal) filterQuotesSearch(qSearchVal);
             } catch (e) {
                 console.error('Error loading quotes:', e);
-                listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#f87171;font-family:var(--font-heading);font-size:10px;">Error loading quotes: ' + e.message + '</div>';
+                listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#f87171;font-family:var(--font-heading);font-size:10px;">Error loading quotes: ' + escapeHtml(e.message) + '</div>';
             }
         }
 
@@ -16620,7 +16653,7 @@ Sent via Above All Carbon HELOC Tool`;
 
             } catch (e) {
                 console.error('Error loading leads:', e);
-                tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:#f87171;font-family:var(--font-heading);font-size:10px;">Error loading leads: ' + e.message + '</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:#f87171;font-family:var(--font-heading);font-size:10px;">Error loading leads: ' + escapeHtml(e.message) + '</td></tr>';
             }
         }
 
@@ -16893,10 +16926,10 @@ Sent via Above All Carbon HELOC Tool`;
                 });
                 timelineHtml += '</div>';
 
-                content.innerHTML = metricsHtml + deviceHtml + lastHtml + timelineHtml;
+                content.innerHTML = metricsHtml + deviceHtml + lastHtml + timelineHtml; // These are internally generated, safe
 
             } catch (e) {
-                document.getElementById('lead-analytics-content').innerHTML = '<div style="color:#f87171;">Error loading analytics: ' + e.message + '</div>';
+                document.getElementById('lead-analytics-content').innerHTML = '<div style="color:#f87171;">Error loading analytics: ' + escapeHtml(e.message) + '</div>';
             }
         }
 
