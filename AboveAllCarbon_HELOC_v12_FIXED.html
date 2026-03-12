@@ -1210,76 +1210,12 @@
             justify-content: center;
         }
 
-        #floating-toolbar {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            z-index: 1000;
-            background: rgba(30, 41, 59, 0.95);
-            padding: 10px 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            flex-wrap: wrap;
-            max-width: 400px;
-        }
 
-        .toolbar-drag-handle {
-            cursor: grab;
-            color: rgba(255, 255, 255, 0.4);
-            padding: 4px;
-            margin-right: -4px;
-            font-size: 14px;
-            line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            user-select: none;
-        }
-        
-        .toolbar-drag-handle:active {
-            cursor: grabbing;
-        }
-        
-        .toolbar-drag-handle:hover {
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .toolbar-btn {
-            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-family: var(--font-heading);
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 11px;
-            transition: transform 0.2s;
-        }
-
-        .toolbar-btn:hover {
+.toolbar-btn:hover {
             transform: scale(1.05);
         }
 
-        .autosave-indicator {
-            font-family: var(--font-heading);
-            font-size: 10px;
-            color: #10b981;
-            padding: 4px 8px;
-            background: rgba(16, 185, 129, 0.2);
-            border-radius: 12px;
-        }
-
-        .autosave-indicator.saving {
-            color: #f59e0b;
-            background: rgba(245, 158, 11, 0.2);
-        }
-
-        @media print {
+@media print {
             @page {
                 size: letter;
                 margin: 0.25in;
@@ -1295,11 +1231,18 @@
             }
 
             #admin-panel,
-            #floating-toolbar,
             #carbon-prediction-bar,
             #carbon-quick-widget,
             .carbon-prediction-bar,
-            .carbon-quick-widget {
+            .carbon-quick-widget,
+            .carbon-cmd-button,
+            .carbon-cmd-hint,
+            #send-quote-section,
+            #notif-panel,
+            #eq-root,
+            .eq-orb,
+            .eq-panel,
+            .modal-overlay {
                 display: none !important;
             }
 
@@ -2193,21 +2136,7 @@
                 transform: translateY(0);
             }
         }
-
-        .toolbar-btn-help {
-            background: rgba(255, 255, 255, 0.15);
-            color: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-family: var(--font-heading);
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 11px;
-            transition: all 0.2s;
-        }
-
-        .toolbar-btn-help:hover {
+.toolbar-btn-help:hover {
             background: rgba(255, 255, 255, 0.25);
             color: white;
         }
@@ -4245,20 +4174,7 @@
         }
 
         /* --- Floating Toolbar --- */
-        #floating-toolbar {
-            border-radius: 12px;
-            max-width: 460px;
-            border-left: 3px solid var(--accent-color);
-            backdrop-filter: blur(12px);
-            gap: 8px;
-        }
-
-        .toolbar-btn {
-            border-radius: var(--radius-sm);
-            transition: all var(--transition);
-        }
-
-        .toolbar-btn:hover {
+.toolbar-btn:hover {
             transform: translateY(-1px);
             box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
         }
@@ -4333,14 +4249,7 @@
             .matrix-container {
                 flex-direction: column;
             }
-
-            #floating-toolbar {
-                right: 10px;
-                top: 10px;
-                max-width: 95%;
-            }
-
-            .settings-tabs {
+.settings-tabs {
                 gap: 4px;
             }
 
@@ -4429,16 +4338,7 @@
                 grid-template-columns: 1fr !important;
             }
 
-            /* Floating toolbar: compact for tablet */
-            #floating-toolbar {
-                padding: 8px 10px;
-                gap: 6px;
-            }
-            #floating-toolbar .toolbar-btn {
-                padding: 8px 10px;
-                font-size: 10px;
-            }
-        }
+
 
         /* --- Mobile: 480px --- */
         @media (max-width: 480px) {
@@ -4449,20 +4349,7 @@
             }
 
             /* Floating toolbar: dock to bottom */
-            #floating-toolbar {
-                top: auto;
-                bottom: 10px;
-                right: 10px;
-                left: 10px;
-                max-width: 100%;
-                justify-content: center;
-                border-radius: 12px;
-                border-left: none;
-                border-top: 3px solid var(--accent-color);
-                padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-            }
-
-            /* Body bottom padding for docked toolbar */
+/* Body bottom padding for docked toolbar */
             body {
                 padding-bottom: 80px;
             }
@@ -4510,17 +4397,7 @@
             #leads-table tbody td:nth-child(1) {
                 display: none;
             }
-
-            #floating-toolbar {
-                gap: 4px;
-                padding: 6px 8px;
-            }
-            #floating-toolbar .toolbar-btn {
-                padding: 6px 8px;
-                font-size: 9px;
-            }
-
-            .premium-header {
+.premium-header {
                 padding: 14px 12px;
             }
             h1 {
@@ -4749,13 +4626,7 @@
         }
 
         /* ===== PREMIUM TOOLBAR BUTTONS ===== */
-        .toolbar-btn {
-            background: linear-gradient(135deg, var(--accent-color), #d4a843, var(--accent-dark)) !important;
-            box-shadow: 0 2px 10px rgba(197,160,89,0.3) !important;
-            border-radius: 8px !important;
-            transition: all 0.25s !important;
-        }
-        .toolbar-btn:hover {
+.toolbar-btn:hover {
             box-shadow: 0 4px 20px rgba(197,160,89,0.4) !important;
             transform: scale(1.05) translateY(-1px) !important;
         }
@@ -9636,13 +9507,7 @@ Best regards,
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                 },
-                {
-                    target: '#floating-toolbar',
-                    title: 'Your Toolbar',
-                    text: 'This toolbar stays with you. Use it to open Settings, copy your proposal as a screenshot, or export as a PDF.',
-                    position: 'bottom',
-                    beforeShow: null
-                },
+                ,
                 {
                     target: '#btn-toggle-admin',
                     title: 'Open Settings',
@@ -9700,13 +9565,7 @@ Best regards,
                         }, 100);
                     }
                 },
-                {
-                    target: '#floating-toolbar',
-                    title: 'You\'re All Set!',
-                    text: 'You know the basics! Use Copy to screenshot the proposal, PDF to export it, or open Settings to customize further. You can restart this tour anytime from the Tour button.',
-                    position: 'bottom',
-                    beforeShow: function () {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                );
                     }
                 }
             ];
@@ -10032,16 +9891,7 @@ Best regards,
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                 },
-                {
-                    title: 'Export & Share Instantly',
-                    icon: '📤',
-                    text: 'Copy the proposal as a screenshot with one click, export a branded PDF, or download it. The toolbar stays visible so these actions are always one tap away.',
-                    target: '#floating-toolbar',
-                    duration: 5000,
-                    action: function () {
-                        var panel = document.getElementById('admin-panel');
-                        if (panel) panel.style.display = 'none';
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                );
                     }
                 },
                 {
@@ -10057,16 +9907,7 @@ Best regards,
                         if (typeof switchTab === 'function') switchTab('integrations');
                     }
                 },
-                {
-                    title: 'You\'re All Set!',
-                    icon: '🎉',
-                    text: 'Open Settings, enter your first client, and send a polished HELOC proposal in under a minute. Click "Tour" anytime to replay the guided walkthrough, or "Demo" to rewatch this.',
-                    target: '#floating-toolbar',
-                    duration: 5000,
-                    action: function () {
-                        var panel = document.getElementById('admin-panel');
-                        if (panel) panel.style.display = 'none';
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                );
                     }
                 }
             ];
