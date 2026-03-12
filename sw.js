@@ -3,10 +3,13 @@
  * Provides caching, offline functionality, push notifications, and background sync
  */
 
-const CACHE_NAME = 'aac-heloc-v3';
+const CACHE_NAME = 'aac-heloc-v4';
 const STATIC_ASSETS = [
   './AboveAllCarbon_HELOC_v12_FIXED.html',
   './client-quote.html',
+  './login.html',
+  './register.html',
+  './admin.html',
   './js/main.js',
   './js/auth.js',
   './js/supabase-client.js',
@@ -14,7 +17,10 @@ const STATIC_ASSETS = [
   './js/link-shortener-universal.js',
   './js/carbon-commands-v3.js',
   './js/carbon-commands-v3.css',
-  './manifest.json'
+  './manifest.json',
+  './favicon.png',
+  './favicon-192x192.png',
+  './apple-touch-icon.png'
 ];
 
 // Install event - cache static assets

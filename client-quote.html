@@ -1734,18 +1734,18 @@
         /* ===== Ezra AI Chat Widget ===== */
         .eq-orb {
             position: fixed;
-            width: 46px;
-            height: 46px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             border: none;
             cursor: grab;
             background: linear-gradient(135deg, #c5a059, #d4af37, #c5a059);
             color: #1e293b;
-            font-size: 18px;
+            font-size: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4), 0 0 60px rgba(212, 175, 55, 0.15), 0 8px 32px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4), 0 0 40px rgba(212, 175, 55, 0.15), 0 6px 24px rgba(0, 0, 0, 0.3);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
             z-index: 1100;
             user-select: none;
@@ -1773,7 +1773,7 @@
 
         .eq-orb-ring {
             position: absolute;
-            inset: -4px;
+            inset: -3px;
             border-radius: 50%;
             border: 2px solid rgba(212, 175, 55, 0.4);
             animation: eq-pulse 2.5s ease-in-out infinite;
@@ -1808,14 +1808,14 @@
 
         .eq-panel {
             position: fixed;
-            width: 280px;
-            max-width: calc(100vw - 32px);
-            height: 360px;
-            max-height: calc(100vh - 160px);
+            width: 240px;
+            max-width: calc(100vw - 24px);
+            height: 280px;
+            max-height: calc(100vh - 140px);
             background: linear-gradient(135deg, #1e293b, #0f172a);
-            border-radius: 16px;
+            border-radius: 12px;
             border: 1px solid rgba(197, 160, 89, 0.25);
-            box-shadow: 0 0 40px rgba(197, 160, 89, 0.12), 0 25px 50px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 30px rgba(197, 160, 89, 0.1), 0 15px 30px rgba(0, 0, 0, 0.4);
             display: none;
             flex-direction: column;
             overflow: hidden;
@@ -1823,10 +1823,10 @@
         }
 
         /* Panel position variants - match orb positions */
-        .eq-panel.pos-bottom-right { bottom: 100px; right: 20px; }
-        .eq-panel.pos-bottom-left { bottom: 100px; left: 20px; }
-        .eq-panel.pos-top-right { top: 100px; right: 20px; }
-        .eq-panel.pos-top-left { top: 100px; left: 20px; }
+        .eq-panel.pos-bottom-right { bottom: 85px; right: 20px; }
+        .eq-panel.pos-bottom-left { bottom: 85px; left: 20px; }
+        .eq-panel.pos-top-right { top: 85px; right: 20px; }
+        .eq-panel.pos-top-left { top: 85px; left: 20px; }
         .eq-panel.pos-custom { /* Uses inline styles from drag */ }
 
         .eq-panel.open {
@@ -1850,8 +1850,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(197, 160, 89, 0.25);
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.2);
         }
 
         .eq-header-left {
@@ -1861,40 +1861,40 @@
         }
 
         .eq-avatar {
-            width: 32px;
-            height: 32px;
+            width: 24px;
+            height: 24px;
             background: linear-gradient(135deg, #c5a059, #d4af37);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 11px;
             color: #1e293b;
             font-weight: 700;
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
         }
 
         .eq-title {
             font-family: var(--font-heading);
             font-weight: 700;
-            font-size: 14px;
-            letter-spacing: 2px;
+            font-size: 12px;
+            letter-spacing: 1.5px;
             color: #c5a059;
         }
 
         .eq-subtitle {
-            font-size: 10px;
+            font-size: 9px;
             color: #94a3b8;
         }
 
         .eq-close {
-            width: 28px;
-            height: 28px;
+            width: 22px;
+            height: 22px;
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
+            border-radius: 6px;
             color: #94a3b8;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -1910,8 +1910,8 @@
         .eq-chips {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
-            padding: 10px 14px;
+            gap: 4px;
+            padding: 6px 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.04);
         }
 
@@ -1919,9 +1919,9 @@
             background: rgba(197, 160, 89, 0.1);
             border: 1px solid rgba(197, 160, 89, 0.2);
             color: #c5a059;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 9px;
             font-family: var(--font-heading);
             font-weight: 600;
             cursor: pointer;
@@ -1938,20 +1938,20 @@
         .eq-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 14px;
+            padding: 10px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             scrollbar-width: thin;
             scrollbar-color: rgba(197, 160, 89, 0.3) transparent;
         }
 
         .eq-msg {
-            max-width: 85%;
-            padding: 10px 14px;
-            border-radius: 12px;
-            font-size: 12px;
-            line-height: 1.6;
+            max-width: 90%;
+            padding: 8px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            line-height: 1.5;
             animation: eq-msg-in 0.3s ease;
             word-wrap: break-word;
         }
@@ -2037,10 +2037,10 @@
         }
 
         .eq-input-area {
-            padding: 10px 14px;
+            padding: 8px 10px;
             border-top: 1px solid rgba(197, 160, 89, 0.15);
             display: flex;
-            gap: 8px;
+            gap: 6px;
             align-items: flex-end;
         }
 
@@ -2048,13 +2048,13 @@
             flex: 1;
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 10px 12px;
+            border-radius: 8px;
+            padding: 8px 10px;
             color: white;
-            font-size: 12px;
+            font-size: 11px;
             font-family: var(--font-body);
             resize: none;
-            max-height: 80px;
+            max-height: 60px;
             outline: none;
         }
 
@@ -2067,9 +2067,9 @@
         }
 
         .eq-send {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
             background: linear-gradient(135deg, #c5a059, #a68543);
             border: none;
             color: #0f172a;
@@ -2079,7 +2079,7 @@
             justify-content: center;
             transition: all 0.2s;
             flex-shrink: 0;
-            font-size: 16px;
+            font-size: 14px;
         }
 
         .eq-send:hover {
@@ -2095,9 +2095,9 @@
 
         /* ===== Voice Input Button ===== */
         .eq-voice-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
             background: rgba(139, 92, 246, 0.2);
             border: 1px solid rgba(139, 92, 246, 0.3);
             color: #a78bfa;
@@ -2107,8 +2107,8 @@
             justify-content: center;
             transition: all 0.2s;
             flex-shrink: 0;
-            font-size: 16px;
-            margin-right: 8px;
+            font-size: 14px;
+            margin-right: 6px;
         }
 
         .eq-voice-btn:hover {
@@ -2152,13 +2152,13 @@
 
         /* ===== Ezra Position Bar ===== */
         .eq-position-bar {
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-top: 1px solid rgba(197, 160, 89, 0.15);
             background: rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 10px;
+            gap: 4px;
+            font-size: 9px;
         }
 
         .eq-pos-label {
@@ -2167,9 +2167,9 @@
         }
 
         .eq-pos-btn {
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(197, 160, 89, 0.2);
             color: #94a3b8;
@@ -2177,7 +2177,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 10px;
             transition: all 0.2s;
         }
 
@@ -2194,25 +2194,25 @@
         }
 
         /* ===== Voice Note Player ===== */
-        .eq-voice-note { padding: 10px 14px; border-bottom: 1px solid rgba(197, 160, 89, 0.15); display: none; }
+        .eq-voice-note { padding: 8px 10px; border-bottom: 1px solid rgba(197, 160, 89, 0.15); display: none; }
         .eq-voice-note.has-audio { display: block; }
-        .eq-vn-wrap { display: flex; align-items: center; gap: 10px; background: rgba(197, 160, 89, 0.08); border: 1px solid rgba(197, 160, 89, 0.15); border-radius: 12px; padding: 8px 12px; }
-        .eq-vn-play { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #c5a059, #a68543); border: none; color: #0f172a; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; transition: transform 0.2s; }
+        .eq-vn-wrap { display: flex; align-items: center; gap: 8px; background: rgba(197, 160, 89, 0.08); border: 1px solid rgba(197, 160, 89, 0.15); border-radius: 10px; padding: 6px 10px; }
+        .eq-vn-play { width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, #c5a059, #a68543); border: none; color: #0f172a; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; transition: transform 0.2s; }
         .eq-vn-play:hover { transform: scale(1.1); }
         .eq-vn-info { flex: 1; min-width: 0; }
-        .eq-vn-label { font-size: 10px; color: #94a3b8; font-family: var(--font-heading); font-weight: 600; letter-spacing: 0.5px; }
-        .eq-vn-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+        .eq-vn-label { font-size: 9px; color: #94a3b8; font-family: var(--font-heading); font-weight: 600; letter-spacing: 0.5px; }
+        .eq-vn-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 3px; overflow: hidden; }
         .eq-vn-progress { height: 100%; width: 0%; background: linear-gradient(90deg, #c5a059, #d4af37); border-radius: 2px; transition: width 0.1s linear; }
-        .eq-vn-time { font-size: 10px; color: #64748b; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        .eq-vn-time { font-size: 9px; color: #64748b; font-variant-numeric: tabular-nums; white-space: nowrap; }
         /* ===== Nudge Bubble ===== */
-        .eq-nudge { position: fixed; z-index: 1150; background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 12px; padding: 12px 16px; max-width: 280px; box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 20px rgba(197,160,89,0.1); animation: eq-nudge-in 0.4s cubic-bezier(0.4,0,0.2,1); cursor: pointer; }
+        .eq-nudge { position: fixed; z-index: 1150; background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 10px; padding: 10px 12px; max-width: 220px; box-shadow: 0 6px 24px rgba(0,0,0,0.4), 0 0 15px rgba(197,160,89,0.1); animation: eq-nudge-in 0.4s cubic-bezier(0.4,0,0.2,1); cursor: pointer; }
         .eq-nudge.pos-bottom-right { bottom: 150px; right: 20px; }
         .eq-nudge.pos-bottom-left { bottom: 150px; left: 20px; }
         .eq-nudge.pos-top-right { top: 150px; right: 20px; }
         .eq-nudge.pos-top-left { top: 150px; left: 20px; }
-        .eq-nudge-text { font-size: 12px; color: #e2e8f0; line-height: 1.5; }
+        .eq-nudge-text { font-size: 11px; color: #e2e8f0; line-height: 1.4; }
         .eq-nudge-text strong { color: #c5a059; }
-        .eq-nudge-dismiss { position: absolute; top: 6px; right: 8px; background: none; border: none; color: #64748b; cursor: pointer; font-size: 14px; }
+        .eq-nudge-dismiss { position: absolute; top: 4px; right: 6px; background: none; border: none; color: #64748b; cursor: pointer; font-size: 12px; }
         @keyframes eq-nudge-in { from { opacity: 0; transform: translateY(12px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
         /* ===== Compare Mode Table ===== */
         .eq-compare-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 11px; }
@@ -3249,9 +3249,9 @@
             .eq-orb {
                 bottom: 80px;
                 right: 10px;
-                width: 46px;
-                height: 46px;
-                font-size: 18px;
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
             }
 
             .eq-panel {
@@ -4076,6 +4076,205 @@
             opacity: 0.8;
             font-weight: 600;
             letter-spacing: 0.5px;
+        }
+
+        /* Origination Fee Selector */
+        .what-if-origination {
+            background: rgba(15, 43, 76, 0.03);
+            border: 1px solid rgba(197, 160, 89, 0.15);
+            border-radius: 14px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+        }
+
+        .what-if-orig-label {
+            font-family: var(--font-heading);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary-color);
+            margin-bottom: 14px;
+            text-align: center;
+        }
+
+        .what-if-orig-options {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .what-if-orig-btn {
+            flex: 1;
+            max-width: 120px;
+            background: white;
+            border: 2px solid rgba(15, 43, 76, 0.1);
+            border-radius: 12px;
+            padding: 14px 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .what-if-orig-btn:hover {
+            border-color: rgba(197, 160, 89, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .what-if-orig-btn.active {
+            background: linear-gradient(135deg, #fffbf0, #fff8e6);
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 16px rgba(197, 160, 89, 0.2);
+        }
+
+        .what-if-orig-btn .orig-points {
+            font-family: var(--font-heading);
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--primary-color);
+        }
+
+        .what-if-orig-btn .orig-rate {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--accent-dark);
+        }
+
+        .what-if-orig-btn.active .orig-points {
+            color: var(--accent-color);
+        }
+
+        .what-if-orig-hint {
+            text-align: center;
+            font-size: 11px;
+            color: var(--slate);
+            opacity: 0.6;
+            font-style: italic;
+        }
+
+        /* Closing Cost Breakdown */
+        .what-if-breakdown {
+            background: rgba(15, 43, 76, 0.02);
+            border: 1px solid rgba(15, 43, 76, 0.06);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 20px;
+        }
+
+        .what-if-breakdown-title {
+            font-family: var(--font-heading);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--slate);
+            opacity: 0.6;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .what-if-breakdown-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .what-if-breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(15, 43, 76, 0.1);
+        }
+
+        .what-if-breakdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .what-if-breakdown-label {
+            font-size: 12px;
+            color: var(--slate);
+            opacity: 0.8;
+        }
+
+        .what-if-breakdown-value {
+            font-family: var(--font-heading);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        /* Dark mode for origination selector */
+        body.theme-dark .what-if-origination {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(197, 160, 89, 0.15);
+        }
+
+        body.theme-dark .what-if-orig-label {
+            color: #e2e8f0;
+        }
+
+        body.theme-dark .what-if-orig-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body.theme-dark .what-if-orig-btn:hover {
+            border-color: rgba(197, 160, 89, 0.4);
+        }
+
+        body.theme-dark .what-if-orig-btn.active {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.1), rgba(197, 160, 89, 0.05));
+            border-color: var(--accent-color);
+        }
+
+        body.theme-dark .what-if-orig-btn .orig-points {
+            color: #e2e8f0;
+        }
+
+        body.theme-dark .what-if-orig-btn.active .orig-points {
+            color: var(--accent-color);
+        }
+
+        body.theme-dark .what-if-orig-hint {
+            color: #94a3b8;
+        }
+
+        body.theme-dark .what-if-breakdown {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        body.theme-dark .what-if-breakdown-label {
+            color: #94a3b8;
+        }
+
+        body.theme-dark .what-if-breakdown-value {
+            color: #e2e8f0;
+        }
+
+        /* Mobile responsive for origination */
+        @media (max-width: 640px) {
+            .what-if-orig-options {
+                gap: 8px;
+            }
+
+            .what-if-orig-btn {
+                padding: 10px 6px;
+            }
+
+            .what-if-orig-btn .orig-points {
+                font-size: 15px;
+            }
+
+            .what-if-orig-btn .orig-rate {
+                font-size: 11px;
+            }
         }
 
         /* Dark mode for What If section */
@@ -5588,7 +5787,7 @@
                     <div class="what-if-icon">&#128640;</div>
                     <div class="what-if-title">What If You Borrowed More?</div>
                 </div>
-                <div class="what-if-subtitle">See how a higher HELOC could work for you — same great rate, more financial flexibility</div>
+                <div class="what-if-subtitle">See how a higher HELOC could work for you — adjust amount and compare origination options</div>
                 
                 <div class="what-if-slider-group">
                     <div class="what-if-slider-label">
@@ -5602,6 +5801,26 @@
                     </div>
                 </div>
 
+                <!-- Origination Fee Selector -->
+                <div class="what-if-origination">
+                    <div class="what-if-orig-label">Select Origination Fee to See Your Rate</div>
+                    <div class="what-if-orig-options" id="what-if-orig-options">
+                        <button class="what-if-orig-btn" data-points="1.50" data-rate="8.50">
+                            <span class="orig-points">1.50%</span>
+                            <span class="orig-rate">8.50%</span>
+                        </button>
+                        <button class="what-if-orig-btn active" data-points="2.99" data-rate="7.00">
+                            <span class="orig-points">2.99%</span>
+                            <span class="orig-rate">7.00%</span>
+                        </button>
+                        <button class="what-if-orig-btn" data-points="4.99" data-rate="6.25">
+                            <span class="orig-points">4.99%</span>
+                            <span class="orig-rate">6.25%</span>
+                        </button>
+                    </div>
+                    <div class="what-if-orig-hint">Higher upfront fee = Lower monthly rate</div>
+                </div>
+
                 <div class="what-if-results">
                     <div class="what-if-result-card">
                         <div class="what-if-result-label">Monthly Payment</div>
@@ -5609,14 +5828,33 @@
                         <div class="what-if-result-detail" id="what-if-payment-detail">at 7.0% APR</div>
                     </div>
                     <div class="what-if-result-card">
-                        <div class="what-if-result-label">Est. Closing Costs</div>
+                        <div class="what-if-result-label">Total Closing Costs</div>
                         <div class="what-if-result-value" id="what-if-fees">$3,500</div>
-                        <div class="what-if-result-detail">3.5% of loan amount</div>
+                        <div class="what-if-result-detail" id="what-if-fees-detail">Includes origination</div>
                     </div>
                     <div class="what-if-result-card highlight">
                         <div class="what-if-result-label">Cash in Your Pocket</div>
                         <div class="what-if-result-value" id="what-if-cash">$96,500</div>
-                        <div class="what-if-result-detail">After closing costs</div>
+                        <div class="what-if-result-detail">After all closing costs</div>
+                    </div>
+                </div>
+
+                <!-- Closing Cost Breakdown -->
+                <div class="what-if-breakdown">
+                    <div class="what-if-breakdown-title">Closing Cost Breakdown</div>
+                    <div class="what-if-breakdown-grid">
+                        <div class="what-if-breakdown-item">
+                            <span class="what-if-breakdown-label">Origination Fee</span>
+                            <span class="what-if-breakdown-value" id="what-if-orig-fee">$1,500</span>
+                        </div>
+                        <div class="what-if-breakdown-item">
+                            <span class="what-if-breakdown-label">Processing & Underwriting</span>
+                            <span class="what-if-breakdown-value">$1,295</span>
+                        </div>
+                        <div class="what-if-breakdown-item">
+                            <span class="what-if-breakdown-label">Title, Appraisal & 3rd Party</span>
+                            <span class="what-if-breakdown-value" id="what-if-third-party">$1,500</span>
+                        </div>
                     </div>
                 </div>
 
@@ -5795,6 +6033,14 @@
                         if (!previewData.linkOptions || previewData.linkOptions.showAiChat !== false) {
                             initEzraChat(previewData, previewLo || {}, 'preview');
                         }
+                        // Initialize calculators
+                        try {
+                            initInteractiveSavings(previewData);
+                            initPaymentScenario(previewData);
+                            initWhatIfCalculator(previewData, previewData.linkOptions || {});
+                        } catch (e) {
+                            console.warn('Calculator init error:', e);
+                        }
                     }, 300);
                     
                     return; // Skip Supabase loading
@@ -5877,7 +6123,7 @@
                     try {
                         initInteractiveSavings(link.quote_data);
                         initPaymentScenario(link.quote_data);
-                        initWhatIfCalculator(link.quote_data);
+                        initWhatIfCalculator(link.quote_data, link.quote_data.linkOptions || {});
                     } catch (e) {
                         console.warn('Calculator init error:', e);
                     }
@@ -6928,41 +7174,111 @@
             }
 
             // ===== WHAT IF: BORROW MORE CALCULATOR =====
-            function initWhatIfCalculator(data) {
+            function initWhatIfCalculator(data, options) {
+                options = options || {};
                 var slider = document.getElementById('what-if-slider');
                 var amountDisplay = document.getElementById('what-if-amount');
                 var paymentDisplay = document.getElementById('what-if-payment');
                 var paymentDetail = document.getElementById('what-if-payment-detail');
                 var feesDisplay = document.getElementById('what-if-fees');
+                var feesDetail = document.getElementById('what-if-fees-detail');
                 var cashDisplay = document.getElementById('what-if-cash');
                 var maxDisplay = document.getElementById('what-if-max');
+                var origFeeDisplay = document.getElementById('what-if-orig-fee');
+                var thirdPartyDisplay = document.getElementById('what-if-third-party');
+                var origButtons = document.querySelectorAll('.what-if-orig-btn');
+                var breakdownSection = document.querySelector('.what-if-breakdown');
+                var originationSection = document.querySelector('.what-if-origination');
 
                 if (!slider || !amountDisplay) return;
+                
+                // Show/hide sections based on options
+                if (breakdownSection && options.showClosingCostBreakdown === false) {
+                    breakdownSection.style.display = 'none';
+                }
+                if (originationSection && options.showOriginationSelector === false) {
+                    originationSection.style.display = 'none';
+                }
 
                 // Get the recommended rate and term from the quote data
                 var baseRate = parseFloat(data.rate) || 7.0;
                 var termYears = parseInt(data.term) || 30;
-                var origPoints = 0;
+                var isVariable = data.recType === 'variable';
                 
-                // Extract origination points from tiers if available
-                if (data.tiers && data.tiers.length > 0) {
-                    // Find the tier that matches the recommended rate
-                    for (var i = 0; i < data.tiers.length; i++) {
-                        var tier = data.tiers[i];
-                        if (tier.rates) {
-                            for (var term in tier.rates) {
-                                if (tier.rates[term].rate && tier.rates[term].rate.replace('%', '') === String(baseRate)) {
-                                    origPoints = parseFloat(tier.origPts) || 0;
-                                    break;
-                                }
-                            }
+                // Define origination fee options
+                // Priority: 1. Custom options from linkOptions, 2. Actual tier data, 3. Default calculated options
+                var origOptions = [];
+                
+                // Check for custom origination options in linkOptions
+                if (options.originationOptions && Array.isArray(options.originationOptions) && options.originationOptions.length === 3) {
+                    // Use custom options provided by LO (e.g., [1.50, 2.99, 4.99])
+                    origOptions = options.originationOptions.map(function(opt, idx) {
+                        var pts = typeof opt === 'number' ? opt : parseFloat(opt);
+                        // Calculate rate based on offset from base rate
+                        // Middle option (index 1) is the base rate, others are +/- offsets
+                        var rate;
+                        if (idx === 0) {
+                            rate = Math.round((baseRate + 1.0) * 100) / 100; // Lowest points = higher rate
+                        } else if (idx === 1) {
+                            rate = baseRate; // Middle = base rate
+                        } else {
+                            rate = Math.round((baseRate - 0.75) * 100) / 100; // Highest points = lower rate
                         }
-                    }
-                    // If no match found, use first tier's points
-                    if (origPoints === 0 && data.tiers[0]) {
-                        origPoints = parseFloat(data.tiers[0].origPts) || 0;
-                    }
+                        return { points: pts, rate: rate };
+                    });
                 }
+                // Try to extract actual tier data if available and no custom options
+                else if (data.tiers && data.tiers.length >= 3) {
+                    // Sort tiers by origination points
+                    var sortedTiers = data.tiers.slice().sort(function(a, b) {
+                        return parseFloat(a.origPts) - parseFloat(b.origPts);
+                    });
+                    origOptions = sortedTiers.slice(0, 3).map(function(tier) {
+                        var pts = parseFloat(tier.origPts) || 0;
+                        // Get rate for the selected term, or first available term
+                        var termKey = String(data.term) || '30';
+                        var rateData = tier.rates && tier.rates[termKey];
+                        if (!rateData && tier.rates) {
+                            var firstTerm = Object.keys(tier.rates)[0];
+                            rateData = tier.rates[firstTerm];
+                        }
+                        var rate = rateData ? parseFloat(rateData.rate.replace('%', '')) : baseRate;
+                        return { points: pts, rate: rate };
+                    }).sort(function(a, b) { return a.points - b.points; });
+                }
+                // Default fallback options
+                else {
+                    origOptions = [
+                        { points: 0, rate: Math.round((baseRate + 1.5) * 100) / 100 },
+                        { points: 1.5, rate: baseRate },
+                        { points: 3, rate: Math.round((baseRate - 0.75) * 100) / 100 }
+                    ];
+                }
+                
+                // Update the origination buttons with actual rates
+                origButtons.forEach(function(btn, idx) {
+                    if (origOptions[idx]) {
+                        btn.dataset.points = origOptions[idx].points;
+                        btn.dataset.rate = origOptions[idx].rate;
+                        // Format points with 2 decimal places (e.g., 1.50%, 2.99%, 4.99%)
+                        btn.querySelector('.orig-points').textContent = origOptions[idx].points.toFixed(2) + '%';
+                        btn.querySelector('.orig-rate').textContent = origOptions[idx].rate.toFixed(2) + '%';
+                    }
+                });
+                
+                // Find the button that matches the current quote's origination (middle option is default)
+                var currentOrigPoints = origOptions[1] ? origOptions[1].points : 2.99;
+                var selectedOrig = origOptions[1] || origOptions[0];
+                
+                origButtons.forEach(function(btn) {
+                    var btnPoints = parseFloat(btn.dataset.points);
+                    if (Math.abs(btnPoints - currentOrigPoints) < 0.01) {
+                        btn.classList.add('active');
+                        selectedOrig = { points: btnPoints, rate: parseFloat(btn.dataset.rate) };
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
 
                 // Calculate max available based on home value and CLTV
                 var homeValue = parseFloat(String(data.homeValue || '0').replace(/[$,]/g, '')) || 500000;
@@ -7000,33 +7316,56 @@
                 // Update display
                 function updateWhatIfDisplay() {
                     var amount = parseInt(slider.value);
-                    var isVariable = data.recType === 'variable';
+                    var currentRate = selectedOrig.rate;
+                    var currentPoints = selectedOrig.points;
                     
-                    // Calculate closing costs (origination points + fixed fees)
+                    // Calculate closing costs breakdown
                     var fixedFees = 1295; // Processing, underwriting, etc.
-                    var pointsCost = amount * (origPoints / 100);
-                    var thirdPartyFees = amount * 0.015; // Approx 1.5% for title, appraisal, etc.
-                    var totalFees = Math.round(fixedFees + pointsCost + thirdPartyFees);
+                    var pointsCost = Math.round(amount * (currentPoints / 100));
+                    var thirdPartyFees = Math.round(amount * 0.015); // Approx 1.5% for title, appraisal, etc.
+                    var totalFees = fixedFees + pointsCost + thirdPartyFees;
                     var netCash = amount - totalFees;
                     
                     // Calculate payment (use interest-only for HELOCs, amortized for fixed)
                     var monthlyPayment;
                     if (isVariable) {
-                        monthlyPayment = calculateInterestOnly(amount, baseRate);
+                        monthlyPayment = calculateInterestOnly(amount, currentRate);
                     } else {
-                        monthlyPayment = calculateMonthlyPayment(amount, baseRate, termYears);
+                        monthlyPayment = calculateMonthlyPayment(amount, currentRate, termYears);
                     }
                     
                     // Update displays
                     amountDisplay.textContent = '$' + amount.toLocaleString();
                     paymentDisplay.textContent = '$' + Math.round(monthlyPayment).toLocaleString() + '/mo';
-                    paymentDetail.textContent = (isVariable ? 'Interest-only' : 'Fully amortized') + ' at ' + baseRate + '% APR';
+                    paymentDetail.textContent = (isVariable ? 'Interest-only' : 'Fully amortized') + ' at ' + currentRate.toFixed(2) + '% APR';
                     feesDisplay.textContent = '$' + totalFees.toLocaleString();
+                    if (feesDetail) feesDetail.textContent = currentPoints.toFixed(2) + '% origination fee';
                     cashDisplay.textContent = '$' + netCash.toLocaleString();
+                    
+                    // Update breakdown
+                    if (origFeeDisplay) origFeeDisplay.textContent = '$' + pointsCost.toLocaleString();
+                    if (thirdPartyDisplay) thirdPartyDisplay.textContent = '$' + thirdPartyFees.toLocaleString();
                 }
 
-                // Event listener
+                // Event listener for slider
                 slider.addEventListener('input', updateWhatIfDisplay);
+                
+                // Event listeners for origination buttons
+                origButtons.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        // Remove active class from all buttons
+                        origButtons.forEach(function(b) { b.classList.remove('active'); });
+                        // Add active class to clicked button
+                        btn.classList.add('active');
+                        // Update selected origination
+                        selectedOrig = {
+                            points: parseFloat(btn.dataset.points),
+                            rate: parseFloat(btn.dataset.rate)
+                        };
+                        // Update display
+                        updateWhatIfDisplay();
+                    });
+                });
                 
                 // Initial update
                 updateWhatIfDisplay();
@@ -8454,6 +8793,21 @@
             function esc(s) { return s ? String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : ''; }
             function num(v) { var n = Number(String(v).replace(/[^0-9.\-]/g, '')); return isNaN(n) ? '0' : n.toLocaleString(); }
         })();
+    </script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('[PWA] Service Worker registered for client quote:', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('[PWA] Service Worker registration failed:', error);
+                    });
+            });
+        }
     </script>
 
 </body>
