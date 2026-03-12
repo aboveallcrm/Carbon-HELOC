@@ -14685,13 +14685,79 @@ Sent via Above All Carbon HELOC Tool`;
             }
         }
 
-        function printPDF() {
-            // Sync checkbox states with current toggle states
+        // ===== OPTIMIZED PDF EXPORT (One-Click Download) =====
+        async function printPDF() {
+            // Check if libraries are loaded
+            if (typeof html2canvas === 'undefined') {
+                // Fallback to old print dialog if html2canvas not available
+                showPrintDialog();
+                return;
+            }
+            
+            showToast('Generating PDF...', 'info');
+            
+            try {
+                // Capture at optimized width for single page
+                const canvas = await captureProposal({ width: 850, scale: 2, settle: 200 });
+                
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                const { jsPDF } = window.jspdf;
+                
+                // Letter size in mm (8.5 x 11 inches)
+                const pageW = 215.9;
+                const pageH = 279.4;
+                const margin = 10;
+                const contentW = pageW - (margin * 2);
+                
+                // Calculate image dimensions to fit on one page if possible
+                const imgRatio = canvas.height / canvas.width;
+                let imgW = contentW;
+                let imgH = imgW * imgRatio;
+                
+                // If image is too tall, scale to fit height
+                const maxH = pageH - (margin * 2);
+                if (imgH > maxH) {
+                    imgH = maxH;
+                    imgW = imgH / imgRatio;
+                }
+                
+                // Center the image on the page
+                const xPos = margin + (contentW - imgW) / 2;
+                const yPos = margin;
+                
+                // Create PDF
+                const pdf = new jsPDF('p', 'mm', 'letter');
+                pdf.addImage(imgData, 'JPEG', xPos, yPos, imgW, imgH);
+                
+                // Add subtle footer
+                const clientName = document.getElementById('in-client-name')?.value || 'Client';
+                const loName = document.getElementById('lo-name')?.value || '';
+                const dateStr = new Date().toLocaleDateString();
+                
+                pdf.setFontSize(8);
+                pdf.setTextColor(150);
+                pdf.text(`Generated ${dateStr}${loName ? ' by ' + loName : ''}`, margin, pageH - 5);
+                pdf.text('Above All Carbon HELOC', pageW - margin, pageH - 5, { align: 'right' });
+                
+                // Download with clean filename
+                const safeName = clientName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+                pdf.save(`HELOC_Proposal_${safeName}_${dateStr.replace(/\//g, '-')}.pdf`);
+                
+                showToast('PDF downloaded!', 'success');
+            } catch (err) {
+                console.error('PDF generation failed:', err);
+                showToast('PDF generation failed. Try the Print option.', 'error');
+                // Fallback to print dialog
+                showPrintDialog();
+            }
+        }
+        
+        // Legacy print dialog (fallback)
+        function showPrintDialog() {
             const varVisible = document.getElementById('variable-matrix')?.classList.contains('visible');
             document.getElementById('print-variable-matrix').checked = !!varVisible;
             const refiVisible = document.getElementById('refi-comparison-container')?.classList.contains('visible');
             document.getElementById('print-refi').checked = !!refiVisible;
-            // Show the print selection dialog
             document.getElementById('print-selection-dialog').classList.add('visible');
         }
 
@@ -14701,7 +14767,6 @@ Sent via Above All Carbon HELOC Tool`;
 
         function executePrint() {
             closePrintDialog();
-            // Map checkbox IDs to proposal section selectors
             const sectionMap = {
                 'print-header': '#proposal-header',
                 'print-client-info': '#client-info-section',
@@ -14717,7 +14782,6 @@ Sent via Above All Carbon HELOC Tool`;
                 'print-disclaimer': '#client-disclaimer',
                 'print-footer': 'footer'
             };
-            // Hide unchecked sections, force-show checked ones
             const hiddenEls = [];
             const forcedVisible = [];
             for (const [checkboxId, selector] of Object.entries(sectionMap)) {
@@ -14727,20 +14791,17 @@ Sent via Above All Carbon HELOC Tool`;
                     el.classList.add('print-exclude');
                     hiddenEls.push(el);
                 } else {
-                    // Force variable-matrix visible for print even if toggled off
                     if (selector === '#variable-matrix' && !el.classList.contains('visible')) {
                         el.classList.add('visible');
                         forcedVisible.push(el);
                     }
                 }
             }
-            // Print
             const clientName = document.getElementById('in-client-name').value || "Client";
             const oldTitle = document.title;
             document.title = 'HELOC_' + clientName.replace(/[^a-zA-Z0-9]/g, '_');
             window.print();
             document.title = oldTitle;
-            // Restore hidden sections
             hiddenEls.forEach(el => el.classList.remove('print-exclude'));
             forcedVisible.forEach(el => el.classList.remove('visible'));
         }

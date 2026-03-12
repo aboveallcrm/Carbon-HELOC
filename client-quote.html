@@ -1764,6 +1764,20 @@
             box-shadow: 0 0 30px rgba(212, 175, 55, 0.6), 0 12px 40px rgba(0, 0, 0, 0.35);
         }
 
+        /* Glowing animation for attention */
+        .eq-orb.glow {
+            animation: eq-orb-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes eq-orb-glow {
+            0%, 100% { 
+                box-shadow: 0 0 12px rgba(212, 175, 55, 0.4), 0 0 30px rgba(212, 175, 55, 0.15), 0 4px 16px rgba(0, 0, 0, 0.3);
+            }
+            50% { 
+                box-shadow: 0 0 25px rgba(212, 175, 55, 0.8), 0 0 50px rgba(212, 175, 55, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+            }
+        }
+
         .eq-orb.dragging {
             cursor: grabbing;
             transform: scale(1.15);
@@ -1850,7 +1864,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-bottom: 1px solid rgba(197, 160, 89, 0.2);
         }
 
@@ -1877,13 +1891,13 @@
         .eq-title {
             font-family: var(--font-heading);
             font-weight: 700;
-            font-size: 12px;
-            letter-spacing: 1.5px;
+            font-size: 11px;
+            letter-spacing: 1px;
             color: #c5a059;
         }
 
         .eq-subtitle {
-            font-size: 9px;
+            font-size: 8px;
             color: #94a3b8;
         }
 
@@ -4874,6 +4888,13 @@
             justify-content: center;
             gap: 16px;
             flex-wrap: wrap;
+            border-bottom: 2px solid rgba(239, 68, 68, 0.5);
+            animation: urgencyPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes urgencyPulse {
+            0%, 100% { border-bottom-color: rgba(239, 68, 68, 0.3); }
+            50% { border-bottom-color: rgba(239, 68, 68, 0.8); }
         }
 
         .urgency-banner.visible {
@@ -5594,9 +5615,9 @@
 
     <!-- Urgency Banner (slides in after delay) -->
     <div class="urgency-banner" id="urgency-banner">
-        <div class="ub-text">This quote is valid for a limited time</div>
-        <div class="ub-countdown" id="ub-countdown"></div>
-        <button class="ub-btn" onclick="openApplyModal()">Lock In Your Rate</button>
+        <div class="ub-text">&#128293; Only <strong>3 spots</strong> left this week at this rate</div>
+        <div class="ub-subtext" style="font-size: 10px; opacity: 0.9; margin-top: 2px;">12 homeowners locked in rates yesterday</div>
+        <button class="ub-btn" onclick="openApplyModal()">Secure My Rate Before They're Gone &#8594;</button>
     </div>
 
     <!-- Scroll Progress -->
@@ -5607,7 +5628,7 @@
 
     <!-- Floating Action Bar -->
     <div class="floating-bar" id="floating-bar" style="display: none;">
-        <button onclick="openApplyModal()">&#10024; Apply Now</button>
+        <button onclick="openApplyModal()">&#128293; Claim My Rate (3 Left)</button>
         <button class="secondary" id="btn-schedule" onclick="scheduleCall()" style="display:none;">&#128197; Schedule
             Call</button>
         <button class="secondary" id="btn-ask" onclick="askQuestion()">&#9679; Ask Question</button>
@@ -5735,10 +5756,10 @@
             <div class="section reveal" id="sec-personal-video" style="display: none;">
                 <div class="pvf-urgency-bar" id="pvf-urgency-bar" style="display: none;">
                     <span class="dot"></span>
-                    <span>Rates change daily — This quote expires in <strong id="pvf-countdown">48:00:00</strong></span>
+                    <span>&#128293; <strong>3 spots remaining</strong> this week — 12 homeowners secured rates yesterday</span>
                 </div>
 
-                <div class="section-title" data-icon="🎥">Watch This Before Your Quote Expires</div>
+                <div class="section-title" data-icon="🎥">Watch This Before Spots Fill Up</div>
 
                 <!-- Social Proof Bar -->
                 <div class="pvf-social-proof" id="pvf-social-proof">
@@ -6914,26 +6935,10 @@
                     var linkOpts = data.linkOptions || {};
                     if (linkOpts.showSalesPsych === false) { banner.style.display = 'none'; return; }
 
-                    // Calculate countdown from expiry date
-                    var expiryStr = window._quoteExpiry;
-                    if (expiryStr) {
-                        var expiry = new Date(expiryStr);
-                        var now = new Date();
-                        var diff = expiry - now;
-                        if (diff > 0) {
-                            var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                            var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                            cdEl.innerHTML =
-                                '<div class="ub-unit"><span class="ub-num">' + days + '</span><span class="ub-lbl">Days</span></div>' +
-                                '<div class="ub-unit"><span class="ub-num">' + hours + '</span><span class="ub-lbl">Hours</span></div>';
-                        }
-                    }
-                    // If no expiry, show generic urgency
-                    if (!cdEl.innerHTML) {
-                        cdEl.innerHTML =
-                            '<div class="ub-unit"><span class="ub-num">7</span><span class="ub-lbl">Days</span></div>' +
-                            '<div class="ub-unit"><span class="ub-num">0</span><span class="ub-lbl">Hours</span></div>';
-                    }
+                    // Show scarcity instead of countdown
+                    cdEl.innerHTML =
+                        '<div class="ub-unit" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4);"><span class="ub-num" style="color: #fca5a5;">3</span><span class="ub-lbl">Spots Left</span></div>' +
+                        '<div class="ub-unit"><span class="ub-num">12</span><span class="ub-lbl">Locked Yesterday</span></div>';
 
                     setTimeout(function () {
                         banner.classList.add('visible');
@@ -8154,9 +8159,16 @@
                 };
 
                 // Auto-open Ezra after a short delay so clients engage immediately
+                // First add glow effect to orb, then open panel
                 setTimeout(function () {
+                    var orb = document.getElementById('eq-orb');
+                    if (orb) orb.classList.add('glow');
+                }, 1500);
+                setTimeout(function () {
+                    var orb = document.getElementById('eq-orb');
+                    if (orb) orb.classList.remove('glow');
                     if (!isOpen) window.eqToggle();
-                }, 3000);
+                }, 3500);
 
                 window.eqChip = function (text) {
                     if (text === 'Take a guided tour') { startTour(); return; }
