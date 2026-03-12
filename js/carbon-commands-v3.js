@@ -140,6 +140,18 @@
             category: 'settings',
             description: 'Import settings'
         },
+        'health monitor': {
+            alias: 'health,/health,/status,/monitor',
+            action: () => openHealthDashboard(),
+            category: 'admin',
+            description: 'Open Integration Health Monitor dashboard'
+        },
+        'test integrations': {
+            alias: '/testintegrations,/testall',
+            action: () => testAllIntegrations(),
+            category: 'admin',
+            description: 'Run all integration health tests'
+        },
     };
 
     // ==================== NATURAL LANGUAGE PATTERNS ====================
@@ -1412,6 +1424,24 @@
             toast.classList.remove('carbon-toast-show');
             setTimeout(() => toast.remove(), 300);
         }, 3000);
+    }
+
+    // ==================== INTEGRATION HEALTH MONITOR ====================
+    function openHealthDashboard() {
+        if (window.IntegrationHealthDashboard) {
+            window.IntegrationHealthDashboard.open();
+        } else {
+            showToast('Health Monitor not loaded yet. Please wait...', 'error');
+        }
+    }
+
+    function testAllIntegrations() {
+        if (window.IntegrationHealthMonitor) {
+            window.IntegrationHealthMonitor.testAll();
+            showToast('Running all integration tests...', 'success');
+        } else {
+            showToast('Health Monitor not loaded yet. Please wait...', 'error');
+        }
     }
 
     // ==================== EXPOSE API ====================
