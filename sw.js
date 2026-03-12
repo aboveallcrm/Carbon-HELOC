@@ -3,7 +3,7 @@
  * Provides caching, offline functionality, push notifications, and background sync
  */
 
-const CACHE_NAME = 'aac-heloc-v6';
+const CACHE_NAME = 'aac-heloc-v7';
 const STATIC_ASSETS = [
   './AboveAllCarbon_HELOC_v12_FIXED.html',
   './client-quote.html',
@@ -38,18 +38,20 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up old caches, then claim clients
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+          .map((name) => {
+            console.log('[SW] Deleting old cache:', name);
+            return caches.delete(name);
+          })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 // Fetch event - serve from cache or network
