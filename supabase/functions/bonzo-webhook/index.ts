@@ -1,14 +1,11 @@
 // @ts-nocheck - Deno URL imports are resolved at runtime by Supabase, not by the IDE TS checker.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
-
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-webhook-token',
-}
+import { getCorsHeaders } from "../_shared/cors.ts"
 
 serve(async (req: Request) => {
+    const corsHeaders = getCorsHeaders(req)
+
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: corsHeaders })
@@ -51,8 +48,8 @@ serve(async (req: Request) => {
             .maybeSingle()
 
         const storedToken = integration?.metadata?.webhook_token
-        // Only enforce token if one is configured
-        if (storedToken && token && storedToken !== token) {
+        // Reject if a token is configured but the request has wrong/missing token
+        if (storedToken && storedToken !== token) {
             return new Response(
                 JSON.stringify({ error: 'Invalid webhook token', v: 2 }),
                 { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -1,21 +1,36 @@
 // @ts-nocheck - Deno URL imports are resolved at runtime by Supabase
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { getCorsHeaders } from "../_shared/cors.ts"
 
 // Bonzo API v3 — production base URL (api.getbonzo.com does NOT exist)
 const BONZO_API = "https://app.getbonzo.com/api/v3"
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
+const BONZO_FETCH_TIMEOUT_MS = 15_000
+const MAX_CONTACTS = 2_000
+
+// corsHeaders is set per-request in the serve handler
+let corsHeaders: Record<string, string> = {}
 
 function jsonResp(body: any, status = 200) {
     return new Response(JSON.stringify(body), {
         status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
+}
+
+// Helper: fetch with AbortController timeout
+async function timedFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), BONZO_FETCH_TIMEOUT_MS)
+    try {
+        const resp = await fetch(url, { ...options, signal: controller.signal })
+        clearTimeout(timeout)
+        return resp
+    } catch (err) {
+        clearTimeout(timeout)
+        throw err
+    }
 }
 
 // Extract array of prospects from any Bonzo response shape
@@ -80,6 +95,8 @@ function pick(contact: any, mortgage: any, customMap: Record<string, string>, ..
 }
 
 serve(async (req: Request) => {
+    corsHeaders = getCorsHeaders(req)
+
     if (req.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: corsHeaders })
     }
@@ -148,11 +165,21 @@ serve(async (req: Request) => {
         let rawResponseKeys = ''
         let paginationInfo = ''
 
-        while (hasMore && contacts.length < maxLeads) {
+        while (hasMore && contacts.length < maxLeads && contacts.length < MAX_CONTACTS) {
             const listUrl = `${BONZO_API}/prospects?page=${currentPage}&per_page=${perPage}`
             logs.push(`Fetching: ${listUrl}`)
 
-            const listResp = await fetch(listUrl, { method: 'GET', headers: bonzoHeaders })
+            let listResp: Response
+            try {
+                listResp = await timedFetch(listUrl, { method: 'GET', headers: bonzoHeaders })
+            } catch (fetchErr) {
+                if ((fetchErr as Error).name === 'AbortError') {
+                    logs.push(`WARN: Page ${currentPage} timed out after ${BONZO_FETCH_TIMEOUT_MS}ms`)
+                    bonzoError = 'Bonzo API timed out'
+                    break
+                }
+                throw fetchErr
+            }
 
             if (!listResp.ok) {
                 const errText = await listResp.text().catch(() => '')
@@ -209,9 +236,13 @@ serve(async (req: Request) => {
 
             currentPage++
 
-            // Safety valve: max 50 pages (5000 contacts)
-            if (currentPage > 50) {
-                logs.push('WARN: Hit 50-page safety limit')
+            // Safety valve: max 20 pages or MAX_CONTACTS
+            if (currentPage > 20) {
+                logs.push('WARN: Hit 20-page safety limit')
+                hasMore = false
+            }
+            if (contacts.length >= MAX_CONTACTS) {
+                logs.push(`WARN: Hit MAX_CONTACTS limit (${MAX_CONTACTS})`)
                 hasMore = false
             }
         }
@@ -220,6 +251,10 @@ serve(async (req: Request) => {
 
         if (contacts.length > maxLeads) {
             contacts = contacts.slice(0, maxLeads)
+        }
+        if (contacts.length > MAX_CONTACTS) {
+            contacts = contacts.slice(0, MAX_CONTACTS)
+            logs.push(`Trimmed to MAX_CONTACTS (${MAX_CONTACTS})`)
         }
 
         if (bonzoError && contacts.length === 0) {

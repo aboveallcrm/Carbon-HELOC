@@ -1,16 +1,15 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const AI_FETCH_TIMEOUT_MS = 25_000;
 
 serve(async (req: Request) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -207,14 +206,30 @@ serve(async (req: Request) => {
       }
     }
 
-    // 6. Call the AI provider
-    const aiResponse = await fetch(actualUrl, {
-      method: "POST",
-      headers: aiHeaders,
-      body: requestBody,
-    });
-
-    const aiData = await aiResponse.json();
+    // 6. Call the AI provider (with timeout)
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), AI_FETCH_TIMEOUT_MS);
+    let aiResponse: Response;
+    let aiData: any;
+    try {
+      aiResponse = await fetch(actualUrl, {
+        method: "POST",
+        headers: aiHeaders,
+        body: requestBody,
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      aiData = await aiResponse.json();
+    } catch (fetchErr) {
+      clearTimeout(timeout);
+      if ((fetchErr as Error).name === "AbortError") {
+        return new Response(JSON.stringify({ error: "Upstream AI service timed out" }), {
+          status: 504,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      throw fetchErr;
+    }
 
     // 7. Extract response text based on provider
     if (aiProvider === "gemini") {

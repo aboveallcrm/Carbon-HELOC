@@ -1,15 +1,14 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+const HEYGEN_FETCH_TIMEOUT_MS = 10_000;
+
+// corsHeaders is set per-request in the serve handler
+let corsHeaders: Record<string, string> = {};
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -22,7 +21,26 @@ function error(status: number, message: string) {
   return json({ error: message }, status);
 }
 
+// Helper: fetch with AbortController timeout
+async function timedFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), HEYGEN_FETCH_TIMEOUT_MS);
+  try {
+    const resp = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timeout);
+    return resp;
+  } catch (err) {
+    clearTimeout(timeout);
+    if ((err as Error).name === "AbortError") {
+      throw new Error("HEYGEN_TIMEOUT");
+    }
+    throw err;
+  }
+}
+
 serve(async (req: Request) => {
+  corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -65,7 +83,7 @@ serve(async (req: Request) => {
 
           const apiKey = integration?.metadata?.heygen?.apiKey;
           if (apiKey) {
-            const hgResp = await fetch(
+            const hgResp = await timedFetch(
               `https://api.heygen.com/v1/video_status.get?video_id=${videoId}`,
               { headers: { "X-Api-Key": apiKey } }
             );
@@ -139,7 +157,7 @@ serve(async (req: Request) => {
         return json({ configured: false, valid: false });
       }
       try {
-        const resp = await fetch("https://api.heygen.com/v2/avatars", {
+        const resp = await timedFetch("https://api.heygen.com/v2/avatars", {
           headers: { "X-Api-Key": heygenConfig.apiKey },
         });
         return json({
@@ -183,7 +201,7 @@ serve(async (req: Request) => {
         dimension: { width: 1280, height: 720 },
       };
 
-      const resp = await fetch("https://api.heygen.com/v2/video/generate", {
+      const resp = await timedFetch("https://api.heygen.com/v2/video/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -221,7 +239,7 @@ serve(async (req: Request) => {
       const { videoId } = body;
       if (!videoId) return error(400, "Missing videoId");
 
-      const resp = await fetch(
+      const resp = await timedFetch(
         `https://api.heygen.com/v1/video_status.get?video_id=${videoId}`,
         { headers: { "X-Api-Key": heygenConfig.apiKey } }
       );
@@ -265,7 +283,7 @@ serve(async (req: Request) => {
 
     // ---- list_avatars: get available avatars ----
     if (action === "list_avatars") {
-      const resp = await fetch("https://api.heygen.com/v2/avatars", {
+      const resp = await timedFetch("https://api.heygen.com/v2/avatars", {
         headers: { "X-Api-Key": heygenConfig.apiKey },
       });
       if (!resp.ok) return error(502, "Failed to list avatars");
@@ -274,6 +292,9 @@ serve(async (req: Request) => {
 
     return error(400, "Unknown action: " + action);
   } catch (e) {
+    if ((e as Error).message === "HEYGEN_TIMEOUT") {
+      return error(504, "Upstream HeyGen service timed out");
+    }
     return error(500, "Internal error: " + (e as Error).message);
   }
 });

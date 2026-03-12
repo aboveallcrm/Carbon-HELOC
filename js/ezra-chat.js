@@ -1201,15 +1201,17 @@ RESPONSE RULES
     // INITIALIZATION
     // ============================================
     let _initAttempts = 0;
+    let _initDelay = 500;
     function initEzra() {
         // Wait for the app's Supabase client to be available
         if (!window._supabase) {
             _initAttempts++;
-            if (_initAttempts <= 30) { // up to 15 seconds
-                if (_initAttempts === 1) console.log('Ezra: Waiting for Supabase client...');
-                setTimeout(initEzra, 500);
+            if (_initAttempts <= 10) { // exponential backoff: 500ms → 750 → 1125 → ... capped at 5000ms
+                if (_initAttempts === 1) console.debug('Ezra: Waiting for Supabase client...');
+                setTimeout(initEzra, _initDelay);
+                _initDelay = Math.min(_initDelay * 1.5, 5000);
             } else {
-                console.warn('Ezra: Supabase client not found after 15s — widget disabled');
+                console.warn('Ezra: Supabase client not found after backoff — widget disabled');
             }
             return;
         }
@@ -5128,7 +5130,7 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
             } else {
                 createNewConversation();
             }
-        } catch (e) { }
+        } catch (e) { console.debug('Ezra: load conversation failed:', e?.message); }
     }
 
     async function createNewConversation() {
@@ -5147,7 +5149,7 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
                 .single();
 
             if (data) EzraState.conversationId = data.id;
-        } catch (e) { }
+        } catch (e) { console.debug('Ezra: create conversation failed:', e?.message); }
     }
 
     async function loadConversationHistory(conversationId) {
@@ -5165,7 +5167,7 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
                     addMessage(msg.role, msg.content, { model: msg.model_used });
                 });
             }
-        } catch (e) { }
+        } catch (e) { console.debug('Ezra: load history failed:', e?.message); }
     }
 
     async function saveMessageToSupabase(role, content, metadata = {}) {
@@ -5180,7 +5182,7 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
                     model_used: metadata.model,
                     metadata
                 });
-        } catch (e) { }
+        } catch (e) { console.debug('Ezra: save message failed:', e?.message); }
     }
 
     async function loadUserPreferences() {
@@ -5536,7 +5538,7 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
                     .from('ezra_conversations')
                     .update({ status: 'ended' })
                     .eq('id', EzraState.conversationId);
-            } catch (e) { }
+            } catch (e) { console.debug('Ezra: end conversation failed:', e?.message); }
             EzraState.conversationId = null;
             await createNewConversation();
         }

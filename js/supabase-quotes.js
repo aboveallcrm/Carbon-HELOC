@@ -8,7 +8,7 @@ import { supabase, getCurrentUser } from './supabase-client.js';
 let _currentQuoteId = null;
 
 export function initDB() {
-    console.log("Supabase quote adapter initialized.");
+    // Supabase quote adapter initialized
 }
 
 export async function saveQuote(quoteData) {
@@ -59,10 +59,6 @@ export async function saveQuote(quoteData) {
         return { ok: false, reason: e.message };
     }
 }
-
-// Legacy aliases for backward compatibility
-export const initConvex = initDB;
-export const saveQuoteToConvex = saveQuote;
 
 export function resetQuoteId() {
     _currentQuoteId = null;

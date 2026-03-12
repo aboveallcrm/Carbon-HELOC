@@ -267,6 +267,7 @@
             font-size: 10px;
             font-weight: 700;
             animation: pulse 2s infinite;
+            will-change: transform;
         }
 
         @keyframes pulse {
@@ -651,6 +652,7 @@
 
         .val-block.highlight .val-value {
             animation: cash-pulse 2.5s ease-in-out infinite;
+            will-change: transform, opacity;
         }
 
         @keyframes cash-pulse {
@@ -658,12 +660,12 @@
             0%,
             100% {
                 transform: scale(1);
-                text-shadow: 0 0 30px rgba(197, 160, 89, 0.15);
+                opacity: 0.85;
             }
 
             50% {
                 transform: scale(1.06);
-                text-shadow: 0 0 40px rgba(197, 160, 89, 0.35);
+                opacity: 1;
             }
         }
 
@@ -1791,6 +1793,7 @@
             border-radius: 50%;
             border: 2px solid rgba(212, 175, 55, 0.4);
             animation: eq-pulse 2.5s ease-in-out infinite;
+            will-change: transform, opacity;
             pointer-events: none;
         }
 
@@ -2135,11 +2138,12 @@
             border-color: rgba(239, 68, 68, 0.5);
             color: white;
             animation: eq-voice-pulse 1.5s ease infinite;
+            will-change: transform, opacity;
         }
 
         @keyframes eq-voice-pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.08); opacity: 0.8; }
         }
 
         .eq-voice-hint {
@@ -2236,8 +2240,8 @@
         .eq-compare-table .compare-best { color: #10b981; font-weight: 600; }
         .eq-compare-table .compare-worst { color: #ef4444; font-weight: 600; }
         /* ===== Activity Pulse ===== */
-        .eq-activity-pulse { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; margin-right: 6px; animation: eq-live-pulse 1.5s ease-in-out infinite; }
-        @keyframes eq-live-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); } 50% { box-shadow: 0 0 0 6px rgba(16,185,129,0); } }
+        .eq-activity-pulse { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; margin-right: 6px; animation: eq-live-pulse 1.5s ease-in-out infinite; will-change: transform, opacity; }
+        @keyframes eq-live-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.4; } }
 
         /* Tour Highlight */
         .eq-tour-hl {
@@ -5080,6 +5084,7 @@
             background: #ef4444;
             border-radius: 50%;
             animation: pulseRed 2s ease-in-out infinite;
+            will-change: opacity;
         }
 
         @keyframes pulseRed {
@@ -5137,7 +5142,7 @@
         }
 
         .just-missed .jm-urgency {
-            background: rgba(239, 68, 68, 0.2);
+            background: rgba(239, 68, 68, 0.3);
             color: #fca5a5;
             padding: 6px 12px;
             border-radius: 20px;
@@ -5147,11 +5152,12 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             animation: pulseUrgency 2s ease-in-out infinite;
+            will-change: opacity;
         }
 
         @keyframes pulseUrgency {
-            0%, 100% { background: rgba(239, 68, 68, 0.2); }
-            50% { background: rgba(239, 68, 68, 0.35); }
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
         }
 
         /* Activity Ticker */
@@ -5234,6 +5240,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             animation: pulse 2s infinite;
+            will-change: transform;
         }
 
         .daily-cost-badge {
@@ -7008,7 +7015,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // ===== TOAST NOTIFICATION SYSTEM =====
         function showToast(message, type, duration) {
@@ -7219,7 +7226,7 @@
                 if (type === 'time_on_page' && navigator.sendBeacon) {
                     navigator.sendBeacon(url + '&duration=' + (data.duration_sec || 0));
                 } else {
-                    fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).catch(function () { });
+                    fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).catch(function (e) { console.debug('Tracking event failed:', e?.message); });
                 }
             }
 
@@ -7286,7 +7293,7 @@
                     var initials = lo.name.split(' ').map(function (n) { return n.charAt(0).toUpperCase(); }).join('').substring(0, 2);
                     fHtml += '<div class="footer-main">';
                     if (lo.headshot) {
-                        fHtml += '<img src="' + esc(lo.headshot) + '" alt="' + esc(lo.name) + '" class="footer-headshot" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">';
+                        fHtml += '<img src="' + esc(lo.headshot) + '" alt="' + esc(lo.name) + '" class="footer-headshot" loading="lazy" decoding="async" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">';
                         fHtml += '<div class="footer-avatar-fallback" style="display:none;">' + initials + '</div>';
                     } else {
                         fHtml += '<div class="footer-avatar-fallback">' + initials + '</div>';
@@ -7305,11 +7312,11 @@
                     if (lo.website) fHtml += esc(lo.website);
                     if (lo.googleRating) fHtml += '<div class="footer-stars">&#9733;&#9733;&#9733;&#9733;&#9733; ' + esc(lo.googleRating) + ' Google Rating</div>';
                     fHtml += '</div>';
-                    if (lo.logo) fHtml += '<img src="' + esc(lo.logo) + '" alt="' + esc(lo.company || 'Company') + '" class="company-logo-footer" onerror="this.style.display=\'none\';">';
+                    if (lo.logo) fHtml += '<img src="' + esc(lo.logo) + '" alt="' + esc(lo.company || 'Company') + '" class="company-logo-footer" loading="lazy" decoding="async" onerror="this.style.display=\'none\';">';
                     fHtml += '</div>';
                 }
                 fHtml += '<div class="footer-legal">';
-                fHtml += '<img src="https://assets.cdn.filesafe.space/eVB3bUDr8bdQfRu6ae03/media/693bb403ed957f64da26426c.jpg" class="ehl-icon" alt="Equal Housing Lender">';
+                fHtml += '<img src="https://assets.cdn.filesafe.space/eVB3bUDr8bdQfRu6ae03/media/693bb403ed957f64da26426c.jpg" class="ehl-icon" alt="Equal Housing Lender" loading="lazy" decoding="async">';
                 fHtml += '<div>';
                 if (lo.company) {
                     fHtml += '<strong style="color:#cbd5e1;">' + esc(lo.company) + '</strong>';
@@ -9892,7 +9899,7 @@
                         voiceIsPlaying = false;
                         if (btn) btn.innerHTML = '&#9654;';
                     } else {
-                        voiceAudio.play().catch(function () {});
+                        voiceAudio.play().catch(function (e) { console.debug('Voice note playback failed:', e?.message); if (typeof showToast === 'function') showToast('Could not play voice note', 'warning'); });
                         voiceIsPlaying = true;
                         if (btn) btn.innerHTML = '&#10074;&#10074;';
                         trackEvent('voice_note_played', { code: quoteCode });
@@ -10028,7 +10035,7 @@
                             user_id: _userId || null,
                             channel: 'ezra-client'
                         })
-                    }).catch(function () {});
+                    }).catch(function (e) { console.debug('Chat log failed:', e?.message); });
                 }
 
                 // Load persisted chat on init (before welcome message check)
@@ -10078,7 +10085,7 @@
                             page_url: window.location.href,
                             device: /Mobi/i.test(navigator.userAgent) ? 'mobile' : 'desktop'
                         }
-                    }, { onConflict: 'lead_id,quote_code' }).then(function () {}).catch(function () {});
+                    }, { onConflict: 'lead_id,quote_code' }).then(function () {}).catch(function (e) { console.debug('Activity heartbeat failed:', e?.message); });
                 }
 
                 // Start heartbeat after a short delay

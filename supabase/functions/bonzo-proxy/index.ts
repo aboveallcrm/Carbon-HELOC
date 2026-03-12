@@ -1,15 +1,15 @@
 // @ts-nocheck - Deno URL imports are resolved at runtime by Supabase
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { getCorsHeaders } from "../_shared/cors.ts"
 
 // Bonzo API v3 — production base URL (api.getbonzo.com does NOT exist)
 const BONZO_API = "https://app.getbonzo.com/api/v3"
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
+const BONZO_FETCH_TIMEOUT_MS = 15_000
+
+// corsHeaders is set per-request in the serve handler
+let corsHeaders: Record<string, string> = {}
 
 function jsonResponse(body: any, status = 200) {
     return new Response(JSON.stringify(body), {
@@ -18,7 +18,23 @@ function jsonResponse(body: any, status = 200) {
     })
 }
 
+// Helper: fetch with AbortController timeout
+async function timedFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), BONZO_FETCH_TIMEOUT_MS)
+    try {
+        const resp = await fetch(url, { ...options, signal: controller.signal })
+        clearTimeout(timeout)
+        return resp
+    } catch (err) {
+        clearTimeout(timeout)
+        throw err
+    }
+}
+
 serve(async (req: Request) => {
+    corsHeaders = getCorsHeaders(req)
+
     if (req.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: corsHeaders })
     }
@@ -85,7 +101,7 @@ serve(async (req: Request) => {
                 // POST /v3/prospects — store a new prospect
                 // v3 also has POST /v3/prospects/create-or-update-and-message for upsert+message
                 bonzoUrl = `${BONZO_API}/prospects`
-                bonzoResp = await fetch(bonzoUrl, {
+                bonzoResp = await timedFetch(bonzoUrl, {
                     method: 'POST',
                     headers: bonzoHeaders,
                     body: JSON.stringify(payload),
@@ -102,7 +118,7 @@ serve(async (req: Request) => {
                 if (payload?.page) params.set('page', String(payload.page))
                 params.set('per_page', String(payload?.per_page || 10))
                 bonzoUrl = `${BONZO_API}/prospects?${params.toString()}`
-                bonzoResp = await fetch(bonzoUrl, {
+                bonzoResp = await timedFetch(bonzoUrl, {
                     method: 'GET',
                     headers: bonzoHeaders,
                 })
@@ -113,7 +129,7 @@ serve(async (req: Request) => {
                 if (!contactId) return jsonResponse({ error: 'Missing contactId for update' }, 400)
                 // PUT /v3/prospects/{prospect}
                 bonzoUrl = `${BONZO_API}/prospects/${contactId}`
-                bonzoResp = await fetch(bonzoUrl, {
+                bonzoResp = await timedFetch(bonzoUrl, {
                     method: 'PUT',
                     headers: bonzoHeaders,
                     body: JSON.stringify(payload),
@@ -125,7 +141,7 @@ serve(async (req: Request) => {
                 if (!contactId) return jsonResponse({ error: 'Missing contactId for SMS' }, 400)
                 // POST /v3/prospects/{prospect}/sms
                 bonzoUrl = `${BONZO_API}/prospects/${contactId}/sms`
-                bonzoResp = await fetch(bonzoUrl, {
+                bonzoResp = await timedFetch(bonzoUrl, {
                     method: 'POST',
                     headers: bonzoHeaders,
                     body: JSON.stringify(payload),
@@ -137,7 +153,7 @@ serve(async (req: Request) => {
                 if (!contactId) return jsonResponse({ error: 'Missing contactId for email' }, 400)
                 // POST /v3/prospects/{prospect}/email
                 bonzoUrl = `${BONZO_API}/prospects/${contactId}/email`
-                bonzoResp = await fetch(bonzoUrl, {
+                bonzoResp = await timedFetch(bonzoUrl, {
                     method: 'POST',
                     headers: bonzoHeaders,
                     body: JSON.stringify(payload),
@@ -149,7 +165,7 @@ serve(async (req: Request) => {
                 if (!contactId) return jsonResponse({ error: 'Missing contactId' }, 400)
                 // GET /v3/prospects/{prospect}
                 bonzoUrl = `${BONZO_API}/prospects/${contactId}`
-                bonzoResp = await fetch(bonzoUrl, {
+                bonzoResp = await timedFetch(bonzoUrl, {
                     method: 'GET',
                     headers: bonzoHeaders,
                 })
@@ -159,7 +175,7 @@ serve(async (req: Request) => {
             case 'list_campaigns': {
                 // GET /v3/campaigns
                 bonzoUrl = `${BONZO_API}/campaigns`
-                bonzoResp = await fetch(bonzoUrl, {
+                bonzoResp = await timedFetch(bonzoUrl, {
                     method: 'GET',
                     headers: bonzoHeaders,
                 })
@@ -169,7 +185,7 @@ serve(async (req: Request) => {
             case 'list_tags': {
                 // GET /v3/tags
                 bonzoUrl = `${BONZO_API}/tags`
-                bonzoResp = await fetch(bonzoUrl, {
+                bonzoResp = await timedFetch(bonzoUrl, {
                     method: 'GET',
                     headers: bonzoHeaders,
                 })
@@ -191,6 +207,9 @@ serve(async (req: Request) => {
         }, bonzoResp.ok ? 200 : 502)
 
     } catch (err) {
+        if ((err as Error).name === 'AbortError') {
+            return jsonResponse({ error: 'Upstream Bonzo service timed out' }, 504)
+        }
         const message = err instanceof Error ? err.message : String(err)
         console.error('bonzo-proxy error:', message)
         return jsonResponse({ error: message }, 500)

@@ -1,18 +1,18 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+const PROVIDER_FETCH_TIMEOUT_MS = 15_000;
 
 // Rate limit: 20 messages per quote code per hour
 const RATE_LIMIT = 20;
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour in ms
+
+// corsHeaders is set per-request in the serve handler
+let corsHeaders: Record<string, string> = {};
 
 function json(data: unknown, status: number) {
   return new Response(JSON.stringify(data), {
@@ -221,6 +221,8 @@ TONE: Warm, confident, encouraging. Think "top sales assistant who genuinely car
 }
 
 serve(async (req: Request) => {
+  corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -368,6 +370,20 @@ serve(async (req: Request) => {
     let responseText = "";
     let lastError = "";
 
+    // Helper: fetch with AbortController timeout
+    async function timedFetch(url: string, options: RequestInit): Promise<Response> {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), PROVIDER_FETCH_TIMEOUT_MS);
+      try {
+        const resp = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timeout);
+        return resp;
+      } catch (err) {
+        clearTimeout(timeout);
+        throw err;
+      }
+    }
+
     // Helper to extract text from different provider responses
     const extractText = (provider: string, data: any): string => {
       switch (provider) {
@@ -391,7 +407,7 @@ serve(async (req: Request) => {
           parts: [{ text: m.content }],
         }));
 
-        const resp = await fetch(
+        const resp = await timedFetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
           {
             method: "POST",
@@ -418,7 +434,7 @@ serve(async (req: Request) => {
     // ===== TIER 2: LOW COST - Kimi 8k ($0.50/M) =====
     if (kimiKey && !responseText) {
       try {
-        const resp = await fetch("https://api.moonshot.cn/v1/chat/completions", {
+        const resp = await timedFetch("https://api.moonshot.cn/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -446,7 +462,7 @@ serve(async (req: Request) => {
     // ===== TIER 3: LOW COST - Groq ($0.10/M) =====
     if (groqKey && !responseText) {
       try {
-        const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const resp = await timedFetch("https://api.groq.com/openai/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -474,7 +490,7 @@ serve(async (req: Request) => {
     // ===== TIER 4: LOW COST - DeepSeek ($0.50/M) =====
     if (deepseekKey && !responseText) {
       try {
-        const resp = await fetch("https://api.deepseek.com/v1/chat/completions", {
+        const resp = await timedFetch("https://api.deepseek.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -502,7 +518,7 @@ serve(async (req: Request) => {
     // ===== TIER 5: MEDIUM - OpenAI GPT-4o-mini ($0.60/M) =====
     if (openaiKey && !responseText) {
       try {
-        const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+        const resp = await timedFetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

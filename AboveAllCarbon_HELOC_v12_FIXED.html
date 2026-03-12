@@ -110,6 +110,21 @@
             --border-color: rgba(255, 255, 255, 0.12);
             --text-primary: #e2e8f0;
             --text-secondary: rgba(255, 255, 255, 0.6);
+            /* Tier colors */
+            --tier-carbon: #64748b;
+            --tier-titanium: #94a3b8;
+            --tier-platinum: #a78bfa;
+            --tier-obsidian: #1e293b;
+            --tier-diamond: #c5a059;
+            /* z-index scale */
+            --z-dropdown: 100;
+            --z-sticky: 200;
+            --z-toolbar: 1000;
+            --z-overlay: 5000;
+            --z-modal: 6000;
+            --z-toast: 8000;
+            --z-dnc-warning: 9000;
+            --z-impersonation: 9500;
         }
 
         * {
@@ -530,6 +545,7 @@
         .send-quote-section {
             position: fixed;
             top: 52px;
+
             left: 50%;
             transform: translateX(-50%);
             width: 94%;
@@ -1210,11 +1226,6 @@
             justify-content: center;
         }
 
-
-.toolbar-btn:hover {
-            transform: scale(1.05);
-        }
-
         /* ==================== FLOATING TOOLBAR ==================== */
         #floating-toolbar {
             position: fixed;
@@ -1285,7 +1296,7 @@
         }
 
         .toolbar-btn-help:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.25);
             color: white;
         }
 
@@ -1625,7 +1636,7 @@
             position: fixed;
             top: 70px;
             right: 20px;
-            z-index: 200000;
+            z-index: var(--z-toast);
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -1696,7 +1707,7 @@
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.7);
-            z-index: 100001;
+            z-index: var(--z-modal);
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(4px);
@@ -1766,7 +1777,7 @@
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.7);
-            z-index: 100000;
+            z-index: var(--z-modal);
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(4px);
@@ -2063,7 +2074,7 @@
         #walkthrough-overlay {
             position: fixed;
             inset: 0;
-            z-index: 50000;
+            z-index: var(--z-overlay);
             pointer-events: none;
         }
 
@@ -2246,10 +2257,6 @@
                 opacity: 1;
                 transform: translateY(0);
             }
-        }
-.toolbar-btn-help:hover {
-            background: rgba(255, 255, 255, 0.25);
-            color: white;
         }
 
         @media (max-width:768px) {
@@ -2701,7 +2708,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            z-index: 110000;
+            z-index: var(--z-dnc-warning);
             background: rgba(0, 0, 0, 0.9);
             backdrop-filter: blur(4px);
             align-items: center;
@@ -2716,7 +2723,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            z-index: 110000;
+            z-index: var(--z-dnc-warning);
             background: rgba(0, 0, 0, 0.9);
             backdrop-filter: blur(4px);
             align-items: center;
@@ -3732,7 +3739,7 @@
         #email-send-modal {
             position: fixed;
             inset: 0;
-            z-index: 60000;
+            z-index: var(--z-modal);
             display: none;
         }
 
@@ -7901,7 +7908,7 @@ Best regards,
                 }
             });
 
-            var tierColors = { carbon: '#6b7280', titanium: '#94a3b8', platinum: '#a78bfa', obsidian: '#334155', diamond: '#06b6d4' };
+            var tierColors = TIER_COLORS;
             var tierTimeSaved = { titanium: '30+ min/day', platinum: '2+ hours/day', obsidian: 'Unlimited' };
 
             var overlay = document.createElement('div');
@@ -8045,6 +8052,10 @@ Best regards,
         const SUPER_ADMIN_EMAIL = 'barraganmortgage@gmail.com';
         const SUPER_ADMIN_UUID = '795aea13-6aba-45f2-97d4-04576f684557';
 
+        // Shared tier color palette (single source of truth)
+        const TIER_COLORS = { carbon: '#6b7280', titanium: '#94a3b8', platinum: '#a78bfa', obsidian: '#334155', diamond: '#06b6d4' };
+        const TIER_LABELS = { carbon: 'CARBON', titanium: 'TITANIUM', platinum: 'PLATINUM', obsidian: 'OBSIDIAN', diamond: 'DIAMOND' };
+
         function isTrueSuperAdmin() {
             return window.currentUserRole === 'super_admin'
                 && window.currentUserEmail === SUPER_ADMIN_EMAIL
@@ -8133,7 +8144,7 @@ Best regards,
                 disclaimerToggle.style.display = (role === 'admin' || role === 'super_admin') ? '' : 'none';
             }
 
-            console.log('Role access applied:', role, '| Tabs:', visibleTabs.join(', '));
+            // Role access applied
         }
 
         // ===== INTEGRATION ACCESS (role + tier based subsection visibility) =====
@@ -8244,7 +8255,7 @@ Best regards,
                 intSection.appendChild(teaser);
             }
 
-            console.log('Integration access applied: tier=' + effectiveTier + ' (level ' + level + '), role=' + role + ((_demoTierOverride) ? ' [DEMO]' : ''));
+            // Integration access applied
         }
 
         // ===== UPGRADE MODAL =====
@@ -8252,7 +8263,7 @@ Best regards,
             const currentTier = window.currentUserTier || 'carbon';
             const tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
             const currentLevel = tiers.indexOf(currentTier);
-            const tierColors = { carbon: '#6b7280', titanium: '#94a3b8', platinum: '#a78bfa', obsidian: '#334155', diamond: '#06b6d4' };
+            const tierColors = TIER_COLORS;
 
             const tierFeatures = {
                 carbon: {
@@ -8483,8 +8494,8 @@ Best regards,
             const level = tiers.indexOf(effectiveTier);
             if (level === -1) return; // unknown tier, skip
 
-            const tierColors = { carbon: '#6b7280', titanium: '#94a3b8', platinum: '#a78bfa', obsidian: '#334155', diamond: '#06b6d4' };
-            const tierLabels = { carbon: 'CARBON', titanium: 'TITANIUM', platinum: 'PLATINUM', obsidian: 'OBSIDIAN', diamond: 'DIAMOND' };
+            const tierColors = TIER_COLORS;
+            const tierLabels = TIER_LABELS;
 
             // Helper: hide/show an element
             function setVisible(id, show) {
@@ -8811,7 +8822,7 @@ Best regards,
             // Send Quote section tier gating
             applyQuoteSendTierGating();
 
-            console.log('Tier access applied:', tier, '(level ' + level + ')');
+            // Tier access applied
         }
 
         // ===== READ-ONLY MODE (View As impersonation) =====
@@ -8839,7 +8850,7 @@ Best regards,
                 el.disabled = true;
                 el.style.opacity = '0.65';
             });
-            console.log('Read-only mode applied — all saves disabled');
+            // Read-only mode applied
         }
 
         // ===== ONBOARDING WIZARD =====
@@ -8915,7 +8926,7 @@ Best regards,
                             if (res.data.onboarding_step > 0) currentStep = res.data.onboarding_step;
                             if (res.data.onboarding_data && typeof res.data.onboarding_data === 'object') wizardData = res.data.onboarding_data;
                         }
-                    } catch (e) { console.log('Onboarding check failed:', e.message); }
+                    } catch (e) { console.warn('Onboarding check failed:', e.message); }
                 }
                 return true;
             }
@@ -8940,7 +8951,7 @@ Best regards,
                         if (wizardData.crmPreference) updateData.crm_preference = wizardData.crmPreference;
                         await sb.from('profiles').update(updateData).eq('id', userId);
                     }
-                    catch (e) { console.log('Onboarding cloud save failed:', e.message); }
+                    catch (e) { console.warn('Onboarding cloud save failed:', e.message); }
                 }
             }
 
@@ -10694,7 +10705,7 @@ Best regards,
                         }
                     }
                 } catch (e) {
-                    console.log('DNC local check error:', e.message);
+                    console.debug('DNC local check error:', e.message);
                 }
                 return null;
             }
@@ -10728,7 +10739,7 @@ Best regards,
                         }
                     }
                 } catch (e) {
-                    console.log('GHL DND check error:', e.message);
+                    console.debug('GHL DND check error:', e.message);
                 }
                 return null;
             }
@@ -10754,7 +10765,7 @@ Best regards,
                         if (found) return { reason: 'Tag "' + found + '" found on Bonzo prospect' };
                     }
                 } catch (e) {
-                    console.log('Bonzo DNC check error:', e.message);
+                    console.debug('Bonzo DNC check error:', e.message);
                 }
                 return null;
             }
@@ -10831,7 +10842,7 @@ Best regards,
                         action: action
                     });
                 } catch (e) {
-                    console.log('DNC log error:', e.message);
+                    console.debug('DNC log error:', e.message);
                 }
             }
 
@@ -10950,7 +10961,7 @@ Best regards,
 
             var currentId = window.currentUserId;
             tbody.innerHTML = profiles.map(p => {
-                const tierColors = { carbon: '#6b7280', titanium: '#94a3b8', platinum: '#a78bfa', obsidian: '#1e293b', diamond: '#06b6d4' };
+                const tierColors = TIER_COLORS;
                 const roleColors = { user: '#3b82f6', admin: '#f59e0b', super_admin: '#ef4444' };
                 const statusColors = { active: '#10b981', trialing: '#f59e0b', canceled: '#ef4444', past_due: '#f97316', suspended: '#991b1b' };
                 const created = p.created_at ? new Date(p.created_at).toLocaleDateString() : '—';
@@ -13169,7 +13180,7 @@ Generate the sales strategy and phone script now.`;
                             method: 'POST', headers: headers,
                             body: JSON.stringify({ tags: [tag] })
                         });
-                    } catch (tagErr) { console.log('Tag error:', tag, tagErr); }
+                    } catch (tagErr) { console.debug('Tag error:', tag, tagErr); }
                 }
 
                 // Step 4: Add detailed note to contact
@@ -13225,7 +13236,7 @@ Sent via Above All Carbon HELOC Tool`;
                                 source: 'HELOC Quote Tool'
                             })
                         });
-                    } catch (oppErr) { console.log('Opportunity error:', oppErr); }
+                    } catch (oppErr) { console.debug('Opportunity error:', oppErr); }
                 }
 
                 // Step 6: Create follow-up task
@@ -13242,7 +13253,7 @@ Sent via Above All Carbon HELOC Tool`;
                             completed: false
                         })
                     });
-                } catch (taskErr) { console.log('Task error:', taskErr); }
+                } catch (taskErr) { console.debug('Task error:', taskErr); }
 
                 // Step 7: Send email via GHL (rich HTML template)
                 statusDiv.innerHTML = '<div style="font-size:24px;margin-bottom:10px;">📧</div>Sending email...';
@@ -13260,7 +13271,7 @@ Sent via Above All Carbon HELOC Tool`;
                         if (matchedLead) {
                             trackingPixelUrl = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/track-quote-view?lead_id=' + matchedLead.id + '&user_id=' + window.currentUserId + '&event=quote_opened';
                         }
-                    } catch (tpErr) { console.log('Tracking pixel lookup skipped:', tpErr.message); }
+                    } catch (tpErr) { console.debug('Tracking pixel lookup skipped:', tpErr.message); }
                 }
 
                 const emailHtml = buildRichEmailHTML({
@@ -14533,11 +14544,11 @@ Sent via Above All Carbon HELOC Tool`;
                                         });
                                     } catch (e) { /* tag error non-fatal */ }
                                 }
-                                console.log('Cross-CRM: Pushed ' + tags.length + ' tags to GHL');
+                                console.debug('Cross-CRM: Pushed ' + tags.length + ' tags to GHL');
                             }
                         }
                     }
-                } catch (e) { console.log('Cross-CRM GHL sync skipped:', e.message); }
+                } catch (e) { console.debug('Cross-CRM GHL sync skipped:', e.message); }
             }
 
             // Push to Bonzo if configured and not excluded (via server-side proxy)
@@ -14548,16 +14559,16 @@ Sent via Above All Carbon HELOC Tool`;
                         var bonzoContactId = searchResult.data?.id || searchResult.id;
                         if (bonzoContactId) {
                             await _bonzoProxy('update_contact', { contactId: bonzoContactId, payload: { tags: tags } });
-                            console.log('Cross-CRM: Pushed ' + tags.length + ' tags to Bonzo');
+                            console.debug('Cross-CRM: Pushed ' + tags.length + ' tags to Bonzo');
                         } else {
                             await _bonzoProxy('create_contact', { payload: {
                                 first_name: contact.firstName || '', last_name: contact.lastName || '',
                                 email: contact.email, phone: contact.phone || '', tags: tags
                             } });
-                            console.log('Cross-CRM: Created Bonzo contact with ' + tags.length + ' tags');
+                            console.debug('Cross-CRM: Created Bonzo contact with ' + tags.length + ' tags');
                         }
                     }
-                } catch (e) { console.log('Cross-CRM Bonzo sync skipped:', e.message); }
+                } catch (e) { console.debug('Cross-CRM Bonzo sync skipped:', e.message); }
             }
 
             // Fire outbound webhooks (uses the existing webhook system with event filtering)
@@ -15817,7 +15828,7 @@ Sent via Above All Carbon HELOC Tool`;
                     const resp = await fetch(wh.url, { method: 'POST', headers, body: JSON.stringify(payload) }).catch(e => ({ ok: false, status: 0, _err: e.message }));
                     const success = resp && resp.ok;
                     logWebhookActivity(eventType, wh.name || wh.url, success, resp?.status || resp?._err || 'unknown');
-                    console.log('Outbound webhook fired:', wh.name || wh.url, eventType, success ? 'OK' : 'FAIL');
+                    console.debug('Outbound webhook fired:', wh.name || wh.url, eventType, success ? 'OK' : 'FAIL');
                     if (!success) {
                         sendFailureAlert('webhook_failure', {
                             webhookName: wh.name || 'Unnamed',
@@ -15878,7 +15889,7 @@ Sent via Above All Carbon HELOC Tool`;
         async function pushToBonzo(contactData) {
             try {
                 await _bonzoProxy('create_contact', { payload: contactData });
-                console.log('Contact pushed to Bonzo');
+                console.debug('Contact pushed to Bonzo');
             } catch (e) { console.warn('Bonzo push failed:', e.message); }
         }
 
@@ -16069,7 +16080,7 @@ Sent via Above All Carbon HELOC Tool`;
                 if (settingsRow && settingsRow.metadata) {
                     _applyIntegrationData(settingsRow.metadata);
                     localStorage.setItem('aboveAllIntegrations', JSON.stringify(_stripSensitiveKeys(settingsRow.metadata)));
-                    console.log('Integration settings loaded from cloud');
+                    console.debug('Integration settings loaded from cloud');
                 }
 
                 // Show Bonzo sync button if key found in either provider
@@ -16078,7 +16089,7 @@ Sent via Above All Carbon HELOC Tool`;
                 var bsb = document.getElementById('bonzo-sync-btn');
                 if (bsb) bsb.style.display = hasBonzoKey ? '' : 'none';
             } catch (e) {
-                console.log('No cloud integration settings found, using local cache');
+                console.debug('No cloud integration settings found, using local cache');
             }
         }
 
@@ -16110,7 +16121,7 @@ Sent via Above All Carbon HELOC Tool`;
                     }
                 }
             } catch (e) {
-                console.log('AI proxy not available');
+                console.debug('AI proxy not available');
             }
         }
 
@@ -16921,7 +16932,7 @@ Sent via Above All Carbon HELOC Tool`;
                     }
                 } catch (analyticsErr) {
                     // Analytics table may not exist yet — fail silently
-                    console.log('Analytics fetch skipped:', analyticsErr.message);
+                    console.debug('Analytics fetch skipped:', analyticsErr.message);
                 }
 
                 // Store leads globally so loadLeadIntoForm can access full data
@@ -17078,7 +17089,7 @@ Sent via Above All Carbon HELOC Tool`;
                 }
             } catch (e) {
                 // Analytics table may not exist yet — fail silently
-                console.log('Analytics dashboard skipped:', e.message);
+                console.debug('Analytics dashboard skipped:', e.message);
             }
         }
 
@@ -17345,7 +17356,7 @@ Sent via Above All Carbon HELOC Tool`;
 
                 if (!resp.ok) {
                     showToast('Bonzo sync error: ' + (data.error || 'Unknown'), 'error');
-                    if (data.logs) console.warn('Bonzo sync logs:', data.logs);
+                    if (data.logs) console.debug('Bonzo sync logs:', data.logs);
                     return;
                 }
 
@@ -17356,11 +17367,11 @@ Sent via Above All Carbon HELOC Tool`;
 
                 // Log diagnostics
                 if (data.logs) {
-                    console.group('Bonzo Sync Diagnostics');
-                    data.logs.forEach(function(l) { console.log(l); });
-                    if (data.response_keys) console.log('Response keys:', data.response_keys);
-                    if (data.pagination) console.log('Pagination:', data.pagination);
-                    if (data.skip_reasons) console.log('Skip reasons:', data.skip_reasons);
+                    console.groupCollapsed('Bonzo Sync Diagnostics');
+                    data.logs.forEach(function(l) { console.debug(l); });
+                    if (data.response_keys) console.debug('Response keys:', data.response_keys);
+                    if (data.pagination) console.debug('Pagination:', data.pagination);
+                    if (data.skip_reasons) console.debug('Skip reasons:', data.skip_reasons);
                     if (data.errors) console.warn('Errors:', data.errors);
                     console.groupEnd();
                 }
@@ -17574,7 +17585,7 @@ Sent via Above All Carbon HELOC Tool`;
                 const { error } = await sb.from('profiles').update(update).eq('id', userId);
                 if (error) {
                     // Column may not exist in production — save locally instead
-                    console.log('Notification pref column not available, saved locally');
+                    console.debug('Notification pref column not available, saved locally');
                     localStorage.setItem('notif_' + field, isOn ? '1' : '0');
                     showToast(isOn ? 'Notifications enabled' : 'Notifications disabled', 'success');
                     return;
@@ -17605,7 +17616,7 @@ Sent via Above All Carbon HELOC Tool`;
                 // Check push notification status
                 checkPushNotificationStatus();
             } catch (e) {
-                console.log('Could not load notification prefs:', e.message);
+                console.debug('Could not load notification prefs:', e.message);
             }
         }
         
@@ -18046,7 +18057,7 @@ Sent via Above All Carbon HELOC Tool`;
                 // Render the notification panel list
                 renderNotifList(notifs);
             } catch (e) {
-                console.log('Notif fetch error:', e.message);
+                console.debug('Notif fetch error:', e.message);
             }
         }
 
@@ -18449,14 +18460,14 @@ Sent via Above All Carbon HELOC Tool`;
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')
                     .then(function(registration) {
-                        console.log('[PWA] Service Worker registered with scope:', registration.scope);
+                        console.debug('[PWA] Service Worker registered with scope:', registration.scope);
                         
                         // Listen for updates
                         registration.addEventListener('updatefound', function() {
                             const newWorker = registration.installing;
                             newWorker.addEventListener('statechange', function() {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('[PWA] New version available');
+                                    console.debug('[PWA] New version available');
                                     // Optional: Show update notification
                                     if (confirm('A new version is available. Reload to update?')) {
                                         window.location.reload();
@@ -18466,7 +18477,7 @@ Sent via Above All Carbon HELOC Tool`;
                         });
                     })
                     .catch(function(error) {
-                        console.log('[PWA] Service Worker registration failed:', error);
+                        console.warn('[PWA] Service Worker registration failed:', error);
                     });
             });
         }
@@ -18476,7 +18487,7 @@ Sent via Above All Carbon HELOC Tool`;
         window.addEventListener('beforeinstallprompt', function(e) {
             e.preventDefault();
             deferredPrompt = e;
-            console.log('[PWA] Install prompt available');
+            console.debug('[PWA] Install prompt available');
         });
     </script>
 </body>
