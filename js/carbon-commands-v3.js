@@ -824,16 +824,9 @@
     }
 
     function createPredictionBar() {
-        const bar = document.createElement('div');
-        bar.id = 'carbon-prediction-bar';
-        bar.className = 'carbon-prediction-bar';
-        bar.innerHTML = '<span class="carbon-pred-label">⚡ Quick Actions:</span>';
-        document.body.appendChild(bar);
-        
-        updatePredictionBar();
-        
-        // Update every 30 seconds
-        setInterval(updatePredictionBar, 30000);
+        // DISABLED: Prediction bar removed - was cluttering the UI
+        // Kept function stub to prevent errors if called elsewhere
+        return;
     }
 
     function createQuickActionsWidget() {
