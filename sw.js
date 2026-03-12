@@ -3,7 +3,7 @@
  * Provides caching, offline functionality, push notifications, and background sync
  */
 
-const CACHE_NAME = 'aac-heloc-v4';
+const CACHE_NAME = 'aac-heloc-v5';
 const STATIC_ASSETS = [
   './AboveAllCarbon_HELOC_v12_FIXED.html',
   './client-quote.html',
@@ -62,32 +62,25 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip Supabase API calls and other dynamic content
+  // Skip external API calls and CDN resources
   if (url.hostname.includes('supabase.co') ||
       url.hostname.includes('googleapis.com') ||
-      url.hostname.includes('cdnjs.cloudflare.com')) {
+      url.hostname.includes('cdnjs.cloudflare.com') ||
+      url.hostname.includes('cdn.jsdelivr.net') ||
+      url.hostname.includes('esm.sh') ||
+      url.hostname.includes('api.heygen.com')) {
     return;
   }
 
-  // Cache-first strategy for static assets
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) {
-        // Return cached version and update in background
-        fetch(request)
-          .then((response) => {
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, response);
-            });
-          })
-          .catch(() => {});
-        return cached;
-      }
+  // Network-first for HTML pages (they change frequently)
+  // Cache-first for static assets (JS, CSS, images, fonts)
+  const isHTML = request.mode === 'navigate' || url.pathname.endsWith('.html');
 
-      // Network request
-      return fetch(request)
+  if (isHTML) {
+    // Network-first: try network, fall back to cache
+    event.respondWith(
+      fetch(request)
         .then((response) => {
-          // Cache successful responses
           if (response.ok && response.type === 'basic') {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -97,13 +90,39 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          // Return offline fallback if available
-          if (request.mode === 'navigate') {
-            return caches.match('./AboveAllCarbon_HELOC_v12_FIXED.html');
+          return caches.match(request).then((cached) => {
+            return cached || caches.match('./AboveAllCarbon_HELOC_v12_FIXED.html');
+          });
+        })
+    );
+  } else {
+    // Cache-first for static assets, update in background
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) {
+          fetch(request)
+            .then((response) => {
+              if (response.ok) {
+                caches.open(CACHE_NAME).then((cache) => {
+                  cache.put(request, response);
+                });
+              }
+            })
+            .catch(() => {});
+          return cached;
+        }
+        return fetch(request).then((response) => {
+          if (response.ok && response.type === 'basic') {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseClone);
+            });
           }
+          return response;
         });
-    })
-  );
+      })
+    );
+  }
 });
 
 // Background sync for offline form submissions

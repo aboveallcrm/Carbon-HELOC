@@ -7240,8 +7240,14 @@
                 var linkOpts = data.linkOptions || {};
                 var templateMode = linkOpts.templateMode || 'enhanced'; // default to enhanced
 
-                document.getElementById('loading').style.display = 'none';
+                var loadingEl = document.getElementById('loading');
+                if (loadingEl) loadingEl.style.display = 'none';
                 var content = document.getElementById('content');
+                if (!content) {
+                    console.error('renderQuote: #content element not found in DOM');
+                    showError('Page failed to render. Please refresh or contact your loan officer.');
+                    return;
+                }
                 content.style.display = 'block';
                 content.classList.add('entering');
                 
@@ -7258,9 +7264,11 @@
                 
                 // Show appropriate floating bar
                 if (isPreviewMode) {
-                    document.getElementById('preview-floating-bar').style.display = 'flex';
+                    var pfb = document.getElementById('preview-floating-bar');
+                    if (pfb) pfb.style.display = 'flex';
                 } else {
-                    document.getElementById('floating-bar').style.display = 'flex';
+                    var fb = document.getElementById('floating-bar');
+                    if (fb) fb.style.display = 'flex';
                 }
                 
                 // Apply template mode - hide/show sections based on mode
