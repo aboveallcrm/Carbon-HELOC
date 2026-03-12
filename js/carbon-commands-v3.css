@@ -86,11 +86,11 @@
 
 .carbon-palette-voice,
 .carbon-palette-record {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
     border: none;
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.08);
     color: #94a3b8;
     cursor: pointer;
     display: flex;
@@ -99,6 +99,12 @@
     transition: all 0.2s;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+}
+
+.carbon-palette-voice svg,
+.carbon-palette-record svg {
+    width: 22px;
+    height: 22px;
 }
 
 .carbon-palette-voice:hover,
@@ -1013,7 +1019,86 @@
 
 @keyframes carbon-voice-btn-pulse {
     0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
-    50% { box-shadow: 0 0 0 8px rgba(139, 92, 246, 0); }
+    50% { box-shadow: 0 0 0 12px rgba(139, 92, 246, 0); }
+}
+
+/* ==================== FLOATING VOICE ORB ==================== */
+.carbon-voice-orb {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9998;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+    transition: all 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.carbon-voice-orb:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 30px rgba(139, 92, 246, 0.5);
+}
+
+.carbon-voice-orb.carbon-voice-active {
+    animation: carbon-voice-orb-pulse 2s ease infinite;
+}
+
+.carbon-voice-orb.carbon-voice-listening {
+    background: linear-gradient(135deg, #10b981, #059669);
+    animation: carbon-voice-orb-listen 1s ease infinite;
+}
+
+@keyframes carbon-voice-orb-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.5); }
+    50% { box-shadow: 0 0 0 20px rgba(139, 92, 246, 0); }
+}
+
+@keyframes carbon-voice-orb-listen {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.carbon-voice-orb svg {
+    width: 28px;
+    height: 28px;
+}
+
+.carbon-voice-status {
+    position: fixed;
+    bottom: 175px;
+    right: 20px;
+    background: rgba(15, 23, 42, 0.95);
+    color: #94a3b8;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 9997;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.carbon-voice-status.carbon-voice-status-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.carbon-voice-status.carbon-voice-status-listening {
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.3);
 }
 
 /* Animation for new features */

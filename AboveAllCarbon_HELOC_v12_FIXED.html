@@ -4996,6 +4996,7 @@
             <button class="settings-tab" onclick="switchTab('email')">✉️ Email/Share</button>
             <button class="settings-tab" onclick="switchTab('integrations')">🔌 Integrations</button>
             <button class="settings-tab" onclick="switchTab('notifications')">🔔 Notifications</button>
+            <button class="settings-tab" onclick="switchTab('voice')">🎤 Voice</button>
             <button class="settings-tab" id="tab-btn-superadmin" onclick="switchTab('superadmin')"
                 style="display:none; background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">🛡️ Super
                 Admin</button>
@@ -6636,6 +6637,78 @@ Best regards,
             </div>
         </div>
 
+        <!-- VOICE TAB -->
+        <div id="tab-voice" class="settings-content">
+            <div class="control-section">
+                <h4 style="font-family: var(--font-heading); color: var(--accent-color); margin: 0 0 15px 0; font-size: 13px;">
+                    🎤 Voice Control Settings
+                </h4>
+                
+                <!-- Voice Enable Toggle -->
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding: 15px; background: rgba(139, 92, 246, 0.1); border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.3);">
+                    <div>
+                        <div style="font-weight: 700; color: white; margin-bottom: 4px;">Enable Voice Recognition</div>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Turn on to use voice commands with "Hey Ezra"</div>
+                    </div>
+                    <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 26px;">
+                        <input type="checkbox" id="voice-enable-toggle" onchange="toggleVoiceSetting()" style="opacity: 0; width: 0; height: 0;">
+                        <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.2); transition: .4s; border-radius: 26px;"></span>
+                        <span style="position: absolute; content: ''; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;" id="voice-toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <!-- Voice Status -->
+                <div id="voice-status-display" style="display: none; margin-bottom: 20px; padding: 12px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                        <span style="color: #10b981; font-weight: 600;">Voice is Active</span>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 11px; color: rgba(255,255,255,0.6);">Say "Hey Ezra" or "Hey Carbon" to activate</div>
+                </div>
+                
+                <!-- Wake Word Selection -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 8px; font-weight: 600;">Wake Word</label>
+                    <select id="voice-wake-word" onchange="changeWakeWord()" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: white; font-family: var(--font-heading);">
+                        <option value="hey ezra">Hey Ezra</option>
+                        <option value="hey carbon">Hey Carbon</option>
+                        <option value="ok ezra">OK Ezra</option>
+                        <option value="ok carbon">OK Carbon</option>
+                        <option value="hey assistant">Hey Assistant</option>
+                    </select>
+                </div>
+                
+                <!-- Language Selection -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 8px; font-weight: 600;">Language</label>
+                    <select id="voice-language" onchange="changeVoiceLanguage()" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: white; font-family: var(--font-heading);">
+                        <option value="en-US">English (US)</option>
+                        <option value="en-GB">English (UK)</option>
+                        <option value="es-US">Spanish (US)</option>
+                    </select>
+                </div>
+                
+                <!-- Test Microphone -->
+                <div style="margin-bottom: 15px;">
+                    <button class="btn" onclick="testMicrophone()" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); width: 100%;">
+                        🎤 Test Microphone
+                    </button>
+                </div>
+                
+                <!-- Voice Commands Help -->
+                <div style="padding: 15px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+                    <div style="font-weight: 700; color: white; margin-bottom: 10px; font-size: 11px;">Popular Voice Commands</div>
+                    <div style="font-size: 10px; color: rgba(255,255,255,0.6); line-height: 1.8;">
+                        <div>"Create quote for John"</div>
+                        <div>"Find lead Smith"</div>
+                        <div>"Go to rates"</div>
+                        <div>"Export PDF"</div>
+                        <div>"Send email"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- SUPER ADMIN TAB -->
         <div id="tab-superadmin" class="settings-content">
             <div class="control-section"
@@ -7655,6 +7728,90 @@ Best regards,
             const panel = document.getElementById('admin-panel');
             panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
         }
+
+        // ===== VOICE SETTINGS =====
+        function toggleVoiceSetting() {
+            const toggle = document.getElementById('voice-enable-toggle');
+            const slider = document.getElementById('voice-toggle-slider');
+            const status = document.getElementById('voice-status-display');
+            
+            if (toggle.checked) {
+                slider.style.transform = 'translateX(24px)';
+                slider.parentElement.querySelector('span:first-of-type').style.backgroundColor = '#8b5cf6';
+                status.style.display = 'block';
+                localStorage.setItem('carbon_voice_enabled', 'true');
+                // Trigger voice orb creation if CarbonCommands is loaded
+                if (typeof CarbonCommands !== 'undefined' && CarbonCommands.toggleVoiceOrb) {
+                    CarbonCommands.toggleVoiceOrb();
+                }
+                showToast('🎤 Voice recognition enabled', 'success');
+            } else {
+                slider.style.transform = 'translateX(0)';
+                slider.parentElement.querySelector('span:first-of-type').style.backgroundColor = 'rgba(255,255,255,0.2)';
+                status.style.display = 'none';
+                localStorage.setItem('carbon_voice_enabled', 'false');
+                if (typeof CarbonCommands !== 'undefined' && CarbonCommands.toggleVoiceOrb) {
+                    CarbonCommands.toggleVoiceOrb();
+                }
+                showToast('🎤 Voice recognition disabled', 'info');
+            }
+        }
+        
+        function changeWakeWord() {
+            const wakeWord = document.getElementById('voice-wake-word').value;
+            localStorage.setItem('carbon_wake_word', wakeWord);
+            showToast('Wake word updated to: "' + wakeWord + '"', 'success');
+        }
+        
+        function changeVoiceLanguage() {
+            const lang = document.getElementById('voice-language').value;
+            localStorage.setItem('carbon_voice_lang', lang);
+            showToast('Voice language updated', 'success');
+        }
+        
+        function testMicrophone() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showToast('Microphone access not supported in this browser', 'error');
+                return;
+            }
+            
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function(stream) {
+                    showToast('🎤 Microphone access granted! Voice should work.', 'success');
+                    stream.getTracks().forEach(track => track.stop());
+                })
+                .catch(function(err) {
+                    showToast('🎤 Microphone access denied. Check browser permissions.', 'error');
+                });
+        }
+        
+        // Initialize voice settings on page load
+        function initVoiceSettings() {
+            const voiceEnabled = localStorage.getItem('carbon_voice_enabled') === 'true';
+            const toggle = document.getElementById('voice-enable-toggle');
+            const slider = document.getElementById('voice-toggle-slider');
+            const status = document.getElementById('voice-status-display');
+            
+            if (toggle) {
+                toggle.checked = voiceEnabled;
+                if (voiceEnabled) {
+                    slider.style.transform = 'translateX(24px)';
+                    slider.parentElement.querySelector('span:first-of-type').style.backgroundColor = '#8b5cf6';
+                    if (status) status.style.display = 'block';
+                }
+            }
+            
+            const wakeWord = localStorage.getItem('carbon_wake_word') || 'hey ezra';
+            const wakeSelect = document.getElementById('voice-wake-word');
+            if (wakeSelect) wakeSelect.value = wakeWord;
+            
+            const voiceLang = localStorage.getItem('carbon_voice_lang') || 'en-US';
+            const langSelect = document.getElementById('voice-language');
+            if (langSelect) langSelect.value = voiceLang;
+        }
+        
+        // Call init on page load
+        document.addEventListener('DOMContentLoaded', initVoiceSettings);
 
         function updateVisibility() {
             document.getElementById('debt-consolidation-container').classList.toggle('visible', document.getElementById('chk-show-debt').checked);
@@ -14217,6 +14374,11 @@ Sent via Above All Carbon HELOC Tool`;
                         var el = clonedDoc.getElementById(id);
                         if (el) el.style.display = 'none';
                     });
+                    // Hide floating widgets like Ezra
+                    var eqRoot = clonedDoc.getElementById('eq-root');
+                    if (eqRoot) eqRoot.style.display = 'none';
+                    const eqOrbs = clonedDoc.querySelectorAll('.eq-orb, .eq-panel');
+                    eqOrbs.forEach(el => el.style.display = 'none');
                 }
             });
             container.style.width = origWidth;

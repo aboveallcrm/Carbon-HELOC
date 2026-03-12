@@ -20,6 +20,12 @@
         autoSaveInterval: 30000, // 30 seconds
     };
 
+    // ==================== VOICE STATE ====================
+    let voiceOrb = null;
+    let voiceStatus = null;
+    let voiceEnabled = localStorage.getItem('carbon_voice_enabled') === 'true';
+    let voiceAlwaysListening = localStorage.getItem('carbon_voice_always_listening') === 'true';
+
     // ==================== COMMAND REGISTRY (v2.0 + New) ====================
     const COMMANDS = {
         // ... (All v2.0 commands preserved)
@@ -293,6 +299,7 @@
         createPaletteHTML();
         createPredictionBar();
         createQuickActionsWidget();
+        createVoiceOrb();
         bindGlobalShortcuts();
         bindClickOutside();
         initVoiceRecognition();
@@ -307,6 +314,87 @@
         
         // Auto-save every 30 seconds
         setInterval(saveState, CONFIG.autoSaveInterval);
+    }
+
+    // ==================== VOICE ORB ====================
+    function createVoiceOrb() {
+        // Create voice orb button
+        voiceOrb = document.createElement('button');
+        voiceOrb.id = 'carbon-voice-orb';
+        voiceOrb.className = 'carbon-voice-orb';
+        voiceOrb.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+        `;
+        voiceOrb.title = voiceEnabled ? 'Voice is ON - Click to turn off' : 'Voice is OFF - Click to turn on';
+        voiceOrb.style.display = voiceEnabled ? 'flex' : 'none';
+        voiceOrb.addEventListener('click', toggleVoiceOrb);
+        document.body.appendChild(voiceOrb);
+        
+        // Create voice status indicator
+        voiceStatus = document.createElement('div');
+        voiceStatus.id = 'carbon-voice-status';
+        voiceStatus.className = 'carbon-voice-status';
+        voiceStatus.textContent = 'Say "Hey Ezra"';
+        document.body.appendChild(voiceStatus);
+        
+        // Show status briefly on load if voice is enabled
+        if (voiceEnabled) {
+            showVoiceStatus('Voice active - Say "Hey Ezra"');
+        }
+    }
+    
+    function toggleVoiceOrb() {
+        voiceEnabled = !voiceEnabled;
+        localStorage.setItem('carbon_voice_enabled', voiceEnabled);
+        
+        if (voiceEnabled) {
+            voiceOrb.classList.add('carbon-voice-active');
+            voiceOrb.title = 'Voice is ON - Click to turn off';
+            startWakeWordListening();
+            showVoiceStatus('Voice activated - Say "Hey Ezra"');
+            showToast('🎤 Voice recognition ON', 'success');
+        } else {
+            voiceOrb.classList.remove('carbon-voice-active', 'carbon-voice-listening');
+            voiceOrb.title = 'Voice is OFF - Click to turn on';
+            if (recognition) {
+                recognition.stop();
+                voiceListening = false;
+            }
+            hideVoiceStatus();
+            showToast('🎤 Voice recognition OFF', 'info');
+        }
+    }
+    
+    function showVoiceStatus(text, isListening = false) {
+        if (!voiceStatus) return;
+        voiceStatus.textContent = text;
+        voiceStatus.classList.add('carbon-voice-status-visible');
+        if (isListening) {
+            voiceStatus.classList.add('carbon-voice-status-listening');
+        } else {
+            voiceStatus.classList.remove('carbon-voice-status-listening');
+        }
+    }
+    
+    function hideVoiceStatus() {
+        if (!voiceStatus) return;
+        voiceStatus.classList.remove('carbon-voice-status-visible', 'carbon-voice-status-listening');
+    }
+    
+    function updateVoiceOrbState(isListening) {
+        if (!voiceOrb) return;
+        if (isListening) {
+            voiceOrb.classList.add('carbon-voice-listening');
+            showVoiceStatus('Listening...', true);
+        } else {
+            voiceOrb.classList.remove('carbon-voice-listening');
+            showVoiceStatus('Say "Hey Ezra"');
+        }
     }
 
     function bindGlobalShortcuts() {
@@ -1056,6 +1144,9 @@
     }
     
     function handleVoiceResult(event) {
+        // Don't process if voice is disabled
+        if (!voiceEnabled) return;
+        
         const results = event.results;
         const lastResult = results[results.length - 1];
         const transcript = lastResult[0].transcript.toLowerCase().trim();
@@ -1068,13 +1159,15 @@
                     wakeWordDetected = true;
                     showToast('🎤 Yes, I\'m listening...', 'success');
                     
-                    // Visual feedback
+                    // Visual feedback via orb
+                    updateVoiceOrbState(true);
                     showVoiceActiveIndicator();
                     
                     // Reset after 5 seconds if no command given
                     setTimeout(() => {
                         if (wakeWordDetected) {
                             wakeWordDetected = false;
+                            updateVoiceOrbState(false);
                             hideVoiceActiveIndicator();
                         }
                     }, 5000);
@@ -1082,6 +1175,7 @@
             } else {
                 // Process command after wake word
                 wakeWordDetected = false;
+                updateVoiceOrbState(false);
                 hideVoiceActiveIndicator();
                 processVoiceCommand(transcript);
             }
@@ -1152,20 +1246,8 @@
     }
     
     function toggleVoice() {
-        if (!recognition) {
-            showToast('🎤 Voice recognition not supported in this browser', 'error');
-            return;
-        }
-        
-        if (voiceListening) {
-            recognition.stop();
-            voiceListening = false;
-            hideVoiceActiveIndicator();
-            showToast('🎤 Voice recognition paused', 'info');
-        } else {
-            startWakeWordListening();
-            showToast('🎤 Voice recognition active. Say "Hey Ezra" to start', 'success');
-        }
+        // Use the orb toggle instead for consistent behavior
+        toggleVoiceOrb();
     }
     
     function showVoiceActiveIndicator() {
