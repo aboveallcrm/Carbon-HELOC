@@ -3,7 +3,7 @@
  * Provides caching, offline functionality, push notifications, and background sync
  */
 
-const CACHE_NAME = 'aac-heloc-v5';
+const CACHE_NAME = 'aac-heloc-v6';
 const STATIC_ASSETS = [
   './AboveAllCarbon_HELOC_v12_FIXED.html',
   './client-quote.html',
@@ -62,13 +62,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip external API calls and CDN resources
+  // Skip external API calls, CDN resources, and fonts
   if (url.hostname.includes('supabase.co') ||
       url.hostname.includes('googleapis.com') ||
+      url.hostname.includes('gstatic.com') ||
       url.hostname.includes('cdnjs.cloudflare.com') ||
       url.hostname.includes('cdn.jsdelivr.net') ||
       url.hostname.includes('esm.sh') ||
-      url.hostname.includes('api.heygen.com')) {
+      url.hostname.includes('api.heygen.com') ||
+      url.hostname.includes('filesafe.space')) {
     return;
   }
 
