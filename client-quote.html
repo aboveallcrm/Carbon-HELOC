@@ -5899,10 +5899,334 @@
                 break-after: avoid !important;
             }
         }
+
+        /* Toast Notification System */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            border-radius: 8px;
+            padding: 12px 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-heading);
+            font-size: 13px;
+            color: #e2e8f0;
+            animation: toast-in 0.3s ease, toast-out 0.3s ease 2.7s;
+            pointer-events: auto;
+            max-width: 90vw;
+        }
+
+        .toast.success { border-color: rgba(16, 185, 129, 0.4); }
+        .toast.error { border-color: rgba(239, 68, 68, 0.4); }
+        .toast.info { border-color: rgba(59, 130, 246, 0.4); }
+
+        .toast-icon { font-size: 16px; }
+
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes toast-out {
+            to { opacity: 0; transform: translateY(-20px) scale(0.95); }
+        }
+
+        /* Sticky CTA Bar for Mobile */
+        .sticky-cta-bar {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-top: 2px solid var(--accent-color);
+            padding: 12px 16px;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
+            z-index: 1000;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .sticky-cta-bar.visible {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .sticky-cta-bar .btn-primary {
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .sticky-cta-bar .btn-secondary {
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .sticky-cta-bar.visible {
+                display: flex;
+            }
+            
+            /* Add padding to body to account for sticky bar */
+            body.has-sticky-cta {
+                padding-bottom: 70px;
+            }
+        }
+
+        /* Skeleton Loading States */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(197, 160, 89, 0.1) 25%, rgba(197, 160, 89, 0.2) 50%, rgba(197, 160, 89, 0.1) 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s ease-in-out infinite;
+            border-radius: 4px;
+        }
+
+        .skeleton-text {
+            height: 16px;
+            margin-bottom: 8px;
+        }
+
+        .skeleton-text.short { width: 60%; }
+        .skeleton-text.medium { width: 80%; }
+        .skeleton-text.long { width: 100%; }
+
+        .skeleton-card {
+            height: 100px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(197, 160, 89, 0.2);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+        /* Skip link for keyboard navigation */
+        .skip-link {
+            position: absolute;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-color);
+            color: var(--bg-dark);
+            padding: 12px 24px;
+            border-radius: 0 0 8px 8px;
+            font-weight: 600;
+            z-index: 10000;
+            transition: top 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .skip-link:focus {
+            top: 0;
+        }
+        
+        /* Focus visible styles for keyboard navigation */
+        body.keyboard-nav *:focus {
+            outline: 3px solid var(--accent-color);
+            outline-offset: 2px;
+        }
+        
+        body:not(.keyboard-nav) *:focus {
+            outline: none;
+        }
+        
+        /* Reduced motion */
+        body.reduced-motion *,
+        body.reduced-motion *::before,
+        body.reduced-motion *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+        
+        /* Screen reader only text */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --accent-color: #ffd700;
+                --accent-light: #ffed4a;
+            }
+            
+            .rate-card {
+                border: 2px solid var(--accent-color);
+            }
+            
+            .btn-primary {
+                border: 2px solid #fff;
+            }
+        }
+        
+        /* ===== PROGRESSIVE DISCLOSURE ===== */
+        /* Accordion styles */
+        .accordion-header {
+            cursor: pointer;
+            position: relative;
+            padding-right: 30px;
+        }
+        
+        .accordion-header::after {
+            content: '+';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: var(--accent-color);
+            transition: transform 0.3s ease;
+        }
+        
+        .accordion-header[aria-expanded="true"]::after {
+            content: '−';
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+        
+        .accordion-content.expanded {
+            max-height: 500px;
+        }
+        
+        /* Show more/less */
+        .show-more-container {
+            max-height: 200px;
+            overflow: hidden;
+            position: relative;
+            transition: max-height 0.3s ease;
+        }
+        
+        .show-more-container.expanded {
+            max-height: none;
+        }
+        
+        .show-more-container:not(.expanded)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(transparent, var(--bg-dark));
+            pointer-events: none;
+        }
+        
+        .show-more-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-heading);
+            font-size: 13px;
+            margin-top: 10px;
+            transition: all 0.2s ease;
+        }
+        
+        .show-more-btn:hover {
+            background: var(--accent-color);
+            color: var(--bg-dark);
+        }
+        
+        /* Print styles */
+        @media print {
+            .no-print, .sticky-cta-bar, .ezra-panel, .toast-container {
+                display: none !important;
+            }
+            
+            body {
+                background: white;
+                color: black;
+            }
+            
+            .rate-card {
+                break-inside: avoid;
+                border: 1px solid #ccc;
+            }
+        }
     </style>
 </head>
 
 <body>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p style="margin-top: 16px; color: var(--accent-color); font-family: var(--font-heading);">Loading your quote...</p>
+    </div>
 
     <!-- Market Status Indicator -->
     <div class="market-status" id="market-status">
@@ -6686,6 +7010,31 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // ===== TOAST NOTIFICATION SYSTEM =====
+        function showToast(message, type, duration) {
+            type = type || 'info';
+            duration = duration || 3000;
+            
+            var container = document.getElementById('toast-container');
+            if (!container) return;
+            
+            var icons = {
+                success: '✓',
+                error: '✕',
+                info: 'ℹ'
+            };
+            
+            var toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.innerHTML = '<span class="toast-icon">' + icons[type] + '</span><span>' + message + '</span>';
+            
+            container.appendChild(toast);
+            
+            setTimeout(function() {
+                toast.remove();
+            }, duration);
+        }
+
         (function () {
             var SUPABASE_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co';
             var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6emFidmZ6dXhocGRjb3dndmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjgwNTYsImV4cCI6MjA4NDc0NDA1Nn0.tFliE-x2Tz9ET3A38R4y7eSo6bUu-bYY47XkWeX1xHY';
@@ -6888,6 +7237,17 @@
                 var content = document.getElementById('content');
                 content.style.display = 'block';
                 content.classList.add('entering');
+                
+                // Remove skeleton states with staggered animation
+                setTimeout(function() {
+                    var skeletons = document.querySelectorAll('.skeleton');
+                    skeletons.forEach(function(el, i) {
+                        setTimeout(function() {
+                            el.classList.remove('skeleton');
+                            el.style.opacity = '1';
+                        }, i * 50);
+                    });
+                }, 100);
                 
                 // Show appropriate floating bar
                 if (isPreviewMode) {
@@ -8707,17 +9067,18 @@
                     }
                 };
 
-                // Auto-open Ezra after a short delay so clients engage immediately
-                // First add glow effect to orb, then open panel
+                // Draw attention to Ezra orb with glow, but don't auto-open
+                // Let user choose to engage
                 setTimeout(function () {
                     var orb = document.getElementById('eq-orb');
-                    if (orb) orb.classList.add('glow');
-                }, 1500);
-                setTimeout(function () {
-                    var orb = document.getElementById('eq-orb');
-                    if (orb) orb.classList.remove('glow');
-                    if (!isOpen) window.eqToggle();
-                }, 3500);
+                    if (orb) {
+                        orb.classList.add('glow');
+                        // Stop glowing after 3 seconds
+                        setTimeout(function() {
+                            if (orb) orb.classList.remove('glow');
+                        }, 3000);
+                    }
+                }, 2000);
 
                 window.eqChip = function (text) {
                     if (text === 'Take a guided tour') { startTour(); return; }
@@ -9755,6 +10116,123 @@
                     });
             });
         }
+    </script>
+
+    <!-- Sticky CTA Bar for Mobile -->
+    <div class="sticky-cta-bar" id="sticky-cta-bar">
+        <button class="btn-secondary" onclick="showToast('PDF saved to your device', 'success'); savePDF();" title="Save PDF">
+            📄
+        </button>
+        <button class="btn btn-primary" onclick="window.openApplyModal ? window.openApplyModal() : showToast('Application coming soon', 'info');">
+            Apply Now
+        </button>
+    </div>
+
+    <script>
+        // Show sticky CTA on mobile after scrolling
+        (function() {
+            var stickyBar = document.getElementById('sticky-cta-bar');
+            if (!stickyBar) return;
+            
+            var showThreshold = 300; // Show after scrolling 300px
+            
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > showThreshold) {
+                    stickyBar.classList.add('visible');
+                    document.body.classList.add('has-sticky-cta');
+                }
+            }, { passive: true });
+        })();
+        
+        // ===== ACCESSIBILITY IMPROVEMENTS =====
+        (function() {
+            // Skip link for keyboard navigation
+            var skipLink = document.createElement('a');
+            skipLink.href = '#main-content';
+            skipLink.className = 'skip-link';
+            skipLink.textContent = 'Skip to main content';
+            document.body.insertBefore(skipLink, document.body.firstChild);
+            
+            // Add main-content id to content div
+            var content = document.getElementById('content');
+            if (content) content.id = 'main-content';
+            
+            // Focus visible enhancement for keyboard users
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    document.body.classList.add('keyboard-nav');
+                }
+            });
+            
+            document.addEventListener('mousedown', function() {
+                document.body.classList.remove('keyboard-nav');
+            });
+            
+            // Escape key handling
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    // Close any open modals, dropdowns, etc.
+                    document.querySelectorAll('.expanded').forEach(function(el) {
+                        el.classList.remove('expanded');
+                    });
+                }
+            });
+            
+            // Reduced motion preference
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.body.classList.add('reduced-motion');
+            }
+        })();
+        
+        // ===== PROGRESSIVE DISCLOSURE =====
+        (function() {
+            // Accordion functionality for details sections
+            window.toggleAccordion = function(header) {
+                var content = header.nextElementSibling;
+                var isExpanded = header.getAttribute('aria-expanded') === 'true';
+                
+                // Close all other accordions in same group
+                var group = header.closest('.accordion-group');
+                if (group) {
+                    group.querySelectorAll('.accordion-header').forEach(function(h) {
+                        if (h !== header) {
+                            h.setAttribute('aria-expanded', 'false');
+                            var c = h.nextElementSibling;
+                            if (c) c.classList.remove('expanded');
+                        }
+                    });
+                }
+                
+                // Toggle current
+                header.setAttribute('aria-expanded', !isExpanded);
+                if (content) content.classList.toggle('expanded');
+            };
+            
+            // Initialize accordions
+            document.querySelectorAll('.accordion-header').forEach(function(header) {
+                header.setAttribute('role', 'button');
+                header.setAttribute('tabindex', '0');
+                header.setAttribute('aria-expanded', 'false');
+                
+                header.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleAccordion(header);
+                    }
+                });
+            });
+            
+            // "Show more" functionality
+            window.toggleShowMore = function(btn) {
+                var container = btn.previousElementSibling;
+                if (!container) return;
+                
+                var isExpanded = container.classList.contains('expanded');
+                container.classList.toggle('expanded');
+                btn.textContent = isExpanded ? 'Show more' : 'Show less';
+                btn.setAttribute('aria-expanded', !isExpanded);
+            };
+        })();
     </script>
 
 </body>
