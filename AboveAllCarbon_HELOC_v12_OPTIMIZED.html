@@ -286,7 +286,7 @@ td select {
 @media print {
     @page { size: letter; margin: 0.25in; } 
     body { padding: 0; margin: 0; background-color: #fff; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; font-size: 9px; } 
-    #admin-panel, #floating-toolbar { display: none !important; } 
+    #admin-panel { display: none !important; } 
     .main-container { box-shadow: none; margin: 0; width: 100%; max-width: 100%; border: none; border-top: 3px solid var(--accent-color); }
     .content-body { padding: 8px 20px; }
     .premium-header { padding: 12px 20px; }
@@ -342,7 +342,7 @@ td select {
 @media (max-width: 768px) {
     .client-grid { grid-template-columns: 1fr 1fr; }
     .matrix-container { flex-direction: column; }
-    #floating-toolbar { right: 10px; top: 10px; max-width: 95%; }
+
     .content-body { padding: 15px 20px; }
 }
 /* Toast Notifications */
@@ -479,16 +479,7 @@ footer { content-visibility: auto; contain-intrinsic-size: 0 200px; }
     </div>
 </div>
 
-<div id="floating-toolbar">
-    <button class="toolbar-btn" onclick="toggleAdminPanel()" id="btn-toggle-admin">⚙️ Settings</button>
-    <button class="toolbar-btn" onclick="captureAndCopy()" title="Screenshot &amp; Copy">📸 Copy</button>
-    <button class="toolbar-btn" onclick="printPDF()">📄 PDF</button>
-    <button class="toolbar-btn" id="btn-download-pdf" style="display:none; background: linear-gradient(135deg, #06b6d4, #0891b2);" onclick="exportBrandedPDF()">⬇ Download</button>
-    <span class="autosave-indicator" id="autosave-status">✓ Saved</span>
-    <button class="toolbar-btn-help" onclick="WalkthroughTour.restart()" title="Restart guided tour">❓ Tour</button>
-    <span id="toolbar-user-info" style="display:none; font-family: var(--font-heading); font-size: 9px; color: rgba(255,255,255,0.6); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
-    <button class="toolbar-btn" id="btn-logout" style="display:none; background: #ef4444; font-size: 10px; padding: 5px 10px;" onclick="if(window.logoutUser) window.logoutUser()">Logout</button>
-</div>
+
 
 <div id="admin-panel" style="display: none;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -2570,22 +2561,8 @@ function applyTierAccess(tier) {
         if (level >= 4) loadAdvancedAnalytics();
     }
 
-    // ---- TIER BADGE IN TOOLBAR ----
-    let tierBadge = document.getElementById('toolbar-tier-badge');
-    if (!tierBadge) {
-        tierBadge = document.createElement('span');
-        tierBadge.id = 'toolbar-tier-badge';
-        tierBadge.style.cssText = 'font-family:var(--font-heading);font-size:9px;font-weight:700;text-transform:uppercase;padding:3px 10px;border-radius:10px;letter-spacing:1px;cursor:pointer;transition:transform 0.2s;';
-        tierBadge.onclick = () => showUpgradeModal();
-        tierBadge.title = 'View plan details';
-        const toolbar = document.getElementById('floating-toolbar');
-        if (toolbar) {
-            const userInfo = document.getElementById('toolbar-user-info');
-            if (userInfo) toolbar.insertBefore(tierBadge, userInfo);
-            else toolbar.appendChild(tierBadge);
-        }
-    }
-    tierBadge.style.background = tierColors[tier] || '#6b7280';
+    // ---- TIER BADGE (disabled - toolbar removed) ----
+    // Tier badge was previously displayed in the floating toolbar which has been removed
     tierBadge.style.color = tier === 'obsidian' ? '#94a3b8' : 'white';
     tierBadge.innerText = tierLabels[tier] || tier.toUpperCase();
 
@@ -2685,16 +2662,9 @@ var WalkthroughTour = (function() {
             }
         },
         {
-            target: '#floating-toolbar',
-            title: 'Your Toolbar',
-            text: 'This toolbar stays with you. Use it to open Settings, copy your proposal as a screenshot, or export as a PDF.',
-            position: 'bottom',
-            beforeShow: null
-        },
-        {
-            target: '#btn-toggle-admin',
+            target: '#tab-client',
             title: 'Open Settings',
-            text: 'Click this button to open the Settings panel where you configure everything: client info, rates, loan options, and integrations.',
+            text: 'Click the Settings tabs to configure everything: client info, rates, loan options, and integrations.',
             position: 'bottom',
             beforeShow: function() {
                 var panel = document.getElementById('admin-panel');
@@ -2749,9 +2719,9 @@ var WalkthroughTour = (function() {
             }
         },
         {
-            target: '#floating-toolbar',
+            target: '.main-container',
             title: 'You\'re All Set!',
-            text: 'You know the basics! Use Copy to screenshot the proposal, PDF to export it, or open Settings to customize further. You can restart this tour anytime from the Tour button.',
+            text: 'You know the basics! Use the buttons at the bottom to save quotes, or open Settings to customize further. You can restart this tour anytime.',
             position: 'bottom',
             beforeShow: function() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });

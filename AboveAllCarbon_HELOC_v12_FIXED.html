@@ -1227,6 +1227,27 @@
             max-width: 400px;
         }
 
+        .toolbar-drag-handle {
+            cursor: grab;
+            color: rgba(255, 255, 255, 0.4);
+            padding: 4px;
+            margin-right: -4px;
+            font-size: 14px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+        
+        .toolbar-drag-handle:active {
+            cursor: grabbing;
+        }
+        
+        .toolbar-drag-handle:hover {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
         .toolbar-btn {
             background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
             color: white;
@@ -4921,6 +4942,7 @@
     </div>
 
     <div id="floating-toolbar">
+        <div class="toolbar-drag-handle" title="Drag to move">&#x22ee;&#x22ee;</div>
         <button class="toolbar-btn" onclick="toggleAdminPanel()" id="btn-toggle-admin">⚙️ Settings</button>
         <button class="toolbar-btn" onclick="captureAndCopy()" title="Screenshot &amp; Copy">📸 Copy</button>
         <button class="toolbar-btn" onclick="printPDF()">📄 PDF</button>
@@ -17812,6 +17834,56 @@ Sent via Above All Carbon HELOC Tool`;
     
     <!-- PWA Install Manager -->
     <script src="./js/pwa-install.js"></script>
+
+    <script>
+        // Make floating toolbar draggable
+        (function() {
+            var toolbar = document.getElementById('floating-toolbar');
+            var handle = toolbar ? toolbar.querySelector('.toolbar-drag-handle') : null;
+            var isDragging = false;
+            var startX, startY, initialLeft, initialTop;
+
+            if (handle && toolbar) {
+                handle.addEventListener('mousedown', function(e) {
+                    isDragging = true;
+                    
+                    // If it's the first time dragging, or still has 'right' value, switch to left-based positioning
+                    var rect = toolbar.getBoundingClientRect();
+                    toolbar.style.right = 'auto';
+                    toolbar.style.left = rect.left + 'px';
+                    toolbar.style.top = rect.top + 'px';
+
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    initialLeft = rect.left;
+                    initialTop = rect.top;
+
+                    handle.style.cursor = 'grabbing';
+                    document.body.style.userSelect = 'none';
+
+                    e.preventDefault();
+                });
+
+                document.addEventListener('mousemove', function(e) {
+                    if (!isDragging) return;
+
+                    var dx = e.clientX - startX;
+                    var dy = e.clientY - startY;
+
+                    toolbar.style.left = (initialLeft + dx) + 'px';
+                    toolbar.style.top = (initialTop + dy) + 'px';
+                });
+
+                document.addEventListener('mouseup', function(e) {
+                    if (isDragging) {
+                        isDragging = false;
+                        handle.style.cursor = 'grab';
+                        document.body.style.userSelect = '';
+                    }
+                });
+            }
+        })();
+    </script>
 </body>
 
 </html>
