@@ -5405,7 +5405,7 @@
                         <div style="display: flex; align-items: center; gap: 6px; margin-top: 6px;">
                             <label
                                 style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8);"><input
-                                    type="checkbox" id="chk-rate-lock" checked style="margin-right: 6px;"
+                                    type="checkbox" id="chk-rate-lock" style="margin-right: 6px;"
                                     onchange="document.getElementById('rate-lock-days').disabled=!this.checked; document.getElementById('rate-lock-label').style.opacity=this.checked?'1':'0.4'"> Rate
                                 Lock</label>
                             <select id="rate-lock-days"
@@ -5431,7 +5431,7 @@
                             Compliance Disclaimer</label>
                         <label
                             style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8); margin-bottom: 6px;"><input
-                                type="checkbox" id="chk-pdf-ai-strategy" checked style="margin-right: 6px;"> Include AI
+                                type="checkbox" id="chk-pdf-ai-strategy" style="margin-right: 6px;"> Include AI
                             Strategy Text</label>
                     </div>
                 </div>
@@ -10212,9 +10212,6 @@ Best regards,
                         if (panel) panel.style.display = 'block';
                         if (typeof switchTab === 'function') switchTab('integrations');
                     }
-                },
-                );
-                    }
                 }
             ];
 
@@ -12237,6 +12234,69 @@ Best regards,
             sections.push(close);
 
             return sections.join('\n\n');
+        }
+
+        // ===== BORROWER-FOCUSED STRATEGY (Short, for client quote) =====
+        function generateBorrowerStrategy(ctx) {
+            var name = (ctx.clientName || 'Client').split(' ')[0];
+            var rate = ctx.recommendedRate || ctx.rate || '?';
+            var term = ctx.recommendedTerm || ctx.term || '?';
+            var payment = ctx.monthlyPayment || ctx.payment || '$0';
+            var cashBack = ctx.cashBack || 0;
+            var savings = ctx.netMonthlySavings || '';
+            var savingsNum = parseFloat((savings || '0').replace(/[^0-9.-]/g, '')) || 0;
+            var helocPayoff = ctx.helocPayoff || 0;
+            var isRefi = helocPayoff > 0;
+            var loName = ctx.loName || 'your loan officer';
+            
+            var strategy = '';
+            
+            // Opening line personalized to scenario
+            if (isRefi) {
+                strategy = 'Hi ' + name + '! I\'ve found a way to refinance your existing HELOC into a ' + term + '-year fixed rate of ' + rate + '%. ';
+            } else if (savingsNum > 200) {
+                strategy = 'Hi ' + name + '! This HELOC structure saves you ' + savings + ' every month while giving you access to ' + (cashBack > 0 ? '$' + cashBack.toLocaleString() : 'your equity') + '. ';
+            } else if (cashBack > 50000) {
+                strategy = 'Hi ' + name + '! I\'ve structured a way to access $' + cashBack.toLocaleString() + ' of your home\'s equity at ' + rate + '%. ';
+            } else {
+                strategy = 'Hi ' + name + '! I\'ve analyzed your property and put together a HELOC at ' + rate + '% with a payment of ' + payment + '/mo. ';
+            }
+            
+            // Why this works for them
+            strategy += 'Why this works for you: ';
+            
+            var reasons = [];
+            
+            if (isRefi) {
+                reasons.push('you\'re moving from a variable rate to a predictable ' + term + '-year fixed rate');
+            }
+            if (savingsNum > 0) {
+                reasons.push('you save ' + savings + ' monthly—that\'s ' + (savingsNum * 12).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) + ' per year back in your pocket');
+            }
+            if (cashBack > 0 && !isRefi) {
+                reasons.push('you access $' + cashBack.toLocaleString() + ' without touching your first mortgage rate');
+            }
+            if (ctx.recType === 'variable' && !isRefi) {
+                reasons.push('the variable rate starts lower—ideal if you plan to pay down aggressively');
+            }
+            if (parseFloat(ctx.cltv) <= 80) {
+                reasons.push('your strong equity position (' + ctx.cltv + ' CLTV) qualifies you for our best pricing');
+            }
+            if (parseFloat(ctx.creditScore) >= 740) {
+                reasons.push('your excellent credit unlocks top-tier rates');
+            }
+            
+            // Add 2-3 reasons max
+            if (reasons.length >= 2) {
+                strategy += reasons.slice(0, 2).join(', ') + '. ';
+            } else if (reasons.length === 1) {
+                strategy += reasons[0] + '. ';
+            }
+            
+            // Closing
+            strategy += 'Have questions? I\'m here to help—just ask below or tap the chat button.';
+            
+            return strategy;
         }
 
         // Gather ALL live quote data for the AI context
@@ -18012,10 +18072,10 @@ Sent via Above All Carbon HELOC Tool`;
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
         </svg>
     </button>
-    <!-- Command Hint -->
-    <div class="carbon-cmd-hint">
+    <!-- Command Hint - DISABLED -->
+    <!-- <div class="carbon-cmd-hint">
         Press <kbd>Cmd</kbd>+<kbd>K</kbd> or say <kbd>Hey Ezra</kbd>
-    </div>
+    </div> -->
     
     <!-- PWA Install Manager -->
     <script src="./js/pwa-install.js"></script>

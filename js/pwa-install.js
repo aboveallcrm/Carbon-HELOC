@@ -21,7 +21,7 @@
     // ==================== INITIALIZATION ====================
     function init() {
         if (!('serviceWorker' in navigator)) {
-            console.log('[PWA] Service Worker not supported');
+            if (CONFIG.debug) console.log('[PWA] Service Worker not supported');
             return;
         }
 
@@ -37,7 +37,7 @@
             const registration = await navigator.serviceWorker.register(CONFIG.swPath);
             swRegistration = registration;
             
-            console.log('[PWA] Service Worker registered:', registration.scope);
+            if (CONFIG.debug) console.log('[PWA] Service Worker registered:', registration.scope);
 
             // Handle updates
             registration.addEventListener('updatefound', () => {
@@ -51,7 +51,7 @@
             });
 
         } catch (error) {
-            console.error('[PWA] Service Worker registration failed:', error);
+            if (CONFIG.debug) console.error('[PWA] Service Worker registration failed:', error);
         }
     }
 
@@ -70,7 +70,7 @@
 
         // Handle app installed
         window.addEventListener('appinstalled', () => {
-            console.log('[PWA] App installed');
+            if (CONFIG.debug) console.log('[PWA] App installed');
             isInstalled = true;
             deferredPrompt = null;
             showToast('🎉 App installed! Access it from your home screen.', 'success');
@@ -230,7 +230,7 @@
 
     async function installApp() {
         if (!deferredPrompt) {
-            console.log('[PWA] No install prompt available');
+            if (CONFIG.debug) console.log('[PWA] No install prompt available');
             return;
         }
 
@@ -239,7 +239,7 @@
 
         // Wait for user choice
         const { outcome } = await deferredPrompt.userChoice;
-        console.log('[PWA] Install prompt outcome:', outcome);
+        if (CONFIG.debug) console.log('[PWA] Install prompt outcome:', outcome);
 
         // Clear the deferred prompt
         deferredPrompt = null;
@@ -271,7 +271,7 @@
     // ==================== PUSH NOTIFICATIONS ====================
     function setupPushNotifications() {
         if (!('PushManager' in window)) {
-            console.log('[PWA] Push notifications not supported');
+            if (CONFIG.debug) console.log('[PWA] Push notifications not supported');
             return;
         }
 
@@ -349,7 +349,7 @@
                 showToast('Notifications disabled. You can enable them in settings.', 'info');
             }
         } catch (error) {
-            console.error('[PWA] Push permission error:', error);
+            if (CONFIG.debug) console.error('[PWA] Push permission error:', error);
         }
     }
 
@@ -360,7 +360,7 @@
             // Get VAPID key from server
             const vapidKey = await getVapidPublicKey();
             if (!vapidKey) {
-                console.log('[PWA] No VAPID key available');
+                if (CONFIG.debug) console.log('[PWA] No VAPID key available');
                 return;
             }
 
@@ -372,9 +372,9 @@
             // Send subscription to server
             await savePushSubscription(subscription);
             
-            console.log('[PWA] Push subscription created');
+            if (CONFIG.debug) console.log('[PWA] Push subscription created');
         } catch (error) {
-            console.error('[PWA] Push subscription failed:', error);
+            if (CONFIG.debug) console.error('[PWA] Push subscription failed:', error);
         }
     }
 
@@ -390,7 +390,7 @@
             const data = await response.json();
             return data.vapidPublicKey;
         } catch (error) {
-            console.log('[PWA] Could not fetch VAPID key');
+            if (CONFIG.debug) console.log('[PWA] Could not fetch VAPID key');
             return null;
         }
     }
@@ -408,7 +408,7 @@
                 onConflict: 'user_id'
             });
         } catch (error) {
-            console.error('[PWA] Save subscription error:', error);
+            if (CONFIG.debug) console.error('[PWA] Save subscription error:', error);
         }
     }
 
@@ -419,10 +419,10 @@
             const subscription = await swRegistration.pushManager.getSubscription();
             if (subscription) {
                 await subscription.unsubscribe();
-                console.log('[PWA] Push subscription removed');
+                if (CONFIG.debug) console.log('[PWA] Push subscription removed');
             }
         } catch (error) {
-            console.error('[PWA] Unsubscribe error:', error);
+            if (CONFIG.debug) console.error('[PWA] Unsubscribe error:', error);
         }
     }
 

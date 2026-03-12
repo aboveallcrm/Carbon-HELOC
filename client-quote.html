@@ -3846,6 +3846,316 @@
             margin-top: 8px;
         }
 
+        /* ===== WHAT IF: BORROW MORE SECTION ===== */
+        .what-if-section {
+            background: linear-gradient(135deg, #fffdf7 0%, #ffffff 50%, #f8f6f0 100%);
+            border: 2px solid var(--accent-color);
+            border-radius: 20px;
+            padding: 32px 28px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 40px rgba(197, 160, 89, 0.12);
+        }
+
+        .what-if-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-dark), var(--accent-color), var(--accent-light), var(--accent-color), var(--accent-dark));
+            background-size: 200% 100%;
+            animation: shimmer-bar 3s linear infinite;
+        }
+
+        .what-if-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .what-if-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 12px rgba(197, 160, 89, 0.3);
+        }
+
+        .what-if-title {
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .what-if-subtitle {
+            font-size: 13px;
+            color: var(--slate);
+            opacity: 0.7;
+            margin-bottom: 24px;
+            margin-left: 56px;
+        }
+
+        .what-if-slider-group {
+            background: rgba(15, 43, 76, 0.03);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(197, 160, 89, 0.1);
+        }
+
+        .what-if-slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .what-if-slider-label span:first-child {
+            font-family: var(--font-heading);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--slate);
+            opacity: 0.6;
+        }
+
+        .what-if-value {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent-color);
+        }
+
+        .what-if-slider {
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, rgba(197, 160, 89, 0.2), rgba(197, 160, 89, 0.4));
+            outline: none;
+            -webkit-appearance: none;
+            margin-bottom: 8px;
+        }
+
+        .what-if-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(197, 160, 89, 0.5);
+            border: 3px solid white;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .what-if-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(197, 160, 89, 0.6);
+        }
+
+        .what-if-slider::-moz-range-thumb {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(197, 160, 89, 0.5);
+            border: 3px solid white;
+        }
+
+        .what-if-slider-range {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--slate);
+            opacity: 0.5;
+            font-weight: 600;
+        }
+
+        .what-if-results {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .what-if-result-card {
+            background: white;
+            border-radius: 14px;
+            padding: 20px 16px;
+            text-align: center;
+            border: 1px solid rgba(15, 43, 76, 0.08);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .what-if-result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .what-if-result-card.highlight {
+            background: linear-gradient(135deg, #fffbf0, #fff8e6);
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 16px rgba(197, 160, 89, 0.15);
+        }
+
+        .what-if-result-label {
+            font-family: var(--font-heading);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--slate);
+            opacity: 0.5;
+            margin-bottom: 8px;
+        }
+
+        .what-if-result-value {
+            font-family: var(--font-heading);
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .what-if-result-card.highlight .what-if-result-value {
+            color: var(--accent-color);
+            font-size: 26px;
+        }
+
+        .what-if-result-detail {
+            font-size: 11px;
+            color: var(--slate);
+            opacity: 0.6;
+        }
+
+        .what-if-cta {
+            text-align: center;
+        }
+
+        .what-if-btn {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 30px;
+            font-family: var(--font-heading);
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 4px 16px rgba(197, 160, 89, 0.4);
+        }
+
+        .what-if-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 28px rgba(197, 160, 89, 0.5);
+        }
+
+        .what-if-btn-sub {
+            font-size: 10px;
+            opacity: 0.8;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* Dark mode for What If section */
+        body.theme-dark .what-if-section {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1a2332 100%);
+            border-color: var(--accent-color);
+        }
+
+        body.theme-dark .what-if-title {
+            color: var(--accent-color);
+        }
+
+        body.theme-dark .what-if-subtitle {
+            color: #94a3b8;
+        }
+
+        body.theme-dark .what-if-slider-group {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(197, 160, 89, 0.15);
+        }
+
+        body.theme-dark .what-if-value {
+            color: var(--accent-light);
+        }
+
+        body.theme-dark .what-if-result-card {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body.theme-dark .what-if-result-card.highlight {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.1), rgba(197, 160, 89, 0.05));
+        }
+
+        body.theme-dark .what-if-result-value {
+            color: #e2e8f0;
+        }
+
+        body.theme-dark .what-if-result-card.highlight .what-if-result-value {
+            color: var(--accent-color);
+        }
+
+        body.theme-dark .what-if-result-detail {
+            color: #94a3b8;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 640px) {
+            .what-if-results {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .what-if-title {
+                font-size: 16px;
+            }
+
+            .what-if-subtitle {
+                margin-left: 0;
+                margin-top: 8px;
+            }
+
+            .what-if-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .what-if-value {
+                font-size: 20px;
+            }
+
+            .what-if-result-value {
+                font-size: 18px;
+            }
+
+            .what-if-result-card.highlight .what-if-result-value {
+                font-size: 22px;
+            }
+        }
+
         /* ===== OBJECTION HANDLER POPUP ===== */
         .objection-popup {
             position: fixed;
@@ -5249,6 +5559,53 @@
                 <h3>Recommended Option</h3>
                 <div class="rec-grid stagger-children" id="q-rec-grid"></div>
             </div>
+
+            <!-- What If: Borrow More Calculator -->
+            <div class="what-if-section reveal" id="sec-what-if">
+                <div class="what-if-header">
+                    <div class="what-if-icon">&#128640;</div>
+                    <div class="what-if-title">What If You Borrowed More?</div>
+                </div>
+                <div class="what-if-subtitle">See how a higher HELOC could work for you — same great rate, more financial flexibility</div>
+                
+                <div class="what-if-slider-group">
+                    <div class="what-if-slider-label">
+                        <span>Your HELOC Amount</span>
+                        <span class="what-if-value" id="what-if-amount">$100,000</span>
+                    </div>
+                    <input type="range" class="what-if-slider" id="what-if-slider" min="50000" max="700000" step="5000" value="100000">
+                    <div class="what-if-slider-range">
+                        <span>$50k</span>
+                        <span>$700k</span>
+                    </div>
+                </div>
+
+                <div class="what-if-results">
+                    <div class="what-if-result-card">
+                        <div class="what-if-result-label">Monthly Payment</div>
+                        <div class="what-if-result-value" id="what-if-payment">$583/mo</div>
+                        <div class="what-if-result-detail" id="what-if-payment-detail">at 7.0% APR</div>
+                    </div>
+                    <div class="what-if-result-card">
+                        <div class="what-if-result-label">Est. Closing Costs</div>
+                        <div class="what-if-result-value" id="what-if-fees">$3,500</div>
+                        <div class="what-if-result-detail">3.5% of loan amount</div>
+                    </div>
+                    <div class="what-if-result-card highlight">
+                        <div class="what-if-result-label">Cash in Your Pocket</div>
+                        <div class="what-if-result-value" id="what-if-cash">$96,500</div>
+                        <div class="what-if-result-detail">After closing costs</div>
+                    </div>
+                </div>
+
+                <div class="what-if-cta">
+                    <button class="what-if-btn" onclick="openApplyModal()">
+                        <span>Lock In This Rate</span>
+                        <span class="what-if-btn-sub">Up to $<span id="what-if-max">700</span>k available</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Interactive Savings Calculator -->
             <div class="interactive-savings reveal" id="sec-interactive-savings">
                 <div class="is-title">&#128176; What Your Equity Could Do</div>
@@ -5498,6 +5855,7 @@
                     try {
                         initInteractiveSavings(link.quote_data);
                         initPaymentScenario(link.quote_data);
+                        initWhatIfCalculator(link.quote_data);
                     } catch (e) {
                         console.warn('Calculator init error:', e);
                     }
@@ -6535,6 +6893,111 @@
                 }
                 document.getElementById('ps-payment-amount').textContent = '$' + Math.round(payment).toLocaleString();
                 document.getElementById('ps-payment-detail').textContent = detail;
+            }
+
+            // ===== WHAT IF: BORROW MORE CALCULATOR =====
+            function initWhatIfCalculator(data) {
+                var slider = document.getElementById('what-if-slider');
+                var amountDisplay = document.getElementById('what-if-amount');
+                var paymentDisplay = document.getElementById('what-if-payment');
+                var paymentDetail = document.getElementById('what-if-payment-detail');
+                var feesDisplay = document.getElementById('what-if-fees');
+                var cashDisplay = document.getElementById('what-if-cash');
+                var maxDisplay = document.getElementById('what-if-max');
+
+                if (!slider || !amountDisplay) return;
+
+                // Get the recommended rate and term from the quote data
+                var baseRate = parseFloat(data.rate) || 7.0;
+                var termYears = parseInt(data.term) || 30;
+                var origPoints = 0;
+                
+                // Extract origination points from tiers if available
+                if (data.tiers && data.tiers.length > 0) {
+                    // Find the tier that matches the recommended rate
+                    for (var i = 0; i < data.tiers.length; i++) {
+                        var tier = data.tiers[i];
+                        if (tier.rates) {
+                            for (var term in tier.rates) {
+                                if (tier.rates[term].rate && tier.rates[term].rate.replace('%', '') === String(baseRate)) {
+                                    origPoints = parseFloat(tier.origPts) || 0;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    // If no match found, use first tier's points
+                    if (origPoints === 0 && data.tiers[0]) {
+                        origPoints = parseFloat(data.tiers[0].origPts) || 0;
+                    }
+                }
+
+                // Calculate max available based on home value and CLTV
+                var homeValue = parseFloat(String(data.homeValue || '0').replace(/[$,]/g, '')) || 500000;
+                var mortgageBalance = parseFloat(String(data.mortgageBalance || '0').replace(/[$,]/g, '')) || 0;
+                var maxCLTV = 0.90; // 90% max CLTV
+                var maxHeloc = Math.min(700000, Math.round((homeValue * maxCLTV) - mortgageBalance));
+                var minHeloc = Math.max(50000, Math.round(maxHeloc * 0.1));
+                
+                // Get original quote amount
+                var originalAmount = parseFloat(String(data.cashBack || data.totalLoan || '100000').replace(/[$,]/g, '')) || 100000;
+                
+                // Set slider bounds
+                slider.min = minHeloc;
+                slider.max = maxHeloc;
+                slider.value = originalAmount;
+                slider.step = 5000;
+                
+                if (maxDisplay) {
+                    maxDisplay.textContent = Math.round(maxHeloc / 1000);
+                }
+
+                // Calculate monthly payment (amortized)
+                function calculateMonthlyPayment(principal, rate, years) {
+                    var monthlyRate = rate / 100 / 12;
+                    var numPayments = years * 12;
+                    if (monthlyRate === 0) return principal / numPayments;
+                    return principal * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+                }
+
+                // Calculate interest-only payment
+                function calculateInterestOnly(principal, rate) {
+                    return principal * (rate / 100 / 12);
+                }
+
+                // Update display
+                function updateWhatIfDisplay() {
+                    var amount = parseInt(slider.value);
+                    var isVariable = data.recType === 'variable';
+                    
+                    // Calculate closing costs (origination points + fixed fees)
+                    var fixedFees = 1295; // Processing, underwriting, etc.
+                    var pointsCost = amount * (origPoints / 100);
+                    var thirdPartyFees = amount * 0.015; // Approx 1.5% for title, appraisal, etc.
+                    var totalFees = Math.round(fixedFees + pointsCost + thirdPartyFees);
+                    var netCash = amount - totalFees;
+                    
+                    // Calculate payment (use interest-only for HELOCs, amortized for fixed)
+                    var monthlyPayment;
+                    if (isVariable) {
+                        monthlyPayment = calculateInterestOnly(amount, baseRate);
+                    } else {
+                        monthlyPayment = calculateMonthlyPayment(amount, baseRate, termYears);
+                    }
+                    
+                    // Update displays
+                    amountDisplay.textContent = '$' + amount.toLocaleString();
+                    paymentDisplay.textContent = '$' + Math.round(monthlyPayment).toLocaleString() + '/mo';
+                    paymentDetail.textContent = (isVariable ? 'Interest-only' : 'Fully amortized') + ' at ' + baseRate + '% APR';
+                    feesDisplay.textContent = '$' + totalFees.toLocaleString();
+                    cashDisplay.textContent = '$' + netCash.toLocaleString();
+                }
+
+                // Event listener
+                slider.addEventListener('input', updateWhatIfDisplay);
+                
+                // Initial update
+                updateWhatIfDisplay();
             }
 
             // ===== PROACTIVE OBJECTION HANDLING =====

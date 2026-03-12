@@ -930,23 +930,9 @@
     }
 
     function createQuickActionsWidget() {
-        const widget = document.createElement('div');
-        widget.id = 'carbon-quick-widget';
-        widget.className = 'carbon-quick-widget';
-        widget.innerHTML = `
-            <div class="carbon-quick-header">
-                <span>Recent</span>
-                <button class="carbon-quick-close">×</button>
-            </div>
-            <div class="carbon-quick-list"></div>
-        `;
-        document.body.appendChild(widget);
-        
-        widget.querySelector('.carbon-quick-close').addEventListener('click', () => {
-            widget.style.display = 'none';
-        });
-        
-        updateQuickWidget();
+        // DISABLED: Quick widget removed - was showing duplicate "Record Workflow" entries
+        // Kept function stub to prevent errors if called elsewhere
+        return;
     }
 
     function updateQuickWidget() {
