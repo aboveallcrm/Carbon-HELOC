@@ -4908,6 +4908,290 @@
             letter-spacing: 0.5px;
         }
 
+        .urgency-banner .ub-equity {
+            color: #c5a059;
+            font-size: 14px;
+        }
+
+        .urgency-banner .ub-cost {
+            color: #fca5a5;
+            font-size: 14px;
+            text-decoration: underline;
+            text-decoration-color: rgba(252, 165, 165, 0.5);
+        }
+
+        /* Live Activity Indicator */
+        .live-activity {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(15, 43, 76, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-family: var(--font-heading);
+            font-size: 11px;
+            color: white;
+            z-index: 1100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: slideInRight 0.5s ease;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: livePulse 2s ease-in-out infinite;
+            box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+        }
+
+        @keyframes livePulse {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        .live-activity strong {
+            color: #c5a059;
+        }
+
+        /* Market Status Indicator */
+        .market-status {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(15, 43, 76, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-family: var(--font-heading);
+            font-size: 11px;
+            color: white;
+            z-index: 1100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .market-status .ms-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .market-status .ms-indicator.open {
+            background: #22c55e;
+            animation: marketPulse 3s ease-in-out infinite;
+        }
+
+        .market-status .ms-indicator.closing {
+            background: #f59e0b;
+            animation: marketPulse 1s ease-in-out infinite;
+        }
+
+        .market-status .ms-indicator.closed {
+            background: #ef4444;
+        }
+
+        @keyframes marketPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+            50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+        }
+
+        .market-status .ms-text {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .market-status .ms-countdown {
+            color: #fbbf24;
+            font-weight: 600;
+            font-size: 10px;
+        }
+
+        /* Rate Hold Progress Bar */
+        .rate-hold-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #0f2b4c, #1e3a5f);
+            padding: 8px 20px;
+            z-index: 1150;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.3);
+        }
+
+        .rate-hold-bar .rhb-label {
+            font-family: var(--font-heading);
+            font-size: 11px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rate-hold-bar .rhb-time {
+            color: #fca5a5;
+            font-weight: 700;
+        }
+
+        .rate-hold-bar .rhb-progress {
+            width: 150px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .rate-hold-bar .rhb-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #c5a059, #fca5a5);
+            border-radius: 3px;
+            transition: width 1s ease;
+        }
+
+        .rate-hold-bar .rhb-spots {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .rate-hold-bar .rhb-dot {
+            width: 6px;
+            height: 6px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulseRed 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseRed {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Just Missed Alert */
+        .just-missed {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(245, 158, 11, 0.1));
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .just-missed .jm-icon {
+            font-size: 28px;
+            animation: flicker 1.5s ease-in-out infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        .just-missed .jm-content {
+            flex: 1;
+        }
+
+        .just-missed .jm-headline {
+            font-family: var(--font-heading);
+            font-size: 13px;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .just-missed .jm-remaining {
+            color: #fca5a5;
+            font-weight: 700;
+        }
+
+        .just-missed .jm-sub {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .just-missed .jm-urgency {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: pulseUrgency 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseUrgency {
+            0%, 100% { background: rgba(239, 68, 68, 0.2); }
+            50% { background: rgba(239, 68, 68, 0.35); }
+        }
+
+        /* Activity Ticker */
+        .activity-ticker {
+            background: linear-gradient(90deg, rgba(15, 43, 76, 0.98), rgba(30, 58, 95, 0.98));
+            border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+            padding: 10px 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ticker-content {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            animation: tickerScroll 20s linear infinite;
+            white-space: nowrap;
+            font-family: var(--font-heading);
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        @keyframes tickerScroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .ticker-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ticker-dot {
+            width: 4px;
+            height: 4px;
+            background: rgba(197, 160, 89, 0.6);
+            border-radius: 50%;
+        }
+
         .urgency-banner .ub-countdown {
             display: inline-flex;
             gap: 6px;
@@ -5613,11 +5897,39 @@
 
 <body>
 
+    <!-- Market Status Indicator -->
+    <div class="market-status" id="market-status">
+        <span class="ms-indicator open" id="ms-indicator"></span>
+        <span class="ms-text" id="ms-text">Market Open — Rates Active</span>
+        <span class="ms-countdown" id="ms-countdown">Closes in 4h 32m</span>
+    </div>
+
+    <!-- Live Activity Indicator -->
+    <div class="live-activity" id="live-activity">
+        <span class="live-dot"></span>
+        <span id="live-viewers"><strong>3 people</strong> viewing this quote right now</span>
+    </div>
+
+    <!-- Rate Hold Progress Bar -->
+    <div class="rate-hold-bar" id="rate-hold-bar">
+        <div class="rhb-label">
+            <span>&#9200; Rate Hold Expires:</span>
+            <span class="rhb-time" id="rhb-time">4 days 6 hours</span>
+        </div>
+        <div class="rhb-progress">
+            <div class="rhb-fill" id="rhb-fill" style="width: 65%;"></div>
+        </div>
+        <div class="rhb-spots">
+            <span class="rhb-dot"></span>
+            <span id="rhb-spots-text">2 spots claimed in your area today</span>
+        </div>
+    </div>
+
     <!-- Urgency Banner (slides in after delay) -->
     <div class="urgency-banner" id="urgency-banner">
-        <div class="ub-text">&#128293; Only <strong>3 spots</strong> left this week at this rate</div>
-        <div class="ub-subtext" style="font-size: 10px; opacity: 0.9; margin-top: 2px;">12 homeowners locked in rates yesterday</div>
-        <button class="ub-btn" onclick="openApplyModal()">Secure My Rate Before They're Gone &#8594;</button>
+        <div class="ub-text">Your <strong class="ub-equity">$<span id="ub-equity-amount">--</span>K</strong> equity could cost <strong class="ub-cost">$<span id="ub-cost-amount">--</span>/mo</strong> more next week</div>
+        <div class="ub-subtext" style="font-size: 10px; opacity: 0.9; margin-top: 2px;">12 homeowners in your area secured rates yesterday</div>
+        <button class="ub-btn" onclick="openApplyModal()">See Why They Acted &#8594;</button>
     </div>
 
     <!-- Scroll Progress -->
@@ -5628,7 +5940,7 @@
 
     <!-- Floating Action Bar -->
     <div class="floating-bar" id="floating-bar" style="display: none;">
-        <button onclick="openApplyModal()">&#128293; Claim My Rate (3 Left)</button>
+        <button onclick="openApplyModal()">&#128293; Protect My Payment — Apply Now</button>
         <button class="secondary" id="btn-schedule" onclick="scheduleCall()" style="display:none;">&#128197; Schedule
             Call</button>
         <button class="secondary" id="btn-ask" onclick="askQuestion()">&#9679; Ask Question</button>
@@ -5713,6 +6025,24 @@
         style="display: none; position: fixed; top: 20px; right: 20px; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 14px 20px; border-radius: 10px; font-family: var(--font-heading); font-size: 12px; font-weight: 600; box-shadow: 0 8px 32px rgba(0,0,0,0.3); z-index: 3000;">
     </div>
 
+    <!-- Exit Intent Modal -->
+    <div id="exit-modal" class="modal-overlay" style="display: none; z-index: 4000;">
+        <div class="modal-box" style="max-width: 450px; text-align: center; border: 2px solid rgba(239, 68, 68, 0.5);">
+            <div style="font-size: 48px; margin-bottom: 10px;">&#128293;</div>
+            <h3 style="color: #fca5a5; margin-bottom: 8px;">Wait! Don't Lose Your Rate</h3>
+            <p style="color: white; font-size: 14px; margin-bottom: 8px;">Your <strong>$<span id="exit-equity">127</span>K</strong> equity estimate expires with this session.</p>
+            <p style="color: rgba(255,255,255,0.7); font-size: 12px; margin-bottom: 16px;">That's potentially <strong style="color: #fca5a5;">$<span id="exit-cost">340</span>/month</strong> in savings you could miss out on.</p>
+            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                <div style="font-size: 11px; color: rgba(255,255,255,0.8); margin-bottom: 4px;">&#128293; <strong>2 spots</strong> were just claimed in your area</div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.5);">Last spot filled 3 minutes ago</div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeExitModal()" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; font-size: 11px;">I'll Risk It</button>
+                <button onclick="openApplyModal(); closeExitModal();" style="flex: 2; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; font-size: 12px;">Secure My Rate Now</button>
+            </div>
+        </div>
+    </div>
+
     <div id="loading" class="loading">
         <div class="spinner"></div>
         <div>Loading your quote...</div>
@@ -5743,6 +6073,30 @@
             <div class="lo-info" id="q-lo-info"></div>
         </div>
         <div class="greeting-banner" id="greeting-banner"></div>
+        
+        <!-- Just Missed Alert -->
+        <div class="just-missed" id="just-missed">
+            <div class="jm-icon">&#128293;</div>
+            <div class="jm-content">
+                <div class="jm-headline">This rate tier had <strong>5 spots</strong> — <span class="jm-remaining">2 remain</span></div>
+                <div class="jm-sub">Last spot filled by <span id="jm-person">Jennifer from Huntington Beach</span> <span id="jm-time">5 min ago</span></div>
+            </div>
+            <div class="jm-urgency">Almost Full</div>
+        </div>
+
+        <!-- Recent Activity Ticker -->
+        <div class="activity-ticker" id="activity-ticker">
+            <div class="ticker-content">
+                <span class="ticker-item">&#127775; Mike from Irvine locked his rate 2 min ago</span>
+                <span class="ticker-dot"></span>
+                <span class="ticker-item">&#128293; Sarah from Newport Beach just applied</span>
+                <span class="ticker-dot"></span>
+                <span class="ticker-item">&#9989; David from Costa Mesa secured $340K equity</span>
+                <span class="ticker-dot"></span>
+                <span class="ticker-item">&#9200; Rates update in 4 hours</span>
+            </div>
+        </div>
+        
         <div class="body-content">
             <div class="progress-stepper" id="progress-stepper">
                 <div class="step completed" id="step-1"><span class="step-dot">&#10003;</span><span>Review Quote</span>
@@ -5756,10 +6110,10 @@
             <div class="section reveal" id="sec-personal-video" style="display: none;">
                 <div class="pvf-urgency-bar" id="pvf-urgency-bar" style="display: none;">
                     <span class="dot"></span>
-                    <span>&#128293; <strong>3 spots remaining</strong> this week — 12 homeowners secured rates yesterday</span>
+                    <span>&#128293; Your equity could cost <strong>more next week</strong> — see why 12 homeowners acted yesterday</span>
                 </div>
 
-                <div class="section-title" data-icon="🎥">Watch This Before Spots Fill Up</div>
+                <div class="section-title" data-icon="🎥">Why Waiting Could Cost You $<span id="video-cost-amount">340</span>/Month</div>
 
                 <!-- Social Proof Bar -->
                 <div class="pvf-social-proof" id="pvf-social-proof">
@@ -6935,10 +7289,21 @@
                     var linkOpts = data.linkOptions || {};
                     if (linkOpts.showSalesPsych === false) { banner.style.display = 'none'; return; }
 
-                    // Show scarcity instead of countdown
+                    // Show personal stakes instead of countdown
+                    var equityAmount = data.cashBack ? Math.round(parseFloat(String(data.cashBack).replace(/[$,]/g, '')) / 1000) : 127;
+                    var paymentAmount = data.payment ? Math.round(parseFloat(String(data.payment).replace(/[$,]/g, '')) * 0.3) : 340;
+                    
+                    // Update banner text with actual numbers
+                    var equityEl = document.getElementById('ub-equity-amount');
+                    var costEl = document.getElementById('ub-cost-amount');
+                    var videoCostEl = document.getElementById('video-cost-amount');
+                    if (equityEl) equityEl.textContent = equityAmount;
+                    if (costEl) costEl.textContent = paymentAmount;
+                    if (videoCostEl) videoCostEl.textContent = paymentAmount;
+                    
                     cdEl.innerHTML =
-                        '<div class="ub-unit" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4);"><span class="ub-num" style="color: #fca5a5;">3</span><span class="ub-lbl">Spots Left</span></div>' +
-                        '<div class="ub-unit"><span class="ub-num">12</span><span class="ub-lbl">Locked Yesterday</span></div>';
+                        '<div class="ub-unit" style="background: rgba(197, 160, 89, 0.2); border-color: rgba(197, 160, 89, 0.4);"><span class="ub-num" style="color: #c5a059;">' + equityAmount + 'K</span><span class="ub-lbl">Your Equity</span></div>' +
+                        '<div class="ub-unit" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3);"><span class="ub-num" style="color: #fca5a5;">+$' + paymentAmount + '</span><span class="ub-lbl">/mo Risk</span></div>';
 
                     setTimeout(function () {
                         banner.classList.add('visible');
@@ -6951,6 +7316,182 @@
                         if (dismissed) return;
                         var scrollPct = (window.scrollY + window.innerHeight) / document.body.scrollHeight;
                         if (scrollPct > 0.95) { banner.classList.remove('visible'); dismissed = true; }
+                    });
+                })();
+
+                // 6. Market Status Indicator
+                (function initMarketStatus() {
+                    var indicatorEl = document.getElementById('ms-indicator');
+                    var textEl = document.getElementById('ms-text');
+                    var countdownEl = document.getElementById('ms-countdown');
+                    if (!indicatorEl || !textEl || !countdownEl) return;
+                    
+                    function updateMarketStatus() {
+                        var now = new Date();
+                        var hour = now.getHours();
+                        var day = now.getDay(); // 0 = Sunday, 6 = Saturday
+                        
+                        // Market hours: 9 AM - 5 PM PST, Mon-Fri
+                        var isWeekend = day === 0 || day === 6;
+                        var isOpen = !isWeekend && hour >= 9 && hour < 17;
+                        var isClosing = !isWeekend && hour >= 16 && hour < 17;
+                        
+                        if (isClosing) {
+                            indicatorEl.className = 'ms-indicator closing';
+                            textEl.textContent = 'Market Closing Soon';
+                            var minsLeft = (17 - hour) * 60 - now.getMinutes();
+                            countdownEl.textContent = 'Closes in ' + minsLeft + 'm';
+                        } else if (isOpen) {
+                            indicatorEl.className = 'ms-indicator open';
+                            textEl.textContent = 'Market Open — Rates Active';
+                            var hoursLeft = 17 - hour - 1;
+                            var minsLeft = 60 - now.getMinutes();
+                            countdownEl.textContent = 'Closes in ' + hoursLeft + 'h ' + minsLeft + 'm';
+                        } else {
+                            indicatorEl.className = 'ms-indicator closed';
+                            textEl.textContent = 'Market Closed — Rates Hold Until Open';
+                            var nextOpen = new Date(now);
+                            nextOpen.setDate(now.getDate() + (day === 5 ? 3 : day === 6 ? 2 : 1));
+                            nextOpen.setHours(9, 0, 0, 0);
+                            var hoursUntil = Math.floor((nextOpen - now) / (1000 * 60 * 60));
+                            countdownEl.textContent = 'Opens in ' + hoursUntil + 'h';
+                        }
+                    }
+                    
+                    updateMarketStatus();
+                    setInterval(updateMarketStatus, 60000); // Update every minute
+                })();
+
+                // 7. Live Activity Indicator — fluctuate viewer count
+                (function initLiveActivity() {
+                    var liveEl = document.getElementById('live-viewers');
+                    if (!liveEl) return;
+                    
+                    var messages = [
+                        '<strong>3 people</strong> viewing this quote right now',
+                        '<strong>2 people</strong> viewing this quote right now',
+                        '<strong>4 people</strong> viewing this quote right now',
+                        '<strong>5 people</strong> viewing this quote right now',
+                        '<strong>3 people</strong> viewing this quote right now'
+                    ];
+                    var msgIdx = 0;
+                    
+                    setInterval(function() {
+                        msgIdx = (msgIdx + 1) % messages.length;
+                        liveEl.innerHTML = messages[msgIdx];
+                    }, 8000);
+                    
+                    // Hide after 2 minutes
+                    setTimeout(function() {
+                        var activityEl = document.getElementById('live-activity');
+                        if (activityEl) activityEl.style.opacity = '0';
+                    }, 120000);
+                })();
+
+                // 8. Just Missed - Competition Frame
+                (function initJustMissed() {
+                    var personEl = document.getElementById('jm-person');
+                    var timeEl = document.getElementById('jm-time');
+                    if (!personEl || !timeEl) return;
+                    
+                    var people = [
+                        'Jennifer from Huntington Beach',
+                        'Michael from Irvine',
+                        'Amanda from Newport Beach',
+                        'Chris from Costa Mesa',
+                        'Rachel from Laguna Beach'
+                    ];
+                    var times = ['2 min ago', '5 min ago', 'just now', '3 min ago', '1 min ago'];
+                    
+                    // Rotate through different people/times
+                    var idx = 0;
+                    setInterval(function() {
+                        idx = (idx + 1) % people.length;
+                        personEl.textContent = people[idx];
+                        timeEl.textContent = times[idx];
+                    }, 20000);
+                })();
+
+                // 9. Rate Hold Progress Bar
+                (function initRateHoldBar() {
+                    var timeEl = document.getElementById('rhb-time');
+                    var fillEl = document.getElementById('rhb-fill');
+                    var spotsEl = document.getElementById('rhb-spots-text');
+                    if (!timeEl || !fillEl) return;
+                    
+                    // Calculate time remaining (assume 7 days from quote creation)
+                    var expiryStr = window._quoteExpiry;
+                    var totalDays = 7;
+                    var daysLeft = 4; // default
+                    var hoursLeft = 6; // default
+                    
+                    if (expiryStr) {
+                        var expiry = new Date(expiryStr);
+                        var now = new Date();
+                        var diff = expiry - now;
+                        if (diff > 0) {
+                            daysLeft = Math.floor(diff / (1000 * 60 * 60 * 24));
+                            hoursLeft = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        }
+                    }
+                    
+                    // Update display
+                    timeEl.textContent = daysLeft + ' days ' + hoursLeft + ' hours';
+                    
+                    // Calculate progress (inverse - less time = more urgent)
+                    var pct = Math.max(10, Math.min(90, ((totalDays - daysLeft) / totalDays) * 100));
+                    fillEl.style.width = pct + '%';
+                    
+                    // Update spots text periodically
+                    var spotsMessages = [
+                        '2 spots claimed in your area today',
+                        '3 spots claimed in your area today',
+                        '2 spots claimed in your area today',
+                        '1 spot remaining in your tier'
+                    ];
+                    var spotsIdx = 0;
+                    setInterval(function() {
+                        spotsIdx = (spotsIdx + 1) % spotsMessages.length;
+                        if (spotsEl) spotsEl.textContent = spotsMessages[spotsIdx];
+                    }, 15000);
+                })();
+
+                // 9. Exit Intent Detection
+                (function initExitIntent() {
+                    var exitModal = document.getElementById('exit-modal');
+                    var exitEquity = document.getElementById('exit-equity');
+                    var exitCost = document.getElementById('exit-cost');
+                    
+                    if (!exitModal) return;
+                    
+                    // Update with actual numbers
+                    var equityAmount = data.cashBack ? Math.round(parseFloat(String(data.cashBack).replace(/[$,]/g, '')) / 1000) : 127;
+                    var paymentAmount = data.payment ? Math.round(parseFloat(String(data.payment).replace(/[$,]/g, '')) * 0.3) : 340;
+                    if (exitEquity) exitEquity.textContent = equityAmount;
+                    if (exitCost) exitCost.textContent = paymentAmount;
+                    
+                    var shown = false;
+                    var delay = 10000; // 10 seconds minimum on page before trigger
+                    var startTime = Date.now();
+                    
+                    // Mouse leaving viewport (toward address bar/close button)
+                    document.addEventListener('mouseout', function(e) {
+                        if (shown) return;
+                        if (Date.now() - startTime < delay) return;
+                        if (e.clientY < 10) { // Mouse near top of viewport
+                            exitModal.style.display = 'flex';
+                            shown = true;
+                            trackEvent('exit_intent_shown', { code: code });
+                        }
+                    });
+                    
+                    // Also trigger on beforeunload after 30 seconds
+                    window.addEventListener('beforeunload', function(e) {
+                        if (!shown && Date.now() - startTime > 30000) {
+                            // Standard browser confirmation
+                            e.preventDefault();
+                            e.returnValue = '';
+                        }
                     });
                 })();
 
@@ -7112,6 +7653,7 @@
                 document.getElementById('apply-modal').classList.add('visible'); trackEvent('modal_opened', { modal: 'apply', code: code });
             };
             window.closeApplyModal = function () { document.getElementById('apply-modal').classList.remove('visible'); };
+            window.closeExitModal = function () { document.getElementById('exit-modal').style.display = 'none'; };
             window.openContactModal = function () { document.getElementById('contact-modal').classList.add('visible'); trackEvent('modal_opened', { modal: 'contact', code: code }); };
             window.closeContactModal = function () { document.getElementById('contact-modal').classList.remove('visible'); };
             window.openShareModal = function () { document.getElementById('share-url').value = window.location.href; document.getElementById('share-modal').classList.add('visible'); trackEvent('modal_opened', { modal: 'share', code: code }); };
