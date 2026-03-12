@@ -1808,14 +1808,14 @@
 
         .eq-panel {
             position: fixed;
-            width: 200px;
-            max-width: calc(100vw - 20px);
-            height: 220px;
-            max-height: calc(100vh - 100px);
+            width: 160px;
+            max-width: calc(100vw - 16px);
+            height: 180px;
+            max-height: calc(100vh - 80px);
             background: linear-gradient(135deg, #1e293b, #0f172a);
-            border-radius: 10px;
+            border-radius: 8px;
             border: 1px solid rgba(197, 160, 89, 0.25);
-            box-shadow: 0 0 20px rgba(197, 160, 89, 0.1), 0 10px 20px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.1), 0 8px 16px rgba(0, 0, 0, 0.4);
             display: none;
             flex-direction: column;
             overflow: hidden;
@@ -1823,10 +1823,10 @@
         }
 
         /* Panel position variants - match orb positions */
-        .eq-panel.pos-bottom-right { bottom: 70px; right: 10px; }
-        .eq-panel.pos-bottom-left { bottom: 70px; left: 10px; }
-        .eq-panel.pos-top-right { top: 70px; right: 10px; }
-        .eq-panel.pos-top-left { top: 70px; left: 10px; }
+        .eq-panel.pos-bottom-right { bottom: 60px; right: 8px; }
+        .eq-panel.pos-bottom-left { bottom: 60px; left: 8px; }
+        .eq-panel.pos-top-right { top: 60px; right: 8px; }
+        .eq-panel.pos-top-left { top: 60px; left: 8px; }
         .eq-panel.pos-custom { /* Uses inline styles from drag */ }
 
         .eq-panel.open {
@@ -6108,9 +6108,10 @@
                         <div class="faq-answer">
                             <p>A <strong>Home Equity Line of Credit (HELOC)</strong> is a revolving line of credit that lets you borrow against your home's equity. Think of it like a credit card secured by your home:</p>
                             <ul>
-                                <li><strong>Draw period:</strong> Access funds as needed (typically 10 years)</li>
-                                <li><strong>Repayment period:</strong> Pay back what you borrowed (typically 20 years)</li>
+                                <li><strong>Draw period:</strong> Access funds as needed (5 years for 30-year term, 4 years for 20-year term)</li>
+                                <li><strong>Repayment period:</strong> Pay back what you borrowed (25 years for 30-year term, 16 years for 20-year term)</li>
                                 <li><strong>Interest only on what you use:</strong> If you only use $50k of a $100k line, you only pay interest on $50k</li>
+                                <li><strong>No annual fee:</strong> Pay nothing if you don't use it</li>
                             </ul>
                         </div>
                     </div>
@@ -6121,12 +6122,13 @@
                             <span class="faq-icon">&#9660;</span>
                         </button>
                         <div class="faq-answer">
-                            <p>The <strong>origination fee</strong> is an upfront cost to get a lower interest rate. It's similar to "buying down" your rate:</p>
+                            <p>The <strong>origination fee</strong> is a one-time upfront cost that covers all services involved in processing your HELOC. Think of it as paying for a better rate upfront:</p>
                             <ul>
                                 <li><strong>Higher fee (4.99%):</strong> Lowest monthly rate - best if you plan to keep the loan long-term</li>
                                 <li><strong>Middle fee (2.99%):</strong> Balanced option - moderate upfront cost with a good rate</li>
                                 <li><strong>Lower fee (1.50%):</strong> Higher rate but less upfront - good if you plan to pay off quickly</li>
                             </ul>
+                            <p><strong>No annual fee. No prepayment penalty.</strong> Pay it off anytime without extra charges.</p>
                             <p><em>Tip: Choose based on how long you plan to keep the HELOC. The longer you keep it, the more a lower rate saves you.</em></p>
                         </div>
                     </div>
@@ -6137,15 +6139,15 @@
                             <span class="faq-icon">&#9660;</span>
                         </button>
                         <div class="faq-answer">
-                            <p><strong>Closing costs</strong> are fees required to process and close your HELOC. They typically include:</p>
+                            <p><strong>The origination fee covers everything.</strong> It's a one-time fee that includes all services:</p>
                             <ul>
-                                <li><strong>Origination fee:</strong> Fee for processing the loan (varies by rate option)</li>
-                                <li><strong>Appraisal:</strong> Professional home value assessment (~$500-800)</li>
-                                <li><strong>Title search:</strong> Ensures no liens on your property (~$200-400)</li>
-                                <li><strong>Recording fees:</strong> County fees to record the lien (~$100-300)</li>
-                                <li><strong>Processing/Underwriting:</strong> Administrative costs ($1,295)</li>
+                                <li><strong>Origination:</strong> Processing and underwriting your loan</li>
+                                <li><strong>Appraisal:</strong> Professional home value assessment</li>
+                                <li><strong>Title search:</strong> Ensures no liens on your property</li>
+                                <li><strong>Recording:</strong> County fees to record the lien</li>
+                                <li><strong>All administrative costs</strong></li>
                             </ul>
-                            <p>These costs are typically deducted from your loan amount, so you receive the net amount after fees.</p>
+                            <p><strong>No hidden fees.</strong> No annual fee. No prepayment penalty. The origination fee is typically deducted from your loan amount, so you receive the net cash after the fee.</p>
                         </div>
                     </div>
                     
@@ -6155,14 +6157,15 @@
                             <span class="faq-icon">&#9660;</span>
                         </button>
                         <div class="faq-answer">
-                            <p>Most of our clients receive their funds in <strong>5-10 business days</strong>:</p>
+                            <p><strong>Most clients close in 5 days or less!</strong> Here's how:</p>
                             <ul>
-                                <li><strong>Day 1-2:</strong> Application submitted and reviewed</li>
-                                <li><strong>Day 3-5:</strong> Appraisal ordered (if needed) and income verified</li>
-                                <li><strong>Day 6-8:</strong> Final approval and closing docs prepared</li>
-                                <li><strong>Day 9-10:</strong> Closing and funding</li>
+                                <li><strong>Day 1:</strong> Apply online (takes 5 minutes)</li>
+                                <li><strong>Day 1-2:</strong> Income verified electronically through Plaid</li>
+                                <li><strong>Day 2-3:</strong> Appraisal (if needed) and title search</li>
+                                <li><strong>Day 4-5:</strong> Final approval, docs signed, funds wired</li>
                             </ul>
-                            <p>Loans under $400k may qualify for our <strong>AI underwriting</strong> with no appraisal needed, speeding up the process to as fast as 5 days.</p>
+                            <p><strong>Why so fast?</strong> We use <strong>Plaid</strong> to verify your income digitally - no bank statements, no pay stubs, no tax returns. It's the same secure technology used by Venmo, Experian Boost, and thousands of financial apps.</p>
+                            <p><em>Note: Properties in a revocable trust may take 7-10 days due to additional documentation requirements.</em></p>
                         </div>
                     </div>
                     
@@ -6172,14 +6175,14 @@
                             <span class="faq-icon">&#9660;</span>
                         </button>
                         <div class="faq-answer">
-                            <p><strong>Yes!</strong> There are <strong>no prepayment penalties</strong> on our HELOCs. You can:</p>
+                            <p><strong>Yes! Absolutely no prepayment penalties.</strong> Pay it off whenever you want - today, next month, or in 10 years. It's your choice.</p>
                             <ul>
-                                <li>Pay off the entire balance anytime</li>
+                                <li>Pay off the entire balance anytime with zero fees</li>
                                 <li>Make extra payments to reduce principal</li>
                                 <li>Pay interest-only during the draw period</li>
                                 <li>Reuse the line of credit as you pay it down</li>
                             </ul>
-                            <p>This flexibility makes HELOCs great for both short-term needs and long-term financial strategies.</p>
+                            <p><strong>No annual fee either.</strong> If you don't use it, you don't pay anything. This flexibility makes HELOCs perfect for both short-term needs and long-term financial strategies.</p>
                         </div>
                     </div>
                     
@@ -6215,7 +6218,8 @@
                                 <li><strong>Variable Rate HELOC:</strong> Your rate adjusts with the market (typically based on Prime Rate). Your payment may go up or down.</li>
                                 <li><strong>Fixed Rate Option:</strong> Some lenders let you convert portions to a fixed rate. Ask your loan officer if this is available.</li>
                             </ul>
-                            <p><strong>Rate Lock:</strong> We offer a <strong>45-day rate lock</strong> once you apply, protecting you from rate increases during processing.</p>
+                            <p><strong>&#128640; Secure Your Rate Today</strong></p>
+                            <p>Rates can change daily. The sooner you apply, the sooner you lock in your quoted rate. Don't let rising rates cost you thousands over the life of your loan. <strong>Apply now to secure your offer!</strong></p>
                         </div>
                     </div>
                     
@@ -6229,8 +6233,10 @@
                             <ul>
                                 <li>&#9989; <strong>Valid Photo ID</strong> (Driver's License, State ID, or Passport)</li>
                             </ul>
-                            <p>That's it! We verify your income digitally through <strong>Plaid</strong> - the same secure system used by Venmo and Experian. No pay stubs, no tax returns for most W2 employees.</p>
-                            <p><em>Self-employed borrowers may need additional documentation like bank statements.</em></p>
+                            <p>That's it! No bank statements. No pay stubs. No tax returns.</p>
+                            <p><strong>How do we verify income?</strong> We use <strong>Plaid</strong> - the same bank-level secure system trusted by Venmo, Experian Boost, and thousands of financial apps. You securely connect your bank account, we verify your income instantly. You control what's shared, and it's encrypted end-to-end.</p>
+                            <p><strong>Self-employed?</strong> Plaid works great for you too! It reads your business bank deposits to verify income - no complicated tax returns needed. Most self-employed clients get approved just as fast.</p>
+                            <p><em>Unlike most lenders, we don't ask for bank statements. Plaid is faster, more secure, and gets you funded in days instead of weeks.</em></p>
                         </div>
                     </div>
                 </div>
