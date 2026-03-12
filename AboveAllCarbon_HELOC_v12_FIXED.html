@@ -4333,6 +4333,21 @@
             .matrix-container {
                 flex-direction: column;
             }
+
+            /* Floating toolbar: compact for tablet */
+            #floating-toolbar {
+                right: 10px;
+                top: 10px;
+                max-width: 95%;
+                padding: 8px 10px;
+                gap: 6px;
+            }
+            
+            #floating-toolbar .toolbar-btn {
+                padding: 8px 10px;
+                font-size: 10px;
+            }
+
 .settings-tabs {
                 gap: 4px;
             }
@@ -4433,7 +4448,20 @@
             }
 
             /* Floating toolbar: dock to bottom */
-/* Body bottom padding for docked toolbar */
+            #floating-toolbar {
+                top: auto;
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: 100%;
+                justify-content: center;
+                border-radius: 12px;
+                border-left: none;
+                border-top: 3px solid var(--accent-color);
+                padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+            }
+
+            /* Body bottom padding for docked toolbar */
             body {
                 padding-bottom: 80px;
             }
@@ -4481,6 +4509,18 @@
             #leads-table tbody td:nth-child(1) {
                 display: none;
             }
+
+            /* Floating toolbar: ultra-compact */
+            #floating-toolbar {
+                gap: 4px;
+                padding: 6px 8px;
+            }
+            
+            #floating-toolbar .toolbar-btn {
+                padding: 6px 8px;
+                font-size: 9px;
+            }
+
 .premium-header {
                 padding: 14px 12px;
             }
