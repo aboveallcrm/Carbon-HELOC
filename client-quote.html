@@ -5332,7 +5332,7 @@
             /* --- Page Setup --- */
             @page {
                 size: letter;
-                margin: 0.3in 0.35in;
+                margin: 0.15in 0.25in;
             }
 
             /* --- Global Resets --- */
@@ -5363,6 +5363,12 @@
 
             /* --- Hide Non-Content Elements --- */
             #urgency-banner,
+            #rate-hold-bar,
+            #market-status,
+            #live-activity,
+            #just-missed,
+            #activity-ticker,
+            #exit-modal,
             #scroll-progress,
             #particle-canvas,
             #floating-bar,
@@ -5422,8 +5428,9 @@
                 border-radius: 0 !important;
                 overflow: visible !important;
                 background: white !important;
-                transform: scale(0.92) !important;
+                transform: scale(0.82) !important;
                 transform-origin: top center !important;
+                margin-bottom: -200px !important; /* Compensate for scale */
             }
 
             .quote-page::before {
@@ -5454,7 +5461,7 @@
             /* --- Header --- */
             .header {
                 background: var(--primary-color) !important;
-                padding: 16px 24px 14px !important;
+                padding: 10px 20px 8px !important;
                 border-radius: 0 !important;
             }
 
@@ -5468,32 +5475,32 @@
             }
 
             .header h1 {
-                font-size: 18px !important;
-                margin-bottom: 4px !important;
+                font-size: 16px !important;
+                margin-bottom: 2px !important;
             }
 
             .header .subtitle {
-                font-size: 10px !important;
-                letter-spacing: 2px !important;
+                font-size: 9px !important;
+                letter-spacing: 1px !important;
             }
 
             .header .lo-info {
-                margin-top: 10px !important;
-                font-size: 11px !important;
+                margin-top: 6px !important;
+                font-size: 10px !important;
             }
 
             /* --- Sections --- */
             .section {
-                margin-bottom: 12px !important;
+                margin-bottom: 8px !important;
                 page-break-inside: avoid;
                 break-inside: avoid;
             }
 
             .section-title {
-                font-size: 11px !important;
-                margin-bottom: 8px !important;
-                padding-bottom: 4px !important;
-                letter-spacing: 1px !important;
+                font-size: 10px !important;
+                margin-bottom: 6px !important;
+                padding-bottom: 3px !important;
+                letter-spacing: 0.5px !important;
             }
 
             .section-title::before {
@@ -5505,43 +5512,43 @@
             /* --- Client Details Grid --- */
             .client-grid {
                 grid-template-columns: repeat(3, 1fr) !important;
-                gap: 6px !important;
+                gap: 4px !important;
             }
 
             .client-grid .item {
-                padding: 6px 8px !important;
+                padding: 4px 6px !important;
             }
 
             .client-grid .label {
-                font-size: 7px !important;
-                margin-bottom: 2px !important;
+                font-size: 6px !important;
+                margin-bottom: 1px !important;
             }
 
             .client-grid .value {
-                font-size: 11px !important;
+                font-size: 10px !important;
             }
 
             /* --- Valuation Blocks --- */
             .val-blocks {
-                gap: 6px !important;
+                gap: 4px !important;
             }
 
             .val-block {
-                padding: 8px !important;
-                border-radius: 10px !important;
+                padding: 6px !important;
+                border-radius: 8px !important;
             }
 
             .val-block .val-label {
-                font-size: 7px !important;
-                margin-bottom: 4px !important;
+                font-size: 6px !important;
+                margin-bottom: 2px !important;
             }
 
             .val-block .val-value {
-                font-size: 13px !important;
+                font-size: 11px !important;
             }
 
             .val-block.highlight .val-value {
-                font-size: 15px !important;
+                font-size: 13px !important;
             }
 
             /* --- Equity Donut Chart --- */
@@ -5583,9 +5590,9 @@
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 border: 2px solid var(--accent-color) !important;
-                padding: 12px !important;
-                margin-bottom: 16px !important;
-                border-radius: 12px !important;
+                padding: 8px !important;
+                margin-bottom: 10px !important;
+                border-radius: 10px !important;
             }
 
             .recommendation::before,
@@ -5594,38 +5601,38 @@
             }
 
             .rec-grid {
-                gap: 8px !important;
+                gap: 4px !important;
             }
 
             .rec-item {
-                padding: 4px 0 !important;
+                padding: 2px 0 !important;
             }
 
             .rec-item .rec-label {
-                font-size: 7px !important;
-                margin-bottom: 2px !important;
+                font-size: 6px !important;
+                margin-bottom: 1px !important;
             }
 
             .rec-item .rec-value {
-                font-size: 14px !important;
+                font-size: 12px !important;
             }
 
             .rec-item.final .rec-value {
-                font-size: 16px !important;
+                font-size: 14px !important;
             }
 
             /* --- Borrower Strategy --- */
             #sec-borrower-strategy {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
-                margin-bottom: 12px !important;
+                margin-bottom: 8px !important;
             }
 
             .borrower-strategy-box {
-                padding: 12px 16px !important;
-                font-size: 11px !important;
-                line-height: 1.5 !important;
-                border-radius: 10px !important;
+                padding: 8px 12px !important;
+                font-size: 10px !important;
+                line-height: 1.4 !important;
+                border-radius: 8px !important;
             }
 
             /* --- Savings Comparison --- */
@@ -5711,28 +5718,28 @@
             .tier {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
-                margin-bottom: 8px !important;
+                margin-bottom: 6px !important;
                 border: 1px solid #e2e8f0 !important;
                 border-radius: 6px !important;
             }
 
             .tier-header {
-                padding: 6px 10px !important;
-                font-size: 9px !important;
-            }
-
-            .tier-header .pts {
+                padding: 4px 8px !important;
                 font-size: 8px !important;
             }
 
-            .rate-table th {
+            .tier-header .pts {
                 font-size: 7px !important;
-                padding: 4px 8px !important;
+            }
+
+            .rate-table th {
+                font-size: 6px !important;
+                padding: 3px 6px !important;
             }
 
             .rate-table td {
-                font-size: 10px !important;
-                padding: 5px 8px !important;
+                font-size: 9px !important;
+                padding: 4px 6px !important;
             }
 
             tr.recommended td {
@@ -5827,16 +5834,16 @@
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 background: var(--slate) !important;
-                padding: 12px 20px !important;
+                padding: 8px 16px !important;
             }
 
             .footer-headshot {
-                width: 40px !important;
-                height: 40px !important;
+                width: 32px !important;
+                height: 32px !important;
             }
 
             .footer-name {
-                font-size: 12px !important;
+                font-size: 11px !important;
             }
 
             .footer-title,
