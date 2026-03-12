@@ -4355,6 +4355,167 @@
             }
         }
 
+        /* ===== FAQ SECTION ===== */
+        .faq-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .faq-item {
+            background: white;
+            border: 1px solid rgba(15, 43, 76, 0.08);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            border-color: rgba(197, 160, 89, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .faq-question {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 18px 20px;
+            text-align: left;
+            font-family: var(--font-heading);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--primary-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .faq-question:hover {
+            background: rgba(197, 160, 89, 0.03);
+        }
+
+        .faq-icon {
+            font-size: 12px;
+            color: var(--accent-color);
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            padding: 0 20px;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding: 0 20px 20px;
+        }
+
+        .faq-answer p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--slate);
+            margin-bottom: 12px;
+        }
+
+        .faq-answer ul {
+            margin: 0 0 12px 20px;
+            padding: 0;
+        }
+
+        .faq-answer li {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--slate);
+            margin-bottom: 6px;
+        }
+
+        .faq-answer strong {
+            color: var(--primary-color);
+        }
+
+        /* Dark mode for FAQ */
+        body.theme-dark .faq-item {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body.theme-dark .faq-question {
+            color: #e2e8f0;
+        }
+
+        body.theme-dark .faq-question:hover {
+            background: rgba(197, 160, 89, 0.05);
+        }
+
+        body.theme-dark .faq-answer p,
+        body.theme-dark .faq-answer li {
+            color: #94a3b8;
+        }
+
+        body.theme-dark .faq-answer strong {
+            color: var(--accent-color);
+        }
+
+        /* ===== TOOLTIP ===== */
+        .tooltip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: rgba(197, 160, 89, 0.15);
+            color: var(--accent-dark);
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: help;
+            margin-left: 8px;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .tooltip:hover {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 400;
+            font-family: var(--font-body);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            max-width: 280px;
+            white-space: normal;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+            bottom: calc(100% + 8px);
+        }
+
         /* ===== OBJECTION HANDLER POPUP ===== */
         .objection-popup {
             position: fixed;
@@ -5794,10 +5955,10 @@
                         <span>Your HELOC Amount</span>
                         <span class="what-if-value" id="what-if-amount">$100,000</span>
                     </div>
-                    <input type="range" class="what-if-slider" id="what-if-slider" min="50000" max="700000" step="5000" value="100000">
+                    <input type="range" class="what-if-slider" id="what-if-slider" min="50000" max="750000" step="5000" value="100000">
                     <div class="what-if-slider-range">
                         <span>$50k</span>
-                        <span>$700k</span>
+                        <span>$750k</span>
                     </div>
                 </div>
 
@@ -5931,8 +6092,148 @@
             <!-- Use of Funds Carousel -->
             <div class="funds-carousel reveal" id="sec-funds-carousel"></div>
             <div class="section reveal" id="sec-rates">
-                <div class="section-title" data-icon="&#128200;">Rate Options</div>
+                <div class="section-title" data-icon="&#128200;">Rate Options <span class="tooltip" data-tooltip="These are the available rate tiers based on your credit and loan amount. Lower rates typically require higher origination fees.">&#9432;</span></div>
                 <div id="q-tiers"></div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="section reveal" id="sec-faq">
+                <div class="section-title" data-icon="&#10067;">Common Questions</div>
+                <div class="faq-container">
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span>What is a HELOC and how does it work?</span>
+                            <span class="faq-icon">&#9660;</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>A <strong>Home Equity Line of Credit (HELOC)</strong> is a revolving line of credit that lets you borrow against your home's equity. Think of it like a credit card secured by your home:</p>
+                            <ul>
+                                <li><strong>Draw period:</strong> Access funds as needed (typically 10 years)</li>
+                                <li><strong>Repayment period:</strong> Pay back what you borrowed (typically 20 years)</li>
+                                <li><strong>Interest only on what you use:</strong> If you only use $50k of a $100k line, you only pay interest on $50k</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span>What's the difference between the origination fee options?</span>
+                            <span class="faq-icon">&#9660;</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>The <strong>origination fee</strong> is an upfront cost to get a lower interest rate. It's similar to "buying down" your rate:</p>
+                            <ul>
+                                <li><strong>Higher fee (4.99%):</strong> Lowest monthly rate - best if you plan to keep the loan long-term</li>
+                                <li><strong>Middle fee (2.99%):</strong> Balanced option - moderate upfront cost with a good rate</li>
+                                <li><strong>Lower fee (1.50%):</strong> Higher rate but less upfront - good if you plan to pay off quickly</li>
+                            </ul>
+                            <p><em>Tip: Choose based on how long you plan to keep the HELOC. The longer you keep it, the more a lower rate saves you.</em></p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span>What are closing costs and what's included?</span>
+                            <span class="faq-icon">&#9660;</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p><strong>Closing costs</strong> are fees required to process and close your HELOC. They typically include:</p>
+                            <ul>
+                                <li><strong>Origination fee:</strong> Fee for processing the loan (varies by rate option)</li>
+                                <li><strong>Appraisal:</strong> Professional home value assessment (~$500-800)</li>
+                                <li><strong>Title search:</strong> Ensures no liens on your property (~$200-400)</li>
+                                <li><strong>Recording fees:</strong> County fees to record the lien (~$100-300)</li>
+                                <li><strong>Processing/Underwriting:</strong> Administrative costs ($1,295)</li>
+                            </ul>
+                            <p>These costs are typically deducted from your loan amount, so you receive the net amount after fees.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span>How fast can I get my money?</span>
+                            <span class="faq-icon">&#9660;</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Most of our clients receive their funds in <strong>5-10 business days</strong>:</p>
+                            <ul>
+                                <li><strong>Day 1-2:</strong> Application submitted and reviewed</li>
+                                <li><strong>Day 3-5:</strong> Appraisal ordered (if needed) and income verified</li>
+                                <li><strong>Day 6-8:</strong> Final approval and closing docs prepared</li>
+                                <li><strong>Day 9-10:</strong> Closing and funding</li>
+                            </ul>
+                            <p>Loans under $400k may qualify for our <strong>AI underwriting</strong> with no appraisal needed, speeding up the process to as fast as 5 days.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span>Can I pay off my HELOC early?</span>
+                            <span class="faq-icon">&#9660;</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p><strong>Yes!</strong> There are <strong>no prepayment penalties</strong> on our HELOCs. You can:</p>
+                            <ul>
+                                <li>Pay off the entire balance anytime</li>
+                                <li>Make extra payments to reduce principal</li>
+                                <li>Pay interest-only during the draw period</li>
+                                <li>Reuse the line of credit as you pay it down</li>
+                            </ul>
+                            <p>This flexibility makes HELOCs great for both short-term needs and long-term financial strategies.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span>Is the interest tax deductible?</span>
+                            <span class="faq-icon">&#9660;</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p><strong>Often, yes!</strong> HELOC interest may be tax deductible when used for:</p>
+                            <ul>
+                                <li>Home improvements and renovations</li>
+                                <li>Buying or building your primary residence</li>
+                                <li>Significant repairs that add value</li>
+                            </ul>
+                            <p><strong>Not deductible</strong> when used for:</p>
+                            <ul>
+                                <li>Personal expenses (vacations, cars, etc.)</li>
+                                <li>Debt consolidation (unless used to substantially improve the home)</li>
+                            </ul>
+                            <p><em>Consult your tax advisor for your specific situation. We can provide the 1098 form showing interest paid.</em></p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span>What happens if rates change?</span>
+                            <span class="faq-icon">&#9660;</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>This depends on your loan type:</p>
+                            <ul>
+                                <li><strong>Variable Rate HELOC:</strong> Your rate adjusts with the market (typically based on Prime Rate). Your payment may go up or down.</li>
+                                <li><strong>Fixed Rate Option:</strong> Some lenders let you convert portions to a fixed rate. Ask your loan officer if this is available.</li>
+                            </ul>
+                            <p><strong>Rate Lock:</strong> We offer a <strong>45-day rate lock</strong> once you apply, protecting you from rate increases during processing.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <button class="faq-question" onclick="toggleFaq(this)">
+                            <span>What documents do I need?</span>
+                            <span class="faq-icon">&#9660;</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p>We've simplified the process! Most borrowers only need:</p>
+                            <ul>
+                                <li>&#9989; <strong>Valid Photo ID</strong> (Driver's License, State ID, or Passport)</li>
+                            </ul>
+                            <p>That's it! We verify your income digitally through <strong>Plaid</strong> - the same secure system used by Venmo and Experian. No pay stubs, no tax returns for most W2 employees.</p>
+                            <p><em>Self-employed borrowers may need additional documentation like bank statements.</em></p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <!-- CTA handled by floating action bar -->
@@ -6190,6 +6491,10 @@
                 _userId = userId;
                 _leadId = leadId;
                 var isPreviewMode = userId === 'preview';
+                
+                // Template mode: simple, standard, enhanced
+                var linkOpts = data.linkOptions || {};
+                var templateMode = linkOpts.templateMode || 'enhanced'; // default to enhanced
 
                 document.getElementById('loading').style.display = 'none';
                 var content = document.getElementById('content');
@@ -6202,6 +6507,9 @@
                 } else {
                     document.getElementById('floating-bar').style.display = 'flex';
                 }
+                
+                // Apply template mode - hide/show sections based on mode
+                applyTemplateMode(templateMode, linkOpts);
 
                 // Title
                 var title = lo.company ? lo.company + ' HELOC Proposal' : 'Your HELOC Proposal';
@@ -6266,6 +6574,62 @@
                 fHtml += '</div></div>';
                 fHtml += '<div class="proprietary-notice">PROPRIETARY TOOL NOTICE: This Above All Carbon HELOC Quote Tool is proprietary software owned by Above All CRM / ' + esc(lo.company || 'West Capital Lending') + '. Unauthorized copying, distribution, modification, or reverse engineering is strictly prohibited. &copy; 2024-2026 Above All CRM. All rights reserved.</div>';
                 document.getElementById('sec-footer').innerHTML = fHtml;
+
+                // Template Mode Application
+                function applyTemplateMode(mode, opts) {
+                    opts = opts || {};
+                    
+                    // Sections to control
+                    var sections = {
+                        video: document.getElementById('sec-personal-video'),
+                        socialProof: document.getElementById('sec-social-proof'),
+                        whatIf: document.getElementById('sec-what-if'),
+                        interactiveSavings: document.getElementById('sec-interactive-savings'),
+                        paymentScenario: document.getElementById('sec-payment-scenario'),
+                        savingsCompare: document.getElementById('sec-savings'),
+                        fundsCarousel: document.getElementById('sec-funds-carousel'),
+                        faq: document.getElementById('sec-faq'),
+                        equityChart: document.getElementById('sec-equity-chart')
+                    };
+                    
+                    switch(mode) {
+                        case 'simple':
+                            // Simple: Just the basics - rates, recommendation, disclaimer
+                            if (sections.video) sections.video.style.display = 'none';
+                            if (sections.socialProof) sections.socialProof.style.display = 'none';
+                            if (sections.whatIf) sections.whatIf.style.display = 'none';
+                            if (sections.interactiveSavings) sections.interactiveSavings.style.display = 'none';
+                            if (sections.paymentScenario) sections.paymentScenario.style.display = 'none';
+                            if (sections.savingsCompare) sections.savingsCompare.style.display = 'none';
+                            if (sections.fundsCarousel) sections.fundsCarousel.style.display = 'none';
+                            if (sections.faq) sections.faq.style.display = 'none';
+                            if (sections.equityChart) sections.equityChart.style.display = 'none';
+                            // Hide Ezra
+                            var ezraOrb = document.getElementById('eq-orb');
+                            if (ezraOrb) ezraOrb.style.display = 'none';
+                            break;
+                            
+                        case 'standard':
+                            // Standard: Basics + What If + FAQ, no video/psychology
+                            if (sections.video) sections.video.style.display = 'none';
+                            if (sections.socialProof) sections.socialProof.style.display = 'none';
+                            if (sections.interactiveSavings) sections.interactiveSavings.style.display = 'none';
+                            if (sections.savingsCompare) sections.savingsCompare.style.display = 'none';
+                            if (sections.fundsCarousel) sections.fundsCarousel.style.display = 'none';
+                            // Keep: whatIf, paymentScenario, faq, equityChart
+                            break;
+                            
+                        case 'enhanced':
+                        default:
+                            // Enhanced: Everything (default behavior)
+                            // All sections visible by default
+                            // Respect individual linkOptions
+                            if (opts.showVideo === false && sections.video) sections.video.style.display = 'none';
+                            if (opts.showWhatIf === false && sections.whatIf) sections.whatIf.style.display = 'none';
+                            if (opts.showFaq === false && sections.faq) sections.faq.style.display = 'none';
+                            break;
+                    }
+                }
 
                 // Client Grid
                 var clientItems = [];
@@ -7160,6 +7524,22 @@
                 updatePaymentDisplay();
             };
 
+            // ===== FAQ TOGGLE =====
+            window.toggleFaq = function(button) {
+                var item = button.parentElement;
+                var isActive = item.classList.contains('active');
+                
+                // Close all other items
+                document.querySelectorAll('.faq-item.active').forEach(function(activeItem) {
+                    if (activeItem !== item) {
+                        activeItem.classList.remove('active');
+                    }
+                });
+                
+                // Toggle current item
+                item.classList.toggle('active');
+            };
+
             function updatePaymentDisplay() {
                 var payment, detail;
                 if (currentScenario === 'interest') {
@@ -7284,7 +7664,7 @@
                 var homeValue = parseFloat(String(data.homeValue || '0').replace(/[$,]/g, '')) || 500000;
                 var mortgageBalance = parseFloat(String(data.mortgageBalance || '0').replace(/[$,]/g, '')) || 0;
                 var maxCLTV = 0.90; // 90% max CLTV
-                var maxHeloc = Math.min(700000, Math.round((homeValue * maxCLTV) - mortgageBalance));
+                var maxHeloc = Math.min(750000, Math.round((homeValue * maxCLTV) - mortgageBalance));
                 var minHeloc = Math.max(50000, Math.round(maxHeloc * 0.1));
                 
                 // Get original quote amount
