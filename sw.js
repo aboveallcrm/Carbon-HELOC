@@ -3,13 +3,10 @@
  * Provides caching, offline functionality, push notifications, and background sync
  */
 
-const CACHE_NAME = 'aac-heloc-v7';
+const CACHE_NAME = 'aac-heloc-v8';
+// Only pre-cache small, stable assets. HTML pages use network-first
+// and should NOT be pre-cached (they change frequently and are large).
 const STATIC_ASSETS = [
-  './AboveAllCarbon_HELOC_v12_FIXED.html',
-  './client-quote.html',
-  './login.html',
-  './register.html',
-  './admin.html',
   './js/main.js',
   './js/auth.js',
   './js/supabase-client.js',
