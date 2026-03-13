@@ -103,7 +103,31 @@ serve(async (req: Request) => {
             cashOut: payload.cash_out_amount || payload.cashOut || payload.cash_out || mortgage.cash_out_amount
                 || customMap['cash_out_amount'] || customMap['heloc_cash_back']
                 || payload.cash_needed || payload.field_036 || payload.field_039 || '',
+            loanType: payload.loan_type || payload.loanType || mortgage.loan_type
+                || customMap['loan_type'] || customMap['heloc_loan_type'] || customMap['Loan Type'] || '',
+            propertyType: payload.property_type || payload.propertyType || mortgage.property_type
+                || customMap['property_type'] || customMap['heloc_property_type'] || customMap['Property Type']
+                || payload.occupancy || '',
         }
+
+        // Map Bonzo tags/event to pipeline status
+        const bonzoStatusMap: Record<string, string> = {
+            new_lead: 'new', contacted: 'contacted', qualified: 'qualified', quoted: 'quoted',
+            app_submitted: 'application_sent', in_underwriting: 'in_underwriting',
+            approved: 'approved', docs_out: 'docs_out', funded: 'funded',
+            on_hold: 'on_hold', lost: 'lost'
+        }
+        const bonzoTags: string[] = Array.isArray(payload.tags)
+            ? payload.tags.map((t: any) => typeof t === 'string' ? t.toLowerCase() : (t?.name || '').toLowerCase())
+            : (typeof payload.tags === 'string' ? payload.tags.toLowerCase().split(',').map((s: string) => s.trim()) : [])
+        const bonzoEvent = (rawPayload.event || '').toLowerCase()
+        // Determine status from tags (last matching tag wins — most specific)
+        let derivedStatus = 'new'
+        for (const tag of bonzoTags) {
+            if (bonzoStatusMap[tag]) derivedStatus = bonzoStatusMap[tag]
+        }
+        // Event-based override
+        if (bonzoEvent === 'prospect.lost' || bonzoEvent === 'lost') derivedStatus = 'lost'
 
         // Validate crm_source against allowed values
         const validCrmSources = ['manual', 'ghl', 'bonzo', 'csv', 'webhook', 'leadmailbox', 'zapier', 'n8n']
@@ -146,6 +170,11 @@ serve(async (req: Request) => {
             if (!existingLead.last_name && leadData.lastName) updates.last_name = leadData.lastName
             if (!existingLead.email && leadData.email) updates.email = leadData.email
             if (!existingLead.phone && leadData.phone) updates.phone = leadData.phone
+            // Update status if webhook provides a more advanced stage
+            if (derivedStatus !== 'new') updates.status = derivedStatus
+            // Fill loan_type and property_type columns
+            if (!existingLead.loan_type && leadData.loanType) updates.loan_type = leadData.loanType
+            if (!existingLead.property_type && leadData.propertyType) updates.property_type = leadData.propertyType
             // Merge raw payload + property fields into metadata (fill gaps, don't overwrite existing)
             const existingMeta = existingLead.metadata || {}
             updates.metadata = {
@@ -157,6 +186,9 @@ serve(async (req: Request) => {
                 home_value: existingMeta.home_value || leadData.homeValue || '',
                 mortgage_balance: existingMeta.mortgage_balance || leadData.mortgageBalance || '',
                 cash_out: existingMeta.cash_out || leadData.cashOut || '',
+                loan_type: existingMeta.loan_type || leadData.loanType || '',
+                property_type: existingMeta.property_type || leadData.propertyType || '',
+                bonzo_tags: bonzoTags.length > 0 ? bonzoTags : (existingMeta.bonzo_tags || []),
             }
 
             if (Object.keys(updates).length > 0) {
@@ -184,7 +216,9 @@ serve(async (req: Request) => {
                 source: source,
                 crm_source: crmSource,
                 crm_contact_id: leadData.sourceId,
-                status: 'new',  // Must be lowercase per leads_status_check constraint
+                status: derivedStatus,
+                loan_type: leadData.loanType || null,
+                property_type: leadData.propertyType || null,
                 metadata: {
                     raw: payload,
                     credit_score: leadData.creditScore,
@@ -192,6 +226,9 @@ serve(async (req: Request) => {
                     home_value: leadData.homeValue,
                     mortgage_balance: leadData.mortgageBalance,
                     cash_out: leadData.cashOut,
+                    loan_type: leadData.loanType,
+                    property_type: leadData.propertyType,
+                    bonzo_tags: bonzoTags,
                 }
             })
             .select()

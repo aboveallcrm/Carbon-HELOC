@@ -4209,9 +4209,35 @@
         }
 
         #leads-table tbody td {
-            padding: 10px 8px !important;
+            padding: 10px 6px !important;
             font-size: 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+            white-space: nowrap;
+        }
+
+        .th-lead {
+            text-align: left;
+            padding: 8px 6px;
+            color: var(--accent-color);
+            font-family: var(--font-heading);
+            font-size: 9px;
+            text-transform: uppercase;
+        }
+
+        /* Compact columns for financial data */
+        #leads-table .td-money {
+            font-variant-numeric: tabular-nums;
+            font-size: 9px;
+            color: rgba(255,255,255,0.7);
+            text-align: right;
+        }
+        #leads-table .td-addr {
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 9px;
+            color: rgba(255,255,255,0.6);
         }
 
         /* --- Leads Tab: Status selects --- */
@@ -5767,12 +5793,22 @@
                         <option value="all">All Status</option>
                         <option value="quoted">Quoted</option>
                         <option value="not_quoted">Not Quoted</option>
-                        <option value="new">New</option>
-                        <option value="contacted">Contacted</option>
-                        <option value="qualified">Qualified</option>
-                        <option value="closed">Closed</option>
-                        <option value="lost">Lost</option>
-                        <option value="dnc">DNC Only</option>
+                        <optgroup label="Pipeline">
+                            <option value="new">New</option>
+                            <option value="contacted">Contacted</option>
+                            <option value="qualified">Qualified</option>
+                            <option value="quoted_status">Quoted</option>
+                            <option value="application_sent">Application Sent</option>
+                            <option value="in_underwriting">In Underwriting</option>
+                            <option value="approved">Approved</option>
+                            <option value="docs_out">Docs Out</option>
+                            <option value="funded">Funded / Closed</option>
+                        </optgroup>
+                        <optgroup label="Other">
+                            <option value="on_hold">On Hold</option>
+                            <option value="lost">Lost</option>
+                            <option value="dnc">DNC Only</option>
+                        </optgroup>
                     </select>
                     <select id="leads-filter-source" onchange="loadUserLeads()"
                         style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 4px 8px; font-family: var(--font-heading); font-size: 9px;">
@@ -5822,11 +5858,29 @@
                                 id="add-lead-mortgage" placeholder="350000"></div>
                         <div class="input-field"><label>Cash Out ($)</label><input type="number" id="add-lead-cashout"
                                 placeholder="100000"></div>
-                        <div class="input-field"><label>Occupancy</label><select id="add-lead-occupancy"
+                    </div>
+                    <div class="input-group" style="margin-top: 8px;">
+                        <div class="input-field"><label>Loan Type</label><select id="add-lead-loan-type"
+                                style="background: rgba(0,0,0,0.3); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; border-radius: 4px; padding: 6px 8px; font-size: 9px;">
+                                <option value="">—</option>
+                                <option value="HELOC">HELOC</option>
+                                <option value="Fixed HELOC">Fixed HELOC</option>
+                                <option value="Cash-Out Refi">Cash-Out Refi</option>
+                                <option value="DSCR">DSCR</option>
+                                <option value="Conventional">Conventional</option>
+                                <option value="FHA">FHA</option>
+                                <option value="VA">VA</option>
+                                <option value="Other">Other</option>
+                            </select></div>
+                        <div class="input-field"><label>Property Type</label><select id="add-lead-occupancy"
                                 style="background: rgba(0,0,0,0.3); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; border-radius: 4px; padding: 6px 8px; font-size: 9px;">
                                 <option value="">—</option>
                                 <option value="Primary Residence">Primary Residence</option>
+                                <option value="Second Home">Second Home</option>
                                 <option value="Investment Property">Investment Property</option>
+                                <option value="Multi-Family">Multi-Family (2-4 units)</option>
+                                <option value="Condo">Condo</option>
+                                <option value="Townhome">Townhome</option>
                             </select></div>
                     </div>
                     <div style="display: flex; gap: 8px; margin-top: 12px;">
@@ -5842,44 +5896,29 @@
                         style="width: 100%; border-collapse: collapse; font-size: 10px; font-family: var(--font-body);">
                         <thead>
                             <tr style="border-bottom: 1px solid rgba(255,255,255,0.15);">
-                                <th style="text-align:center;padding:8px 4px;width:30px;">
-                                    <input type="checkbox" class="lead-checkbox" id="leads-select-all" onchange="toggleAllLeads(this.checked)" title="Select all">
-                                </th>
-                                <th
-                                    style="text-align: left; padding: 8px 6px; color: var(--accent-color); font-family: var(--font-heading); font-size: 9px; text-transform: uppercase;">
-                                    Name</th>
-                                <th
-                                    style="text-align: left; padding: 8px 6px; color: var(--accent-color); font-family: var(--font-heading); font-size: 9px; text-transform: uppercase;">
-                                    Email</th>
-                                <th
-                                    style="text-align: left; padding: 8px 6px; color: var(--accent-color); font-family: var(--font-heading); font-size: 9px; text-transform: uppercase;">
-                                    Phone</th>
-                                <th
-                                    style="text-align: left; padding: 8px 6px; color: var(--accent-color); font-family: var(--font-heading); font-size: 9px; text-transform: uppercase;">
-                                    Source</th>
-                                <th
-                                    style="text-align: left; padding: 8px 6px; color: var(--accent-color); font-family: var(--font-heading); font-size: 9px; text-transform: uppercase;">
-                                    Status</th>
-                                <th
-                                    style="text-align: center; padding: 8px 6px; color: var(--accent-color); font-family: var(--font-heading); font-size: 9px; text-transform: uppercase;">
-                                    Quoted</th>
-                                <th
-                                    style="text-align: left; padding: 8px 6px; color: var(--accent-color); font-family: var(--font-heading); font-size: 9px; text-transform: uppercase;">
-                                    Date</th>
-                                <th
-                                    style="text-align: center; padding: 8px 6px; color: var(--accent-color); font-family: var(--font-heading); font-size: 9px; text-transform: uppercase;">
-                                    Views</th>
-                                <th
-                                    style="text-align: center; padding: 8px 6px; color: var(--accent-color); font-family: var(--font-heading); font-size: 9px; text-transform: uppercase;">
-                                    DNC <span class="help-tip">?<span class="help-tip-text">Do Not Contact flag. Toggle to prevent any outbound CRM sends (calls, texts, emails) to this lead. Required for TCPA compliance.</span></span></th>
-                                <th
-                                    style="text-align: center; padding: 8px 6px; color: var(--accent-color); font-family: var(--font-heading); font-size: 9px; text-transform: uppercase;">
-                                </th>
+                                <th style="text-align:center;padding:8px 4px;width:30px;"><input type="checkbox" class="lead-checkbox" id="leads-select-all" onchange="toggleAllLeads(this.checked)" title="Select all"></th>
+                                <th class="th-lead">Name</th>
+                                <th class="th-lead">Phone</th>
+                                <th class="th-lead">Email</th>
+                                <th class="th-lead">Address</th>
+                                <th class="th-lead" style="text-align:center;">Credit</th>
+                                <th class="th-lead" style="text-align:right;">Home Value</th>
+                                <th class="th-lead" style="text-align:right;">Balance</th>
+                                <th class="th-lead" style="text-align:right;">Cashout</th>
+                                <th class="th-lead">Loan Type</th>
+                                <th class="th-lead">Property</th>
+                                <th class="th-lead">Source</th>
+                                <th class="th-lead">Status</th>
+                                <th class="th-lead" style="text-align:center;">Quoted</th>
+                                <th class="th-lead">Date</th>
+                                <th class="th-lead" style="text-align:center;">Views</th>
+                                <th class="th-lead" style="text-align:center;">DNC</th>
+                                <th class="th-lead"></th>
                             </tr>
                         </thead>
                         <tbody id="leads-tbody">
                             <tr>
-                                <td colspan="11"
+                                <td colspan="18"
                                     style="padding: 20px; text-align: center; color: rgba(255,255,255,0.4);">Click
                                     "Refresh" to load leads</td>
                             </tr>
@@ -16815,6 +16854,33 @@ Sent via Above All Carbon HELOC Tool`;
         });
 
         // ===== MY LEADS =====
+
+        // CRM Status Mapping — unified pipeline stages across Bonzo, GHL, and local
+        var CRM_STATUS_MAP = {
+            // Local status → { bonzo tag/stage, ghl pipeline status }
+            new:              { label: 'New',            bonzo: 'new_lead',        ghl: 'open',   color: '#3b82f6' },
+            contacted:        { label: 'Contacted',      bonzo: 'contacted',       ghl: 'open',   color: '#8b5cf6' },
+            qualified:        { label: 'Qualified',      bonzo: 'qualified',       ghl: 'open',   color: '#f59e0b' },
+            quoted:           { label: 'Quoted',         bonzo: 'quoted',          ghl: 'open',   color: '#06b6d4' },
+            application_sent: { label: 'App Sent',       bonzo: 'app_submitted',   ghl: 'open',   color: '#a78bfa' },
+            in_underwriting:  { label: 'Underwriting',   bonzo: 'in_underwriting', ghl: 'open',   color: '#fb923c' },
+            approved:         { label: 'Approved',       bonzo: 'approved',        ghl: 'won',    color: '#34d399' },
+            docs_out:         { label: 'Docs Out',       bonzo: 'docs_out',        ghl: 'won',    color: '#2dd4bf' },
+            funded:           { label: 'Funded',         bonzo: 'funded',          ghl: 'won',    color: '#10b981' },
+            on_hold:          { label: 'On Hold',        bonzo: 'on_hold',         ghl: 'open',   color: '#6b7280' },
+            lost:             { label: 'Lost',           bonzo: 'lost',            ghl: 'lost',   color: '#ef4444' }
+        };
+
+        // Reverse maps: CRM tag → local status
+        var BONZO_TO_LOCAL = {};
+        var GHL_TO_LOCAL = {};
+        Object.keys(CRM_STATUS_MAP).forEach(function(k) {
+            var m = CRM_STATUS_MAP[k];
+            BONZO_TO_LOCAL[m.bonzo] = k;
+            // GHL is many-to-one so we only set the first match
+            if (!GHL_TO_LOCAL[m.ghl]) GHL_TO_LOCAL[m.ghl] = k;
+        });
+
         async function loadUserLeads() {
             const sb = window._supabase;
             const userId = window.currentUserId;
@@ -16848,12 +16914,12 @@ Sent via Above All Carbon HELOC Tool`;
             }
 
             if (!sb || !userId) {
-                if (tbody) tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">Log in to see your leads</td></tr>';
+                if (tbody) tbody.innerHTML = '<tr><td colspan="18" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">Log in to see your leads</td></tr>';
                 updateDashboard([], 0);
                 return;
             }
 
-            tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);">Loading...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="18" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);">Loading...</td></tr>';
 
             try {
                 // 1. Fetch leads for this user
@@ -16884,7 +16950,7 @@ Sent via Above All Carbon HELOC Tool`;
                 }
 
                 if (!leads || leads.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">No leads yet. Add one manually or connect your CRM webhook.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="18" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">No leads yet. Add one manually or connect your CRM webhook.</td></tr>';
                     if (countEl) countEl.innerText = '0 leads';
                     updateDashboard([], 0);
                     return;
@@ -16911,6 +16977,8 @@ Sent via Above All Carbon HELOC Tool`;
                     enriched = enriched.filter(function (l) { return !l.isQuoted; });
                 } else if (filter === 'dnc') {
                     enriched = enriched.filter(function (l) { return l.dnc === true; });
+                } else if (filter === 'quoted_status') {
+                    enriched = enriched.filter(function (l) { return (l.status || '').toLowerCase() === 'quoted'; });
                 } else if (filter !== 'all') {
                     enriched = enriched.filter(function (l) { return (l.status || '').toLowerCase() === filter; });
                 }
@@ -16921,7 +16989,7 @@ Sent via Above All Carbon HELOC Tool`;
                 if (countEl) countEl.innerText = enriched.length + ' lead' + (enriched.length !== 1 ? 's' : '');
 
                 if (enriched.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">No leads match this filter.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="18" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">No leads match this filter.</td></tr>';
                     return;
                 }
 
@@ -16976,26 +17044,18 @@ Sent via Above All Carbon HELOC Tool`;
                         ? '<span style="background:#10b981;color:white;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);">YES</span>'
                         : '<span style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);">NO</span>';
 
-                    // Build property detail subtitle from metadata
+                    // Extract metadata fields for column display
                     var meta = l.metadata || {};
-                    var detailParts = [];
                     var credit = meta.credit_score || '';
                     var homeVal = meta.home_value || '';
                     var mortBal = meta.mortgage_balance || '';
                     var cashAmt = meta.cash_out || '';
                     var propAddr = meta.property_address || '';
-                    if (credit) detailParts.push('Credit: ' + credit);
-                    if (homeVal) detailParts.push('Value: $' + Number(homeVal).toLocaleString());
-                    if (mortBal) detailParts.push('Mtg: $' + Number(mortBal).toLocaleString());
-                    if (cashAmt) detailParts.push('Cash: $' + Number(cashAmt).toLocaleString());
-                    var fullTooltip = detailParts.join(' | ') + (propAddr ? ' | ' + propAddr : '');
-                    var detailLine = '';
-                    if (detailParts.length > 0 || propAddr) {
-                        detailLine = '<div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px;" title="' + escapeAttr(fullTooltip) + '">' + escapeAttr(detailParts.join(' · ')) + '</div>';
-                        if (propAddr) {
-                            detailLine += '<div style="font-size:8px;color:rgba(255,255,255,0.35);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px;" title="' + escapeAttr(propAddr) + '">📍 ' + escapeAttr(propAddr) + '</div>';
-                        }
-                    }
+                    var loanType = meta.loan_type || '';
+                    var propType = meta.property_type || meta.occupancy || '';
+                    // Format money values
+                    var fmtMoney = function(v) { var n = Number(String(v).replace(/[$,]/g, '')); return n ? '$' + n.toLocaleString() : '—'; };
+                    var fmtCredit = credit ? '<span style="color:' + (Number(credit) >= 740 ? '#10b981' : Number(credit) >= 680 ? '#f59e0b' : '#ef4444') + ';">' + credit + '</span>' : '—';
 
                     // Analytics badge
                     var analytics = analyticsMap[l.id];
@@ -17012,27 +17072,47 @@ Sent via Above All Carbon HELOC Tool`;
                         ? '<span class="dnc-badge" onclick="event.stopPropagation();DNCProtection.toggleLeadDNC(\'' + safeId + '\',true)" title="' + escapeAttr(l.dnc_reason || 'Marked DNC') + ' — Click to remove">DNC</span>'
                         : '<span class="dnc-badge inactive" onclick="event.stopPropagation();DNCProtection.toggleLeadDNC(\'' + safeId + '\',false)" title="Click to mark as Do Not Contact">—</span>';
 
-                    // Status dropdown (clicking stops row click propagation)
+                    // Status dropdown with full pipeline stages (Bonzo + GHL compatible)
                     var stLower = (st || 'new').toLowerCase();
-                    var statusDropdown = '<select onchange="updateLeadStatus(\'' + safeId + '\', this.value)" onclick="event.stopPropagation()" style="background:rgba(0,0,0,0.4);color:white;border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:2px 4px;font-family:var(--font-heading);font-size:8px;cursor:pointer;">' +
-                        '<option value="new"' + (stLower === 'new' ? ' selected' : '') + '>New</option>' +
-                        '<option value="contacted"' + (stLower === 'contacted' ? ' selected' : '') + '>Contacted</option>' +
-                        '<option value="qualified"' + (stLower === 'qualified' ? ' selected' : '') + '>Qualified</option>' +
-                        '<option value="closed"' + (stLower === 'closed' ? ' selected' : '') + '>Closed</option>' +
-                        '</select>';
+                    var statusOpts = [
+                        { val: 'new', label: 'New', color: '#3b82f6' },
+                        { val: 'contacted', label: 'Contacted', color: '#8b5cf6' },
+                        { val: 'qualified', label: 'Qualified', color: '#f59e0b' },
+                        { val: 'quoted', label: 'Quoted', color: '#06b6d4' },
+                        { val: 'application_sent', label: 'App Sent', color: '#a78bfa' },
+                        { val: 'in_underwriting', label: 'Underwriting', color: '#fb923c' },
+                        { val: 'approved', label: 'Approved', color: '#34d399' },
+                        { val: 'docs_out', label: 'Docs Out', color: '#2dd4bf' },
+                        { val: 'funded', label: 'Funded', color: '#10b981' },
+                        { val: 'on_hold', label: 'On Hold', color: '#6b7280' },
+                        { val: 'lost', label: 'Lost', color: '#ef4444' }
+                    ];
+                    var statusDropdown = '<select onchange="updateLeadStatus(\'' + safeId + '\', this.value)" onclick="event.stopPropagation()" style="background:rgba(0,0,0,0.4);color:white;border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:2px 4px;font-family:var(--font-heading);font-size:8px;cursor:pointer;">';
+                    statusOpts.forEach(function(o) {
+                        var sel = stLower === o.val || (stLower === 'closed' && o.val === 'funded') ? ' selected' : '';
+                        statusDropdown += '<option value="' + o.val + '"' + sel + ' style="color:' + o.color + ';">' + o.label + '</option>';
+                    });
+                    statusDropdown += '</select>';
 
                     return '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;" onmouseover="this.style.background=\'rgba(255,255,255,0.05)\'" onmouseout="this.style.background=\'none\'" onclick="loadLeadIntoForm(\'' + safeId + '\')">' +
                         '<td style="padding:8px 4px;text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="lead-checkbox" data-lead-id="' + safeId + '" onchange="onLeadCheckboxChange()" title="Select this lead"></td>' +
-                        '<td style="padding:8px 6px;color:white;font-size:10px;font-weight:600;min-width:240px;">' + name + detailLine + '</td>' +
-                        '<td style="padding:8px 6px;color:rgba(255,255,255,0.7);font-size:10px;">' + email + '</td>' +
+                        '<td style="padding:8px 6px;color:white;font-size:10px;font-weight:600;min-width:140px;">' + name + '</td>' +
                         '<td style="padding:8px 6px;color:rgba(255,255,255,0.7);font-size:10px;">' + phone + '</td>' +
-                        '<td style="padding:8px 6px;"><span style="background:' + srcColor + ';color:white;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);text-transform:uppercase;">' + src + '</span></td>' +
-                        '<td style="padding:8px 6px;">' + statusDropdown + '</td>' +
-                        '<td style="padding:8px 6px;text-align:center;">' + quotedBadge + '</td>' +
-                        '<td style="padding:8px 6px;color:rgba(255,255,255,0.5);font-size:9px;">' + date + '</td>' +
-                        '<td style="padding:8px 6px;text-align:center;">' + viewsBadge + '</td>' +
-                        '<td style="padding:8px 6px;text-align:center;">' + dncBadge + '</td>' +
-                        '<td style="padding:8px 6px;text-align:center;"><button onclick="event.stopPropagation();deleteLead(\'' + safeId + '\')" title="Delete lead" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;opacity:0.4;transition:opacity 0.2s;" onmouseover="this.style.opacity=1;this.style.color=\'#ef4444\'" onmouseout="this.style.opacity=0.4;this.style.color=\'\'">🗑</button></td>' +
+                        '<td style="padding:8px 6px;color:rgba(255,255,255,0.7);font-size:10px;">' + email + '</td>' +
+                        '<td class="td-addr" title="' + escapeAttr(propAddr) + '">' + escapeAttr(propAddr || '—') + '</td>' +
+                        '<td style="text-align:center;font-size:10px;font-weight:600;">' + fmtCredit + '</td>' +
+                        '<td class="td-money">' + fmtMoney(homeVal) + '</td>' +
+                        '<td class="td-money">' + fmtMoney(mortBal) + '</td>' +
+                        '<td class="td-money">' + fmtMoney(cashAmt) + '</td>' +
+                        '<td style="font-size:9px;color:rgba(255,255,255,0.6);">' + escapeAttr(loanType || '—') + '</td>' +
+                        '<td style="font-size:9px;color:rgba(255,255,255,0.6);">' + escapeAttr(propType || '—') + '</td>' +
+                        '<td><span style="background:' + srcColor + ';color:white;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);text-transform:uppercase;">' + src + '</span></td>' +
+                        '<td>' + statusDropdown + '</td>' +
+                        '<td style="text-align:center;">' + quotedBadge + '</td>' +
+                        '<td style="color:rgba(255,255,255,0.5);font-size:9px;">' + date + '</td>' +
+                        '<td style="text-align:center;">' + viewsBadge + '</td>' +
+                        '<td style="text-align:center;">' + dncBadge + '</td>' +
+                        '<td style="text-align:center;"><button onclick="event.stopPropagation();deleteLead(\'' + safeId + '\')" title="Delete lead" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;opacity:0.4;transition:opacity 0.2s;" onmouseover="this.style.opacity=1;this.style.color=\'#ef4444\'" onmouseout="this.style.opacity=0.4;this.style.color=\'\'">🗑</button></td>' +
                         '</tr>';
                 }).join('');
 
@@ -17047,7 +17127,7 @@ Sent via Above All Carbon HELOC Tool`;
 
             } catch (e) {
                 console.error('Error loading leads:', e);
-                tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:#f87171;font-family:var(--font-heading);font-size:10px;">Error loading leads: ' + escapeHtml(e.message) + '</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="18" style="padding:20px;text-align:center;color:#f87171;font-family:var(--font-heading);font-size:10px;">Error loading leads: ' + escapeHtml(e.message) + '</td></tr>';
             }
         }
 
@@ -17113,9 +17193,55 @@ Sent via Above All Carbon HELOC Tool`;
             try {
                 const { error } = await sb.from('leads').update({ status: newStatus }).eq('id', leadId);
                 if (error) throw error;
-                showToast('Lead status → ' + newStatus, 'success');
+                var statusInfo = CRM_STATUS_MAP[newStatus] || { label: newStatus };
+                showToast('Lead status → ' + statusInfo.label, 'success');
+
+                // Push status change to CRM if lead has a CRM contact ID
+                var lead = (window._leadsCache || []).find(function(l) { return l.id === leadId; });
+                if (lead && lead.crm_contact_id) {
+                    pushStatusToCRM(lead, newStatus).catch(function(e) {
+                        console.debug('CRM status push failed:', e.message);
+                    });
+                }
             } catch (e) {
                 showToast('Error updating status: ' + e.message, 'error');
+            }
+        }
+
+        // Push local status change to connected CRM (Bonzo tags / GHL opportunity status)
+        async function pushStatusToCRM(lead, newStatus) {
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId || !lead.crm_contact_id) return;
+            var mapping = CRM_STATUS_MAP[newStatus];
+            if (!mapping) return;
+            var src = (lead.source || lead.crm_source || '').toLowerCase();
+
+            if (src === 'bonzo' && mapping.bonzo) {
+                // Add tag to Bonzo prospect via bonzo-proxy
+                try {
+                    var sbUrl = window._supabase.supabaseUrl || 'https://czzabvfzuxhpdcowgvam.supabase.co';
+                    var resp = await fetch(sbUrl + '/functions/v1/bonzo-proxy', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (await sb.auth.getSession()).data.session.access_token },
+                        body: JSON.stringify({ action: 'add_tag', prospectId: lead.crm_contact_id, tag: mapping.bonzo })
+                    });
+                    if (resp.ok) console.debug('Bonzo tag added:', mapping.bonzo);
+                } catch (e) { console.debug('Bonzo tag push skipped:', e.message); }
+            }
+
+            if (src === 'ghl' && mapping.ghl) {
+                // Update GHL opportunity status if pipeline is configured
+                try {
+                    var sbUrl = window._supabase.supabaseUrl || 'https://czzabvfzuxhpdcowgvam.supabase.co';
+                    var { data: intData } = await sb.from('user_integrations').select('metadata').eq('user_id', userId).in('provider', ['heloc_keys', 'heloc_settings']).limit(1);
+                    var meta = intData?.[0]?.metadata || {};
+                    var ghlKeys = meta.ghl || {};
+                    if (ghlKeys.apiKey && ghlKeys.pipelineId) {
+                        console.debug('GHL status update would set opportunity to:', mapping.ghl);
+                        // GHL opportunity status update would go here via GHL API
+                    }
+                } catch (e) { console.debug('GHL status push skipped:', e.message); }
             }
         }
 
@@ -17439,6 +17565,7 @@ Sent via Above All Carbon HELOC Tool`;
             var homeValue = document.getElementById('add-lead-home-value').value.trim();
             var mortgage = document.getElementById('add-lead-mortgage').value.trim();
             var cashout = document.getElementById('add-lead-cashout').value.trim();
+            var loanType = (document.getElementById('add-lead-loan-type') || {}).value || '';
             var occupancy = document.getElementById('add-lead-occupancy').value;
 
             if (!fname && !lname && !email) {
@@ -17462,6 +17589,7 @@ Sent via Above All Carbon HELOC Tool`;
                         home_value: homeValue || '',
                         mortgage_balance: mortgage || '',
                         cash_out: cashout || '',
+                        loan_type: loanType || '',
                         property_type: occupancy || ''
                     }
                 });
@@ -17472,6 +17600,8 @@ Sent via Above All Carbon HELOC Tool`;
                     'add-lead-credit', 'add-lead-address', 'add-lead-home-value', 'add-lead-mortgage', 'add-lead-cashout'
                 ].forEach(function (id) { document.getElementById(id).value = ''; });
                 document.getElementById('add-lead-occupancy').value = '';
+                var loanTypeEl = document.getElementById('add-lead-loan-type');
+                if (loanTypeEl) loanTypeEl.value = '';
                 document.getElementById('add-lead-panel').style.display = 'none';
 
                 showToast('Lead added', 'success');
@@ -17937,12 +18067,7 @@ Sent via Above All Carbon HELOC Tool`;
             return `${days}d ago`;
         }
         
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+        // escapeHtml() defined above (line ~15783) — single definition used throughout
         
         async function loadPushDevices() {
             const sb = window._supabase;
