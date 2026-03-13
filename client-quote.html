@@ -6876,13 +6876,8 @@
                             <span class="what-if-breakdown-label">Origination Fee</span>
                             <span class="what-if-breakdown-value" id="what-if-orig-fee">$1,500</span>
                         </div>
-                        <div class="what-if-breakdown-item">
-                            <span class="what-if-breakdown-label">Processing & Underwriting</span>
-                            <span class="what-if-breakdown-value">$1,295</span>
-                        </div>
-                        <div class="what-if-breakdown-item">
-                            <span class="what-if-breakdown-label">Title, Appraisal & 3rd Party</span>
-                            <span class="what-if-breakdown-value" id="what-if-third-party">$1,500</span>
+                        <div class="what-if-breakdown-item" style="grid-column: 1 / -1; font-size: 12px; color: var(--text-light); font-style: italic;">
+                            <span>Title, appraisal, and county recording fees are paid directly to third parties and are not part of our fees.</span>
                         </div>
                     </div>
                 </div>
@@ -7017,9 +7012,9 @@
                         <strong style="color: var(--accent-color);">&#128161; Key Insights:</strong><br/>
                         &#10003; You can always put this back in your credit line and use as needed<br/>
                         &#10003; If you don't end up needing it, no problem — no extra interest paid<br/>
-                        &#10003; You got to have it as a safety net<br/>
-                        &#10003; You never know what tomorrow brings — it's not worth coming back after 2 months to increase it<br/>
-                        <strong style="color: var(--accent-color);">Be your bank.</strong> Borrow what you might need, keep it in reserve, and tap it when it makes sense.
+                        &#10003; Available when you need it, no pressure when you don't<br/>
+                        &#10003; You have 5 years to draw — use it on your own timeline<br/>
+                        <strong style="color: var(--accent-color);">You're in control.</strong> Access funds when opportunities arise, with no rush to decide.
                     </p>
                 </div>
             </div>
@@ -7189,8 +7184,7 @@
                             <p><strong>Closing Costs Breakdown:</strong></p>
                             <ul>
                                 <li><strong>Origination fee:</strong> 1.5%, 2.99%, or 4.99% (financed into your payment — NOT deducted from loan amount, NOT paid out of pocket)</li>
-                                <li><strong>Processing & Underwriting:</strong> ~$1,295</li>
-                                <li><strong>Title, Appraisal & 3rd Party Costs:</strong> ~$2,232</li>
+                                <li><strong>Third-party fees:</strong> Title, appraisal, and county recording fees are paid directly to third parties and are not part of our fees</li>
                             </ul>
                             <p style="margin-top: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border-left: 3px solid var(--green); border-radius: 0 6px 6px 0;"><strong>What You See = What You Get:</strong> The "Cash in Your Pocket" number is the NET amount that will hit your bank account. It already includes the origination fee financing and all closing costs. You're looking at the actual liquidity you'll have.</p>
                             <p style="margin-top: 12px;"><strong>County Recording Fees:</strong> Some counties charge a recording fee ($200–$500) to register the HELOC. You'll see this exact fee at application, and it's not one of our fees—it's a government charge specific to your county.</p>
@@ -7962,7 +7956,7 @@
                         { icon: '&#128179;', headline: 'Consolidate High-Interest Debt', sub: 'Pay off ' + cashStr + ' in credit cards and save thousands in interest. One simple payment instead of juggling multiple bills.' },
                         { icon: '&#127968;', headline: 'Renovate Your Home', sub: 'Invest ' + cashStr + ' into your property and potentially increase its value by 10-15%. Your home works for you.' },
                         { icon: '&#128188;', headline: 'Start or Grow a Business', sub: 'Use ' + cashStr + ' in startup capital to launch your next venture. Lower rates than any business loan.' },
-                        { icon: '&#128170;', headline: 'Build a Safety Net', sub: 'Access ' + cashStr + ' for emergencies, education, or major life events. Peace of mind, on your terms.' }
+                        { icon: '&#128170;', headline: 'Financial Flexibility', sub: 'Keep ' + cashStr + ' available for unexpected opportunities or expenses. You control when and how to use it — no pressure, no rush.' }
                     ];
                     var fcEl = document.getElementById('sec-funds-carousel');
                     if (fcEl && cashVal > 0) {
@@ -8829,8 +8823,7 @@
                             </p>
                             <ul style="color: var(--text-muted); font-size: 13px; line-height: 1.8; margin: 0 0 16px 0; padding-left: 20px;">
                                 <li><strong>$13,913</strong> — Origination fee (financed, not paid out of pocket)</li>
-                                <li><strong>$1,295</strong> — Processing & Underwriting</li>
-                                <li><strong>$4,182</strong> — Title, Appraisal & 3rd Party</li>
+                                <li><strong>Third-party fees</strong> — Title, appraisal, and county recording fees paid directly to third parties</li>
                             </ul>
                             <div style="background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 6px; border-left: 4px solid #3b82f6;">
                                 <p style="color: var(--text-light); font-size: 13px; margin: 0;">
@@ -10764,31 +10757,9 @@
         }
     </script>
 
-    <!-- Sticky CTA Bar for Mobile -->
-    <div class="sticky-cta-bar" id="sticky-cta-bar">
-        <button class="btn-secondary" onclick="showToast('PDF saved to your device', 'success'); savePDF();" title="Save PDF">
-            📄
-        </button>
-        <button class="btn btn-primary" onclick="window.openApplyModal ? window.openApplyModal() : showToast('Application coming soon', 'info');">
-            &#10003; Move Forward
-        </button>
-    </div>
-
+    <!-- Note: Sticky CTA removed - using floating-bar instead to avoid duplicate buttons -->
+    
     <script>
-        // Show sticky CTA on mobile after scrolling
-        (function() {
-            var stickyBar = document.getElementById('sticky-cta-bar');
-            if (!stickyBar) return;
-            
-            var showThreshold = 300; // Show after scrolling 300px
-            
-            window.addEventListener('scroll', function() {
-                if (window.scrollY > showThreshold) {
-                    stickyBar.classList.add('visible');
-                    document.body.classList.add('has-sticky-cta');
-                }
-            }, { passive: true });
-        })();
         
         // ===== ACCESSIBILITY IMPROVEMENTS =====
         (function() {
