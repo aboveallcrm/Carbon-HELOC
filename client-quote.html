@@ -7244,9 +7244,17 @@
                 if (loadingEl) loadingEl.style.display = 'none';
                 var content = document.getElementById('content');
                 if (!content) {
-                    console.error('renderQuote: #content element not found in DOM');
-                    showError('Page failed to render. Please refresh or contact your loan officer.');
-                    return;
+                    // Diagnostic: what elements DO exist?
+                    console.error('renderQuote: #content not found. Body children:', document.body ? document.body.children.length : 'no body');
+                    console.error('All IDs in body:', Array.from(document.querySelectorAll('[id]')).map(function(e) { return e.id; }).join(', '));
+                    console.error('document.readyState:', document.readyState);
+                    // Try querySelector as fallback
+                    content = document.querySelector('.quote-page') || document.querySelector('[id="content"]');
+                    if (!content) {
+                        showError('Page failed to render. Please refresh (Ctrl+Shift+R) or contact your loan officer.');
+                        return;
+                    }
+                    console.log('Found content via fallback selector');
                 }
                 content.style.display = 'block';
                 content.classList.add('entering');
