@@ -7242,6 +7242,8 @@
 
                 var loadingEl = document.getElementById('loading');
                 if (loadingEl) loadingEl.style.display = 'none';
+                var loadingOverlay = document.getElementById('loading-overlay');
+                if (loadingOverlay) loadingOverlay.classList.add('hidden');
                 var content = document.getElementById('content');
                 if (!content) {
                     console.error('renderQuote: #content element not found in DOM');
