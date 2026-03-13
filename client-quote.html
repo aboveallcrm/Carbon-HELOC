@@ -7244,17 +7244,9 @@
                 if (loadingEl) loadingEl.style.display = 'none';
                 var content = document.getElementById('content');
                 if (!content) {
-                    // Diagnostic: what elements DO exist?
-                    console.error('renderQuote: #content not found. Body children:', document.body ? document.body.children.length : 'no body');
-                    console.error('All IDs in body:', Array.from(document.querySelectorAll('[id]')).map(function(e) { return e.id; }).join(', '));
-                    console.error('document.readyState:', document.readyState);
-                    // Try querySelector as fallback
-                    content = document.querySelector('.quote-page') || document.querySelector('[id="content"]');
-                    if (!content) {
-                        showError('Page failed to render. Please refresh (Ctrl+Shift+R) or contact your loan officer.');
-                        return;
-                    }
-                    console.log('Found content via fallback selector');
+                    console.error('renderQuote: #content element not found in DOM');
+                    showError('Page failed to render. Please refresh or contact your loan officer.');
+                    return;
                 }
                 content.style.display = 'block';
                 content.classList.add('entering');
@@ -7691,7 +7683,7 @@
                     if (costEl) costEl.textContent = paymentAmount;
                     if (videoCostEl) videoCostEl.textContent = paymentAmount;
                     
-                    cdEl.innerHTML =
+                    if (cdEl) cdEl.innerHTML =
                         '<div class="ub-unit" style="background: rgba(197, 160, 89, 0.2); border-color: rgba(197, 160, 89, 0.4);"><span class="ub-num" style="color: #c5a059;">' + equityAmount + 'K</span><span class="ub-lbl">Your Equity</span></div>' +
                         '<div class="ub-unit" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3);"><span class="ub-num" style="color: #fca5a5;">+$' + paymentAmount + '</span><span class="ub-lbl">/mo Risk</span></div>';
 
@@ -10180,14 +10172,14 @@
         (function() {
             // Skip link for keyboard navigation
             var skipLink = document.createElement('a');
-            skipLink.href = '#main-content';
+            skipLink.href = '#content';
             skipLink.className = 'skip-link';
             skipLink.textContent = 'Skip to main content';
             document.body.insertBefore(skipLink, document.body.firstChild);
             
-            // Add main-content id to content div
+            // Add aria-label for main content (keep original id for renderQuote)
             var content = document.getElementById('content');
-            if (content) content.id = 'main-content';
+            if (content) content.setAttribute('role', 'main');
             
             // Focus visible enhancement for keyboard users
             document.addEventListener('keydown', function(e) {
