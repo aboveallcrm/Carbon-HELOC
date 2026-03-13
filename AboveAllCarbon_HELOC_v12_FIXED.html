@@ -2119,10 +2119,11 @@
         }
 
         #walkthrough-tooltip .wt-text {
-            font-size: 13px;
-            line-height: 1.5;
-            color: rgba(255, 255, 255, 0.85);
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.95);
             margin: 0 0 16px 0;
+            font-weight: 500;
         }
 
         #walkthrough-tooltip .wt-footer {
@@ -4496,18 +4497,26 @@
                 font-size: 9px !important;
             }
 
-            /* Floating toolbar: dock to bottom */
+            /* Floating toolbar: dock to bottom - SINGLE INSTANCE ONLY */
             #floating-toolbar {
-                top: auto;
-                bottom: 10px;
-                right: 10px;
-                left: 10px;
-                max-width: 100%;
-                justify-content: center;
-                border-radius: 12px;
-                border-left: none;
-                border-top: 3px solid var(--accent-color);
-                padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+                top: auto !important;
+                bottom: 10px !important;
+                right: 10px !important;
+                left: 10px !important;
+                max-width: 100% !important;
+                justify-content: center !important;
+                border-radius: 12px !important;
+                border-left: none !important;
+                border-top: 3px solid var(--accent-color) !important;
+                padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+                position: fixed !important;
+                z-index: 1000 !important;
+            }
+            
+            /* Hide any duplicate toolbars that might appear */
+            #floating-toolbar ~ #floating-toolbar,
+            #floating-toolbar:nth-of-type(2) {
+                display: none !important;
             }
 
             /* Body bottom padding for docked toolbar */
@@ -5155,33 +5164,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- FLOATING TOOLBAR -->
-    <div id="floating-toolbar">
-        <div class="toolbar-drag-handle" title="Drag to move">&#x22ee;&#x22ee;</div>
-        <button class="toolbar-btn" onclick="toggleAdminPanel()" id="btn-toggle-admin">⚙️ Settings</button>
-        <button class="toolbar-btn" onclick="captureAndCopy()" title="Screenshot &amp; Copy">📸 Copy</button>
-        <button class="toolbar-btn" onclick="printPDF()">📄 PDF</button>
-        <button class="toolbar-btn" onclick="openEmailSendModal()" title="One-click email with quote"
-            style="background:linear-gradient(135deg,#0078d4,#005a9e);">✉️ Email</button>
-        <button class="toolbar-btn" onclick="toggleSendQuotePanel()" title="Send quote via SMS, Email, or CRM"
-            style="background:linear-gradient(135deg,#10b981,#059669);" id="btn-send-quote">📲 Send</button>
-        <button class="toolbar-btn" id="btn-download-pdf"
-            style="display:none; background: linear-gradient(135deg, #06b6d4, #0891b2);" onclick="exportBrandedPDF()">⬇
-            Download</button>
-        <button class="toolbar-btn" id="btn-notif-bell" onclick="toggleNotifPanel()" title="Quote view alerts" style="position:relative; background: transparent; border: 1px solid rgba(255,255,255,0.15); font-size: 14px; padding: 5px 10px;">🔔<span id="notif-badge" style="display:none; position:absolute; top:-4px; right:-4px; background:#ef4444; color:white; font-size:9px; font-weight:800; min-width:16px; height:16px; border-radius:8px; display:none; align-items:center; justify-content:center; font-family:var(--font-heading);">0</span></button>
-        <span class="autosave-indicator" id="autosave-status">✓ Saved</span>
-        <button class="toolbar-btn-help" onclick="WalkthroughTour.restart()" title="Restart guided tour">❓ Tour</button>
-        <button class="toolbar-btn-help" onclick="InteractiveDemo.start()" title="Watch interactive demo">🎬
-            Demo</button>
-        <button class="toolbar-btn-help" onclick="OnboardingWizard.reopen()" title="Re-run setup wizard"
-            id="btn-rerun-setup" style="display:none;">🚀 Setup</button>
-        <span id="toolbar-user-info"
-            style="display:none; font-family: var(--font-heading); font-size: 9px; color: rgba(255,255,255,0.6); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
-        <button class="toolbar-btn" id="btn-logout"
-            style="display:none; background: #ef4444; font-size: 10px; padding: 5px 10px;"
-            onclick="if(window.logoutUser) window.logoutUser()">Logout</button>
     </div>
 
     <!-- DNC Compliance Warning Modal -->
@@ -10131,6 +10113,33 @@ Best regards,
                 tooltipEl.style.left = left + 'px';
             }
 
+            // Show tour prompt modal for users who haven't taken the tour
+            function showTourPrompt() {
+                var promptKey = 'aboveAllTourPrompted_' + (window.currentUserId || 'anon');
+                if (localStorage.getItem(promptKey)) return; // Already prompted
+                if (localStorage.getItem(lsKey())) return; // Already taken tour
+                
+                localStorage.setItem(promptKey, 'true');
+                
+                var modal = document.createElement('div');
+                modal.id = 'tour-prompt-modal';
+                modal.innerHTML = `
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 100000; display: flex; align-items: center; justify-content: center; padding: 20px;">
+                        <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid var(--accent-color); border-radius: 16px; padding: 28px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+                            <div style="font-size: 48px; margin-bottom: 16px;">🎯</div>
+                            <h3 style="font-family: var(--font-heading); font-size: 20px; font-weight: 700; color: var(--accent-color); margin: 0 0 12px 0;">Take the 2-Minute Tour</h3>
+                            <p style="font-size: 14px; color: rgba(255,255,255,0.9); line-height: 1.6; margin: 0 0 20px 0;">Discover how to build professional HELOC proposals in seconds. This quick tour shows you everything you need to get started.</p>
+                            <div style="display: flex; gap: 10px; flex-direction: column;">
+                                <button onclick="WalkthroughTour.start(); document.getElementById('tour-prompt-modal').remove();" style="background: linear-gradient(135deg, var(--accent-color), #b8941d); color: #0a1628; border: none; padding: 12px 24px; border-radius: 8px; font-family: var(--font-heading); font-size: 14px; font-weight: 700; cursor: pointer;">🚀 Start Tour Now</button>
+                                <button onclick="document.getElementById('tour-prompt-modal').remove();" style="background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); border: none; padding: 10px 24px; border-radius: 8px; font-family: var(--font-heading); font-size: 13px; cursor: pointer;">Maybe Later</button>
+                            </div>
+                            <p style="font-size: 11px; color: rgba(255,255,255,0.4); margin: 16px 0 0 0;">You can always access the tour from the toolbar ❓ button</p>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+
             return {
                 init: init,
                 start: start,
@@ -10138,6 +10147,7 @@ Best regards,
                 nextStep: nextStep,
                 prevStep: prevStep,
                 shouldAutoStart: shouldAutoStart,
+                showTourPrompt: showTourPrompt,
                 restart: function () {
                     localStorage.removeItem(lsKey());
                     start();
@@ -10915,6 +10925,9 @@ Best regards,
                 try { obDone = obLocal && JSON.parse(obLocal).completed; } catch (e) { }
                 if (obDone && WalkthroughTour.shouldAutoStart()) {
                     setTimeout(function () { WalkthroughTour.start(); }, 800);
+                } else if (obDone) {
+                    // Show tour prompt after a delay if user hasn't taken tour
+                    setTimeout(function () { WalkthroughTour.showTourPrompt(); }, 3000);
                 }
             });
         });

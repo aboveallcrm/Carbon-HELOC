@@ -21,6 +21,8 @@
 | [08-CLIENT-QUOTE-PAGE.md](08-CLIENT-QUOTE-PAGE.md) | Public client quote page — all sections, presets, flows |
 | [09-SUPER-ADMIN.md](09-SUPER-ADMIN.md) | Super admin tab — user management, impersonation, API key management |
 | [10-DNC-AND-COMPLIANCE.md](10-DNC-AND-COMPLIANCE.md) | 3-layer DNC system, TCPA logging, consent vault, compliance checker |
+| [11-INTEGRATION-HEALTH-MONITOR.md](11-INTEGRATION-HEALTH-MONITOR.md) | Automated testing for Supabase, n8n, Bonzo, GHL, automations |
+| [12-MOBILE-OPTIMIZATION.md](12-MOBILE-OPTIMIZATION.md) | Responsive design, touch targets, PWA, mobile testing |
 
 ---
 
