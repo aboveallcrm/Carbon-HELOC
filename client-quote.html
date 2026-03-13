@@ -1840,10 +1840,10 @@
         }
 
         /* Panel position variants - match orb positions */
-        .eq-panel.pos-bottom-right { bottom: 60px; right: 8px; }
-        .eq-panel.pos-bottom-left { bottom: 60px; left: 8px; }
-        .eq-panel.pos-top-right { top: 60px; right: 8px; }
-        .eq-panel.pos-top-left { top: 60px; left: 8px; }
+        .eq-panel.pos-bottom-right { bottom: 80px; right: 20px; }
+        .eq-panel.pos-bottom-left { bottom: 80px; left: 20px; }
+        .eq-panel.pos-top-right { top: 80px; right: 20px; }
+        .eq-panel.pos-top-left { top: 80px; left: 20px; }
         .eq-panel.pos-custom { /* Uses inline styles from drag */ }
 
         .eq-panel.open {
@@ -6591,6 +6591,25 @@
             <div id="rate-message-rotating" style="margin-top: 12px; padding: 10px 16px; background: linear-gradient(135deg, rgba(197, 160, 89, 0.15), rgba(197, 160, 89, 0.05)); border-radius: 8px; border-left: 3px solid var(--accent-color); font-size: 13px; color: var(--text-light); font-weight: 500; text-align: center; transition: all 0.3s ease;">
                 You've got funds waiting. What's your first move? 🎯
             </div>
+            
+            <!-- Take a Tour Button - Prominent -->
+            <div style="margin-top: 16px; text-align: center;">
+                <button onclick="openEzraTour()" id="tour-highlight-btn" style="padding: 14px 28px; background: linear-gradient(135deg, #c5a059, #a68543); border: none; border-radius: 30px; color: #0f172a; font-family: var(--font-heading); font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; animation: pulse-glow 2s infinite;">
+                    <span style="font-size: 18px;">🎯</span> Take a Guided Tour
+                </button>
+                <p style="margin-top: 8px; font-size: 12px; color: var(--text-muted);">New here? Let Ezra walk you through your quote in 2 minutes</p>
+            </div>
+            
+            <style>
+                @keyframes pulse-glow {
+                    0%, 100% { box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4); }
+                    50% { box-shadow: 0 4px 25px rgba(197, 160, 89, 0.7); }
+                }
+                #tour-highlight-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(197, 160, 89, 0.6);
+                }
+            </style>
         </div>
         <div class="greeting-banner" id="greeting-banner"></div>
         
@@ -8747,10 +8766,10 @@
                     content: `
                         <div style="text-align: center; padding: 20px 0;">
                             <span style="font-size: 48px; display: block; margin-bottom: 16px;">&#128176;</span>
-                            <p style="font-size: 16px; color: var(--text-light); line-height: 1.6; margin-bottom: 16px;">
-                                <strong>This is your personalized HELOC quote.</strong> It shows exactly what you'd get, what it costs, and what your payment looks like.
+                            <p style="font-size: 16px; color: #e2e8f0; line-height: 1.6; margin-bottom: 16px;">
+                                <strong style="color: #c5a059;">This is your personalized HELOC quote.</strong> It shows exactly what you'd get, what it costs, and what your payment looks like.
                             </p>
-                            <p style="color: var(--text-muted); font-size: 14px;">
+                            <p style="color: #94a3b8; font-size: 14px;">
                                 I'm going to walk you through each section so you understand every detail. No surprises. Let's go.
                             </p>
                         </div>
@@ -8761,15 +8780,15 @@
                     title: "Your Amount & Payment",
                     content: `
                         <div style="padding: 16px 0;">
-                            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6;">
-                                <strong style="color: var(--accent-color); font-size: 18px;">$278,810</strong> is what you'd walk away with in cash. <strong style="color: var(--accent-color); font-size: 18px;">$1,879/month</strong> is your fixed payment.
+                            <p style="font-size: 14px; color: #e2e8f0; margin-bottom: 16px; line-height: 1.6;">
+                                <strong style="color: #c5a059; font-size: 18px;">$278,810</strong> is what you'd walk away with in cash. <strong style="color: #c5a059; font-size: 18px;">$1,879/month</strong> is your fixed payment.
                             </p>
-                            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
+                            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
                                 This payment is locked in. It won't change. You know exactly what you're paying every month for the next 20 years.
                             </p>
-                            <div style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 6px; border-left: 4px solid var(--green);">
-                                <p style="color: var(--text-light); font-size: 13px; margin: 0;">
-                                    &#128161; <strong>Why this matters:</strong> No surprises. You can budget with certainty.
+                            <div style="background: rgba(16, 185, 129, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #10b981;">
+                                <p style="color: #e2e8f0; font-size: 13px; margin: 0;">
+                                    &#128161; <strong style="color: #10b981;">Why this matters:</strong> No surprises. You can budget with certainty.
                                 </p>
                             </div>
                         </div>
@@ -8780,15 +8799,15 @@
                     title: "The Origination Fee — How It Works",
                     content: `
                         <div style="padding: 16px 0;">
-                            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6;">
-                                We show <strong style="color: var(--accent-color);">three origination fee options: 1.50%, 2.99%, and 4.99%.</strong>
+                            <p style="font-size: 14px; color: #e2e8f0; margin-bottom: 16px; line-height: 1.6;">
+                                We show <strong style="color: #c5a059;">three origination fee options: 1.50%, 2.99%, and 4.99%.</strong>
                             </p>
-                            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
-                                Here's the deal: <strong>Higher fee = Lower rate. Lower fee = Higher monthly payment.</strong> You pick based on what matters most to you.
+                            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
+                                Here's the deal: <strong style="color: #e2e8f0;">Higher fee = Lower rate. Lower fee = Higher monthly payment.</strong> You pick based on what matters most to you.
                             </p>
-                            <div style="background: rgba(255, 248, 232, 0.5); padding: 12px; border-radius: 6px; border-left: 4px solid var(--accent-color);">
-                                <p style="color: var(--text-light); font-size: 13px; margin: 0; line-height: 1.5;">
-                                    &#127919; <strong>Here's the secret:</strong> All fees are <u>financed into your payment</u>. You don't pay anything at closing. You're not missing cash at the end. The fee just spreads over 20 years.
+                            <div style="background: rgba(197, 160, 89, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #c5a059;">
+                                <p style="color: #e2e8f0; font-size: 13px; margin: 0; line-height: 1.5;">
+                                    &#127919; <strong style="color: #c5a059;">Here's the secret:</strong> All fees are <u style="color: #c5a059;">financed into your payment</u>. You don't pay anything at closing. You're not missing cash at the end. The fee just spreads over 20 years.
                                 </p>
                             </div>
                         </div>
@@ -8799,15 +8818,15 @@
                     title: "What You Actually Get (Cash in Pocket)",
                     content: `
                         <div style="padding: 16px 0;">
-                            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6;">
-                                <strong style="color: var(--accent-color); font-size: 20px;">$259,420</strong> — This is the net amount hitting your bank account.
+                            <p style="font-size: 14px; color: #e2e8f0; margin-bottom: 16px; line-height: 1.6;">
+                                <strong style="color: #c5a059; font-size: 20px;">$259,420</strong> — This is the net amount hitting your bank account.
                             </p>
-                            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
+                            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
                                 We've already subtracted all closing costs and the origination fee. This is what's actually yours to use.
                             </p>
-                            <div style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 6px; border-left: 4px solid var(--green);">
-                                <p style="color: var(--text-light); font-size: 13px; margin: 0;">
-                                    &#10003; No surprises at closing. You see the number, that's what you get.
+                            <div style="background: rgba(16, 185, 129, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #10b981;">
+                                <p style="color: #e2e8f0; font-size: 13px; margin: 0;">
+                                    &#10003; <strong style="color: #10b981;">No surprises at closing.</strong> You see the number, that's what you get.
                                 </p>
                             </div>
                         </div>
@@ -8818,16 +8837,16 @@
                     title: "Closing Costs Breakdown",
                     content: `
                         <div style="padding: 16px 0;">
-                            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6;">
-                                Your total closing costs are <strong style="color: var(--accent-color);">$19,390.</strong> Here's where that money goes:
+                            <p style="font-size: 14px; color: #e2e8f0; margin-bottom: 16px; line-height: 1.6;">
+                                Your total closing costs are <strong style="color: #c5a059;">$19,390.</strong> Here's where that money goes:
                             </p>
-                            <ul style="color: var(--text-muted); font-size: 13px; line-height: 1.8; margin: 0 0 16px 0; padding-left: 20px;">
-                                <li><strong>$13,913</strong> — Origination fee (financed, not paid out of pocket)</li>
-                                <li><strong>Third-party fees</strong> — Title, appraisal, and county recording fees paid directly to third parties</li>
+                            <ul style="color: #94a3b8; font-size: 13px; line-height: 1.8; margin: 0 0 16px 0; padding-left: 20px;">
+                                <li><strong style="color: #e2e8f0;">$13,913</strong> — Origination fee (financed, not paid out of pocket)</li>
+                                <li><strong style="color: #e2e8f0;">Third-party fees</strong> — Title, appraisal, and county recording fees paid directly to third parties</li>
                             </ul>
-                            <div style="background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 6px; border-left: 4px solid #3b82f6;">
-                                <p style="color: var(--text-light); font-size: 13px; margin: 0;">
-                                    &#128161; <strong>The important part:</strong> You don't write a check for these. They're built into your payment. You get the full $259,420 in your account.
+                            <div style="background: rgba(59, 130, 246, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #3b82f6;">
+                                <p style="color: #e2e8f0; font-size: 13px; margin: 0;">
+                                    &#128161; <strong style="color: #3b82f6;">The important part:</strong> You don't write a check for these. They're built into your payment. You get the full $259,420 in your account.
                                 </p>
                             </div>
                         </div>
@@ -8838,15 +8857,15 @@
                     title: "The Draw Period — How You Use It",
                     content: `
                         <div style="padding: 16px 0;">
-                            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6;">
-                                You have a <strong style="color: var(--accent-color);">5-year draw period.</strong> During this time, you can borrow and repay as much as you want. Like a credit card, but for your home equity.
+                            <p style="font-size: 14px; color: #e2e8f0; margin-bottom: 16px; line-height: 1.6;">
+                                You have a <strong style="color: #c5a059;">5-year draw period.</strong> During this time, you can borrow and repay as much as you want. Like a credit card, but for your home equity.
                             </p>
-                            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
-                                <strong>After year 5,</strong> the draw period ends. Your payment automatically adjusts based on your remaining balance. But here's the guarantee: <u>You'll never pay more than the $1,879/month you see here.</u>
+                            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
+                                <strong style="color: #e2e8f0;">After year 5,</strong> the draw period ends. Your payment automatically adjusts based on your remaining balance. But here's the guarantee: <u style="color: #c5a059;">You'll never pay more than the $1,879/month you see here.</u>
                             </p>
-                            <div style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 6px; border-left: 4px solid var(--green);">
-                                <p style="color: var(--text-light); font-size: 13px; margin: 0; line-height: 1.5;">
-                                    &#127970; <strong>Why this is powerful:</strong> You have a safety net for 5 years. After that, you know your max payment. Zero surprises.
+                            <div style="background: rgba(16, 185, 129, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #10b981;">
+                                <p style="color: #e2e8f0; font-size: 13px; margin: 0; line-height: 1.5;">
+                                    &#127970; <strong style="color: #10b981;">Why this is powerful:</strong> You have a safety net for 5 years. After that, you know your max payment. Zero surprises.
                                 </p>
                             </div>
                         </div>
@@ -8857,15 +8876,15 @@
                     title: "Your Home Equity (The Money You're Borrowing)",
                     content: `
                         <div style="padding: 16px 0;">
-                            <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6;">
-                                Your home is worth <strong style="color: var(--accent-color);">$709,000.</strong> You owe <strong style="color: var(--accent-color);">$100,000</strong> on your mortgage.
+                            <p style="font-size: 14px; color: #e2e8f0; margin-bottom: 16px; line-height: 1.6;">
+                                Your home is worth <strong style="color: #c5a059;">$709,000.</strong> You owe <strong style="color: #c5a059;">$100,000</strong> on your mortgage.
                             </p>
-                            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
-                                That means you have <strong style="color: var(--accent-color);">$609,000 in equity.</strong> We're giving you access to <strong style="color: var(--accent-color);">$278,810</strong> of that (about 36%). You're only using 36% of what you have available.
+                            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
+                                That means you have <strong style="color: #c5a059;">$609,000 in equity.</strong> We're giving you access to <strong style="color: #c5a059;">$278,810</strong> of that (about 36%). You're only using 36% of what you have available.
                             </p>
-                            <div style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 6px; border-left: 4px solid var(--green);">
-                                <p style="color: var(--text-light); font-size: 13px; margin: 0;">
-                                    &#10003; You still have $300K+ in untapped equity if you ever need it.
+                            <div style="background: rgba(16, 185, 129, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #10b981;">
+                                <p style="color: #e2e8f0; font-size: 13px; margin: 0;">
+                                    &#10003; <strong style="color: #10b981;">You still have $300K+ in untapped equity</strong> if you ever need it.
                                 </p>
                             </div>
                         </div>
@@ -8876,20 +8895,20 @@
                     title: "The Decision: What Happens Next?",
                     content: `
                         <div style="padding: 16px 0;">
-                            <p style="font-size: 14px; color: var(--text-light); font-weight: 600; margin-bottom: 16px;">
+                            <p style="font-size: 14px; color: #e2e8f0; font-weight: 600; margin-bottom: 16px;">
                                 You have three options:
                             </p>
                             <div style="display: flex; flex-direction: column; gap: 12px;">
-                                <div style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 6px; border-left: 4px solid var(--green);">
-                                    <p style="color: var(--text-light); font-weight: 600; margin: 0 0 4px 0; font-size: 13px;">1. Move Forward</p>
-                                    <p style="color: var(--text-muted); margin: 0; font-size: 13px;">Click "Lock This In" &#8594; Quick 5-minute application &#8594; We handle the rest.</p>
+                                <div style="background: rgba(16, 185, 129, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #10b981;">
+                                    <p style="color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;">1. Move Forward</p>
+                                    <p style="color: #94a3b8; margin: 0; font-size: 13px;">Click "Lock This In" &#8594; Quick 5-minute application &#8594; We handle the rest.</p>
                                 </div>
-                                <div style="background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 6px; border-left: 4px solid #3b82f6;">
-                                    <p style="color: var(--text-light); font-weight: 600; margin: 0 0 4px 0; font-size: 13px;">2. Ask Questions</p>
-                                    <p style="color: var(--text-muted); margin: 0; font-size: 13px;">Close this tour and chat with me. I'll clarify anything you need.</p>
+                                <div style="background: rgba(59, 130, 246, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #3b82f6;">
+                                    <p style="color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;">2. Ask Questions</p>
+                                    <p style="color: #94a3b8; margin: 0; font-size: 13px;">Close this tour and chat with me. I'll clarify anything you need.</p>
                                 </div>
-                                <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; border-left: 4px solid var(--text-muted);">
-                                    <p style="color: var(--text-light); font-weight: 600; margin: 0 0 4px 0; font-size: 13px;">3. Take Your Time</p>
+                                <div style="background: rgba(255,255,255,0.08); padding: 12px; border-radius: 6px; border-left: 4px solid #64748b;">
+                                    <p style="color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;">3. Take Your Time</p>
                                     <p style="color: var(--text-muted); margin: 0; font-size: 13px;">Save this quote. Sleep on it. Come back when you're ready. It's locked in for 6 days.</p>
                                 </div>
                             </div>
