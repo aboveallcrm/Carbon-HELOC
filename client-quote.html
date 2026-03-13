@@ -10120,24 +10120,25 @@
     
     <!-- PWA Service Worker Registration -->
     <script>
+        // Client-facing quote pages must NOT use service worker caching.
+        // Unregister any existing SW to prevent stale HTML being served.
         if ('serviceWorker' in navigator) {
-            // Reload page when a new service worker takes over (ensures fresh HTML)
-            var refreshing = false;
-            navigator.serviceWorker.addEventListener('controllerchange', function() {
-                if (!refreshing) {
-                    refreshing = true;
-                    window.location.reload();
-                }
-            });
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                        console.log('[PWA] Service Worker registered for client quote:', registration.scope);
-                    })
-                    .catch(function(error) {
-                        console.log('[PWA] Service Worker registration failed:', error);
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                registrations.forEach(function(registration) {
+                    registration.unregister().then(function() {
+                        console.log('[PWA] Service Worker unregistered for client quote page');
                     });
+                });
             });
+            // Also clear all caches to remove stale HTML
+            if ('caches' in window) {
+                caches.keys().then(function(names) {
+                    names.forEach(function(name) {
+                        caches.delete(name);
+                        console.log('[PWA] Deleted cache:', name);
+                    });
+                });
+            }
         }
     </script>
 

@@ -3,7 +3,7 @@
  * Provides caching, offline functionality, push notifications, and background sync
  */
 
-const CACHE_NAME = 'aac-heloc-v8';
+const CACHE_NAME = 'aac-heloc-v9';
 // Only pre-cache small, stable assets. HTML pages use network-first
 // and should NOT be pre-cached (they change frequently and are large).
 const STATIC_ASSETS = [
@@ -48,6 +48,16 @@ self.addEventListener('activate', (event) => {
           })
       );
     }).then(() => self.clients.claim())
+      .then(() => {
+        // Force-reload all open client pages to pick up fresh HTML
+        self.clients.matchAll({ type: 'window' }).then((clients) => {
+          clients.forEach((client) => {
+            if (client.url && client.url.includes('client-quote')) {
+              client.navigate(client.url);
+            }
+          });
+        });
+      })
   );
 });
 
@@ -71,6 +81,11 @@ self.addEventListener('fetch', (event) => {
       url.hostname.includes('api.heygen.com') ||
       url.hostname.includes('filesafe.space')) {
     return;
+  }
+
+  // NEVER cache client-quote.html — always go to network, no fallback
+  if (url.pathname.includes('client-quote')) {
+    return; // Let browser handle normally (no SW interception)
   }
 
   // Network-first for HTML pages (they change frequently)
