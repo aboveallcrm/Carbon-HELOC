@@ -5032,9 +5032,6 @@
             style="background:linear-gradient(135deg,#0078d4,#005a9e);">✉️ Email</button>
         <button class="toolbar-btn" onclick="toggleSendQuotePanel()" title="Send quote via SMS, Email, or CRM"
             style="background:linear-gradient(135deg,#10b981,#059669);" id="btn-send-quote">📲 Send</button>
-        <button class="toolbar-btn" id="btn-download-pdf"
-            style="display:none; background: linear-gradient(135deg, #06b6d4, #0891b2);" onclick="exportBrandedPDF()">⬇
-            Download</button>
         <button class="toolbar-btn" id="btn-notif-bell" onclick="toggleNotifPanel()" title="Quote view alerts" style="position:relative; background: transparent; border: 1px solid rgba(255,255,255,0.15); font-size: 14px; padding: 5px 10px;">🔔<span id="notif-badge" style="display:none; position:absolute; top:-4px; right:-4px; background:#ef4444; color:white; font-size:9px; font-weight:800; min-width:16px; height:16px; border-radius:8px; display:none; align-items:center; justify-content:center; font-family:var(--font-heading);">0</span></button>
         <span class="autosave-indicator" id="autosave-status">✓ Saved</span>
         <button class="toolbar-btn-help" onclick="WalkthroughTour.restart()" title="Restart guided tour">❓ Tour</button>
@@ -8729,12 +8726,7 @@ Best regards,
                 if (level >= 3) _loadCustomAIPrompt();
             }
 
-            // ---- DIAMOND (level >= 4): PDF Download, Quote Templates, Advanced Analytics ----
-            var downloadPdfBtn = document.getElementById('btn-download-pdf');
-            if (downloadPdfBtn) {
-                downloadPdfBtn.style.display = level >= 4 ? '' : 'none';
-            }
-
+            // ---- DIAMOND (level >= 4): Quote Templates, Advanced Analytics ----
             var templatesSection = document.getElementById('quote-templates-section');
             if (templatesSection) {
                 templatesSection.style.display = level >= 4 ? '' : 'none';
