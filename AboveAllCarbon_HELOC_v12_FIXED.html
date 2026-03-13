@@ -1330,10 +1330,8 @@
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
                 font-size: 9px;
-                /* Constrain to single page */
                 height: auto;
-                max-height: 10.5in;
-                overflow: hidden;
+                overflow: visible;
             }
 
             #admin-panel,
@@ -14958,52 +14956,58 @@ Sent via Above All Carbon HELOC Tool`;
             showToast('Generating PDF...', 'info');
             
             try {
-                // Capture at optimized width for single page
+                // Capture at optimized width
                 const canvas = await captureProposal({ width: 850, scale: 2, settle: 200 });
-                
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.92);
                 const { jsPDF } = window.jspdf;
-                
+
                 // Letter size in mm (8.5 x 11 inches)
                 const pageW = 215.9;
                 const pageH = 279.4;
                 const margin = 10;
                 const contentW = pageW - (margin * 2);
-                
-                // Calculate image dimensions to fit on one page if possible
+                const usableH = pageH - (margin * 2);
+
+                // Scale image to full content width, paginate if taller than one page
                 const imgRatio = canvas.height / canvas.width;
-                let imgW = contentW;
-                let imgH = imgW * imgRatio;
-                
-                // If image is too tall, scale to fit height
-                const maxH = pageH - (margin * 2);
-                if (imgH > maxH) {
-                    imgH = maxH;
-                    imgW = imgH / imgRatio;
-                }
-                
-                // Center the image on the page
-                const xPos = margin + (contentW - imgW) / 2;
-                const yPos = margin;
-                
-                // Create PDF
+                const imgW = contentW;
+                const imgH = imgW * imgRatio;
+
                 const pdf = new jsPDF('p', 'mm', 'letter');
-                pdf.addImage(imgData, 'JPEG', xPos, yPos, imgW, imgH);
-                
-                // Add subtle footer
+                let heightLeft = imgH;
+                let yOffset = 0;
+
+                // First page
+                pdf.addImage(imgData, 'JPEG', margin, margin, imgW, imgH);
+                heightLeft -= usableH;
+
+                // Additional pages — shift the image up to show next slice
+                while (heightLeft > 0) {
+                    pdf.addPage();
+                    yOffset += usableH;
+                    pdf.addImage(imgData, 'JPEG', margin, margin - yOffset, imgW, imgH);
+                    heightLeft -= usableH;
+                }
+
+                // Add subtle footer to each page
                 const clientName = document.getElementById('in-client-name')?.value || 'Client';
                 const loName = document.getElementById('lo-name')?.value || '';
                 const dateStr = new Date().toLocaleDateString();
-                
-                pdf.setFontSize(8);
-                pdf.setTextColor(150);
-                pdf.text(`Generated ${dateStr}${loName ? ' by ' + loName : ''}`, margin, pageH - 5);
-                pdf.text('Above All Carbon HELOC', pageW - margin, pageH - 5, { align: 'right' });
-                
+                const totalPages = pdf.getNumberOfPages();
+
+                for (let p = 1; p <= totalPages; p++) {
+                    pdf.setPage(p);
+                    pdf.setFontSize(7);
+                    pdf.setTextColor(150);
+                    pdf.text(`Generated ${dateStr}${loName ? ' by ' + loName : ''}`, margin, pageH - 4);
+                    pdf.text(`Page ${p} of ${totalPages}`, pageW - margin, pageH - 4, { align: 'right' });
+                }
+
                 // Download with clean filename
                 const safeName = clientName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
                 pdf.save(`HELOC_Proposal_${safeName}_${dateStr.replace(/\//g, '-')}.pdf`);
-                
+
                 showToast('PDF downloaded!', 'success');
             } catch (err) {
                 console.error('PDF generation failed:', err);
@@ -15077,11 +15081,11 @@ Sent via Above All Carbon HELOC Tool`;
 
             // Apply PDF-specific visibility rules based on the toggles
             const pdfHiddenEls = [];
-            
+
             // Always hide welcome hero in PDF
             const welcomeHero = document.getElementById('welcome-hero');
             if (welcomeHero) { welcomeHero.classList.add('print-exclude'); pdfHiddenEls.push(welcomeHero); }
-            
+
             if (document.getElementById('chk-pdf-lo-info') && !document.getElementById('chk-pdf-lo-info').checked) {
                 const footer = document.querySelector('footer');
                 if (footer) { footer.classList.add('print-exclude'); pdfHiddenEls.push(footer); }
@@ -15102,25 +15106,26 @@ Sent via Above All Carbon HELOC Tool`;
                 const imgData = canvas.toDataURL('image/jpeg', 0.92);
                 const { jsPDF } = window.jspdf;
 
-                // A4 dimensions in mm
-                var pageW = 210, pageH = 297, margin = 8;
+                // Letter size in mm (8.5 x 11 inches)
+                var pageW = 215.9, pageH = 279.4, margin = 8;
                 var contentW = pageW - margin * 2;
                 var imgH = (canvas.height / canvas.width) * contentW;
+                var usableH = pageH - margin * 2;
 
-                var pdf = new jsPDF('p', 'mm', 'a4');
+                var pdf = new jsPDF('p', 'mm', 'letter');
                 var heightLeft = imgH;
-                var yPos = margin;
+                var yOffset = 0;
 
                 // First page
-                pdf.addImage(imgData, 'JPEG', margin, yPos, contentW, imgH);
-                heightLeft -= (pageH - margin * 2);
+                pdf.addImage(imgData, 'JPEG', margin, margin, contentW, imgH);
+                heightLeft -= usableH;
 
-                // Additional pages
+                // Additional pages — slice the image by shifting yOffset
                 while (heightLeft > 0) {
                     pdf.addPage();
-                    yPos = margin - (imgH - heightLeft);
-                    pdf.addImage(imgData, 'JPEG', margin, yPos, contentW, imgH);
-                    heightLeft -= (pageH - margin * 2);
+                    yOffset += usableH;
+                    pdf.addImage(imgData, 'JPEG', margin, margin - yOffset, contentW, imgH);
+                    heightLeft -= usableH;
                 }
 
                 // Add footer to each page
@@ -15141,7 +15146,6 @@ Sent via Above All Carbon HELOC Tool`;
                 pdf.save('HELOC_Proposal_' + clientName.replace(/[^a-zA-Z0-9]/g, '_') + '_' + dateStr + '.pdf');
                 showToast('PDF downloaded!', 'success');
             } catch (err) {
-                container.style.width = origWidth;
                 pdfHiddenEls.forEach(el => el.classList.remove('print-exclude'));
                 showToast('PDF export failed: ' + err.message, 'error');
             }

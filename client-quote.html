@@ -5527,6 +5527,7 @@
             #share-modal,
             .modal-overlay,
             #toast,
+            .toast-container,
             #eq-root,
             .eq-orb,
             .eq-orb-ring,
@@ -5557,6 +5558,10 @@
             .kbd-hint,
             .keyboard-hint,
             .key-hint,
+            .sticky-cta-bar,
+            .no-print,
+            .loading-overlay,
+            .show-more-btn,
             [class*="hint"][class*="cmd"],
             [class*="shortcut"],
             [id*="hint"],
@@ -5568,6 +5573,22 @@
                 display: none !important;
             }
 
+            /* FAQ: expand all answers for print */
+            .faq-answer {
+                display: block !important;
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            .faq-icon {
+                display: none !important;
+            }
+
+            /* What-If slider: show current values but hide interactive controls */
+            #sec-what-if input[type="range"] {
+                display: none !important;
+            }
+
             /* --- Quote Page Container --- */
             .quote-page {
                 max-width: 100% !important;
@@ -5576,9 +5597,7 @@
                 border-radius: 0 !important;
                 overflow: visible !important;
                 background: white !important;
-                transform: scale(0.82) !important;
-                transform-origin: top center !important;
-                margin-bottom: -200px !important; /* Compensate for scale */
+                font-size: 10px !important;
             }
 
             .quote-page::before {
@@ -6346,17 +6365,8 @@
             color: var(--bg-dark);
         }
         
-        /* Print styles */
+        /* Print styles (main print block is above — this supplements for rate cards) */
         @media print {
-            .no-print, .sticky-cta-bar, .ezra-panel, .toast-container {
-                display: none !important;
-            }
-            
-            body {
-                background: white;
-                color: black;
-            }
-            
             .rate-card {
                 break-inside: avoid;
                 border: 1px solid #ccc;
@@ -6414,8 +6424,8 @@
 
     <!-- Positive Decision Banner -->
     <div class="decision-banner" id="decision-banner">
-        <span class="db-icon">&#10003;</span>
-        <span class="db-text">Your quote is personalized & ready. Take your time.</span>
+        <span class="db-icon">&#9889;</span>
+        <span class="db-text" data-i18n="decisionBanner">Rates change daily — review & lock yours before they move.</span>
     </div>
 
     <!-- Scroll Progress -->
@@ -6426,12 +6436,11 @@
 
     <!-- Floating Action Bar -->
     <div class="floating-bar" id="floating-bar" style="display: none;">
-        <button onclick="openApplyModal()">&#10003; This Looks Right — Let's Move Forward</button>
-        <button class="secondary" id="btn-schedule" onclick="scheduleCall()" style="display:none;">&#128197; Schedule
-            Call</button>
-        <button class="secondary" id="btn-ask" onclick="askQuestion()">&#128161; Ask Ezra For Clarification</button>
-        <button class="secondary" onclick="downloadPDF()">&#128196; Save PDF</button>
-        <button class="secondary" onclick="shareQuote()">&#128279; Share</button>
+        <button onclick="openApplyModal()"><span data-i18n="ctaMain">&#10003; This Looks Right — Let's Move Forward</span></button>
+        <button class="secondary" id="btn-schedule" onclick="scheduleCall()" style="display:none;"><span data-i18n="ctaSchedule">&#128197; Schedule Call</span></button>
+        <button class="secondary" id="btn-ask" onclick="askQuestion()"><span data-i18n="ctaAsk">&#128161; Ask Ezra For Clarification</span></button>
+        <button class="secondary" onclick="downloadPDF()"><span data-i18n="ctaPdf">&#128196; Save PDF</span></button>
+        <button class="secondary" onclick="shareQuote()"><span data-i18n="ctaShare">&#128279; Share</span></button>
     </div>
 
     <!-- Preview Mode Floating Bar -->
@@ -6584,7 +6593,7 @@
                 <polygon points="100,10 15,75 25,75 100,20 175,75 185,75" />
             </svg>
             <h1 id="q-title">Your HELOC Proposal</h1>
-            <div class="subtitle">Personalized Home Equity Line of Credit</div>
+            <div class="subtitle" data-i18n="subtitle">Personalized Home Equity Line of Credit</div>
             <div class="lo-info" id="q-lo-info"></div>
             
             <!-- Rotating Rate Message -->
@@ -6595,9 +6604,9 @@
             <!-- Take a Tour Button - Prominent -->
             <div style="margin-top: 16px; text-align: center;">
                 <button onclick="openEzraTour()" id="tour-highlight-btn" style="padding: 14px 28px; background: linear-gradient(135deg, #c5a059, #a68543); border: none; border-radius: 30px; color: #0f172a; font-family: var(--font-heading); font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; animation: pulse-glow 2s infinite;">
-                    <span style="font-size: 18px;">🎯</span> Take a Guided Tour
+                    <span style="font-size: 18px;">🎯</span> <span data-i18n="tourBtn">Take a Guided Tour</span>
                 </button>
-                <p style="margin-top: 8px; font-size: 12px; color: var(--text-muted);">New here? Let Ezra walk you through your quote in 2 minutes</p>
+                <p style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" data-i18n="tourSub">New here? Let Ezra walk you through your quote in 2 minutes</p>
             </div>
             
             <style>
@@ -6616,12 +6625,12 @@
         
         <div class="body-content">
             <div class="progress-stepper" id="progress-stepper">
-                <div class="step completed" id="step-1"><span class="step-dot">&#10003;</span><span>Review Quote</span>
+                <div class="step completed" id="step-1"><span class="step-dot">&#10003;</span><span data-i18n="stepReview">Review Quote</span>
                 </div>
                 <div class="step-line filled" id="step-line-1"></div>
-                <div class="step active" id="step-2"><span class="step-dot">2</span><span>Easy Application</span></div>
+                <div class="step active" id="step-2"><span class="step-dot">2</span><span data-i18n="stepApply">Easy Application</span></div>
                 <div class="step-line" id="step-line-2"></div>
-                <div class="step" id="step-3"><span class="step-dot">3</span><span>Get Funded</span></div>
+                <div class="step" id="step-3"><span class="step-dot">3</span><span data-i18n="stepFunded">Get Funded</span></div>
             </div>
             <!-- PSYCHOLOGY VIDEO FUNNEL - Stage 1: The Hook (hidden by default, LO enables via link options) -->
             <div class="section reveal" id="sec-personal-video" style="display: none;">
@@ -6804,26 +6813,26 @@
             <div class="social-proof reveal" id="sec-social-proof">
                 <div class="sp-item">
                     <div class="sp-number" data-target="2500" data-suffix="+">0</div>
-                    <div class="sp-label">Homeowners Funded This Year</div>
+                    <div class="sp-label" data-i18n="spFunded">Homeowners Funded This Year</div>
                 </div>
                 <div class="sp-item">
                     <div class="sp-number" data-target="5" data-suffix=" days">0</div>
-                    <div class="sp-label">Average Time to Funding</div>
+                    <div class="sp-label" data-i18n="spTime">Average Time to Funding</div>
                 </div>
                 <div class="sp-item">
                     <div class="sp-number" data-target="97" data-suffix="%">0</div>
-                    <div class="sp-label">Client Satisfaction Rating</div>
+                    <div class="sp-label" data-i18n="spSatisfaction">Client Satisfaction Rating</div>
                 </div>
             </div>
             <div class="recommendation reveal" id="sec-recommendation">
                 <div class="cert-icon">&#9733;</div>
-                <h3>Recommended Option</h3>
+                <h3 data-i18n="recTitle">Recommended Option</h3>
                 <div class="rec-grid stagger-children" id="q-rec-grid"></div>
             </div>
 
             <!-- Borrower Strategy (Personalized Message) -->
             <div class="section reveal" id="sec-borrower-strategy" style="display: none;">
-                <div class="section-title" data-icon="&#128172;">Why This Works For You</div>
+                <div class="section-title" data-icon="&#128172;"><span data-i18n="strategyTitle">Why This Works For You</span></div>
                 <div class="borrower-strategy-box" id="borrower-strategy-text" style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 14px; padding: 20px 24px; font-family: var(--font-body); font-size: 15px; line-height: 1.7; color: var(--slate);">
                     <!-- Strategy text will be inserted here -->
                 </div>
@@ -7390,6 +7399,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         // ===== TOAST NOTIFICATION SYSTEM =====
         function showToast(message, type, duration) {
@@ -7415,6 +7426,117 @@
                 toast.remove();
             }, duration);
         }
+
+        // ===== LANGUAGE TOGGLE (Global scope - works in preview AND live mode) =====
+        var currentLanguage = 'en';
+        
+        var i18n = {
+            en: {
+                // Header & Navigation
+                subtitle: 'Personalized Home Equity Line of Credit',
+                decisionBanner: 'Rates change daily \u2014 review & lock yours before they move.',
+                tourBtn: 'Take a Guided Tour',
+                tourSub: 'New here? Let Ezra walk you through your quote in 2 minutes',
+                // Progress Stepper
+                stepReview: 'Review Quote',
+                stepApply: 'Easy Application',
+                stepFunded: 'Get Funded',
+                // Floating Action Bar
+                ctaMain: '\u2713 This Looks Right \u2014 Let\'s Move Forward',
+                ctaSchedule: '\uD83D\uDCC5 Schedule Call',
+                ctaAsk: '\uD83D\uDCA1 Ask Ezra For Clarification',
+                ctaPdf: '\uD83D\uDCC4 Save PDF',
+                ctaShare: '\uD83D\uDD17 Share',
+                // Sections
+                commonQuestionsTitle: 'Common Questions',
+                helocEarlyPayoff: 'Can I pay off my HELOC early?',
+                howFastMoney: 'How fast do I get my money?',
+                closingCosts: 'What are closing costs and what\'s included?',
+                // Social Proof
+                spFunded: 'Homeowners Funded This Year',
+                spTime: 'Average Time to Funding',
+                spSatisfaction: 'Client Satisfaction Rating',
+                // Recommendation
+                recTitle: 'Recommended Option',
+                strategyTitle: 'Why This Works For You'
+            },
+            es: {
+                // Header & Navigation
+                subtitle: 'L\u00ednea de Cr\u00e9dito con Garant\u00eda Hipotecaria Personalizada',
+                decisionBanner: 'Las tasas cambian diariamente \u2014 revise y asegure la suya antes de que cambien.',
+                tourBtn: 'Haga un Recorrido Guiado',
+                tourSub: '\u00bfNuevo aqu\u00ed? Deje que Ezra le explique su cotizaci\u00f3n en 2 minutos',
+                // Progress Stepper
+                stepReview: 'Revisar Cotizaci\u00f3n',
+                stepApply: 'Solicitud F\u00e1cil',
+                stepFunded: 'Recibir Fondos',
+                // Floating Action Bar
+                ctaMain: '\u2713 Todo Se Ve Bien \u2014 Avancemos',
+                ctaSchedule: '\uD83D\uDCC5 Programar Llamada',
+                ctaAsk: '\uD83D\uDCA1 Preg\u00fantele a Ezra',
+                ctaPdf: '\uD83D\uDCC4 Guardar PDF',
+                ctaShare: '\uD83D\uDD17 Compartir',
+                // Sections
+                commonQuestionsTitle: 'Preguntas Frecuentes',
+                helocEarlyPayoff: '\u00bfPuedo pagar mi HELOC antes de tiempo?',
+                howFastMoney: '\u00bfQu\u00e9 tan r\u00e1pido obtengo mi dinero?',
+                closingCosts: '\u00bfCu\u00e1les son los costos de cierre y qu\u00e9 incluye?',
+                // Social Proof
+                spFunded: 'Propietarios Financiados Este A\u00f1o',
+                spTime: 'Tiempo Promedio de Financiamiento',
+                spSatisfaction: 'Calificaci\u00f3n de Satisfacci\u00f3n',
+                // Recommendation
+                recTitle: 'Opci\u00f3n Recomendada',
+                strategyTitle: 'Por Qu\u00e9 Esto Funciona Para Usted'
+            }
+        };
+        
+        window.setLanguage = function(lang) {
+            currentLanguage = lang;
+            
+            // Update button styles
+            var enBtn = document.getElementById('langBtnEn');
+            var esBtn = document.getElementById('langBtnEs');
+            if (enBtn) {
+                enBtn.style.backgroundColor = lang === 'en' ? 'var(--accent-color)' : 'rgba(255,255,255,0.1)';
+                enBtn.style.color = lang === 'en' ? '#0f172a' : 'rgba(255,255,255,0.8)';
+            }
+            if (esBtn) {
+                esBtn.style.backgroundColor = lang === 'es' ? 'var(--accent-color)' : 'rgba(255,255,255,0.1)';
+                esBtn.style.color = lang === 'es' ? '#0f172a' : 'rgba(255,255,255,0.8)';
+            }
+
+            // Update all elements with data-i18n attribute
+            var translations = i18n[lang];
+            if (!translations) return;
+            
+            document.querySelectorAll('[data-i18n]').forEach(function(element) {
+                var key = element.getAttribute('data-i18n');
+                if (translations[key]) {
+                    element.textContent = translations[key];
+                }
+            });
+
+            // Update Ezra spanish mode flag
+            window._ezraSpanishMode = (lang === 'es');
+            window._ezraLanguage = lang;
+
+            // Store preference
+            localStorage.setItem('preferredLanguage', lang);
+            
+            // Show toast confirmation
+            if (typeof showToast === 'function') {
+                showToast(lang === 'es' ? 'Idioma cambiado a Espa\u00f1ol' : 'Language switched to English', 'success');
+            }
+        };
+        
+        // Auto-detect language on load
+        (function() {
+            var saved = localStorage.getItem('preferredLanguage');
+            if (saved && saved !== 'en') {
+                window.setLanguage(saved);
+            }
+        })();
 
         (function () {
             var SUPABASE_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co';
@@ -7653,7 +7775,7 @@
                     "Most homeowners use this for debt freedom. What's your priority? 💡",
                     "Your rate is locked. The question is: when do you want the funds? 🔒",
                     "Smart move reviewing this. Ready to see your options in action? ⚡",
-                    "This quote expires in 6 days. But opportunities like this? They move fast. ⏰",
+                    "Rates change daily. Today's numbers won't last — don't let this one slip. ⏰",
                     "You're pre-approved. No guesswork. Just decisions. What's next? ✅"
                 ];
                 
@@ -8501,7 +8623,96 @@
                 else if (method === 'copy') navigator.clipboard.writeText(url).then(function () { showToast('Link copied to clipboard!'); }).catch(function () { showToast('Could not copy link'); });
                 trackEvent('share_clicked', { method: method, code: code });
             };
-            window.downloadPDF = function () { trackEvent('pdf_download_clicked', { code: code }); window.print(); };
+            window.downloadPDF = async function () {
+                trackEvent('pdf_download_clicked', { code: code });
+
+                // If libraries loaded, generate a proper PDF; otherwise fall back to browser print
+                if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+                    window.print();
+                    return;
+                }
+
+                showToast('Generating PDF...', 'info');
+
+                try {
+                    var quotePage = document.querySelector('.quote-page');
+                    if (!quotePage) { window.print(); return; }
+
+                    // Hide non-content elements during capture
+                    var hideSelectors = '#decision-banner, #floating-bar, .floating-bar, #exit-modal, #eq-root, .eq-orb, .eq-panel, .eq-hint, .eq-nudge, .sticky-cta-bar, .toast-container, .theme-toggle, .no-print, .command-palette, .kbd-hint, .key-hint, #scroll-progress, #particle-canvas, #apply-modal, #contact-modal, #share-modal, .modal-overlay, .pvf-play-btn, .pvf-pulse-ring, .pvf-play-label, .pvf-duration-badge, .fc-dots, .fc-cta, .confetti';
+                    var hidden = [];
+                    document.querySelectorAll(hideSelectors).forEach(function(el) {
+                        if (el.style.display !== 'none') {
+                            hidden.push({ el: el, prev: el.style.display });
+                            el.style.display = 'none';
+                        }
+                    });
+
+                    // Force all reveal sections visible
+                    var reveals = document.querySelectorAll('.reveal, .stagger-children > *');
+                    reveals.forEach(function(el) { el.style.opacity = '1'; el.style.transform = 'none'; });
+
+                    var canvas = await html2canvas(quotePage, {
+                        scale: 2,
+                        useCORS: true,
+                        allowTaint: false,
+                        backgroundColor: '#ffffff',
+                        width: quotePage.scrollWidth,
+                        height: quotePage.scrollHeight,
+                        scrollX: 0, scrollY: 0, x: 0, y: 0
+                    });
+
+                    // Restore hidden elements
+                    hidden.forEach(function(h) { h.el.style.display = h.prev; });
+
+                    var imgData = canvas.toDataURL('image/jpeg', 0.92);
+                    var jsPDF = window.jspdf.jsPDF;
+
+                    // Letter size in mm
+                    var pageW = 215.9, pageH = 279.4, margin = 8;
+                    var contentW = pageW - margin * 2;
+                    var imgH = (canvas.height / canvas.width) * contentW;
+                    var usableH = pageH - margin * 2;
+
+                    var pdf = new jsPDF('p', 'mm', 'letter');
+                    var heightLeft = imgH;
+                    var yOffset = 0;
+
+                    // First page
+                    pdf.addImage(imgData, 'JPEG', margin, margin, contentW, imgH);
+                    heightLeft -= usableH;
+
+                    // Additional pages
+                    while (heightLeft > 0) {
+                        pdf.addPage();
+                        yOffset += usableH;
+                        pdf.addImage(imgData, 'JPEG', margin, margin - yOffset, contentW, imgH);
+                        heightLeft -= usableH;
+                    }
+
+                    // Footer on each page
+                    var totalPages = pdf.getNumberOfPages();
+                    var loName = (window.quoteData && window.quoteData.lo_name) || '';
+                    var dateStr = new Date().toLocaleDateString();
+                    for (var p = 1; p <= totalPages; p++) {
+                        pdf.setPage(p);
+                        pdf.setFontSize(7);
+                        pdf.setTextColor(150);
+                        pdf.text('Generated ' + dateStr + (loName ? ' by ' + loName : ''), margin, pageH - 4);
+                        pdf.text('Page ' + p + ' of ' + totalPages, pageW - margin, pageH - 4, { align: 'right' });
+                    }
+
+                    var clientName = (window.quoteData && (window.quoteData.client_name || window.quoteData.clientName)) || 'Client';
+                    var safeName = clientName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+                    pdf.save('HELOC_Quote_' + safeName + '_' + dateStr.replace(/\//g, '-') + '.pdf');
+
+                    showToast('PDF downloaded!', 'success');
+                } catch (err) {
+                    console.error('PDF generation failed:', err);
+                    showToast('PDF failed — opening print dialog', 'info');
+                    window.print();
+                }
+            };
 
             // Theme Toggle
             window.toggleTheme = function () {
@@ -8988,44 +9199,8 @@
                 document.getElementById('tourBtnEnd').style.display = isLastSlide ? 'block' : 'none';
             }
 
-            // ===== LANGUAGE TOGGLE =====
-            var currentLanguage = 'en';
-            
-            var i18n = {
-                en: {
-                    commonQuestionsTitle: 'Common Questions',
-                    helocEarlyPayoff: 'Can I pay off my HELOC early?',
-                    howFastMoney: 'How fast do I get my money?',
-                    closingCosts: 'What are closing costs and what\'s included?'
-                },
-                es: {
-                    commonQuestionsTitle: 'Preguntas Frecuentes',
-                    helocEarlyPayoff: '¿Puedo pagar mi HELOC antes?',
-                    howFastMoney: '¿Qué tan rápido obtengo mi dinero?',
-                    closingCosts: '¿Cuáles son los costos de cierre y qué incluye?'
-                }
-            };
-            
-            window.setLanguage = function(lang) {
-                currentLanguage = lang;
-                
-                // Update button styles
-                document.getElementById('langBtnEn').style.backgroundColor = lang === 'en' ? 'var(--accent-color)' : 'rgba(255,255,255,0.1)';
-                document.getElementById('langBtnEn').style.color = lang === 'en' ? 'var(--bg-dark)' : 'var(--text-light)';
-                document.getElementById('langBtnEs').style.backgroundColor = lang === 'es' ? 'var(--accent-color)' : 'rgba(255,255,255,0.1)';
-                document.getElementById('langBtnEs').style.color = lang === 'es' ? 'var(--bg-dark)' : 'var(--text-light)';
-
-                // Update all text nodes with data-i18n attribute
-                document.querySelectorAll('[data-i18n]').forEach(function(element) {
-                    var key = element.getAttribute('data-i18n');
-                    if (i18n[currentLanguage] && i18n[currentLanguage][key]) {
-                        element.textContent = i18n[currentLanguage][key];
-                    }
-                });
-
-                // Store preference
-                localStorage.setItem('preferredLanguage', lang);
-            };
+            // Language toggle is defined in a global scope script block above
+            // (moved outside this IIFE so it works in both preview and live modes)
 
             function updatePaymentDisplay() {
                 var payment, detail;
@@ -9367,44 +9542,18 @@
             };
 
             // ===== MULTI-LANGUAGE SUPPORT =====
+            // detectBrowserLanguage now delegates to unified setLanguage system
             function detectBrowserLanguage() {
                 var lang = navigator.language || navigator.userLanguage;
                 var primaryLang = lang.split('-')[0];
-                
-                // Store language preference
                 window._ezraLanguage = primaryLang;
                 
-                // If Spanish, update UI elements
-                if (primaryLang === 'es') {
-                    updateUISpanish();
-                }
-            }
-
-            function updateUISpanish() {
-                // Update key UI elements to Spanish
-                var translations = {
-                    'Your HELOC Proposal': 'Su Propuesta de HELOC',
-                    'Apply Now': 'Aplicar Ahora',
-                    'Schedule Call': 'Programar Llamada',
-                    'Ask Question': 'Hacer Pregunta',
-                    'Save PDF': 'Guardar PDF',
-                    'Share': 'Compartir',
-                    'Rate Options': 'Opciones de Tasa',
-                    'Your Details': 'Sus Detalles',
-                    'Your Equity': 'Su Equity',
-                    'Recommended Option': 'Opción Recomendada'
-                };
-
-                // Update elements
-                document.querySelectorAll('*').forEach(function(el) {
-                    var text = el.textContent?.trim();
-                    if (translations[text]) {
-                        el.textContent = translations[text];
+                // If browser is Spanish and no saved preference, auto-switch
+                if (primaryLang === 'es' && !localStorage.getItem('preferredLanguage')) {
+                    if (typeof window.setLanguage === 'function') {
+                        window.setLanguage('es');
                     }
-                });
-
-                // Update Ezra's welcome message if chat is initialized
-                window._ezraSpanishMode = true;
+                }
             }
 
             // ===== PROGRESS STEPPER =====
