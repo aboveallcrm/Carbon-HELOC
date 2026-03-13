@@ -392,7 +392,7 @@
         .header {
             background: linear-gradient(160deg, #0a1628 0%, var(--header-bg) 50%, #132240 100%);
             color: white;
-            padding: 48px 44px 40px;
+            padding: 24px 32px 20px;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -421,21 +421,21 @@
 
         .header h1 {
             font-family: var(--font-heading);
-            font-size: 32px;
+            font-size: 24px;
             font-weight: 900;
             color: var(--accent-color);
             text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 8px;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
             position: relative;
         }
 
         .header .subtitle {
             font-family: var(--font-heading);
-            font-size: 13px;
+            font-size: 11px;
             color: rgba(255, 255, 255, 0.7);
             text-transform: uppercase;
-            letter-spacing: 4px;
+            letter-spacing: 3px;
             font-weight: 500;
             position: relative;
         }
@@ -495,10 +495,10 @@
         /* Header Property Watermark */
         .header-watermark {
             position: absolute;
-            right: -20px;
+            right: -10px;
             bottom: -10px;
-            width: 220px;
-            height: 220px;
+            width: 160px;
+            height: 160px;
             opacity: 0.04;
             pointer-events: none;
             z-index: 0;
@@ -1139,34 +1139,34 @@
         /* Dark Footer */
         .quote-footer {
             margin-top: 0;
-            padding: 24px 36px;
+            padding: 16px 28px;
             background-color: var(--slate);
             color: #cbd5e1;
-            font-size: 11px;
+            font-size: 10px;
         }
 
         .footer-main {
             display: flex;
-            gap: 20px;
+            gap: 14px;
             align-items: center;
         }
 
         .footer-headshot {
-            width: 68px;
-            height: 68px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            border: 3px solid var(--accent-color);
+            border: 2px solid var(--accent-color);
             object-fit: cover;
             flex-shrink: 0;
             background: #ccc;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .footer-avatar-fallback {
-            width: 68px;
-            height: 68px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            border: 3px solid var(--accent-color);
+            border: 2px solid var(--accent-color);
             background: linear-gradient(135deg, var(--accent-color), #d4af37);
             color: white;
             display: flex;
@@ -1174,78 +1174,78 @@
             justify-content: center;
             font-family: var(--font-heading);
             font-weight: 800;
-            font-size: 22px;
+            font-size: 18px;
             flex-shrink: 0;
-            box-shadow: 0 4px 16px rgba(197, 160, 89, 0.3);
+            box-shadow: 0 2px 8px rgba(197, 160, 89, 0.3);
         }
 
         .footer-info {
             flex-grow: 1;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
         .footer-name {
             font-family: var(--font-heading);
             font-weight: 800;
             color: var(--accent-color);
-            font-size: 16px;
+            font-size: 14px;
             display: block;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .footer-stars {
-            margin-top: 4px;
+            margin-top: 2px;
             color: #fde047;
             font-weight: 700;
-            font-size: 10px;
+            font-size: 9px;
         }
 
         .company-logo-footer {
-            height: 48px;
-            max-width: 140px;
+            height: 36px;
+            max-width: 110px;
             object-fit: contain;
             flex-shrink: 0;
             background: white;
-            padding: 6px;
+            padding: 4px;
             border-radius: 4px;
         }
 
         .footer-legal {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             align-items: flex-start;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
-            padding-top: 14px;
-            margin-top: 14px;
-            font-size: 9px;
-            line-height: 1.5;
+            padding-top: 10px;
+            margin-top: 10px;
+            font-size: 8px;
+            line-height: 1.4;
             color: #94a3b8;
         }
 
         .footer-legal .ehl-icon {
-            height: 28px;
+            height: 22px;
             flex-shrink: 0;
             background: white;
-            padding: 3px;
+            padding: 2px;
             border-radius: 3px;
         }
 
         .proprietary-notice {
             text-align: center;
-            padding: 8px 28px;
+            padding: 6px 20px;
             background: rgba(254, 226, 226, 0.8);
             border: 1px solid #fca5a5;
             border-radius: 6px;
-            margin-top: 10px;
-            font-size: 8px;
+            margin-top: 8px;
+            font-size: 7px;
             color: #991b1b;
             font-family: var(--font-body);
         }
 
         .footer-powered {
             text-align: center;
-            padding: 14px;
-            font-size: 10px;
+            padding: 10px;
+            font-size: 9px;
             color: rgba(148, 163, 184, 0.7);
             font-family: var(--font-heading);
             font-weight: 700;
@@ -6595,30 +6595,13 @@
             <h1 id="q-title">Your HELOC Proposal</h1>
             <div class="subtitle" data-i18n="subtitle">Personalized Home Equity Line of Credit</div>
             <div class="lo-info" id="q-lo-info"></div>
-            
-            <!-- Rotating Rate Message -->
-            <div id="rate-message-rotating" style="margin-top: 12px; padding: 10px 16px; background: linear-gradient(135deg, rgba(197, 160, 89, 0.15), rgba(197, 160, 89, 0.05)); border-radius: 8px; border-left: 3px solid var(--accent-color); font-size: 13px; color: var(--text-light); font-weight: 500; text-align: center; transition: all 0.3s ease;">
-                You've got funds waiting. What's your first move? 🎯
-            </div>
-            
-            <!-- Take a Tour Button - Prominent -->
-            <div style="margin-top: 16px; text-align: center;">
-                <button onclick="openEzraTour()" id="tour-highlight-btn" style="padding: 14px 28px; background: linear-gradient(135deg, #c5a059, #a68543); border: none; border-radius: 30px; color: #0f172a; font-family: var(--font-heading); font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; animation: pulse-glow 2s infinite;">
-                    <span style="font-size: 18px;">🎯</span> <span data-i18n="tourBtn">Take a Guided Tour</span>
+
+            <!-- Compact tour link -->
+            <div style="margin-top: 10px; text-align: center;">
+                <button onclick="openEzraTour()" id="tour-highlight-btn" style="padding: 8px 20px; background: rgba(197, 160, 89, 0.15); border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 20px; color: var(--accent-color); font-family: var(--font-heading); font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 6px;">
+                    <span>🎯</span> <span data-i18n="tourBtn">Take a Guided Tour</span>
                 </button>
-                <p style="margin-top: 8px; font-size: 12px; color: var(--text-muted);" data-i18n="tourSub">New here? Let Ezra walk you through your quote in 2 minutes</p>
             </div>
-            
-            <style>
-                @keyframes pulse-glow {
-                    0%, 100% { box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4); }
-                    50% { box-shadow: 0 4px 25px rgba(197, 160, 89, 0.7); }
-                }
-                #tour-highlight-btn:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 6px 20px rgba(197, 160, 89, 0.6);
-                }
-            </style>
         </div>
         <div class="greeting-banner" id="greeting-banner"></div>
         
@@ -7082,7 +7065,7 @@
                             <span id="fullBalancePayment">$1,879</span><span style="font-size: 14px; color: var(--text-muted);">/mo</span>
                         </div>
                         <p style="color: var(--text-muted); margin: 8px 0; font-size: 13px;">
-                            Balance: <strong style="color: var(--text-light);">$278,810</strong>
+                            Balance: <strong id="fullBalanceAmount" style="color: var(--text-light);">$278,810</strong>
                         </p>
                     </div>
 
@@ -7579,6 +7562,7 @@
                             initInteractiveSavings(previewData);
                             initPaymentScenario(previewData);
                             initWhatIfCalculator(previewData, previewData.linkOptions || {});
+                            initWhatIfBorrowPayback(previewData);
                         } catch (e) {
                             console.warn('Calculator init error:', e);
                         }
@@ -7665,6 +7649,7 @@
                         initInteractiveSavings(link.quote_data);
                         initPaymentScenario(link.quote_data);
                         initWhatIfCalculator(link.quote_data, link.quote_data.linkOptions || {});
+                        initWhatIfBorrowPayback(link.quote_data);
                     } catch (e) {
                         console.warn('Calculator init error:', e);
                     }
@@ -7768,29 +7753,6 @@
                     var fb = document.getElementById('floating-bar');
                     if (fb) fb.style.display = 'flex';
                 }
-                
-                // Rotating rate messages (NEPQ-style: confident, assumptive, leading)
-                var rateMessages = [
-                    "You've got $" + (data.maxCashOut || 150000).toLocaleString() + " waiting. What's the first move? 🎯",
-                    "Most homeowners use this for debt freedom. What's your priority? 💡",
-                    "Your rate is locked. The question is: when do you want the funds? 🔒",
-                    "Smart move reviewing this. Ready to see your options in action? ⚡",
-                    "Rates change daily. Today's numbers won't last — don't let this one slip. ⏰",
-                    "You're pre-approved. No guesswork. Just decisions. What's next? ✅"
-                ];
-                
-                var messageIndex = 0;
-                function rotateRateMessage() {
-                    var msgEl = document.getElementById('rate-message-rotating');
-                    if (msgEl) {
-                        msgEl.textContent = rateMessages[messageIndex % rateMessages.length];
-                        messageIndex++;
-                    }
-                }
-                
-                // Start rotating messages every 8 seconds
-                setInterval(rotateRateMessage, 8000);
-                rotateRateMessage(); // Show first on load
                 
                 // Apply template mode - hide/show sections based on mode
                 applyTemplateMode(templateMode, linkOpts);
@@ -8918,30 +8880,20 @@
                 item.classList.toggle('active');
             };
 
-            // ===== WHAT IF SCENARIOS =====
+            // ===== WHAT IF SCENARIOS (data-driven) =====
+            // These defaults get overwritten by initWhatIfBorrowPayback() after quote loads
+            var _wifData = { amount: 100000, payment: 500, cash: 80000, rate: 7.0, term: 20, feePercent: 0.0299, fixedFees: 1295, thirdParty: 2232 };
+
             window.updateWhatIfBorrowScenario = function(newAmount) {
                 var amount = parseInt(newAmount);
-                var currentAmount = 278810; // Default from quote
-                var currentPayment = 1879; // Default monthly payment
-                var currentCash = 259420; // Default cash available
-                
-                // Calculate based on same origination fee % (2.99% mid tier)
-                var feePercent = 0.0299;
-                var fee = amount * feePercent;
-                var apr = 0.0713; // ~7.13% APR
-                var monthlyRate = apr / 12;
-                var years = 20;
-                var months = years * 12;
-                
-                // Calculate monthly payment using amortization formula
+                var monthlyRate = (_wifData.rate / 100) / 12;
+                var months = _wifData.term * 12;
                 var monthlyPayment = (amount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
-                var closingCosts = fee + 1295 + 2232;
+                var closingCosts = (amount * _wifData.feePercent) + _wifData.fixedFees + _wifData.thirdParty;
                 var cashAvailable = amount - closingCosts;
-                
-                var paymentDiff = monthlyPayment - currentPayment;
-                var cashDiff = cashAvailable - currentCash;
-                
-                // Update display
+                var paymentDiff = monthlyPayment - _wifData.payment;
+                var cashDiff = cashAvailable - _wifData.cash;
+
                 document.getElementById('whatIfBorrowCurrent').textContent = '$' + amount.toLocaleString();
                 document.getElementById('whatIfBorrowPayment').textContent = '$' + Math.round(monthlyPayment).toLocaleString();
                 document.getElementById('whatIfBorrowCash').textContent = '$' + Math.round(cashAvailable).toLocaleString();
@@ -8951,24 +8903,88 @@
 
             window.updatePaybackScenario = function(paidBackAmount) {
                 var paidBack = parseInt(paidBackAmount);
-                var originalBalance = 278810;
-                var originalPayment = 1879;
-                var remainingBalance = originalBalance - paidBack;
-                
-                var apr = 0.0713; // 7.13%
-                var monthlyRate = apr / 12;
-                var years = 20;
-                var months = years * 12;
-                
-                // Calculate new payment
-                var newPayment = (remainingBalance * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
-                var savings = originalPayment - newPayment;
-                
-                // Update display
+                var remainingBalance = _wifData.amount - paidBack;
+                var monthlyRate = (_wifData.rate / 100) / 12;
+                var months = _wifData.term * 12;
+                var newPayment = remainingBalance > 0
+                    ? (remainingBalance * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months))
+                    : 0;
+                var savings = _wifData.payment - newPayment;
+
                 document.getElementById('reducedBalance').textContent = '$' + remainingBalance.toLocaleString();
                 document.getElementById('reducedPayment').textContent = '$' + Math.round(newPayment).toLocaleString();
-                document.getElementById('paymentReduction').textContent = '$' + Math.round(savings).toLocaleString();
+                document.getElementById('paymentReduction').textContent = '$' + Math.round(Math.abs(savings)).toLocaleString();
             };
+
+            // Called after renderQuote to wire both What-If sections to actual data
+            function initWhatIfBorrowPayback(data) {
+                var totalLoan = parseFloat(String(data.totalLoan || data.cashBack || '100000').replace(/[$,]/g, '')) || 100000;
+                var payment = parseFloat(String(data.payment || '500').replace(/[$,\/mo]/g, '')) || 500;
+                var rate = parseFloat(data.rate) || 7.0;
+                var term = parseInt(data.term) || 20;
+                // Approximate origination & closing costs from quote data or tiers
+                var feePercent = 0.0299;
+                if (data.tiers && data.tiers.length > 1) {
+                    var midTier = data.tiers[Math.floor(data.tiers.length / 2)];
+                    feePercent = parseFloat(midTier.origPts) / 100 || 0.0299;
+                }
+                var fixedFees = 1295;
+                var thirdParty = Math.round(totalLoan * 0.008); // ~0.8% third-party estimate
+                var closingCosts = Math.round(totalLoan * feePercent) + fixedFees + thirdParty;
+                var netCash = totalLoan - closingCosts;
+
+                // Store in shared state
+                _wifData = { amount: totalLoan, payment: payment, cash: netCash, rate: rate, term: term, feePercent: feePercent, fixedFees: fixedFees, thirdParty: thirdParty };
+
+                // ---- Borrow More section ----
+                var homeValue = parseFloat(String(data.homeValue || '500000').replace(/[$,]/g, '')) || 500000;
+                var mortBal = parseFloat(String(data.mortgageBalance || '0').replace(/[$,]/g, '')) || 0;
+                var maxHeloc = Math.min(750000, Math.round(homeValue * 0.9 - mortBal));
+                var minHeloc = Math.max(50000, Math.round(maxHeloc * 0.1));
+
+                var borrowSlider = document.getElementById('whatIfBorrowSlider');
+                if (borrowSlider) {
+                    borrowSlider.min = minHeloc;
+                    borrowSlider.max = maxHeloc;
+                    borrowSlider.value = totalLoan;
+                    borrowSlider.step = 5000;
+                }
+                // Update static "Your Current Quote" card
+                var curAmtEl = document.getElementById('currentBorrowAmount');
+                if (curAmtEl) curAmtEl.textContent = '$' + Math.round(payment).toLocaleString();
+                var curCashEl = document.getElementById('currentBorrowCash');
+                if (curCashEl) curCashEl.textContent = '$' + Math.round(netCash).toLocaleString();
+                // Update slider labels
+                var borrowCurLabel = document.getElementById('whatIfBorrowCurrent');
+                if (borrowCurLabel) borrowCurLabel.textContent = '$' + totalLoan.toLocaleString();
+
+                // ---- Payback section ----
+                var paybackSlider = document.getElementById('paybackSlider');
+                if (paybackSlider) {
+                    paybackSlider.min = 0;
+                    paybackSlider.max = totalLoan;
+                    paybackSlider.value = 0;
+                    paybackSlider.step = 5000;
+                }
+                var maxPayLabel = document.getElementById('maxPaybackLabel');
+                if (maxPayLabel) maxPayLabel.textContent = '$' + totalLoan.toLocaleString();
+                // Update full-balance card
+                var fullPmtEl = document.getElementById('fullBalancePayment');
+                if (fullPmtEl) fullPmtEl.textContent = '$' + Math.round(payment).toLocaleString();
+                var fullBalEl = document.getElementById('fullBalanceAmount');
+                if (fullBalEl) fullBalEl.textContent = '$' + totalLoan.toLocaleString();
+                // Reset the "after payback" side
+                var redPmtEl = document.getElementById('reducedPayment');
+                if (redPmtEl) redPmtEl.textContent = '$' + Math.round(payment).toLocaleString();
+                var redBalEl = document.getElementById('reducedBalance');
+                if (redBalEl) redBalEl.textContent = '$' + totalLoan.toLocaleString();
+                var redSavEl = document.getElementById('paymentReduction');
+                if (redSavEl) redSavEl.textContent = '$0';
+
+                // Fire initial display updates
+                window.updateWhatIfBorrowScenario(totalLoan);
+                window.updatePaybackScenario(0);
+            }
 
             // ===== EZRA TOUR =====
             var ezraTourSlides = [
