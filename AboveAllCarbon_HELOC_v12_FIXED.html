@@ -13716,6 +13716,8 @@ Sent via Above All Carbon HELOC Tool`;
                 payment: g('snap-payment'),
                 origination: g('snap-orig-perc'),
                 recType: document.getElementById('rec-type-select').value || 'fixed',
+                recTier: document.getElementById('rec-tier-select')?.value || '',
+                recTerm: document.getElementById('rec-term-select')?.value || '',
                 date: new Date().toLocaleDateString(),
                 linkOptions: {
                     showLoInfo: document.getElementById('chk-link-lo-info')?.checked ?? true,

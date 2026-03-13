@@ -6523,13 +6523,13 @@
     <div id="exit-modal" class="modal-overlay" style="display: none; z-index: 4000;">
         <div class="modal-box" style="max-width: 450px; text-align: center; border: 2px solid rgba(197, 160, 89, 0.4);">
             <div style="font-size: 48px; margin-bottom: 10px;">&#128064;</div>
-            <h3 style="color: #c5a059; margin-bottom: 8px;">Hold on — one question.</h3>
+            <h3 style="color: #c5a059; margin-bottom: 8px;" data-i18n="exitTitle">Hold on — one question.</h3>
             <p style="color: white; font-size: 15px; margin-bottom: 8px; font-weight: 500;">You came here for a reason. What's stopping you from moving forward?</p>
             <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 16px;">Most homeowners who review their quote take action within 24 hours. The funds are ready when you are.</p>
             <div style="display: flex; gap: 10px;">
-                <button onclick="closeExitModal()" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; font-size: 11px;">Still Deciding</button>
-                <button onclick="askQuestion(); closeExitModal();" style="flex: 1; background: rgba(197,160,89,0.2); color: #c5a059; border: 1px solid rgba(197,160,89,0.4); padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; font-size: 11px;">Ask Ezra</button>
-                <button onclick="openApplyModal(); closeExitModal();" style="flex: 1; background: linear-gradient(135deg, #c5a059, #a07d3a); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; font-size: 12px;">Let's Do This →</button>
+                <button onclick="closeExitModal()" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; font-size: 11px;" data-i18n="exitBtnStillDeciding">Still Deciding</button>
+                <button onclick="askQuestion(); closeExitModal();" style="flex: 1; background: rgba(197,160,89,0.2); color: #c5a059; border: 1px solid rgba(197,160,89,0.4); padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; font-size: 11px;" data-i18n="exitBtnAsk">Ask Ezra</button>
+                <button onclick="openApplyModal(); closeExitModal();" style="flex: 1; background: linear-gradient(135deg, #c5a059, #a07d3a); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer; font-size: 12px;" data-i18n="exitBtnApply">Let's Do This →</button>
             </div>
         </div>
     </div>
@@ -6548,13 +6548,13 @@
                 <!-- Tour slides inject here -->
             </div>
             <div style="padding: 16px 24px; border-top: 1px solid rgba(197, 160, 89, 0.2); display: flex; gap: 10px; flex-shrink: 0; background: rgba(0,0,0,0.2);">
-                <button id="tourBtnBack" onclick="ezraTourPrev()" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--text-light); font-family: var(--font-heading); transition: all 0.2s;">
+                <button id="tourBtnBack" onclick="ezraTourPrev()" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.1); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--text-light); font-family: var(--font-heading); transition: all 0.2s;" data-i18n="tourBack">
                     &#8592; Back
                 </button>
-                <button id="tourBtnNext" onclick="ezraTourNext()" style="flex: 1; padding: 12px; background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--bg-dark); font-family: var(--font-heading); transition: all 0.2s;">
+                <button id="tourBtnNext" onclick="ezraTourNext()" style="flex: 1; padding: 12px; background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--bg-dark); font-family: var(--font-heading); transition: all 0.2s;" data-i18n="tourNext">
                     Next &#8594;
                 </button>
-                <button id="tourBtnEnd" onclick="closeEzraTour()" style="display: none; flex: 1; padding: 12px; background: linear-gradient(135deg, var(--primary-color), #1e3a5f); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; font-family: var(--font-heading); transition: all 0.2s;">
+                <button id="tourBtnEnd" onclick="closeEzraTour()" style="display: none; flex: 1; padding: 12px; background: linear-gradient(135deg, var(--primary-color), #1e3a5f); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; font-family: var(--font-heading); transition: all 0.2s;" data-i18n="tourDone">
                     Got It
                 </button>
             </div>
@@ -6617,7 +6617,7 @@
             </div>
             <!-- PSYCHOLOGY VIDEO FUNNEL - Stage 1: The Hook (hidden by default, LO enables via link options) -->
             <div class="section reveal" id="sec-personal-video" style="display: none;">
-                <div class="section-title" data-icon="🎥">See How Your Home Equity Works for You</div>
+                <div class="section-title" data-icon="🎥" data-i18n="videoTitle">See How Your Home Equity Works for You</div>
 
                 <!-- Social Proof Bar -->
                 <div class="pvf-social-proof" id="pvf-social-proof">
@@ -6784,11 +6784,11 @@
                 </div>
             </div>
             <div class="section reveal" id="sec-client">
-                <div class="section-title" data-icon="&#128100;">Client Details</div>
+                <div class="section-title" data-icon="&#128100;" data-i18n="clientDetailsTitle">Client Details</div>
                 <div class="client-grid stagger-children" id="q-client-grid"></div>
             </div>
             <div class="section reveal" id="sec-valuation">
-                <div class="section-title" data-icon="&#127968;">Valuation &amp; Liquidity Summary</div>
+                <div class="section-title" data-icon="&#127968;" data-i18n="valuationTitle">Valuation &amp; Liquidity Summary</div>
                 <div class="val-blocks stagger-children" id="q-val-blocks"></div>
             </div>
             <div class="equity-chart-section reveal" id="sec-equity-chart"></div>
@@ -6965,7 +6965,7 @@
             <div class="section reveal what-if-borrow-more" id="sec-what-if-borrow" style="margin-top: 40px; padding: 30px; background: linear-gradient(135deg, rgba(197, 160, 89, 0.1), rgba(197, 160, 89, 0.05)); border-radius: 16px; border: 2px solid var(--accent-color);">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
                     <span style="font-size: 28px;">&#128176;</span>
-                    <h3 style="margin: 0; color: var(--accent-color); font-size: 20px;">What If You Borrowed More?</h3>
+                    <h3 style="margin: 0; color: var(--accent-color); font-size: 20px;" data-i18n="whatIfBorrowTitle">What If You Borrowed More?</h3>
                 </div>
 
                 <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 14px;">
@@ -7034,7 +7034,7 @@
             <div class="section reveal what-if-payback" id="sec-what-if-payback" style="margin-top: 40px; padding: 30px; background: linear-gradient(135deg, rgba(15, 43, 76, 0.3), rgba(15, 43, 76, 0.1)); border-radius: 16px; border: 2px solid var(--primary-color);">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
                     <span style="font-size: 28px;">&#128200;</span>
-                    <h3 style="margin: 0; color: var(--text-light); font-size: 20px;">What If You Paid This Back?</h3>
+                    <h3 style="margin: 0; color: var(--text-light); font-size: 20px;" data-i18n="whatIfPaybackTitle">What If You Paid This Back?</h3>
                 </div>
 
                 <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 14px;">
@@ -7099,13 +7099,13 @@
             <!-- Use of Funds Carousel -->
             <div class="funds-carousel reveal" id="sec-funds-carousel"></div>
             <div class="section reveal" id="sec-rates">
-                <div class="section-title" data-icon="&#128200;">Rate Options <span class="tooltip" data-tooltip="These are the available rate tiers based on your credit and loan amount. Lower rates typically require higher origination fees.">&#9432;</span></div>
+                <div class="section-title" data-icon="&#128200;" data-i18n="rateOptionsTitle">Rate Options <span class="tooltip" data-tooltip="These are the available rate tiers based on your credit and loan amount. Lower rates typically require higher origination fees.">&#9432;</span></div>
                 <div id="q-tiers"></div>
             </div>
 
             <!-- Origination Fee Tiers Educational Section -->
             <div class="section reveal" id="originationFeeTiers">
-                <div class="section-title" data-icon="&#128161;">Origination Fee Options — Choose Your Strategy</div>
+                <div class="section-title" data-icon="&#128161;" data-i18n="originationTitle">Origination Fee Options — Choose Your Strategy</div>
                 <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 14px;">
                     We offer three origination fee tiers. The trade-off is simple: <strong>pay more upfront &#8594; lower monthly payment</strong>, or <strong>pay less upfront &#8594; higher monthly payment</strong>. Choose based on your goals.
                 </p>
@@ -7149,7 +7149,7 @@
 
             <!-- FAQ Section -->
             <div class="section reveal" id="sec-faq">
-                <div class="section-title" data-icon="&#10067;">Common Questions</div>
+                <div class="section-title" data-icon="&#10067;" data-i18n="commonQuestionsTitle">Common Questions</div>
                 <div class="faq-container">
                     <div class="faq-item">
                         <button class="faq-question" onclick="toggleFaq(this)">
@@ -7415,62 +7415,84 @@
         
         var i18n = {
             en: {
-                // Header & Navigation
                 subtitle: 'Personalized Home Equity Line of Credit',
-                decisionBanner: 'Rates change daily \u2014 review & lock yours before they move.',
+                decisionBanner: 'Rates change daily — review & lock yours before they move.',
                 tourBtn: 'Take a Guided Tour',
                 tourSub: 'New here? Let Ezra walk you through your quote in 2 minutes',
-                // Progress Stepper
                 stepReview: 'Review Quote',
                 stepApply: 'Easy Application',
                 stepFunded: 'Get Funded',
-                // Floating Action Bar
-                ctaMain: '\u2713 This Looks Right \u2014 Let\'s Move Forward',
-                ctaSchedule: '\uD83D\uDCC5 Schedule Call',
-                ctaAsk: '\uD83D\uDCA1 Ask Ezra For Clarification',
-                ctaPdf: '\uD83D\uDCC4 Save PDF',
-                ctaShare: '\uD83D\uDD17 Share',
-                // Sections
+                ctaMain: 'This Looks Right — Let\'s Move Forward',
+                ctaSchedule: 'Schedule Call',
+                ctaAsk: 'Ask Ezra For Clarification',
+                ctaPdf: 'Save PDF',
+                ctaShare: 'Share',
                 commonQuestionsTitle: 'Common Questions',
                 helocEarlyPayoff: 'Can I pay off my HELOC early?',
                 howFastMoney: 'How fast do I get my money?',
                 closingCosts: 'What are closing costs and what\'s included?',
-                // Social Proof
                 spFunded: 'Homeowners Funded This Year',
                 spTime: 'Average Time to Funding',
                 spSatisfaction: 'Client Satisfaction Rating',
-                // Recommendation
                 recTitle: 'Recommended Option',
-                strategyTitle: 'Why This Works For You'
+                strategyTitle: 'Why This Works For You',
+                clientDetailsTitle: 'Client Details',
+                valuationTitle: 'Valuation & Liquidity Summary',
+                homeValue: 'Home Value',
+                currentMortgage: 'Current Mortgage',
+                cashAvailable: 'Cash Available',
+                cltv: 'CLTV',
+                rateOptionsTitle: 'Rate Options',
+                originationTitle: 'Origination Fee Options — Choose Your Strategy',
+                whatIfBorrowTitle: 'What If You Borrowed More?',
+                whatIfPaybackTitle: 'What If You Paid This Back?',
+                exitTitle: 'Hold on — one question.',
+                exitBtnStillDeciding: 'Still Deciding',
+                exitBtnAsk: 'Ask Ezra',
+                exitBtnApply: 'Let\'s Do This',
+                tourBack: 'Back',
+                tourNext: 'Next',
+                tourDone: 'Got It'
             },
             es: {
-                // Header & Navigation
-                subtitle: 'L\u00ednea de Cr\u00e9dito con Garant\u00eda Hipotecaria Personalizada',
-                decisionBanner: 'Las tasas cambian diariamente \u2014 revise y asegure la suya antes de que cambien.',
+                subtitle: 'Linea de Credito con Garantia Hipotecaria Personalizada',
+                decisionBanner: 'Las tasas cambian diariamente — revise y asegure la suya antes de que suban.',
                 tourBtn: 'Haga un Recorrido Guiado',
-                tourSub: '\u00bfNuevo aqu\u00ed? Deje que Ezra le explique su cotizaci\u00f3n en 2 minutos',
-                // Progress Stepper
-                stepReview: 'Revisar Cotizaci\u00f3n',
-                stepApply: 'Solicitud F\u00e1cil',
+                tourSub: 'Nuevo aqui? Deje que Ezra le explique su cotizacion en 2 minutos',
+                stepReview: 'Revisar Cotizacion',
+                stepApply: 'Solicitud Facil',
                 stepFunded: 'Recibir Fondos',
-                // Floating Action Bar
-                ctaMain: '\u2713 Todo Se Ve Bien \u2014 Avancemos',
-                ctaSchedule: '\uD83D\uDCC5 Programar Llamada',
-                ctaAsk: '\uD83D\uDCA1 Preg\u00fantele a Ezra',
-                ctaPdf: '\uD83D\uDCC4 Guardar PDF',
-                ctaShare: '\uD83D\uDD17 Compartir',
-                // Sections
+                ctaMain: 'Todo Se Ve Bien — Avancemos',
+                ctaSchedule: 'Programar Llamada',
+                ctaAsk: 'Preguntele a Ezra',
+                ctaPdf: 'Guardar PDF',
+                ctaShare: 'Compartir',
                 commonQuestionsTitle: 'Preguntas Frecuentes',
-                helocEarlyPayoff: '\u00bfPuedo pagar mi HELOC antes de tiempo?',
-                howFastMoney: '\u00bfQu\u00e9 tan r\u00e1pido obtengo mi dinero?',
-                closingCosts: '\u00bfCu\u00e1les son los costos de cierre y qu\u00e9 incluye?',
-                // Social Proof
-                spFunded: 'Propietarios Financiados Este A\u00f1o',
+                helocEarlyPayoff: 'Puedo pagar mi HELOC antes de tiempo?',
+                howFastMoney: 'Que tan rapido obtengo mi dinero?',
+                closingCosts: 'Cuales son los costos de cierre y que incluyen?',
+                spFunded: 'Propietarios Financiados Este Ano',
                 spTime: 'Tiempo Promedio de Financiamiento',
-                spSatisfaction: 'Calificaci\u00f3n de Satisfacci\u00f3n',
-                // Recommendation
-                recTitle: 'Opci\u00f3n Recomendada',
-                strategyTitle: 'Por Qu\u00e9 Esto Funciona Para Usted'
+                spSatisfaction: 'Calificacion de Satisfaccion',
+                recTitle: 'Opcion Recomendada',
+                strategyTitle: 'Por Que Esto Funciona Para Usted',
+                clientDetailsTitle: 'Detalles del Cliente',
+                valuationTitle: 'Valoracion y Resumen de Liquidez',
+                homeValue: 'Valor del Hogar',
+                currentMortgage: 'Hipoteca Actual',
+                cashAvailable: 'Efectivo Disponible',
+                cltv: 'Relacion Prestamo-Valor',
+                rateOptionsTitle: 'Opciones de Tasa',
+                originationTitle: 'Opciones de Tarifa de Originacion',
+                whatIfBorrowTitle: 'Que Pasa Si Pide Prestado Mas?',
+                whatIfPaybackTitle: 'Que Pasa Si Paga Esto?',
+                exitTitle: 'Espere — una pregunta.',
+                exitBtnStillDeciding: 'Todavia Decidiendo',
+                exitBtnAsk: 'Preguntar a Ezra',
+                exitBtnApply: 'Hagamoslo',
+                tourBack: 'Atras',
+                tourNext: 'Siguiente',
+                tourDone: 'Entendido'
             }
         };
         
@@ -7961,7 +7983,12 @@
                 var hasVarRates = data.tiers && data.tiers.some(function (t) { return t.varRates && Object.keys(t.varRates).length > 0; });
                 var recType = data.recType || 'fixed';
                 var isVarRec = recType === 'variable';
+                // Preferred matching: recTier + recTerm identify exactly one row
+                var recTierNum = parseInt(data.recTier) || 0;
+                var recTermKey = (data.recTerm || '');
+                if (recTermKey && recTermKey.indexOf('yr') === -1) recTermKey += 'yr';
                 var tiersHtml = '';
+                var recFound = false; // only highlight first match
                 if (data.tiers && data.tiers.length > 0) {
                     data.tiers.forEach(function (tier) {
                         tiersHtml += '<div class="tier"><div class="tier-header"><span>Tier ' + tier.tier + '</span><span class="pts">' + esc(tier.origPts) + '% Points</span></div>';
@@ -7974,13 +8001,22 @@
                             var fixedPayStr = e[1].payment;
                             var varData = (tier.varRates && tier.varRates[termKey]) || null;
 
-                            // Determine if this row is recommended
+                            // Determine if this row is the single recommended option
                             var isRec = false;
-                            if (!isVarRec && data.rate && fixedRateStr && fixedRateStr.replace('%', '') === data.rate) {
-                                isRec = true;
-                            }
-                            if (isVarRec && varData && data.rate && varData.rate && varData.rate.replace('%', '') === data.rate) {
-                                isRec = true;
+                            if (!recFound) {
+                                if (recTierNum > 0 && recTermKey) {
+                                    // New approach: match tier number + term key
+                                    isRec = (parseInt(tier.tier) === recTierNum && termKey === recTermKey);
+                                } else {
+                                    // Legacy fallback: match by rate (only first match)
+                                    if (!isVarRec && data.rate && fixedRateStr && fixedRateStr.replace('%', '') === data.rate) {
+                                        isRec = true;
+                                    }
+                                    if (isVarRec && varData && data.rate && varData.rate && varData.rate.replace('%', '') === data.rate) {
+                                        isRec = true;
+                                    }
+                                }
+                                if (isRec) recFound = true;
                             }
 
                             var rateVal = parseFloat((fixedRateStr || '').replace('%', '')) || 0;
@@ -8922,12 +8958,21 @@
                 var payment = parseFloat(String(data.payment || '500').replace(/[$,\/mo]/g, '')) || 500;
                 var rate = parseFloat(data.rate) || 7.0;
                 var term = parseInt(data.term) || 20;
-                // Approximate origination & closing costs from quote data or tiers
-                var feePercent = 0.0299;
-                if (data.tiers && data.tiers.length > 1) {
-                    var midTier = data.tiers[Math.floor(data.tiers.length / 2)];
-                    feePercent = parseFloat(midTier.origPts) / 100 || 0.0299;
+
+                // Use the exact origination % from the LO's selected tier
+                var feePercent = 0.0299; // fallback
+                if (data.origination) {
+                    // data.origination comes from snap-orig-perc (e.g., "2.99")
+                    feePercent = parseFloat(data.origination) / 100 || 0.0299;
+                } else if (data.recTier && data.tiers && data.tiers.length > 0) {
+                    // Look up the selected tier's origPts
+                    var recTierNum = parseInt(data.recTier);
+                    var matchedTier = data.tiers.find(function(t) { return parseInt(t.tier) === recTierNum; });
+                    if (matchedTier && matchedTier.origPts) {
+                        feePercent = parseFloat(matchedTier.origPts) / 100 || 0.0299;
+                    }
                 }
+
                 var fixedFees = 1295;
                 var thirdParty = Math.round(totalLoan * 0.008); // ~0.8% third-party estimate
                 var closingCosts = Math.round(totalLoan * feePercent) + fixedFees + thirdParty;
