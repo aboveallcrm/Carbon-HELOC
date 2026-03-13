@@ -15107,39 +15107,37 @@ Sent via Above All Carbon HELOC Tool`;
                 const { jsPDF } = window.jspdf;
 
                 // Letter size in mm (8.5 x 11 inches)
-                var pageW = 215.9, pageH = 279.4, margin = 8;
+                var pageW = 215.9, pageH = 279.4, margin = 6;
                 var contentW = pageW - margin * 2;
-                var imgH = (canvas.height / canvas.width) * contentW;
-                var usableH = pageH - margin * 2;
+                var contentH = pageH - margin * 2;
 
-                var pdf = new jsPDF('p', 'mm', 'letter');
-                var heightLeft = imgH;
-                var yOffset = 0;
+                // Calculate image dimensions to fit on single page
+                var imgAspect = canvas.height / canvas.width;
+                var imgW = contentW;
+                var imgH = imgW * imgAspect;
 
-                // First page
-                pdf.addImage(imgData, 'JPEG', margin, margin, contentW, imgH);
-                heightLeft -= usableH;
-
-                // Additional pages — slice the image by shifting yOffset
-                while (heightLeft > 0) {
-                    pdf.addPage();
-                    yOffset += usableH;
-                    pdf.addImage(imgData, 'JPEG', margin, margin - yOffset, contentW, imgH);
-                    heightLeft -= usableH;
+                // If image height exceeds page, scale down to fit
+                if (imgH > contentH) {
+                    imgH = contentH;
+                    imgW = imgH / imgAspect;
                 }
 
-                // Add footer to each page
-                var totalPages = pdf.getNumberOfPages();
+                // Center the image on the page
+                var xOffset = margin + (contentW - imgW) / 2;
+                var yOffset = margin + (contentH - imgH) / 2;
+
+                var pdf = new jsPDF('p', 'mm', 'letter');
+
+                // Add image scaled to fit single page
+                pdf.addImage(imgData, 'JPEG', xOffset, yOffset, imgW, imgH);
+
+                // Add footer
                 var loName = document.getElementById('lo-name')?.value || '';
                 var loPhone = document.getElementById('lo-phone')?.value || '';
                 var company = document.getElementById('lo-company')?.value || '';
-                for (var p = 1; p <= totalPages; p++) {
-                    pdf.setPage(p);
-                    pdf.setFontSize(7);
-                    pdf.setTextColor(150);
-                    pdf.text(company + (loName ? ' | ' + loName : '') + (loPhone ? ' | ' + loPhone : ''), margin, pageH - 4);
-                    pdf.text('Page ' + p + ' of ' + totalPages, pageW - margin, pageH - 4, { align: 'right' });
-                }
+                pdf.setFontSize(7);
+                pdf.setTextColor(150);
+                pdf.text(company + (loName ? ' | ' + loName : '') + (loPhone ? ' | ' + loPhone : ''), margin, pageH - 4);
 
                 var clientName = document.getElementById('in-client-name')?.value || 'Client';
                 var dateStr = new Date().toISOString().slice(0, 10);
