@@ -9272,6 +9272,7 @@
                     payment = calculateAmortizedPayment(currentDrawAmount, currentHelocRate, 20);
                     detail = 'Fully amortized over 20 years at ' + currentHelocRate + '% APR';
                 }
+                if (isNaN(payment) || !isFinite(payment)) payment = 0;
                 document.getElementById('ps-payment-amount').textContent = '$' + Math.round(payment).toLocaleString();
                 document.getElementById('ps-payment-detail').textContent = detail;
             }
