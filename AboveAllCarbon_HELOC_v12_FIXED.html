@@ -13682,8 +13682,8 @@ Sent via Above All Carbon HELOC Tool`;
             // Build preview URL with data encoded in query params
             var previewParams = new URLSearchParams();
             previewParams.set('preview', 'true');
-            previewParams.set('data', encodeURIComponent(JSON.stringify(quoteData)));
-            previewParams.set('lo', encodeURIComponent(JSON.stringify(loInfo)));
+            previewParams.set('data', JSON.stringify(quoteData));
+            previewParams.set('lo', JSON.stringify(loInfo));
 
             // Open preview in new tab
             var previewUrl = 'client-quote.html?' + previewParams.toString();

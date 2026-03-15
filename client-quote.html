@@ -7556,8 +7556,8 @@
             // ===== PREVIEW MODE =====
             if (isPreview) {
                 try {
-                    var previewData = JSON.parse(decodeURIComponent(params.get('data') || '{}'));
-                    var previewLo = JSON.parse(decodeURIComponent(params.get('lo') || '{}'));
+                    var previewData = JSON.parse(params.get('data') || '{}');
+                    var previewLo = JSON.parse(params.get('lo') || '{}');
                     
                     // Show preview banner
                     var previewBanner = document.createElement('div');
@@ -8881,7 +8881,7 @@
                 if (!slider) return;
 
                 currentHelocRate = parseFloat(data.rate) || 7.0;
-                var maxDraw = parseInt(data.cashBack) || 500000;
+                var maxDraw = parseInt(String(data.cashBack || data.totalLoan || '500000').replace(/[$,]/g, '')) || 500000;
                 slider.max = Math.min(maxDraw, 500000);
 
                 slider.addEventListener('input', function() {
