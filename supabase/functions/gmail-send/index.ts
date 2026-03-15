@@ -185,7 +185,9 @@ serve(async (req: Request) => {
             const { to, subject, html, fromName, fromEmail } = body
             if (!to || !subject || !html) return jsonResponse({ error: 'Missing to, subject, or html' }, 400)
 
-            // Load refresh token from DB
+            // Load refresh token from DB — check both storage locations:
+            // 1. heloc_settings → metadata.gmail_oauth (manual Integrations tab connect)
+            // 2. google_oauth → metadata.refresh_token (auto-captured from Google login)
             const { data: settingsRow } = await supabaseAdmin
                 .from('user_integrations')
                 .select('metadata')
@@ -193,9 +195,42 @@ serve(async (req: Request) => {
                 .eq('provider', 'heloc_settings')
                 .maybeSingle()
 
-            const refreshToken = settingsRow?.metadata?.gmail_oauth?.refresh_token
+            let refreshToken = settingsRow?.metadata?.gmail_oauth?.refresh_token
+
+            // Fallback: check google_oauth provider (set when user logs in with Google)
             if (!refreshToken) {
-                return jsonResponse({ error: 'Gmail not connected. Connect Gmail in Settings → Integrations first.' }, 400)
+                const { data: googleRow } = await supabaseAdmin
+                    .from('user_integrations')
+                    .select('api_key, metadata')
+                    .eq('user_id', userId)
+                    .eq('provider', 'google_oauth')
+                    .maybeSingle()
+
+                refreshToken = googleRow?.metadata?.refresh_token || null
+
+                // If we found a token from Google login, migrate it to heloc_settings for future use
+                if (refreshToken) {
+                    const meta = settingsRow?.metadata || {}
+                    meta.gmail_oauth = {
+                        refresh_token: refreshToken,
+                        connected_email: user.email || '',
+                        connected_at: googleRow?.metadata?.captured_at || new Date().toISOString(),
+                        source: 'google_login',
+                    }
+                    if (settingsRow) {
+                        await supabaseAdmin.from('user_integrations')
+                            .update({ metadata: meta, updated_at: new Date().toISOString() })
+                            .eq('user_id', userId)
+                            .eq('provider', 'heloc_settings')
+                    } else {
+                        await supabaseAdmin.from('user_integrations')
+                            .insert({ user_id: userId, provider: 'heloc_settings', metadata: meta })
+                    }
+                }
+            }
+
+            if (!refreshToken) {
+                return jsonResponse({ error: 'Gmail not connected. Sign in with Google or connect Gmail in Settings → Integrations.' }, 400)
             }
 
             // Get fresh access token
@@ -252,6 +287,26 @@ serve(async (req: Request) => {
                 .maybeSingle()
 
             const gmailOAuth = settingsRow?.metadata?.gmail_oauth
+
+            // Also check google_oauth provider (auto-captured from Google login)
+            if (!gmailOAuth?.refresh_token) {
+                const { data: googleRow } = await supabaseAdmin
+                    .from('user_integrations')
+                    .select('metadata')
+                    .eq('user_id', userId)
+                    .eq('provider', 'google_oauth')
+                    .maybeSingle()
+
+                if (googleRow?.metadata?.refresh_token) {
+                    return jsonResponse({
+                        connected: true,
+                        connected_email: user.email || '',
+                        connected_at: googleRow?.metadata?.captured_at || null,
+                        source: 'google_login',
+                    })
+                }
+            }
+
             return jsonResponse({
                 connected: !!(gmailOAuth?.refresh_token),
                 connected_email: gmailOAuth?.connected_email || '',
