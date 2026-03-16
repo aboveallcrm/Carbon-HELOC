@@ -8634,6 +8634,12 @@
                 }
             }
 
+            // Swap borrower strategy text
+            var stratEl = document.getElementById('borrower-strategy-text');
+            if (stratEl && window._strategyTextEn) {
+                stratEl.innerText = (lang === 'es' && window._strategyTextEs) ? window._strategyTextEs : window._strategyTextEn;
+            }
+
             // Store preference
             localStorage.setItem('preferredLanguage', lang);
 
@@ -9276,7 +9282,15 @@
                     var strategyEl = document.getElementById('borrower-strategy-text');
                     var strategySection = document.getElementById('sec-borrower-strategy');
                     if (strategyEl && strategySection) {
-                        strategyEl.innerText = data.borrowerStrategy;
+                        // Store English original for language switching
+                        window._strategyTextEn = data.borrowerStrategy;
+                        // Build Spanish equivalent from quote data
+                        var cashAmt = data.cashBack || data.totalLoan || '$0';
+                        var rateAmt = data.rate || '7.50';
+                        var cltvAmt = data.cltv || '--';
+                        var clientFirst = (lo.clientName || 'Cliente').split(' ')[0];
+                        window._strategyTextEs = 'Hola ' + esc(clientFirst) + '! He estructurado una forma de acceder a ' + esc(String(cashAmt)) + ' del valor de su hogar al ' + esc(String(rateAmt)) + '%. Por que esto funciona para usted: usted accede a ' + esc(String(cashAmt)) + ' sin tocar su primera hipoteca, su fuerte posicion de capital (' + esc(String(cltvAmt)) + '% CLTV) le califica para nuestros mejores precios. Tiene preguntas? Estoy aqui para ayudar — simplemente pregunte abajo o toque el boton de chat.';
+                        strategyEl.innerText = (currentLanguage === 'es') ? window._strategyTextEs : window._strategyTextEn;
                         strategySection.style.display = 'block';
                     }
                 }
