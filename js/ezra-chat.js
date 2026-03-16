@@ -2632,6 +2632,17 @@ RESPONSE RULES
                 50% { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
             }
 
+            @keyframes ezra-voice-pulse {
+                0%, 100% { 
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(239,68,68,0.4), inset 0 0 10px rgba(239,68,68,0.2);
+                }
+                50% { 
+                    transform: scale(1.05);
+                    box-shadow: 0 0 0 8px rgba(239,68,68,0), inset 0 0 15px rgba(239,68,68,0.3);
+                }
+            }
+
             .ezra-send-btn {
                 width: 40px;
                 height: 40px;
@@ -3527,29 +3538,52 @@ RESPONSE RULES
         }
 
         _voiceRecognition = new SpeechRecognition();
-        _voiceRecognition.continuous = true;
+        // Mobile optimization: don't use continuous mode on touch devices to save battery
+        const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+        _voiceRecognition.continuous = !isTouchDevice; // false on mobile, true on desktop
         _voiceRecognition.interimResults = true;
         _voiceRecognition.lang = 'en-US';
+        _voiceRecognition.maxAlternatives = 1;
 
         const voiceBtn = document.getElementById('ezra-voice');
         const input = document.getElementById('ezra-input');
         let finalTranscript = input.value || '';
         let startLength = finalTranscript.length;
+        let _silenceTimer = null;
+        const SILENCE_TIMEOUT = isTouchDevice ? 3000 : 5000; // 3s on mobile, 5s on desktop
 
         _voiceRecognition.onstart = () => {
             _isRecording = true;
-            if (voiceBtn) voiceBtn.classList.add('recording');
-            if (input) input.placeholder = 'Listening...';
+            if (voiceBtn) {
+                voiceBtn.classList.add('recording');
+                // Mobile: add pulsing animation for better visibility
+                if (isTouchDevice) {
+                    voiceBtn.style.animation = 'ezra-voice-pulse 1s ease-in-out infinite';
+                }
+            }
+            if (input) input.placeholder = isTouchDevice ? '🎤 Tap mic to stop...' : 'Listening...';
+            
+            // Auto-stop after silence timeout on mobile (saves battery)
+            if (isTouchDevice) {
+                _silenceTimer = setTimeout(() => {
+                    if (_isRecording) {
+                        stopVoiceInput();
+                        if (typeof showToast === 'function') showToast('Voice input timed out', 'info');
+                    }
+                }, 15000); // Hard stop after 15s on mobile
+            }
         };
 
         _voiceRecognition.onresult = (event) => {
             let interim = '';
             let newFinalText = '';
+            let hasSpeech = false;
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 const transcript = event.results[i][0].transcript;
                 if (event.results[i].isFinal) {
                     newFinalText += (newFinalText ? ' ' : '') + transcript;
                     finalTranscript += (finalTranscript.length > startLength ? ' ' : '') + transcript;
+                    hasSpeech = true;
                     
                     // Check for voice-to-quote command
                     if (window.processVoiceToQuote && window.processVoiceToQuote(transcript)) {
@@ -3560,11 +3594,20 @@ RESPONSE RULES
                     }
                 } else {
                     interim += transcript;
+                    hasSpeech = true;
                 }
             }
             if (input) {
                 input.value = finalTranscript + (interim ? ' ' + interim : '');
                 autoResizeTextarea();
+            }
+            
+            // Reset silence timer on mobile when speech is detected
+            if (isTouchDevice && hasSpeech && _silenceTimer) {
+                clearTimeout(_silenceTimer);
+                _silenceTimer = setTimeout(() => {
+                    if (_isRecording) stopVoiceInput();
+                }, 15000);
             }
         };
 
@@ -3596,8 +3639,17 @@ RESPONSE RULES
         }
         const voiceBtn = document.getElementById('ezra-voice');
         const input = document.getElementById('ezra-input');
-        if (voiceBtn) voiceBtn.classList.remove('recording');
+        if (voiceBtn) {
+            voiceBtn.classList.remove('recording');
+            voiceBtn.style.animation = ''; // Clear mobile pulse animation
+        }
         if (input) input.placeholder = EZRA_CONFIG.placeholderText;
+        
+        // Clear any pending silence timer
+        if (window._silenceTimer) {
+            clearTimeout(window._silenceTimer);
+            window._silenceTimer = null;
+        }
     }
 
     // ============================================
