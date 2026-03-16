@@ -6,18 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Get your personalized HELOC quote. Compare home equity line of credit rates, calculate potential savings, and unlock your home's equity.">
     <meta name="keywords" content="HELOC, home equity loan, home equity line of credit, mortgage rates, equity calculator">
-    <meta name="author" content="Above All CRM">
+    <meta name="author" content="" id="meta-author">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://carbon-heloc.vercel.app/client-quote.html">
+    <link rel="canonical" href="" id="meta-canonical">
     
     <!-- Open Graph -->
     <meta property="og:title" content="Your Personalized HELOC Quote">
     <meta property="og:description" content="Compare HELOC rates and calculate your savings with our personalized quote tool.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://carbon-heloc.vercel.app/client-quote.html">
-    <meta property="og:site_name" content="Above All Carbon">
+    <meta property="og:url" content="" id="meta-og-url">
+    <meta property="og:site_name" content="" id="meta-og-site">
     <meta property="og:locale" content="en_US">
-    <meta property="og:image" content="https://carbon-heloc.vercel.app/images/og-image.jpg">
+    <meta property="og:image" content="" id="meta-og-image">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     
@@ -25,14 +25,14 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Your Personalized HELOC Quote">
     <meta name="twitter:description" content="Compare HELOC rates and calculate your savings.">
-    <meta name="twitter:image" content="https://carbon-heloc.vercel.app/images/og-image.jpg">
+    <meta name="twitter:image" content="" id="meta-twitter-image">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32">
-    <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
-    <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
-    <link rel="apple-touch-icon" href="/apple-touch-icon-152x152.png" sizes="152x152">
+    <link rel="icon" type="image/png" href="" sizes="32x32" id="favicon-32">
+    <link rel="icon" type="image/png" href="" sizes="16x16" id="favicon-16">
+    <link rel="icon" type="image/png" href="" sizes="192x192" id="favicon-192">
+    <link rel="apple-touch-icon" href="" sizes="180x180" id="apple-touch-180">
+    <link rel="apple-touch-icon" href="" sizes="152x152" id="apple-touch-152">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0f2b4c">
     
@@ -45,7 +45,7 @@
       "description": "A flexible line of credit secured by your home equity.",
       "provider": {
         "@type": "Organization",
-        "name": "Above All CRM"
+        "name": ""
       },
       "category": "Home Equity Loan",
       "areaServed": {
@@ -55,7 +55,7 @@
     }
     </script>
     
-    <title>Your Personalized HELOC Quote | Above All Carbon</title>
+    <title id="page-title">Your Personalized HELOC Quote</title>
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
@@ -157,6 +157,50 @@
             align-items: center;
             gap: 8px;
             white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* Mobile floating bar optimizations */
+        @media (max-width: 768px) {
+            .floating-bar {
+                padding: 10px 14px;
+                gap: 8px;
+                max-width: 98vw;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                justify-content: flex-start;
+            }
+            
+            .floating-bar::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .floating-bar button {
+                padding: 10px 16px;
+                font-size: 11px;
+                letter-spacing: 0.5px;
+                flex-shrink: 0;
+            }
+            
+            .floating-bar button.secondary {
+                padding: 10px 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .floating-bar {
+                padding: 8px 12px;
+                gap: 6px;
+                bottom: 12px;
+            }
+            
+            .floating-bar button {
+                padding: 8px 12px;
+                font-size: 10px;
+                letter-spacing: 0.3px;
+            }
         }
 
         .floating-bar button:hover {
@@ -421,7 +465,7 @@
 
         .header h1 {
             font-family: var(--font-heading);
-            font-size: 24px;
+            font-size: clamp(18px, 5vw, 28px);
             font-weight: 900;
             color: var(--accent-color);
             text-transform: uppercase;
@@ -429,6 +473,16 @@
             margin-top: 12px;
             margin-bottom: 4px;
             position: relative;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            padding: 0 10px;
+        }
+
+        .header h1.dynamic-lender-name {
+            font-size: clamp(16px, 4vw, 24px);
+            letter-spacing: 1.5px;
         }
 
         .header .subtitle {
@@ -3259,12 +3313,18 @@
             }
 
             .header {
-                padding: 40px 20px 28px;
+                padding: 40px 16px 28px;
             }
 
             .header h1 {
-                font-size: 22px;
-                letter-spacing: 1.5px;
+                font-size: clamp(14px, 5vw, 20px);
+                letter-spacing: 1px;
+                padding: 0 8px;
+            }
+
+            .header h1.dynamic-lender-name {
+                font-size: clamp(12px, 4vw, 18px);
+                letter-spacing: 0.5px;
             }
 
             .header .subtitle {
@@ -6437,8 +6497,9 @@
 
     <!-- Floating Action Bar -->
     <div class="floating-bar" id="floating-bar" style="display: none;">
-        <button onclick="openApplyModal()"><span data-i18n="ctaMain">&#10003; This Looks Right — Let's Move Forward</span></button>
+        <button onclick="openApplyModal()" id="btn-apply"><span data-i18n="ctaMain">&#10003; This Looks Right — Let's Move Forward</span></button>
         <button class="secondary" id="btn-schedule" onclick="scheduleCall()" style="display:none;"><span data-i18n="ctaSchedule">&#128197; Schedule Call</span></button>
+        <button class="secondary" id="btn-review" onclick="leaveReview()" style="display:none;"><span data-i18n="ctaReview">&#11088; Leave a Review</span></button>
         <button class="secondary" id="btn-ask" onclick="askQuestion()"><span data-i18n="ctaAsk">&#128161; Ask Ezra For Clarification</span></button>
         <button class="secondary" onclick="downloadPDF()"><span data-i18n="ctaPdf">&#128196; Save PDF</span></button>
         <button class="secondary" onclick="shareQuote()"><span data-i18n="ctaShare">&#128279; Share</span></button>
@@ -6793,6 +6854,128 @@
                 <div class="val-blocks stagger-children" id="q-val-blocks"></div>
             </div>
             <div class="equity-chart-section reveal" id="sec-equity-chart"></div>
+
+            <!-- TITANIUM v5.9.3: Pre-Qualification Checklist -->
+            <div class="section reveal" id="sec-prequal" style="display: none;">
+                <div class="section-title" data-icon="&#9989;"><span data-i18n="prequalTitle">Quick Pre-Qualification Check</span></div>
+                <div class="prequal-container" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.02)); border-radius: 16px; padding: 24px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                    <p style="margin-bottom: 20px; color: var(--slate); font-size: 14px;" data-i18n="prequalSubtitle">Answer a few quick questions to see if you pre-qualify:</p>
+                    <div class="prequal-items" id="prequal-items">
+                        <div class="prequal-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(0,0,0,0.08);">
+                            <span data-i18n="prequalCredit">Credit score 680+</span>
+                            <div class="prequal-buttons" style="display: flex; gap: 8px;">
+                                <button class="prequal-btn" data-q="credit" data-a="yes" style="padding: 8px 20px; border-radius: 20px; border: 2px solid #10b981; background: transparent; color: #10b981; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;">Yes</button>
+                                <button class="prequal-btn" data-q="credit" data-a="no" style="padding: 8px 20px; border-radius: 20px; border: 2px solid #ef4444; background: transparent; color: #ef4444; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;">No</button>
+                            </div>
+                        </div>
+                        <div class="prequal-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(0,0,0,0.08);">
+                            <span data-i18n="prequalIncome">Steady income (2+ years)</span>
+                            <div class="prequal-buttons" style="display: flex; gap: 8px;">
+                                <button class="prequal-btn" data-q="income" data-a="yes" style="padding: 8px 20px; border-radius: 20px; border: 2px solid #10b981; background: transparent; color: #10b981; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;">Yes</button>
+                                <button class="prequal-btn" data-q="income" data-a="no" style="padding: 8px 20px; border-radius: 20px; border: 2px solid #ef4444; background: transparent; color: #ef4444; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;">No</button>
+                            </div>
+                        </div>
+                        <div class="prequal-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(0,0,0,0.08);">
+                            <span data-i18n="prequalEquity">Own home 12+ months</span>
+                            <div class="prequal-buttons" style="display: flex; gap: 8px;">
+                                <button class="prequal-btn" data-q="equity" data-a="yes" style="padding: 8px 20px; border-radius: 20px; border: 2px solid #10b981; background: transparent; color: #10b981; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;">Yes</button>
+                                <button class="prequal-btn" data-q="equity" data-a="no" style="padding: 8px 20px; border-radius: 20px; border: 2px solid #ef4444; background: transparent; color: #ef4444; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;">No</button>
+                            </div>
+                        </div>
+                        <div class="prequal-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0;">
+                            <span data-i18n="prequalDti">No bankruptcy in last 2 years</span>
+                            <div class="prequal-buttons" style="display: flex; gap: 8px;">
+                                <button class="prequal-btn" data-q="dti" data-a="yes" style="padding: 8px 20px; border-radius: 20px; border: 2px solid #10b981; background: transparent; color: #10b981; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;">Yes</button>
+                                <button class="prequal-btn" data-q="dti" data-a="no" style="padding: 8px 20px; border-radius: 20px; border: 2px solid #ef4444; background: transparent; color: #ef4444; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;">No</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="prequal-result" id="prequal-result" style="margin-top: 20px; padding: 16px; border-radius: 12px; text-align: center; display: none;">
+                        <!-- Result will be shown here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TITANIUM v5.9.3: DTI Calculator -->
+            <div class="section reveal" id="sec-dti-calc" style="display: none;">
+                <div class="section-title" data-icon="&#128200;"><span data-i18n="dtiCalcTitle">Debt-to-Income Calculator</span></div>
+                <div class="dti-container" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0.02)); border-radius: 16px; padding: 24px; border: 1px solid rgba(99, 102, 241, 0.2);">
+                    <div class="dti-inputs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--slate); margin-bottom: 6px;" data-i18n="dtiCalcMonthlyIncome">Monthly Income (before taxes)</label>
+                            <input type="text" id="dti-income" placeholder="$8,000" style="width: 100%; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 14px; font-family: var(--font-body);" oninput="updateDTI()">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--slate); margin-bottom: 6px;" data-i18n="dtiCalcMonthlyDebts">Monthly Debt Payments</label>
+                            <input type="text" id="dti-debts" placeholder="$2,000" style="width: 100%; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 14px; font-family: var(--font-body);" oninput="updateDTI()">
+                        </div>
+                    </div>
+                    <div class="dti-gauge-container" style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+                        <div class="dti-gauge" style="position: relative; width: 140px; height: 140px; flex-shrink: 0;">
+                            <svg viewBox="0 0 100 100" style="transform: rotate(-90deg);">
+                                <circle cx="50" cy="50" r="45" fill="none" stroke="#e2e8f0" stroke-width="10"/>
+                                <circle id="dti-gauge-fill" cx="50" cy="50" r="45" fill="none" stroke="#10b981" stroke-width="10" stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="round" style="transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease;"/>
+                            </svg>
+                            <div class="dti-value" id="dti-value" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; font-weight: 700; color: var(--primary-color);">0%</div>
+                        </div>
+                        <div class="dti-info" style="flex: 1; min-width: 200px;">
+                            <div class="dti-status" id="dti-status" style="display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 12px; background: #10b981; color: white;">Excellent</div>
+                            <p id="dti-message" style="font-size: 14px; color: var(--slate); line-height: 1.5;" data-i18n="dtiCalcResult">Your DTI looks great! Lenders typically prefer DTI under 43%.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TITANIUM v5.9.3: Document Upload -->
+            <div class="section reveal" id="sec-doc-upload" style="display: none;">
+                <div class="section-title" data-icon="&#128193;"><span data-i18n="docUploadTitle">Document Checklist</span></div>
+                <div class="doc-upload-container" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.02)); border-radius: 16px; padding: 24px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                    <p style="margin-bottom: 20px; color: var(--slate); font-size: 14px;" data-i18n="docUploadSubtitle">Upload these documents to speed up your application:</p>
+                    <div class="doc-upload-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                        <div class="doc-upload-item" style="background: white; border-radius: 12px; padding: 20px; border: 2px dashed rgba(197, 160, 89, 0.3); text-align: center; cursor: pointer; transition: all 0.2s;" onmouseenter="this.style.borderColor='var(--accent-color)';this.style.background='rgba(197,160,89,0.05)'" onmouseleave="this.style.borderColor='rgba(197,160,89,0.3)';this.style.background='white'">
+                            <div style="font-size: 32px; margin-bottom: 8px;">&#128100;</div>
+                            <div style="font-weight: 600; font-size: 14px; color: var(--primary-color); margin-bottom: 4px;" data-i18n="docUploadId">Valid ID</div>
+                            <div style="font-size: 12px; color: var(--slate);">Driver's License, Passport, or State ID</div>
+                            <div class="florida-note" style="font-size: 11px; color: #f59e0b; margin-top: 8px; font-style: italic; display: none;">&#127758; Passports work best in Florida</div>
+                        </div>
+                        <div class="doc-upload-item" style="background: white; border-radius: 12px; padding: 20px; border: 2px dashed rgba(197, 160, 89, 0.3); text-align: center; cursor: pointer; transition: all 0.2s;" onmouseenter="this.style.borderColor='var(--accent-color)';this.style.background='rgba(197,160,89,0.05)'" onmouseleave="this.style.borderColor='rgba(197,160,89,0.3)';this.style.background='white'">
+                            <div style="font-size: 32px; margin-bottom: 8px;">&#128196;</div>
+                            <div style="font-weight: 600; font-size: 14px; color: var(--primary-color); margin-bottom: 4px;" data-i18n="docUploadIncome">Income Proof</div>
+                            <div style="font-size: 12px; color: var(--slate);">Pay stubs, W-2s, or tax returns</div>
+                        </div>
+                        <div class="doc-upload-item" style="background: white; border-radius: 12px; padding: 20px; border: 2px dashed rgba(197, 160, 89, 0.3); text-align: center; cursor: pointer; transition: all 0.2s;" onmouseenter="this.style.borderColor='var(--accent-color)';this.style.background='rgba(197,160,89,0.05)'" onmouseleave="this.style.borderColor='rgba(197,160,89,0.3)';this.style.background='white'">
+                            <div style="font-size: 32px; margin-bottom: 8px;">&#127968;</div>
+                            <div style="font-weight: 600; font-size: 14px; color: var(--primary-color); margin-bottom: 4px;" data-i18n="docUploadInsurance">Insurance</div>
+                            <div style="font-size: 12px; color: var(--slate);">Homeowner's insurance declaration</div>
+                        </div>
+                        <div class="doc-upload-item" style="background: white; border-radius: 12px; padding: 20px; border: 2px dashed rgba(197, 160, 89, 0.3); text-align: center; cursor: pointer; transition: all 0.2s;" onmouseenter="this.style.borderColor='var(--accent-color)';this.style.background='rgba(197,160,89,0.05)'" onmouseleave="this.style.borderColor='rgba(197,160,89,0.3)';this.style.background='white'">
+                            <div style="font-size: 32px; margin-bottom: 8px;">&#128178;</div>
+                            <div style="font-weight: 600; font-size: 14px; color: var(--primary-color); margin-bottom: 4px;" data-i18n="docUploadMortgage">Mortgage Statement</div>
+                            <div style="font-size: 12px; color: var(--slate);">Most recent statement</div>
+                        </div>
+                    </div>
+                    <div class="doc-upload-note" style="margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 8px; font-size: 12px; color: var(--slate); text-align: center;">
+                        <span data-i18n="docUploadSecure">&#128274; Your documents are securely uploaded via bank-level encryption</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TITANIUM v5.9.3: Side-by-Side Tier Comparison -->
+            <div class="section reveal" id="sec-tier-compare" style="display: none;">
+                <div class="section-title" data-icon="&#128200;"><span data-i18n="tierCompareTitle">Compare All Options</span></div>
+                <div class="tier-compare-container" id="tier-compare-container" style="background: white; border-radius: 16px; padding: 24px; border: 1px solid rgba(0,0,0,0.08);">
+                    <!-- Tier comparison table will be rendered here -->
+                </div>
+            </div>
+
+            <!-- TITANIUM v5.9.3: Testimonials -->
+            <div class="section reveal" id="sec-testimonials" style="display: none;">
+                <div class="section-title" data-icon="&#128172;"><span data-i18n="testimonialsTitle">What Our Clients Say</span></div>
+                <div class="testimonials-container" id="testimonials-container" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(139, 92, 246, 0.02)); border-radius: 16px; padding: 24px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                    <!-- Testimonials will be rendered here -->
+                </div>
+            </div>
+
             <!-- Social Proof Strip -->
             <div class="social-proof reveal" id="sec-social-proof">
                 <div class="sp-item">
@@ -7342,7 +7525,7 @@
             <div class="trust-badge"><span class="trust-badge-icon">&#128197;</span>Est. 2018</div>
         </div>
         <div class="quote-footer reveal" id="sec-footer"></div>
-        <div class="footer-powered">Powered by Above All Carbon</div>
+        <div class="footer-powered" id="footer-powered">Powered by <span class="powered-by-name">Above All Carbon</span></div>
     </div>
 
     <!-- Ezra Chat Widget (injected by JS) -->
@@ -7425,6 +7608,7 @@
                 stepFunded: 'Get Funded',
                 ctaMain: 'This Looks Right — Let\'s Move Forward',
                 ctaSchedule: 'Schedule Call',
+                ctaReview: 'Leave a Review',
                 ctaAsk: 'Ask Ezra For Clarification',
                 ctaPdf: 'Save PDF',
                 ctaShare: 'Share',
@@ -7453,7 +7637,38 @@
                 exitBtnApply: 'Let\'s Do This',
                 tourBack: 'Back',
                 tourNext: 'Next',
-                tourDone: 'Got It'
+                tourDone: 'Got It',
+                // Titanium v5.9.3 - New Client Quote Features
+                prequalTitle: 'Pre-Qualification Checklist',
+                prequalSubtitle: 'Let\'s make sure you\'re ready to apply',
+                prequalIncome: 'Income Verification',
+                prequalIncomeDesc: 'Recent pay stubs, W-2s, or tax returns',
+                prequalCredit: 'Credit Score',
+                prequalCreditDesc: '720+ for best rates',
+                prequalEquity: 'Home Equity',
+                prequalEquityDesc: 'At least 15-20% equity in your home',
+                prequalDti: 'Debt-to-Income Ratio',
+                prequalDtiDesc: 'Generally under 43%',
+                docUploadTitle: 'Document Upload',
+                docUploadSubtitle: 'Securely upload your documents',
+                docUploadId: 'Photo ID',
+                docUploadIncome: 'Income Documents',
+                docUploadInsurance: 'Homeowners Insurance',
+                docUploadMortgage: 'Current Mortgage Statement',
+                tierCompareTitle: 'Compare All Tiers',
+                tierCompareSubtitle: 'Side-by-side comparison of your options',
+                dtiCalcTitle: 'DTI Calculator',
+                dtiCalcSubtitle: 'Calculate your debt-to-income ratio',
+                dtiCalcMonthlyIncome: 'Monthly Income',
+                dtiCalcMonthlyDebts: 'Monthly Debt Payments',
+                dtiCalcResult: 'Your DTI Ratio',
+                whatIfPayoffTitle: '"What If" Payoff Calculator',
+                whatIfPayoffSubtitle: 'See how extra payments affect your payoff',
+                whatIfExtraPayment: 'Extra Monthly Payment',
+                whatIfTimeSaved: 'Time Saved',
+                whatIfInterestSaved: 'Interest Saved',
+                testimonialsTitle: 'What Our Clients Say',
+                testimonialsSubtitle: 'Real stories from homeowners like you'
             },
             es: {
                 subtitle: 'Linea de Credito con Garantia Hipotecaria Personalizada',
@@ -7465,6 +7680,7 @@
                 stepFunded: 'Recibir Fondos',
                 ctaMain: 'Todo Se Ve Bien — Avancemos',
                 ctaSchedule: 'Programar Llamada',
+                ctaReview: 'Dejar una Resena',
                 ctaAsk: 'Preguntele a Ezra',
                 ctaPdf: 'Guardar PDF',
                 ctaShare: 'Compartir',
@@ -7493,7 +7709,38 @@
                 exitBtnApply: 'Hagamoslo',
                 tourBack: 'Atras',
                 tourNext: 'Siguiente',
-                tourDone: 'Entendido'
+                tourDone: 'Entendido',
+                // Titanium v5.9.3 - New Client Quote Features (Spanish)
+                prequalTitle: 'Lista de Verificacion Pre-Calificacion',
+                prequalSubtitle: 'Aseguremonos de que este listo para aplicar',
+                prequalIncome: 'Verificacion de Ingresos',
+                prequalIncomeDesc: 'Talones de pago recientes, W-2s o declaraciones de impuestos',
+                prequalCredit: 'Puntuacion de Credito',
+                prequalCreditDesc: '720+ para las mejores tasas',
+                prequalEquity: 'Equidad de la Vivienda',
+                prequalEquityDesc: 'Al menos 15-20% de equidad en su hogar',
+                prequalDti: 'Relacion Deuda-Ingreso',
+                prequalDtiDesc: 'Generalmente menos del 43%',
+                docUploadTitle: 'Subida de Documentos',
+                docUploadSubtitle: 'Suba sus documentos de forma segura',
+                docUploadId: 'Identificacion con Foto',
+                docUploadIncome: 'Documentos de Ingresos',
+                docUploadInsurance: 'Seguro de Propietario',
+                docUploadMortgage: 'Estado de Hipoteca Actual',
+                tierCompareTitle: 'Compare Todos los Niveles',
+                tierCompareSubtitle: 'Comparacion lado a lado de sus opciones',
+                dtiCalcTitle: 'Calculadora DTI',
+                dtiCalcSubtitle: 'Calcule su relacion deuda a ingresos',
+                dtiCalcMonthlyIncome: 'Ingreso Mensual',
+                dtiCalcMonthlyDebts: 'Pagos de Deuda Mensual',
+                dtiCalcResult: 'Su Ratio DTI',
+                whatIfPayoffTitle: 'Calculadora "Que Pasaria Si" de Pago',
+                whatIfPayoffSubtitle: 'Vea como los pagos extra afectan su liquidacion',
+                whatIfExtraPayment: 'Pago Mensual Extra',
+                whatIfTimeSaved: 'Tiempo Ahorrado',
+                whatIfInterestSaved: 'Interes Ahorrado',
+                testimonialsTitle: 'Lo Que Dicen Nuestros Clientes',
+                testimonialsSubtitle: 'Historias reales de propietarios como usted'
             }
         };
         
@@ -7589,6 +7836,17 @@
                         } catch (e) {
                             console.warn('Calculator init error:', e);
                         }
+                        
+                        // Initialize Titanium v5.9.3 features
+                        try {
+                            initPrequalChecklist(previewData.linkOptions || {});
+                            initDTICalculator(previewData.linkOptions || {});
+                            initDocUpload(previewData.linkOptions || {}, previewData);
+                            initTierComparison(previewData.linkOptions || {}, previewData);
+                            initTestimonials(previewData.linkOptions || {});
+                        } catch (e) {
+                            console.warn('Titanium v5.9.3 features init error:', e);
+                        }
                     }, 300);
                     
                     return; // Skip Supabase loading
@@ -7677,6 +7935,17 @@
                         console.warn('Calculator init error:', e);
                     }
                     
+                    // Initialize Titanium v5.9.3 features
+                    try {
+                        initPrequalChecklist(link.quote_data.linkOptions || {});
+                        initDTICalculator(link.quote_data.linkOptions || {});
+                        initDocUpload(link.quote_data.linkOptions || {}, link.quote_data);
+                        initTierComparison(link.quote_data.linkOptions || {}, link.quote_data);
+                        initTestimonials(link.quote_data.linkOptions || {});
+                    } catch (e) {
+                        console.warn('Titanium v5.9.3 features init error:', e);
+                    }
+                    
                     // Initialize proactive features
                     try {
                         initProactiveObjections(link.quote_data);
@@ -7756,6 +8025,60 @@
                 }
                 content.style.display = 'block';
                 content.classList.add('entering');
+
+                // ===== DYNAMIC BRANDING SETUP =====
+                var baseUrl = window.location.origin;
+                var lenderName = lo.lenderName || lo.company || 'Your Lender';
+                var companyName = lo.company || lenderName;
+                var poweredBy = lo.poweredBy || 'Above All Carbon';
+                
+                // Update meta tags dynamically
+                var metaAuthor = document.getElementById('meta-author');
+                if (metaAuthor) metaAuthor.content = companyName;
+                
+                var metaCanonical = document.getElementById('meta-canonical');
+                if (metaCanonical) metaCanonical.href = baseUrl + '/client-quote.html';
+                
+                var metaOgSite = document.getElementById('meta-og-site');
+                if (metaOgSite) metaOgSite.content = lenderName;
+                
+                var metaOgUrl = document.getElementById('meta-og-url');
+                if (metaOgUrl) metaOgUrl.content = baseUrl + '/client-quote.html';
+                
+                var metaOgImage = document.getElementById('meta-og-image');
+                if (metaOgImage) metaOgImage.content = baseUrl + '/images/og-image.jpg';
+                
+                var metaTwitterImage = document.getElementById('meta-twitter-image');
+                if (metaTwitterImage) metaTwitterImage.content = baseUrl + '/images/og-image.jpg';
+                
+                // Update favicon paths dynamically
+                var favicon32 = document.getElementById('favicon-32');
+                if (favicon32) favicon32.href = baseUrl + '/favicon.png';
+                
+                var favicon16 = document.getElementById('favicon-16');
+                if (favicon16) favicon16.href = baseUrl + '/favicon-16x16.png';
+                
+                var favicon192 = document.getElementById('favicon-192');
+                if (favicon192) favicon192.href = baseUrl + '/favicon-192x192.png';
+                
+                var appleTouch180 = document.getElementById('apple-touch-180');
+                if (appleTouch180) appleTouch180.href = baseUrl + '/apple-touch-icon.png';
+                
+                var appleTouch152 = document.getElementById('apple-touch-152');
+                if (appleTouch152) appleTouch152.href = baseUrl + '/apple-touch-icon-152x152.png';
+                
+                // Update JSON-LD structured data
+                var structuredData = document.querySelector('script[type="application/ld+json"]');
+                if (structuredData) {
+                    try {
+                        var jsonLd = JSON.parse(structuredData.textContent);
+                        if (jsonLd.provider) jsonLd.provider.name = companyName;
+                        jsonLd.name = lenderName + ' HELOC';
+                        structuredData.textContent = JSON.stringify(jsonLd, null, 2);
+                    } catch (e) {
+                        console.warn('Failed to update structured data:', e);
+                    }
+                }
                 
                 // Remove skeleton states with staggered animation
                 setTimeout(function() {
@@ -7780,10 +8103,21 @@
                 // Apply template mode - hide/show sections based on mode
                 applyTemplateMode(templateMode, linkOpts);
 
-                // Title
-                var title = lo.company ? lo.company + ' HELOC Proposal' : 'Your HELOC Proposal';
-                document.getElementById('q-title').textContent = title;
-                document.title = title + ' - ' + (data.clientName || 'Client');
+                // Title - Dynamic based on LO data
+                var titleText = lenderName + ' HELOC Proposal';
+                var qTitle = document.getElementById('q-title');
+                if (qTitle) {
+                    qTitle.textContent = titleText;
+                    // Add dynamic class for very long names
+                    if (lenderName.length > 25) {
+                        qTitle.classList.add('dynamic-lender-name');
+                    }
+                }
+                
+                var pageTitle = document.getElementById('page-title');
+                if (pageTitle) {
+                    pageTitle.textContent = titleText + ' | ' + (data.clientName || 'Client');
+                }
 
                 // LO Info in header
                 var loHtml = '';
@@ -7841,8 +8175,14 @@
                 if (lo.address) fHtml += esc(lo.address) + '<br>';
                 fHtml += 'Equal Housing Lender. All loan programs subject to credit approval. Rates, terms, and conditions are subject to change without notice. This is not a commitment to lend. Licensed by the California Department of Financial Protection and Innovation under the California Residential Mortgage Lending Act.';
                 fHtml += '</div></div>';
-                fHtml += '<div class="proprietary-notice">PROPRIETARY TOOL NOTICE: This Above All Carbon HELOC Quote Tool is proprietary software owned by Above All CRM / ' + esc(lo.company || 'West Capital Lending') + '. Unauthorized copying, distribution, modification, or reverse engineering is strictly prohibited. &copy; 2024-2026 Above All CRM. All rights reserved.</div>';
+                fHtml += '<div class="proprietary-notice">PROPRIETARY TOOL NOTICE: This ' + esc(poweredBy) + ' HELOC Quote Tool is proprietary software owned by ' + esc(lo.company || poweredBy) + '. Unauthorized copying, distribution, modification, or reverse engineering is strictly prohibited. &copy; 2024-2026 ' + esc(poweredBy) + '. All rights reserved.</div>';
                 document.getElementById('sec-footer').innerHTML = fHtml;
+
+                // Update powered by text
+                var footerPowered = document.getElementById('footer-powered');
+                if (footerPowered) {
+                    footerPowered.innerHTML = 'Powered by <span class="powered-by-name">' + esc(poweredBy) + '</span>';
+                }
 
                 // Template Mode Application
                 function applyTemplateMode(mode, opts) {
@@ -8054,10 +8394,27 @@
                 // CTA handled by floating action bar — wire buttons with LO data
                 window._loInfo = lo;
 
-                // Show Schedule Call button if LO has a calendar link
-                if (lo && lo.calendarLink) {
-                    var schedBtn = document.getElementById('btn-schedule');
-                    if (schedBtn) schedBtn.style.display = '';
+                // Update button text from LO data (with i18n support)
+                var bookCallText = lo.bookCallText || (currentLanguage === 'es' ? 'Programar Llamada' : 'Schedule a Call to Get Started');
+                var applyText = lo.applyText || (currentLanguage === 'es' ? 'Solicitar Ahora' : 'This Looks Right — Let\'s Move Forward');
+                
+                var btnSchedule = document.getElementById('btn-schedule');
+                if (btnSchedule && lo.calendarLink) {
+                    btnSchedule.style.display = '';
+                    var scheduleSpan = btnSchedule.querySelector('span');
+                    if (scheduleSpan) scheduleSpan.textContent = '📅 ' + bookCallText;
+                }
+                
+                var btnApply = document.getElementById('btn-apply');
+                if (btnApply) {
+                    var applySpan = btnApply.querySelector('span');
+                    if (applySpan) applySpan.textContent = '✓ ' + applyText;
+                }
+
+                // Show Review button if LO has a review link
+                var btnReview = document.getElementById('btn-review');
+                if (btnReview && lo.reviewLink) {
+                    btnReview.style.display = '';
                 }
 
                 // === SALES PSYCHOLOGY SECTIONS ===
@@ -8600,13 +8957,36 @@
                 openContactModal();
             };
 
+            // Tier Selection Handler
+            window.selectTier = function(tierNum) {
+                trackEvent('tier_selected', { code: code, tier: tierNum });
+                showToast(currentLanguage === 'es' ? 'Nivel ' + tierNum + ' seleccionado. Procediendo...' : 'Tier ' + tierNum + ' selected. Proceeding...');
+                setTimeout(function() {
+                    window.openApplyModal();
+                }, 800);
+            };
+
             // Schedule Call Handler
             window.scheduleCall = function () {
-                if (window._loInfo && window._loInfo.calendarLink) {
-                    window.open(window._loInfo.calendarLink, '_blank');
+                var lo = window._loInfo;
+                if (lo && lo.calendarLink) {
+                    window.open(lo.calendarLink, '_blank');
+                    trackEvent('schedule_call_clicked', { code: code });
                 } else {
-                    showToast('Calendar link not configured. Please use Ask Question to schedule.');
+                    var msg = currentLanguage === 'es' 
+                        ? 'Enlace de calendario no configurado. Use Preguntar para programar.'
+                        : 'Calendar link not configured. Please use Ask Question to schedule.';
+                    showToast(msg);
                     openContactModal();
+                }
+            };
+
+            window.leaveReview = function () {
+                if (window._loInfo && window._loInfo.reviewLink) {
+                    window.open(window._loInfo.reviewLink, '_blank');
+                    trackEvent('review_clicked', { code: code });
+                } else {
+                    showToast('Review link not configured.');
                 }
             };
 
@@ -9537,6 +9917,265 @@
                 });
             }
 
+            // ===== TITANIUM v5.9.3: PRE-QUALIFICATION CHECKLIST =====
+            function initPrequalChecklist(opts) {
+                opts = opts || {};
+                var section = document.getElementById('sec-prequal');
+                if (!section) return;
+                
+                // Show section if enabled (default: true)
+                if (opts.showPrequal !== false) {
+                    section.style.display = '';
+                }
+                
+                var buttons = section.querySelectorAll('.prequal-btn');
+                var answers = {};
+                
+                buttons.forEach(function(btn) {
+                    btn.addEventListener('click', function() {
+                        var q = this.getAttribute('data-q');
+                        var a = this.getAttribute('data-a');
+                        answers[q] = a;
+                        
+                        // Update button styles
+                        section.querySelectorAll('.prequal-btn[data-q="' + q + '"]').forEach(function(b) {
+                            b.style.background = 'transparent';
+                            b.style.color = b.getAttribute('data-a') === 'yes' ? '#10b981' : '#ef4444';
+                        });
+                        this.style.background = a === 'yes' ? '#10b981' : '#ef4444';
+                        this.style.color = 'white';
+                        
+                        // Calculate result
+                        updatePrequalResult();
+                    });
+                });
+                
+                function updatePrequalResult() {
+                    var resultEl = document.getElementById('prequal-result');
+                    if (!resultEl) return;
+                    
+                    var yesCount = 0;
+                    var total = 4;
+                    for (var k in answers) {
+                        if (answers[k] === 'yes') yesCount++;
+                    }
+                    
+                    if (Object.keys(answers).length < total) return; // Not all answered
+                    
+                    var percent = Math.round((yesCount / total) * 100);
+                    resultEl.style.display = 'block';
+                    
+                    if (percent >= 75) {
+                        resultEl.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                        resultEl.style.color = 'white';
+                        resultEl.innerHTML = '<div style="font-size: 24px; font-weight: 700;">&#127881; You Pre-Qualify!</div><div style="margin-top: 8px; opacity: 0.9;">You\'re ' + percent + '% likely to be approved. Let\'s move forward!</div>';
+                    } else if (percent >= 50) {
+                        resultEl.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+                        resultEl.style.color = 'white';
+                        resultEl.innerHTML = '<div style="font-size: 20px; font-weight: 700;">&#128172; Let\'s Talk Options</div><div style="margin-top: 8px; opacity: 0.9;">You may still qualify! Let\'s discuss your specific situation.</div>';
+                    } else {
+                        resultEl.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                        resultEl.style.color = 'white';
+                        resultEl.innerHTML = '<div style="font-size: 20px; font-weight: 700;">&#128161; We Have Solutions</div><div style="margin-top: 8px; opacity: 0.9;">Let\'s explore alternative options that might work for you.</div>';
+                    }
+                }
+            }
+
+            // ===== TITANIUM v5.9.3: DTI CALCULATOR =====
+            window.updateDTI = function() {
+                var incomeInput = document.getElementById('dti-income');
+                var debtsInput = document.getElementById('dti-debts');
+                var gaugeFill = document.getElementById('dti-gauge-fill');
+                var dtiValue = document.getElementById('dti-value');
+                var dtiStatus = document.getElementById('dti-status');
+                var dtiMessage = document.getElementById('dti-message');
+                
+                if (!incomeInput || !debtsInput || !gaugeFill) return;
+                
+                var income = parseFloat(incomeInput.value.replace(/[$,]/g, '')) || 0;
+                var debts = parseFloat(debtsInput.value.replace(/[$,]/g, '')) || 0;
+                
+                if (income <= 0) {
+                    dtiValue.textContent = '0%';
+                    gaugeFill.style.strokeDashoffset = 283;
+                    return;
+                }
+                
+                var dti = (debts / income) * 100;
+                var dtiRounded = Math.round(dti);
+                
+                // Update gauge (max 50% for full circle)
+                var maxDTI = 50;
+                var percentage = Math.min(dti / maxDTI, 1);
+                var offset = 283 - (283 * percentage);
+                gaugeFill.style.strokeDashoffset = offset;
+                
+                // Update color based on DTI
+                var color = '#10b981'; // Green (excellent)
+                var status = currentLanguage === 'es' ? 'Excelente' : 'Excellent';
+                var message = currentLanguage === 'es' ? 'Su DTI se ve excelente! Los prestamistas generalmente prefieren DTI menor al 43%.' : 'Your DTI looks great! Lenders typically prefer DTI under 43%.';
+                
+                if (dti > 43) {
+                    color = '#ef4444'; // Red (high)
+                    status = currentLanguage === 'es' ? 'Alto' : 'High';
+                    message = currentLanguage === 'es' ? 'Su DTI es alto. Podemos explorar opciones para reducir sus pagos mensuales.' : 'Your DTI is high. We can explore options to reduce your monthly payments.';
+                } else if (dti > 36) {
+                    color = '#f59e0b'; // Yellow (fair)
+                    status = currentLanguage === 'es' ? 'Aceptable' : 'Fair';
+                    message = currentLanguage === 'es' ? 'Su DTI es aceptable. Hay espacio para mejorar.' : 'Your DTI is acceptable. There\'s room for improvement.';
+                } else if (dti > 28) {
+                    color = '#3b82f6'; // Blue (good)
+                    status = currentLanguage === 'es' ? 'Bueno' : 'Good';
+                    message = currentLanguage === 'es' ? 'Buen DTI. Esta en buena posicion para aprobacion.' : 'Good DTI. You\'re in a good position for approval.';
+                }
+                
+                gaugeFill.style.stroke = color;
+                dtiValue.textContent = dtiRounded + '%';
+                dtiValue.style.color = color;
+                dtiStatus.textContent = status;
+                dtiStatus.style.background = color;
+                dtiMessage.textContent = message;
+            };
+
+            function initDTICalculator(opts) {
+                opts = opts || {};
+                var section = document.getElementById('sec-dti-calc');
+                if (!section) return;
+                
+                if (opts.showDtiCalc !== false) {
+                    section.style.display = '';
+                }
+            }
+
+            // ===== TITANIUM v5.9.3: DOCUMENT UPLOAD =====
+            function initDocUpload(opts, data) {
+                opts = opts || {};
+                var section = document.getElementById('sec-doc-upload');
+                if (!section) return;
+                
+                if (opts.showDocUpload !== false) {
+                    section.style.display = '';
+                }
+                
+                // Show Florida note if property state is FL
+                var floridaNotes = section.querySelectorAll('.florida-note');
+                var isFlorida = data.propertyAddress && data.propertyAddress.toLowerCase().includes('fl');
+                floridaNotes.forEach(function(note) {
+                    note.style.display = isFlorida ? 'block' : 'none';
+                });
+            }
+
+            // ===== TITANIUM v5.9.3: TIER COMPARISON =====
+            function initTierComparison(opts, data) {
+                opts = opts || {};
+                var section = document.getElementById('sec-tier-compare');
+                var container = document.getElementById('tier-compare-container');
+                if (!section || !container) return;
+                
+                // Check if tier comparison should show
+                var mode = opts.tierCompareMode || 'all';
+                if (mode === 'none' || opts.showTierCompare === false) {
+                    section.style.display = 'none';
+                    return;
+                }
+                
+                section.style.display = '';
+                
+                // Build comparison table
+                var tiers = data.tiers || [];
+                if (tiers.length === 0) return;
+                
+                // Filter tiers based on mode
+                if (mode === 'two' && tiers.length > 2) {
+                    tiers = tiers.slice(0, 2);
+                }
+                
+                var html = '<div class="tier-compare-table" style="overflow-x: auto;">';
+                html += '<table style="width: 100%; border-collapse: collapse;">';
+                html += '<thead><tr style="background: var(--primary-color); color: white;">';
+                html += '<th style="padding: 12px; text-align: left; font-family: var(--font-heading); font-size: 12px;">Feature</th>';
+                tiers.forEach(function(tier) {
+                    html += '<th style="padding: 12px; text-align: center; font-family: var(--font-heading); font-size: 12px;">Tier ' + tier.tier + '</th>';
+                });
+                html += '</tr></thead><tbody>';
+                
+                // Origination fee row
+                html += '<tr style="border-bottom: 1px solid rgba(0,0,0,0.08);">';
+                html += '<td style="padding: 12px; font-weight: 600;">Origination Fee</td>';
+                tiers.forEach(function(tier) {
+                    html += '<td style="padding: 12px; text-align: center;">' + tier.origPts + '%</td>';
+                });
+                html += '</tr>';
+                
+                // Rate row (using first term)
+                html += '<tr style="border-bottom: 1px solid rgba(0,0,0,0.08);">';
+                html += '<td style="padding: 12px; font-weight: 600;">Starting Rate</td>';
+                tiers.forEach(function(tier) {
+                    var firstRate = Object.values(tier.rates)[0];
+                    html += '<td style="padding: 12px; text-align: center; font-weight: 700; color: var(--accent-dark);">' + (firstRate ? firstRate.rate : '--') + '</td>';
+                });
+                html += '</tr>';
+                
+                // Payment row
+                html += '<tr style="border-bottom: 1px solid rgba(0,0,0,0.08);">';
+                html += '<td style="padding: 12px; font-weight: 600;">Monthly Payment</td>';
+                tiers.forEach(function(tier) {
+                    var firstRate = Object.values(tier.rates)[0];
+                    html += '<td style="padding: 12px; text-align: center;">' + (firstRate ? firstRate.payment : '--') + '</td>';
+                });
+                html += '</tr>';
+                
+                // Select button row
+                html += '<tr>';
+                html += '<td style="padding: 12px;"></td>';
+                tiers.forEach(function(tier, idx) {
+                    var isRec = (idx === 1); // Middle tier as recommended
+                    html += '<td style="padding: 12px; text-align: center;">';
+                    html += '<button onclick="selectTier(' + tier.tier + ')" style="padding: 10px 24px; border-radius: 8px; border: none; background: ' + (isRec ? 'linear-gradient(135deg, var(--accent-color), var(--accent-dark))' : 'var(--primary-color)') + '; color: white; font-weight: 600; cursor: pointer; font-size: 13px;">' + (isRec ? '&#9733; Recommended' : 'Select') + '</button>';
+                    html += '</td>';
+                });
+                html += '</tr>';
+                
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            }
+
+            // ===== TITANIUM v5.9.3: TESTIMONIALS =====
+            function initTestimonials(opts) {
+                opts = opts || {};
+                var section = document.getElementById('sec-testimonials');
+                var container = document.getElementById('testimonials-container');
+                if (!section || !container) return;
+                
+                if (opts.showTestimonials !== true) {
+                    section.style.display = 'none';
+                    return;
+                }
+                
+                var testimonials = opts.testimonials || [];
+                if (testimonials.length === 0) {
+                    section.style.display = 'none';
+                    return;
+                }
+                
+                section.style.display = '';
+                
+                var html = '<div class="testimonials-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">';
+                testimonials.forEach(function(t) {
+                    var stars = '';
+                    for (var i = 0; i < 5; i++) {
+                        stars += i < (t.rating || 5) ? '&#9733;' : '&#9734;';
+                    }
+                    html += '<div class="testimonial-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">';
+                    html += '<div class="testimonial-stars" style="color: #f59e0b; font-size: 16px; margin-bottom: 12px;">' + stars + '</div>';
+                    html += '<div class="testimonial-text" style="font-size: 14px; line-height: 1.6; color: var(--slate); margin-bottom: 12px; font-style: italic;">"' + esc(t.text) + '"</div>';
+                    html += '<div class="testimonial-name" style="font-weight: 600; font-size: 13px; color: var(--primary-color);">— ' + esc(t.name) + '</div>';
+                    html += '</div>';
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
             // ===== EZRA AI CHAT WIDGET =====
             function initEzraChat(quoteData, loInfo, quoteCode) {
                 var chatHistory = [], isOpen = false, isSending = false, tourActive = false, tourStep = 0;
@@ -9555,30 +10194,45 @@
 
                 var tourSteps = [
                     {
-                        target: '#sec-client', label: 'Your Details',
-                        text: "Let's start with your details. This quote was prepared for **" + esc(quoteData.clientName || 'you') + "** with a credit score of **" + esc(quoteData.creditScore || 'N/A') + "**. Your loan officer has tailored these options specifically for your profile."
+                        target: '#sec-client', label: 'Your Personalized Quote',
+                        text: "Hi **" + esc(quoteData.clientName || 'there') + "**! I've prepared this HELOC quote specifically for you. Based on your credit profile and home equity of **$" + num(quoteData.cashBack) + "**, you have excellent options available. Let me walk you through what this means for you."
                     },
                     {
-                        target: '#sec-valuation', label: 'Your Equity',
-                        text: "Here's your equity position. Your home is valued at **$" + num(quoteData.homeValue) + "** with a mortgage balance of **$" + num(quoteData.mortgageBalance) + "**. That gives you **$" + num(quoteData.cashBack) + "** in accessible cash through a HELOC."
+                        target: '#sec-prequal', label: 'You Pre-Qualify!',
+                        text: "Great news \u2014 based on your profile, **you pre-qualify** for this HELOC! This isn't a guarantee, but it means you're in a strong position. The quick checklist below shows why you\'re a good candidate. Most of our clients in your position get approved."
                     },
                     {
-                        target: '#sec-recommendation', label: 'Recommended Option',
-                        text: "This is the option your loan officer recommends. At **" + esc(quoteData.rate) + "%" + (quoteData.recType === 'variable' ? ' variable' : '') + "** for **" + esc(quoteData.term) + " years**, your monthly payment would be **" + esc(quoteData.payment) + "**. This balances the best rate with manageable payments."
+                        target: '#sec-recommendation', label: 'Your Best Option',
+                        text: "This is the option **" + esc(loName) + "** recommends for you. At **" + esc(quoteData.rate) + "%** for **" + esc(quoteData.term) + " years**, your payment would be **" + esc(quoteData.payment) + "**. This hits the sweet spot \u2014 low enough rate to save you thousands, but flexible enough to access your cash when you need it."
                     },
                     {
-                        target: '#sec-borrower-strategy', label: 'Why This Works For You',
-                        text: quoteData.borrowerStrategy ? quoteData.borrowerStrategy : "This HELOC structure was designed specifically for your situation. Your loan officer considered your equity position, credit profile, and financial goals to recommend this option."
+                        target: '#sec-tier-compare', label: 'Compare Your Options',
+                        text: "Want to see all your choices? This side-by-side comparison shows every tier. Notice how the origination fee affects your rate \u2014 pay a bit more upfront for a lower rate, or minimize upfront costs. **" + esc(loName) + "** can help you decide which strategy fits your goals."
                     },
                     {
-                        target: '#sec-rates', label: 'All Rate Options',
-                        text: "Here you can see all available rate options across different tiers and terms. Each tier has different origination points which affect your upfront cost vs ongoing rate. **Click any row** to see detailed breakdowns."
+                        target: '#sec-dti-calc', label: 'Your Financial Picture',
+                        text: "Your debt-to-income ratio is a key factor lenders look at. Use this calculator to see where you stand. Most lenders prefer DTI under 43%, and based on your profile, you're likely in great shape. This tool helps you understand your position before applying."
                     },
                     {
-                        target: '#sec-footer', label: 'Next Steps',
-                        text: "Ready to move forward? Use the **Move Forward** button at the bottom of your screen to start your application, or schedule a call with **" + esc(loName) + "** to discuss any questions. There's no obligation \u2014 it's just the next step to explore your options."
+                        target: '#sec-what-if-payback', label: 'Pay Off Faster?',
+                        text: "Here's something powerful: See what happens if you pay a little extra each month. Even **$100/month extra** could save you years of payments and thousands in interest. This is one of the best features of a HELOC \u2014 flexibility to pay down faster when you can."
+                    },
+                    {
+                        target: '#sec-footer', label: 'Take Your Time',
+                        text: "**There's no rush.** This quote is locked for you. When you're ready, you have three options: 1) **Apply now** (takes 5 minutes), 2) **Book a call** with **" + esc(loName) + "** to go through this together, or 3) **Save this quote** and come back later. What feels right for you?"
                     }
                 ];
+                
+                // Remove steps for features that are hidden
+                if (opts.showPrequal === false) {
+                    tourSteps = tourSteps.filter(function(s) { return s.target !== '#sec-prequal'; });
+                }
+                if (opts.showTierCompare === false || opts.tierCompareMode === 'none') {
+                    tourSteps = tourSteps.filter(function(s) { return s.target !== '#sec-tier-compare'; });
+                }
+                if (opts.showDtiCalc === false) {
+                    tourSteps = tourSteps.filter(function(s) { return s.target !== '#sec-dti-calc'; });
+                }
 
                 // If footer is hidden, remove the footer tour step (it targets a hidden element)
                 if (opts.showLoInfo === false) {
@@ -9586,11 +10240,13 @@
                 } else {
                     // Adjust the last step's text based on what's available
                     var lastStep = tourSteps[tourSteps.length - 1];
-                    var nextStepsText = "Ready to move forward? ";
+                    var nextStepsText = "**Take your time** \u2014 there's no pressure. ";
                     if (opts.showApply !== false) {
-                        nextStepsText += "Use the **Move Forward** button to start your application, or ";
+                        nextStepsText += "When you're ready, you can **apply in 5 minutes**, or ";
+                    } else {
+                        nextStepsText += "When you're ready, ";
                     }
-                    nextStepsText += "schedule a call with **" + esc(loName) + "** to discuss any questions. There's no obligation \u2014 it's just the next step to explore your options.";
+                    nextStepsText += "**book a call** with **" + esc(loName) + "** to go through this together. This quote is saved for you \u2014 come back whenever you're ready.";
                     lastStep.text = nextStepsText;
                     if (opts.showLoInfo === false) {
                         lastStep.target = '#sec-rates'; // Fallback if footer is hidden

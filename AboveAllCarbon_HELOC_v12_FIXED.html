@@ -6099,6 +6099,12 @@
                     <div class="input-field"><label>Calendar Link <span class="help-tip">?<span class="help-tip-text">Your scheduling link (Calendly, Cal.com, etc.). Clients see this as the "Schedule a Call" button on their quote page.</span></span></label><input type="text" id="lo-calendar-link"
                             placeholder="https://calendly.com/your-link" oninput="debouncedUpdateProfile()"></div>
                 </div>
+                <div class="input-group" style="margin-top:8px;">
+                    <div class="input-field"><label>Review Link <span class="help-tip">?<span class="help-tip-text">Your Google Business review link. Clients can leave a review after closing.</span></span></label><input type="text" id="lo-review-link"
+                            placeholder="https://g.page/.../review" oninput="debouncedUpdateProfile()"></div>
+                    <div class="input-field"><label>Book a Call Button Text <span class="help-tip">?<span class="help-tip-text">Customize the CTA text for your calendar link button.</span></span></label><input type="text" id="lo-book-call-text"
+                            placeholder="Book a Call to Get Started" value="Book a Call to Get Started" oninput="debouncedUpdateProfile()"></div>
+                </div>
 
                 <!-- Notification Preferences -->
                 <div
@@ -6264,7 +6270,7 @@
                     White Label Branding</h4>
                 <div class="input-group">
                     <div class="input-field" style="flex: 2;"><label>Lender Name (Header)</label><input type="text"
-                            id="wl-lender-name" value="" placeholder="Your Company HELOC Proposal" oninput="debouncedApplyWhiteLabel()"></div>
+                            id="wl-lender-name" value="" placeholder="Your Company HELOC Proposal" oninput="window.wlLenderNameManuallyEdited = true; debouncedApplyWhiteLabel();"></div>
                     <div class="input-field"><label>Tagline</label><input type="text" id="wl-tagline"
                             value="Unlock Your Wealth Without Selling" oninput="debouncedApplyWhiteLabel()"></div>
                 </div>
@@ -6288,6 +6294,63 @@
                     <div class="input-field"><label>Apply Link Text</label><input type="text" id="wl-apply-text"
                             placeholder="Apply Now" oninput="debouncedApplyWhiteLabel()"></div>
                 </div>
+
+                <!-- Client Quote Features Section -->
+                <div style="margin-top: 16px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(96,165,250,0.3);">
+                    <h5 style="font-family: var(--font-heading); font-size: 10px; color: #60a5fa; margin: 0 0 12px 0;">
+                        🎯 Client Quote Features <span style="font-size: 8px; background: #3b82f6; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 6px;">TITANIUM v5.9.3</span>
+                    </h5>
+                    
+                    <!-- Feature Toggles -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 12px;">
+                        <div class="toggle-container" style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px;">
+                            <div class="toggle-switch active" id="chk-show-prequal" onclick="toggleFeatureToggle(this, 'showPrequal')"></div>
+                            <span class="toggle-label" style="font-size: 10px;">Show Pre-Qual Checklist</span>
+                        </div>
+                        <div class="toggle-container" style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px;">
+                            <div class="toggle-switch active" id="chk-show-doc-upload" onclick="toggleFeatureToggle(this, 'showDocUpload')"></div>
+                            <span class="toggle-label" style="font-size: 10px;">Show Document Upload</span>
+                        </div>
+                        <div class="toggle-container" style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px;">
+                            <div class="toggle-switch active" id="chk-show-tier-compare" onclick="toggleFeatureToggle(this, 'showTierCompare')"></div>
+                            <span class="toggle-label" style="font-size: 10px;">Show Tier Comparison</span>
+                        </div>
+                        <div class="toggle-container" style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px;">
+                            <div class="toggle-switch active" id="chk-show-dti-calc" onclick="toggleFeatureToggle(this, 'showDtiCalc')"></div>
+                            <span class="toggle-label" style="font-size: 10px;">Show DTI Calculator</span>
+                        </div>
+                        <div class="toggle-container" style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px;">
+                            <div class="toggle-switch active" id="chk-show-whatif-payoff" onclick="toggleFeatureToggle(this, 'showWhatIfPayoff')"></div>
+                            <span class="toggle-label" style="font-size: 10px;">Show "What If" Payoff Calc</span>
+                        </div>
+                        <div class="toggle-container" style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px;">
+                            <div class="toggle-switch" id="chk-show-testimonials" onclick="toggleFeatureToggle(this, 'showTestimonials')"></div>
+                            <span class="toggle-label" style="font-size: 10px;">Show Testimonials</span>
+                        </div>
+                    </div>
+
+                    <!-- Tier Comparison Mode -->
+                    <div class="input-group" style="margin-bottom: 12px;">
+                        <div class="input-field" style="flex: 0.5;">
+                            <label style="font-size: 10px; color: rgba(255,255,255,0.7);">Tier Comparison Mode</label>
+                            <select id="select-tier-compare-mode" onchange="debouncedApplyWhiteLabel()" style="width:100%;border-radius:5px;border:1px solid rgba(255,255,255,0.2);padding:6px;font-family:var(--font-body);font-size:10px;background:#1e293b;color:white;">
+                                <option value="all">Show All Tiers</option>
+                                <option value="two">Show Two Tiers</option>
+                                <option value="none">Hide Comparison</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Testimonials JSON -->
+                    <div id="testimonials-container" style="display: none;">
+                        <div class="input-field" style="flex: 1;">
+                            <label style="font-size: 10px; color: rgba(255,255,255,0.7);">Testimonials JSON <span class="help-tip">?<span class="help-tip-text">Add client testimonials in JSON format: [{"name":"Client Name","text":"Review text","rating":5}]</span></span></label>
+                            <textarea id="lo-testimonials-json" rows="4" placeholder='[{"name":"John D.","text":"Great service!","rating":5}]' oninput="debouncedApplyWhiteLabel()" style="width: 100%; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2); padding: 8px; font-family: monospace; font-size: 10px; background: #1e293b; color: white; resize: vertical;"></textarea>
+                        </div>
+                        <p style="font-size: 8px; color: rgba(255,255,255,0.4); margin: 4px 0 0 0;">Format: [{"name":"Client Name","text":"Review text","rating":5}]</p>
+                    </div>
+                </div>
+
                 <div class="quick-actions">
                     <button class="btn" style="background: #0f2b4c;" onclick="loadPreset('westcap')">West Cap
                         Navy/Gold</button>
@@ -6970,6 +7033,7 @@ Best regards,
                         Users</button>
                     <button class="btn" style="background: #8b5cf6; font-size: 10px;" onclick="exportUserList()">Export
                         CSV</button>
+                    <button class="btn" style="background: #f59e0b; font-size: 10px; color: #000;" onclick="document.getElementById('sa-ai-usage-panel').style.display='block'; loadAIUsageAnalytics(30);">🤖 AI Usage</button>
                 </div>
 
                 <!-- User Management Table -->
@@ -7249,6 +7313,81 @@ Best regards,
                     </div>
                     <div id="view-quotes-count"
                         style="font-family: var(--font-heading); font-size: 9px; color: rgba(255,255,255,0.4); margin-top: 8px; text-align: right;">
+                    </div>
+                </div>
+
+                <!-- AI Usage Analytics Panel (Super Admin) -->
+                <div id="sa-ai-usage-panel"
+                    style="display: none; background: rgba(0,0,0,0.4); border-radius: 8px; padding: 15px; margin-top: 15px; border: 1px solid #f59e0b;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h5 style="font-family: var(--font-heading); color: #f59e0b; margin: 0; font-size: 11px;">
+                            🤖 AI Usage Analytics</h5>
+                        <div style="display:flex;gap:6px;align-items:center;">
+                            <button class="btn" style="background:#374151;font-size:7px;padding:3px 8px;color:#f59e0b;border:1px solid rgba(245,158,11,0.3);" onclick="loadAIUsageAnalytics(7)">7d</button>
+                            <button class="btn" style="background:#f59e0b;font-size:7px;padding:3px 8px;color:#000;" onclick="loadAIUsageAnalytics(30)">30d</button>
+                            <button class="btn" style="background:#374151;font-size:7px;padding:3px 8px;color:#f59e0b;border:1px solid rgba(245,158,11,0.3);" onclick="loadAIUsageAnalytics(90)">90d</button>
+                            <button class="btn" style="background:#374151;font-size:7px;padding:3px 8px;" onclick="loadAIUsageAnalytics()">↻</button>
+                            <button class="btn" style="background:#6b7280;font-size:8px;padding:4px 10px;"
+                                onclick="document.getElementById('sa-ai-usage-panel').style.display='none'">✕ Close</button>
+                        </div>
+                    </div>
+                    <!-- Summary Cards -->
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">
+                        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:6px;padding:8px;text-align:center;">
+                            <div style="font-size:7px;color:rgba(255,255,255,0.5);text-transform:uppercase;font-family:var(--font-heading);">Total Calls</div>
+                            <div id="ai-usage-total-calls" style="font-size:16px;color:#f59e0b;font-weight:700;">0</div>
+                        </div>
+                        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:6px;padding:8px;text-align:center;">
+                            <div style="font-size:7px;color:rgba(255,255,255,0.5);text-transform:uppercase;font-family:var(--font-heading);">Total Cost</div>
+                            <div id="ai-usage-total-cost" style="font-size:16px;color:#f59e0b;font-weight:700;">$0.00</div>
+                        </div>
+                        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:6px;padding:8px;text-align:center;">
+                            <div style="font-size:7px;color:rgba(255,255,255,0.5);text-transform:uppercase;font-family:var(--font-heading);">Total Tokens</div>
+                            <div id="ai-usage-total-tokens" style="font-size:16px;color:#f59e0b;font-weight:700;">0</div>
+                        </div>
+                        <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:6px;padding:8px;text-align:center;">
+                            <div style="font-size:7px;color:rgba(255,255,255,0.5);text-transform:uppercase;font-family:var(--font-heading);">Avg/User</div>
+                            <div id="ai-usage-avg-cost" style="font-size:16px;color:#f59e0b;font-weight:700;">$0.00</div>
+                        </div>
+                    </div>
+                    <!-- User Breakdown Table -->
+                    <div style="margin-bottom:10px;">
+                        <h6 style="font-family:var(--font-heading);color:rgba(255,255,255,0.6);font-size:8px;margin:0 0 6px;text-transform:uppercase;">By User & Provider</h6>
+                        <div style="max-height:200px;overflow-y:auto;">
+                            <table style="width:100%;border-collapse:collapse;font-size:9px;">
+                                <thead>
+                                    <tr style="background:rgba(245,158,11,0.15);color:#f59e0b;">
+                                        <th style="padding:4px 6px;text-align:left;font-size:8px;">Email</th>
+                                        <th style="padding:4px 6px;text-align:left;font-size:8px;">Provider</th>
+                                        <th style="padding:4px 6px;text-align:left;font-size:8px;">Model</th>
+                                        <th style="padding:4px 6px;text-align:right;font-size:8px;">Calls</th>
+                                        <th style="padding:4px 6px;text-align:right;font-size:8px;">Tokens</th>
+                                        <th style="padding:4px 6px;text-align:right;font-size:8px;">Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ai-usage-user-tbody">
+                                    <tr><td colspan="6" style="text-align:center;padding:15px;color:rgba(255,255,255,0.3);font-size:9px;">Click a date range to load data</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Intent Breakdown Table -->
+                    <div>
+                        <h6 style="font-family:var(--font-heading);color:rgba(255,255,255,0.6);font-size:8px;margin:0 0 6px;text-transform:uppercase;">By Feature / Intent</h6>
+                        <div style="max-height:150px;overflow-y:auto;">
+                            <table style="width:100%;border-collapse:collapse;font-size:9px;">
+                                <thead>
+                                    <tr style="background:rgba(245,158,11,0.15);color:#f59e0b;">
+                                        <th style="padding:4px 6px;text-align:left;font-size:8px;">Intent</th>
+                                        <th style="padding:4px 6px;text-align:right;font-size:8px;">Calls</th>
+                                        <th style="padding:4px 6px;text-align:right;font-size:8px;">Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ai-usage-intent-tbody">
+                                    <tr><td colspan="3" style="text-align:center;padding:15px;color:rgba(255,255,255,0.3);font-size:9px;">Click a date range to load data</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -10936,10 +11075,11 @@ Best regards,
             _loadIntegrationsFromSupabase();
             // Check AI key status (key stays server-side via Edge Function proxy)
             _checkUserAIKeyStatus();
-            // Load user's saved quotes, leads, and notification prefs
+            // Load user's saved quotes, leads, notification prefs, and cloud-synced profile
             loadUserQuotes();
             loadUserLeads();
             loadNotifPrefs();
+            _loadProfileFromCloud();
             // Start polling for quote view notifications
             initQuoteViewNotifications();
             // Auto-load users only for the verified Super Admin account
@@ -11304,6 +11444,86 @@ Best regards,
             a.download = 'users_export_' + new Date().toISOString().split('T')[0] + '.csv';
             a.click();
             URL.revokeObjectURL(url);
+        }
+
+        // ===== AI USAGE ANALYTICS (Super Admin) =====
+        let _aiUsageDays = 30;
+        async function loadAIUsageAnalytics(days) {
+            if (!isTrueSuperAdmin()) return;
+            _aiUsageDays = days || _aiUsageDays || 30;
+            const sb = window._supabase;
+            if (!sb) return;
+
+            // Highlight active date button
+            const panel = document.getElementById('sa-ai-usage-panel');
+            if (panel) {
+                panel.querySelectorAll('.btn').forEach(b => {
+                    if (b.textContent.trim() === _aiUsageDays + 'd') {
+                        b.style.background = '#f59e0b'; b.style.color = '#000';
+                    } else if (['7d','30d','90d'].includes(b.textContent.trim())) {
+                        b.style.background = '#374151'; b.style.color = '#f59e0b';
+                    }
+                });
+            }
+
+            try {
+                const [summaryRes, intentRes] = await Promise.all([
+                    sb.rpc('get_ai_usage_summary', { days_back: _aiUsageDays }),
+                    sb.rpc('get_ai_usage_by_intent', { days_back: _aiUsageDays }),
+                ]);
+
+                const summaryData = summaryRes.data || [];
+                const intentData = intentRes.data || [];
+
+                // Summary cards
+                let totalCalls = 0, totalCost = 0, totalTokens = 0;
+                const uniqueEmails = new Set();
+                summaryData.forEach(r => {
+                    totalCalls += Number(r.total_calls || 0);
+                    totalCost += Number(r.total_cost || 0);
+                    totalTokens += Number(r.total_input_tokens || 0) + Number(r.total_output_tokens || 0);
+                    if (r.user_email) uniqueEmails.add(r.user_email);
+                });
+                const avgCost = uniqueEmails.size > 0 ? totalCost / uniqueEmails.size : 0;
+
+                document.getElementById('ai-usage-total-calls').textContent = totalCalls.toLocaleString();
+                document.getElementById('ai-usage-total-cost').textContent = '$' + totalCost.toFixed(4);
+                document.getElementById('ai-usage-total-tokens').textContent = totalTokens.toLocaleString();
+                document.getElementById('ai-usage-avg-cost').textContent = '$' + avgCost.toFixed(4);
+
+                // User breakdown table
+                const userTbody = document.getElementById('ai-usage-user-tbody');
+                if (summaryData.length === 0) {
+                    userTbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:15px;color:rgba(255,255,255,0.3);font-size:9px;">No AI usage data for this period</td></tr>';
+                } else {
+                    userTbody.innerHTML = summaryData.map(r => `
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                            <td style="padding:4px 6px;color:rgba(255,255,255,0.8);font-size:8px;">${r.user_email || '—'}</td>
+                            <td style="padding:4px 6px;color:rgba(255,255,255,0.6);font-size:8px;">${r.provider}</td>
+                            <td style="padding:4px 6px;color:rgba(255,255,255,0.5);font-size:8px;">${r.model}</td>
+                            <td style="padding:4px 6px;text-align:right;color:rgba(255,255,255,0.7);font-size:8px;">${Number(r.total_calls).toLocaleString()}</td>
+                            <td style="padding:4px 6px;text-align:right;color:rgba(255,255,255,0.5);font-size:8px;">${(Number(r.total_input_tokens || 0) + Number(r.total_output_tokens || 0)).toLocaleString()}</td>
+                            <td style="padding:4px 6px;text-align:right;color:#f59e0b;font-size:8px;font-weight:600;">$${Number(r.total_cost || 0).toFixed(4)}</td>
+                        </tr>
+                    `).join('');
+                }
+
+                // Intent breakdown table
+                const intentTbody = document.getElementById('ai-usage-intent-tbody');
+                if (intentData.length === 0) {
+                    intentTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:15px;color:rgba(255,255,255,0.3);font-size:9px;">No data</td></tr>';
+                } else {
+                    intentTbody.innerHTML = intentData.map(r => `
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                            <td style="padding:4px 6px;color:rgba(255,255,255,0.8);font-size:8px;">${r.intent}</td>
+                            <td style="padding:4px 6px;text-align:right;color:rgba(255,255,255,0.7);font-size:8px;">${Number(r.total_calls).toLocaleString()}</td>
+                            <td style="padding:4px 6px;text-align:right;color:#f59e0b;font-size:8px;font-weight:600;">$${Number(r.total_cost || 0).toFixed(4)}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (e) {
+                console.error('Failed to load AI usage analytics:', e);
+            }
         }
 
         // ===== CONFIRMATION DIALOG =====
@@ -11740,6 +11960,7 @@ Best regards,
             const loAddress = document.getElementById('lo-address');
             const loHeadshotUrl = document.getElementById('lo-headshot-url');
             const loLogoUrl = document.getElementById('lo-logo-url');
+            const wlLenderName = document.getElementById('wl-lender-name');
 
             if (loName) document.getElementById('footer-name').innerText = loName.value;
             if (loTitle) document.getElementById('footer-title').innerText = loTitle.value;
@@ -11756,6 +11977,16 @@ Best regards,
             var footerLogo = document.getElementById('company-logo-footer');
             if (loLogoUrl && loLogoUrl.value) { footerLogo.src = loLogoUrl.value; footerLogo.style.display = ''; }
             else if (footerLogo) { footerLogo.style.display = 'none'; }
+            
+            // Titanium v5.9.3 - Sync Lender Name with Company Name (if not manually edited)
+            if (loCompany && wlLenderName && !window.wlLenderNameManuallyEdited) {
+                var companyName = loCompany.value.trim();
+                if (companyName) {
+                    wlLenderName.value = companyName + ' HELOC Proposal';
+                    debouncedApplyWhiteLabel();
+                }
+            }
+            
             autoSave();
         }
 
@@ -11904,14 +12135,153 @@ Best regards,
                 t1Orig: getVal('t1-orig'),
                 t2Orig: getVal('t2-orig'),
                 t3Orig: getVal('t3-orig'),
+                // Titanium v5.9.3 - New LO Profile fields
+                loReviewLink: getVal('lo-review-link'),
+                loBookCallText: getVal('lo-book-call-text'),
+                // Titanium v5.9.3 - Client Quote Features
+                wlLenderNameManuallyEdited: window.wlLenderNameManuallyEdited || false,
+                showPrequal: document.getElementById('chk-show-prequal')?.classList.contains('active') !== false,
+                showDocUpload: document.getElementById('chk-show-doc-upload')?.classList.contains('active') !== false,
+                showTierCompare: document.getElementById('chk-show-tier-compare')?.classList.contains('active') !== false,
+                showDtiCalc: document.getElementById('chk-show-dti-calc')?.classList.contains('active') !== false,
+                showWhatIfPayoff: document.getElementById('chk-show-whatif-payoff')?.classList.contains('active') !== false,
+                showTestimonials: document.getElementById('chk-show-testimonials')?.classList.contains('active') || false,
+                tierCompareMode: getVal('select-tier-compare-mode') || 'all',
+                loTestimonialsJson: getVal('lo-testimonials-json'),
             };
             localStorage.setItem('aboveAllCarbonHELOC', JSON.stringify(data));
+            _debouncedCloudSync(); // Sync profile to Supabase in background
             setTimeout(() => {
                 if (autosaveStatus) {
                     autosaveStatus.innerText = '✓ Saved';
                     autosaveStatus.classList.remove('saving');
                 }
             }, 500);
+        }
+
+        // ===== CLOUD SYNC: Save LO profile settings to Supabase =====
+        var _cloudSyncTimer = null;
+        function _debouncedCloudSync() {
+            clearTimeout(_cloudSyncTimer);
+            _cloudSyncTimer = setTimeout(_syncProfileToCloud, 3000); // Wait 3s after last edit
+        }
+
+        async function _syncProfileToCloud() {
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) return;
+
+            try {
+                // Collect LO profile fields (the stuff that should persist across devices)
+                var profileData = {
+                    loName: getVal('lo-name'),
+                    loTitle: getVal('lo-title'),
+                    loNmls: getVal('lo-nmls'),
+                    loDre: getVal('lo-dre'),
+                    loPhone: getVal('lo-phone'),
+                    loEmail: getVal('lo-email'),
+                    loWebsite: getVal('lo-website'),
+                    loCompany: getVal('lo-company'),
+                    coNmls: getVal('co-nmls'),
+                    coDre: getVal('co-dre'),
+                    loAddress: getVal('lo-address'),
+                    headshotUrl: getVal('lo-headshot-url'),
+                    logoUrl: getVal('lo-logo-url'),
+                    loApplyLink: getVal('lo-apply-link'),
+                    loCalendarLink: getVal('lo-calendar-link'),
+                    wlLenderName: getVal('wl-lender-name'),
+                    wlTagline: getVal('wl-tagline'),
+                    wlHeaderBg: getVal('wl-header-bg'),
+                    wlAccent: getVal('wl-accent'),
+                    wlHeaderText: getVal('wl-header-text'),
+                    wlBodyText: getVal('wl-body-text'),
+                    wlApplyLink: getVal('wl-apply-link'),
+                    wlApplyText: getVal('wl-apply-text'),
+                    notificationPhone: getVal('notification-phone'),
+                    notificationEmail: getVal('notification-email'),
+                    crmWebhookUrl: getVal('crm-webhook-url'),
+                    crmType: getVal('crm-type'),
+                    syncedAt: new Date().toISOString()
+                };
+
+                // Check if any profile fields have values (don't sync empty profiles)
+                var hasData = Object.keys(profileData).some(function(k) {
+                    return k !== 'syncedAt' && profileData[k];
+                });
+                if (!hasData) return;
+
+                // Upsert into user_integrations
+                var { data: existing } = await sb.from('user_integrations')
+                    .select('id')
+                    .eq('user_id', userId)
+                    .eq('provider', 'heloc_profile')
+                    .maybeSingle();
+
+                if (existing) {
+                    await sb.from('user_integrations')
+                        .update({ metadata: profileData, updated_at: new Date().toISOString() })
+                        .eq('id', existing.id);
+                } else {
+                    await sb.from('user_integrations')
+                        .insert({ user_id: userId, provider: 'heloc_profile', metadata: profileData });
+                }
+                console.debug('Profile synced to cloud');
+            } catch (e) {
+                console.debug('Profile cloud sync failed (will retry):', e.message);
+            }
+        }
+
+        async function _loadProfileFromCloud() {
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) return;
+
+            try {
+                var { data } = await sb.from('user_integrations')
+                    .select('metadata')
+                    .eq('user_id', userId)
+                    .eq('provider', 'heloc_profile')
+                    .maybeSingle();
+
+                if (!data || !data.metadata) return;
+
+                var cloud = data.metadata;
+                var localStr = localStorage.getItem('aboveAllCarbonHELOC');
+                var local = localStr ? JSON.parse(localStr) : {};
+
+                // Use cloud data if local is empty OR cloud is newer
+                var localHasProfile = local.loName || local.loEmail || local.loCompany;
+                if (!localHasProfile || (cloud.syncedAt && (!local._syncedAt || cloud.syncedAt > local._syncedAt))) {
+                    // Apply cloud settings to form fields
+                    var CLOUD_FIELD_MAP = {
+                        loName: 'lo-name', loTitle: 'lo-title', loNmls: 'lo-nmls', loDre: 'lo-dre',
+                        loPhone: 'lo-phone', loEmail: 'lo-email', loWebsite: 'lo-website',
+                        loCompany: 'lo-company', coNmls: 'co-nmls', coDre: 'co-dre',
+                        loAddress: 'lo-address', headshotUrl: 'lo-headshot-url', logoUrl: 'lo-logo-url',
+                        loApplyLink: 'lo-apply-link', loCalendarLink: 'lo-calendar-link',
+                        wlLenderName: 'wl-lender-name', wlTagline: 'wl-tagline',
+                        wlHeaderBg: 'wl-header-bg', wlAccent: 'wl-accent',
+                        wlHeaderText: 'wl-header-text', wlBodyText: 'wl-body-text',
+                        wlApplyLink: 'wl-apply-link', wlApplyText: 'wl-apply-text',
+                        notificationPhone: 'notification-phone', notificationEmail: 'notification-email',
+                        crmWebhookUrl: 'crm-webhook-url', crmType: 'crm-type'
+                    };
+
+                    Object.keys(CLOUD_FIELD_MAP).forEach(function(key) {
+                        if (cloud[key]) {
+                            var el = document.getElementById(CLOUD_FIELD_MAP[key]);
+                            if (el) el.value = cloud[key];
+                        }
+                    });
+
+                    // Update profile display and save locally
+                    if (typeof updateProfile === 'function') updateProfile();
+                    if (typeof applyWhiteLabel === 'function') applyWhiteLabel();
+                    console.debug('LO profile restored from cloud');
+                }
+            } catch (e) {
+                console.debug('Cloud profile load skipped:', e.message);
+            }
         }
 
         function loadFromStorage() {
@@ -11981,6 +12351,51 @@ Best regards,
                         document.getElementById('toggle-manual-rates').classList.add('active');
                         document.querySelectorAll('.rate-select').forEach(s => s.style.display = 'none');
                         document.querySelectorAll('.rate-manual').forEach(m => m.style.display = 'block');
+                    }
+                    // Titanium v5.9.3 - Load new LO Profile fields
+                    if (data.loReviewLink) document.getElementById('lo-review-link').value = data.loReviewLink;
+                    if (data.loBookCallText) document.getElementById('lo-book-call-text').value = data.loBookCallText;
+                    // Track if lender name was manually edited
+                    if (data.wlLenderNameManuallyEdited !== undefined) {
+                        window.wlLenderNameManuallyEdited = data.wlLenderNameManuallyEdited;
+                    }
+                    // Titanium v5.9.3 - Load Client Quote Feature toggles
+                    if (data.showPrequal !== undefined) {
+                        var el = document.getElementById('chk-show-prequal');
+                        if (el) el.classList.toggle('active', data.showPrequal);
+                    }
+                    if (data.showDocUpload !== undefined) {
+                        var el = document.getElementById('chk-show-doc-upload');
+                        if (el) el.classList.toggle('active', data.showDocUpload);
+                    }
+                    if (data.showTierCompare !== undefined) {
+                        var el = document.getElementById('chk-show-tier-compare');
+                        if (el) el.classList.toggle('active', data.showTierCompare);
+                    }
+                    if (data.showDtiCalc !== undefined) {
+                        var el = document.getElementById('chk-show-dti-calc');
+                        if (el) el.classList.toggle('active', data.showDtiCalc);
+                    }
+                    if (data.showWhatIfPayoff !== undefined) {
+                        var el = document.getElementById('chk-show-whatif-payoff');
+                        if (el) el.classList.toggle('active', data.showWhatIfPayoff);
+                    }
+                    if (data.showTestimonials !== undefined) {
+                        var el = document.getElementById('chk-show-testimonials');
+                        if (el) el.classList.toggle('active', data.showTestimonials);
+                        // Show/hide testimonials textarea based on toggle
+                        var testimonialsContainer = document.getElementById('testimonials-container');
+                        if (testimonialsContainer) {
+                            testimonialsContainer.style.display = data.showTestimonials ? 'block' : 'none';
+                        }
+                    }
+                    if (data.tierCompareMode) {
+                        var el = document.getElementById('select-tier-compare-mode');
+                        if (el) el.value = data.tierCompareMode;
+                    }
+                    if (data.loTestimonialsJson) {
+                        var el = document.getElementById('lo-testimonials-json');
+                        if (el) el.value = data.loTestimonialsJson;
                     }
                     updateProfile();
                     applyWhiteLabel();
@@ -12988,9 +13403,10 @@ Generate the sales strategy and phone script now.`;
                 '<div style="font-size:12px;color:#64748b;margin-top:4px;">📞 ' + data.LO_PHONE + ' &nbsp;|&nbsp; ✉️ ' + data.LO_EMAIL + '</div>' +
                 '</td></tr></table>' +
                 '</td></tr>') +
-                // Legal + tracking pixel
+                // Legal + EHL compliance + tracking pixel
                 '<tr><td style="padding:14px 30px;background:#f1f5f9;text-align:center;">' +
-                '<p style="font-size:9px;color:#94a3b8;margin:0;line-height:1.5;">This quote is an estimate and does not represent a commitment to lend. All terms are subject to underwriting approval. NMLS #' + (document.getElementById('lo-nmls')?.value || '') + '</p>' +
+                '<img src="https://assets.cdn.filesafe.space/eVB3bUDr8bdQfRu6ae03/media/693bb403ed957f64da26426c.jpg" alt="Equal Housing Lender" style="height:24px;margin-bottom:6px;display:block;margin-left:auto;margin-right:auto;">' +
+                '<p style="font-size:9px;color:#94a3b8;margin:0;line-height:1.5;">Equal Housing Lender. All loan programs subject to credit approval. Rates, terms, and conditions are subject to change without notice. This is not a commitment to lend. NMLS #' + (document.getElementById('lo-nmls')?.value || '') + '</p>' +
                 trackingPixel +
                 '</td></tr>' +
                 '</table></td></tr></table></body></html>';
@@ -13623,7 +14039,21 @@ Sent via Above All Carbon HELOC Tool`;
                     videoMode: (document.getElementById('video-mode-heygen')?.checked ? 'heygen' : 'manual'),
                     showSalesPsych: document.getElementById('chk-link-sales-psych')?.checked ?? true,
                     preset: document.getElementById('link-style-preset')?.value || 'enhanced',
-                    voiceNoteUrl: document.getElementById('link-voice-note-url')?.value?.trim() || ''
+                    voiceNoteUrl: document.getElementById('link-voice-note-url')?.value?.trim() || '',
+                    // Titanium v5.9.3 - Client Quote Features
+                    showPrequal: document.getElementById('chk-show-prequal')?.classList.contains('active') !== false,
+                    showDocUpload: document.getElementById('chk-show-doc-upload')?.classList.contains('active') !== false,
+                    showTierCompare: document.getElementById('chk-show-tier-compare')?.classList.contains('active') !== false,
+                    showDtiCalc: document.getElementById('chk-show-dti-calc')?.classList.contains('active') !== false,
+                    showWhatIfPayoff: document.getElementById('chk-show-whatif-payoff')?.classList.contains('active') !== false,
+                    showTestimonials: document.getElementById('chk-show-testimonials')?.classList.contains('active') || false,
+                    tierCompareMode: document.getElementById('select-tier-compare-mode')?.value || 'all',
+                    testimonials: (function() {
+                        try {
+                            var json = document.getElementById('lo-testimonials-json')?.value?.trim();
+                            return json ? JSON.parse(json) : [];
+                        } catch(e) { return []; }
+                    })()
                 },
                 tiers: []
             };
@@ -13731,7 +14161,21 @@ Sent via Above All Carbon HELOC Tool`;
                     videoMode: (document.getElementById('video-mode-heygen')?.checked ? 'heygen' : 'manual'),
                     showSalesPsych: document.getElementById('chk-link-sales-psych')?.checked ?? true,
                     preset: document.getElementById('link-style-preset')?.value || 'enhanced',
-                    voiceNoteUrl: document.getElementById('link-voice-note-url')?.value?.trim() || ''
+                    voiceNoteUrl: document.getElementById('link-voice-note-url')?.value?.trim() || '',
+                    // Titanium v5.9.3 - Client Quote Features
+                    showPrequal: document.getElementById('chk-show-prequal')?.classList.contains('active') !== false,
+                    showDocUpload: document.getElementById('chk-show-doc-upload')?.classList.contains('active') !== false,
+                    showTierCompare: document.getElementById('chk-show-tier-compare')?.classList.contains('active') !== false,
+                    showDtiCalc: document.getElementById('chk-show-dti-calc')?.classList.contains('active') !== false,
+                    showWhatIfPayoff: document.getElementById('chk-show-whatif-payoff')?.classList.contains('active') !== false,
+                    showTestimonials: document.getElementById('chk-show-testimonials')?.classList.contains('active') || false,
+                    tierCompareMode: document.getElementById('select-tier-compare-mode')?.value || 'all',
+                    testimonials: (function() {
+                        try {
+                            var json = document.getElementById('lo-testimonials-json')?.value?.trim();
+                            return json ? JSON.parse(json) : [];
+                        } catch(e) { return []; }
+                    })()
                 },
                 tiers: []
             };
@@ -17737,6 +18181,23 @@ Sent via Above All Carbon HELOC Tool`;
                 el.classList.toggle('active');
                 showToast('Error saving preference: ' + e.message, 'error');
             }
+        }
+
+        // Titanium v5.9.3 - Feature toggle handler for Client Quote Features
+        function toggleFeatureToggle(el, featureName) {
+            el.classList.toggle('active');
+            var isOn = el.classList.contains('active');
+            
+            // Show/hide testimonials textarea when toggle changes
+            if (featureName === 'showTestimonials') {
+                var testimonialsContainer = document.getElementById('testimonials-container');
+                if (testimonialsContainer) {
+                    testimonialsContainer.style.display = isOn ? 'block' : 'none';
+                }
+            }
+            
+            autoSave();
+            showToast(isOn ? featureName + ' enabled' : featureName + ' disabled', 'success');
         }
 
         async function loadNotifPrefs() {

@@ -1194,7 +1194,10 @@ RESPONSE RULES
         user: null,
         dealRadarData: null,
         activeTab: 'chat', // 'chat' | 'deal-radar'
-        _pendingComplianceCheck: false
+        _pendingComplianceCheck: false,
+        pendingAttachment: null, // { file, base64, mimeType, previewUrl }
+        rateSheetMatrix: null,   // Parsed rate sheet for auto-pricing
+        autoPrePrice: false      // Toggle for auto-fill from rate sheet
     };
 
     // ============================================
@@ -1365,6 +1368,11 @@ RESPONSE RULES
 
                 <!-- Input Area -->
                 <div class="ezra-input-area">
+                    <div id="ezra-attachment-preview" class="ezra-attachment-preview" style="display:none;">
+                        <img id="ezra-attachment-thumb" class="ezra-attach-thumb" src="" alt="preview">
+                        <span id="ezra-attachment-name" class="ezra-attach-name"></span>
+                        <button id="ezra-attachment-remove" class="ezra-attach-remove" title="Remove attachment">&times;</button>
+                    </div>
                     <div class="ezra-input-wrapper">
                         <textarea
                             id="ezra-input"
@@ -1377,6 +1385,11 @@ RESPONSE RULES
                                 <rect x="8" y="2" width="8" height="4" rx="1"/>
                                 <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>
                                 <path d="M9 14l2 2 4-4"/>
+                            </svg>
+                        </button>
+                        <button id="ezra-upload-doc" class="ezra-action-btn" title="Upload document or image">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
                             </svg>
                         </button>
                         <button id="ezra-voice" class="ezra-action-btn" title="Voice input">
@@ -2305,6 +2318,51 @@ RESPONSE RULES
                 40% { transform: scale(1) translateY(-8px); opacity: 1; box-shadow: 0 0 20px rgba(197,160,89,0.9); }
             }
 
+            /* ===== ATTACHMENT PREVIEW ===== */
+            .ezra-attachment-preview {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 6px 10px;
+                margin-bottom: 6px;
+                background: rgba(197,160,89,0.08);
+                border: 1px solid rgba(197,160,89,0.2);
+                border-radius: 12px;
+            }
+            .ezra-attach-thumb {
+                width: 40px;
+                height: 40px;
+                border-radius: 6px;
+                object-fit: cover;
+                background: rgba(0,0,0,0.2);
+            }
+            .ezra-attach-name {
+                flex: 1;
+                font-size: 11px;
+                color: rgba(255,255,255,0.7);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .ezra-attach-remove {
+                background: none;
+                border: none;
+                color: rgba(255,255,255,0.5);
+                font-size: 18px;
+                cursor: pointer;
+                padding: 0 4px;
+                line-height: 1;
+            }
+            .ezra-attach-remove:hover { color: #ef4444; }
+
+            /* ===== MESSAGE IMAGE ===== */
+            .ezra-msg-image {
+                max-width: 200px;
+                border-radius: 8px;
+                margin-bottom: 6px;
+                display: block;
+            }
+
             /* ===== INPUT AREA ===== */
             .ezra-input-area {
                 padding: 12px 16px;
@@ -2960,6 +3018,12 @@ RESPONSE RULES
         // Voice input button
         document.getElementById('ezra-voice')?.addEventListener('click', toggleVoiceInput);
 
+        // Document upload button
+        document.getElementById('ezra-upload-doc')?.addEventListener('click', handleDocUpload);
+
+        // Attachment remove button
+        document.getElementById('ezra-attachment-remove')?.addEventListener('click', clearAttachment);
+
         // Position selection
         document.querySelectorAll('.ezra-position-option').forEach(btn => {
             btn.addEventListener('click', () => moveWidgetToPosition(btn.dataset.pos));
@@ -3499,16 +3563,21 @@ Would you like me to fill in the quote form with these details?`, { model: 'loca
     async function sendMessage() {
         const input = document.getElementById('ezra-input');
         const message = input.value.trim();
+        const attachment = EzraState.pendingAttachment;
 
-        if (!message || EzraState.isTyping) return;
+        if ((!message && !attachment) || EzraState.isTyping) return;
 
-        // Clear input
+        // Clear input and attachment
         input.value = '';
         input.style.height = 'auto';
         document.getElementById('ezra-send').disabled = true;
+        clearAttachment();
 
-        // Add user message
-        addMessage('user', message);
+        // Add user message (with image preview if attached)
+        const displayMsg = attachment
+            ? `<img src="${attachment.previewUrl}" class="ezra-msg-image" alt="${attachment.file.name}">\n${message || 'Analyze this document.'}`
+            : message;
+        addMessage('user', displayMsg);
 
         // Check if we're in onboarding mode
         if (EzraState.onboardingStep && EzraState.onboardingStep > 0) {
@@ -3525,8 +3594,24 @@ Would you like me to fill in the quote form with these details?`, { model: 'loca
         showTypingIndicator();
 
         try {
-            // Route to appropriate AI model
-            const response = await routeToAI(message);
+            let response;
+
+            if (attachment) {
+                // Document/image analysis via vision API
+                const userMsg = message || 'Analyze this document and describe what you see. If it is an ID or driver\'s license, check if the image quality is good enough for verification.';
+                const visionResult = await callAIVisionProxy(attachment.base64, attachment.mimeType, userMsg, 'document_analysis');
+                if (visionResult && visionResult.text) {
+                    response = {
+                        content: visionResult.text,
+                        metadata: { model: visionResult.provider, intent: 'document_analysis' }
+                    };
+                } else {
+                    response = { content: 'I wasn\'t able to analyze that document. Please try a different image or check the file format.', metadata: { model: 'error', intent: 'document_analysis' } };
+                }
+            } else {
+                // Normal text routing
+                response = await routeToAI(message);
+            }
 
             // Hide typing indicator
             hideTypingIndicator();
@@ -3555,6 +3640,77 @@ Would you like me to fill in the quote form with these details?`, { model: 'loca
             addMessage('assistant', 'I apologize, but I encountered an error. Please try again.');
             console.error('Ezra error:', error);
         }
+    }
+
+    // Handle document upload button click
+    function handleDocUpload() {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/jpeg,image/png,image/webp,application/pdf';
+        fileInput.style.display = 'none';
+        document.body.appendChild(fileInput);
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files?.[0];
+            document.body.removeChild(fileInput);
+            if (!file) return;
+
+            // Validate size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                addMessage('assistant', 'File is too large. Maximum size is 5MB.', { model: 'local' });
+                return;
+            }
+
+            // Validate MIME type
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+            if (!allowedTypes.includes(file.type)) {
+                addMessage('assistant', 'Unsupported file type. Please upload a JPEG, PNG, WebP, or PDF.', { model: 'local' });
+                return;
+            }
+
+            // Convert to base64
+            const reader = new FileReader();
+            reader.onload = () => {
+                const dataUrl = reader.result;
+                const base64 = dataUrl.split(',')[1];
+
+                EzraState.pendingAttachment = {
+                    file,
+                    base64,
+                    mimeType: file.type,
+                    previewUrl: file.type.startsWith('image/') ? dataUrl : ''
+                };
+
+                // Show preview
+                const preview = document.getElementById('ezra-attachment-preview');
+                const thumb = document.getElementById('ezra-attachment-thumb');
+                const name = document.getElementById('ezra-attachment-name');
+
+                if (file.type.startsWith('image/')) {
+                    thumb.src = dataUrl;
+                    thumb.style.display = 'block';
+                } else {
+                    thumb.src = '';
+                    thumb.style.display = 'none';
+                }
+                name.textContent = file.name;
+                preview.style.display = 'flex';
+
+                // Enable send button
+                document.getElementById('ezra-send').disabled = false;
+                document.getElementById('ezra-input').focus();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        fileInput.click();
+    }
+
+    // Clear pending attachment
+    function clearAttachment() {
+        EzraState.pendingAttachment = null;
+        const preview = document.getElementById('ezra-attachment-preview');
+        if (preview) preview.style.display = 'none';
     }
 
     function addMessage(role, content, metadata = {}) {
@@ -4164,6 +4320,20 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
             return { content: getSmartObjectionResponse(message, objCtx), metadata: { model: 'local', intent } };
         }
 
+        // ── KB-FIRST: Try local knowledge base before any AI call ──
+        const kbResults = EZRA_KNOWLEDGE.searchLocalKB(message);
+        if (kbResults) {
+            // Parse KB results — if top match score is high enough, use directly
+            const kbLines = kbResults.split('\n').filter(l => l.trim());
+            const scoreMatch = kbLines[0]?.match(/\(score:\s*([\d.]+)\)/);
+            const topScore = scoreMatch ? parseFloat(scoreMatch[1]) : 0;
+            if (topScore >= 0.7) {
+                // High-confidence KB match — respond without AI
+                const kbContent = kbLines.map(l => l.replace(/\(score:.*?\)/g, '').trim()).join('\n\n');
+                return { content: kbContent, metadata: { model: 'local-kb', intent: intent || 'kb_match' } };
+            }
+        }
+
         let model = EzraState.currentModel;
 
         if (intent === 'deal_architect' || intent === 'quote_calculation' || intent === 'quote_creation') {
@@ -4178,8 +4348,9 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
 
         return {
             content: response.content,
-            metadata: { model, intent },
-            autoFillFields: response.autoFillFields
+            metadata: { model: response.metadata?.provider || model, intent },
+            autoFillFields: response.autoFillFields,
+            usage: response.usage
         };
     }
 
@@ -4541,7 +4712,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         return buildDynamicResponse(message, intent, ctx);
     }
 
-    // Call the ai-proxy Edge Function
+    // Call the ai-proxy Edge Function with provider cascade (cheapest first)
     async function callAIProxy(message, model, intent, contextSummary) {
         if (!EzraState.supabase) return null;
 
@@ -4552,11 +4723,9 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         const supabaseUrl = EzraState.supabase.supabaseUrl ||
             window.SUPABASE_URL || 'https://czzabvfzuxhpdcowgvam.supabase.co';
 
-        // Map internal model names to provider names for the proxy
-        const providerMap = { gemini: 'gemini', claude: 'anthropic', gpt: 'openai' };
-
         const systemPrompt = EZRA_KNOWLEDGE.buildSystemPrompt() + contextSummary;
 
+        // Use cascade action — tries Gemini → Groq → OpenAI → Anthropic
         const response = await fetch(`${supabaseUrl}/functions/v1/ai-proxy`, {
             method: 'POST',
             headers: {
@@ -4564,11 +4733,11 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-                action: 'generate',
-                provider: providerMap[model] || 'gemini',
+                action: 'generate_cascade',
                 systemPrompt,
                 userMessage: message,
-                maxTokens: 1500
+                maxTokens: 1500,
+                intent: intent || 'generate'
             })
         });
 
@@ -4579,6 +4748,42 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
 
         const data = await response.json();
         return data.text || null;
+    }
+
+    // Call ai-proxy for image/document analysis (vision cascade: Gemini → OpenAI → Anthropic)
+    async function callAIVisionProxy(imageBase64, imageMimeType, userMessage, intent) {
+        if (!EzraState.supabase) return null;
+
+        const session = await EzraState.supabase.auth.getSession();
+        const token = session?.data?.session?.access_token;
+        if (!token) return null;
+
+        const supabaseUrl = EzraState.supabase.supabaseUrl ||
+            window.SUPABASE_URL || 'https://czzabvfzuxhpdcowgvam.supabase.co';
+
+        const response = await fetch(`${supabaseUrl}/functions/v1/ai-proxy`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                action: 'analyze_image',
+                imageBase64,
+                imageMimeType,
+                userMessage: userMessage || 'Analyze this document.',
+                maxTokens: 2000,
+                intent: intent || 'document_analysis'
+            })
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || `Vision proxy ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data;
     }
 
     // Build dynamic responses using REAL form data
