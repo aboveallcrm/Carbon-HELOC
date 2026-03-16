@@ -6342,10 +6342,24 @@
                             <select id="select-tier-compare-mode" onchange="debouncedApplyWhiteLabel()" style="width:100%;border-radius:5px;border:1px solid rgba(255,255,255,0.2);padding:6px;font-family:var(--font-body);font-size:10px;background:#1e293b;color:white;">
                                 <option value="all">Show All Tiers</option>
                                 <option value="two">Show Two Tiers</option>
+                                <option value="custom">Custom Selection</option>
                                 <option value="none">Hide Comparison</option>
                             </select>
                         </div>
+                        <div id="tier-compare-custom-picks" style="display:none; flex:0.5;">
+                            <label style="font-size: 10px; color: rgba(255,255,255,0.7);">Select Tiers to Show</label>
+                            <div style="display:flex; gap:8px; margin-top:4px;">
+                                <label style="font-size:10px;color:rgba(255,255,255,0.7);display:flex;align-items:center;gap:4px;"><input type="checkbox" id="chk-tier-1" checked onchange="debouncedApplyWhiteLabel()" style="accent-color:var(--accent-color);"> Tier 1</label>
+                                <label style="font-size:10px;color:rgba(255,255,255,0.7);display:flex;align-items:center;gap:4px;"><input type="checkbox" id="chk-tier-2" checked onchange="debouncedApplyWhiteLabel()" style="accent-color:var(--accent-color);"> Tier 2</label>
+                                <label style="font-size:10px;color:rgba(255,255,255,0.7);display:flex;align-items:center;gap:4px;"><input type="checkbox" id="chk-tier-3" checked onchange="debouncedApplyWhiteLabel()" style="accent-color:var(--accent-color);"> Tier 3</label>
+                            </div>
+                        </div>
                     </div>
+                    <script>
+                    document.getElementById('select-tier-compare-mode').addEventListener('change', function() {
+                        document.getElementById('tier-compare-custom-picks').style.display = this.value === 'custom' ? '' : 'none';
+                    });
+                    </script>
 
                     <!-- Testimonials JSON -->
                     <div id="testimonials-container" style="display: none;">
@@ -14443,6 +14457,14 @@ Sent via Above All Carbon HELOC Tool`;
                     showWhatIfPayoff: document.getElementById('chk-show-whatif-payoff')?.classList.contains('active') !== false,
                     showTestimonials: document.getElementById('chk-show-testimonials')?.classList.contains('active') || false,
                     tierCompareMode: document.getElementById('select-tier-compare-mode')?.value || 'all',
+                    tierCompareCustom: (function() {
+                        if ((document.getElementById('select-tier-compare-mode')?.value || 'all') !== 'custom') return [];
+                        var picks = [];
+                        if (document.getElementById('chk-tier-1')?.checked) picks.push(1);
+                        if (document.getElementById('chk-tier-2')?.checked) picks.push(2);
+                        if (document.getElementById('chk-tier-3')?.checked) picks.push(3);
+                        return picks;
+                    })(),
                     testimonials: (function() {
                         try {
                             var json = document.getElementById('lo-testimonials-json')?.value?.trim();
@@ -14566,6 +14588,14 @@ Sent via Above All Carbon HELOC Tool`;
                     showWhatIfPayoff: document.getElementById('chk-show-whatif-payoff')?.classList.contains('active') !== false,
                     showTestimonials: document.getElementById('chk-show-testimonials')?.classList.contains('active') || false,
                     tierCompareMode: document.getElementById('select-tier-compare-mode')?.value || 'all',
+                    tierCompareCustom: (function() {
+                        if ((document.getElementById('select-tier-compare-mode')?.value || 'all') !== 'custom') return [];
+                        var picks = [];
+                        if (document.getElementById('chk-tier-1')?.checked) picks.push(1);
+                        if (document.getElementById('chk-tier-2')?.checked) picks.push(2);
+                        if (document.getElementById('chk-tier-3')?.checked) picks.push(3);
+                        return picks;
+                    })(),
                     testimonials: (function() {
                         try {
                             var json = document.getElementById('lo-testimonials-json')?.value?.trim();
