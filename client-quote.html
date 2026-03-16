@@ -1031,6 +1031,23 @@
             border-radius: 0 6px 6px 0;
         }
 
+        .rate-table tr.rate-selected {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe) !important;
+        }
+        .rate-table tr.rate-selected td {
+            border-top: 2px solid #3b82f6;
+            border-bottom: 2px solid #3b82f6;
+            font-weight: 700;
+        }
+        .rate-table tr.rate-selected td:first-child {
+            border-left: 2px solid #3b82f6;
+            border-radius: 6px 0 0 6px;
+        }
+        .rate-table tr.rate-selected td:last-child {
+            border-right: 2px solid #3b82f6;
+            border-radius: 0 6px 6px 0;
+        }
+
         .rec-badge {
             display: inline-block;
             background: linear-gradient(135deg, var(--accent-color), #d4af37);
@@ -1098,6 +1115,8 @@
             color: var(--primary-color);
             font-size: 15px;
         }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         @keyframes recGlow {
 
@@ -7864,6 +7883,26 @@
                     </div>
                 </div>
 
+                <!-- Extra Monthly Payment Options -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display:block; font-weight:600; color:var(--text-light); margin-bottom:8px; font-size:13px;">
+                        Or see how extra monthly payments accelerate payoff:
+                    </label>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button onclick="setExtraPayment(100)" class="pb-extra-btn" style="padding:8px 16px;border-radius:8px;border:1px solid #3b82f6;background:transparent;color:#3b82f6;font-weight:600;font-size:12px;cursor:pointer;">+$100/mo</button>
+                        <button onclick="setExtraPayment(250)" class="pb-extra-btn" style="padding:8px 16px;border-radius:8px;border:1px solid #3b82f6;background:transparent;color:#3b82f6;font-weight:600;font-size:12px;cursor:pointer;">+$250/mo</button>
+                        <button onclick="setExtraPayment(500)" class="pb-extra-btn" style="padding:8px 16px;border-radius:8px;border:1px solid #3b82f6;background:transparent;color:#3b82f6;font-weight:600;font-size:12px;cursor:pointer;">+$500/mo</button>
+                        <input type="number" id="extra-payment-input" placeholder="Custom $/mo" min="0" step="50" oninput="setExtraPayment(parseInt(this.value)||0)" style="width:110px;padding:8px 12px;border-radius:8px;border:1px solid #3b82f6;background:transparent;color:var(--text-light);font-size:12px;">
+                        <button onclick="setExtraPayment(0)" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border-color);background:transparent;color:var(--text-muted);font-size:11px;cursor:pointer;">Reset</button>
+                    </div>
+                </div>
+
+                <!-- Payoff Timeline Display -->
+                <div id="payoff-timeline-card" style="display:none; margin-bottom:20px; padding:16px; background:linear-gradient(135deg, rgba(59,130,246,0.12), rgba(59,130,246,0.04)); border-radius:12px; border:1px solid rgba(59,130,246,0.3);">
+                    <p id="payoff-timeline-text" style="margin:0; color:var(--text-light); font-size:14px; line-height:1.6;"></p>
+                    <p id="payoff-realism-warning" style="display:none; margin:8px 0 0 0; color:#f59e0b; font-size:12px; font-weight:600;"></p>
+                </div>
+
                 <!-- Payback Comparison -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
                     
@@ -7890,13 +7929,14 @@
                         <p style="color: #3b82f6; margin-top: 12px; font-weight: 600; font-size: 12px;">
                             -<span id="paymentReduction">$0</span>/mo savings
                         </p>
+                        <p id="payback-card-timeline" style="display:none; color:var(--text-muted); margin-top:8px; font-size:11px;"></p>
                     </div>
 
                 </div>
 
-                <!-- Insight -->
-                <div style="background: rgba(59, 130, 246, 0.1); padding: 20px; border-radius: 12px; border-left: 4px solid #3b82f6;">
-                    <p style="margin: 0; color: var(--text-light); font-size: 14px; line-height: 1.7;">
+                <!-- Insight (dynamic) -->
+                <div id="payback-insight-box" style="background: rgba(59, 130, 246, 0.1); padding: 20px; border-radius: 12px; border-left: 4px solid #3b82f6;">
+                    <p id="payback-insight" style="margin: 0; color: var(--text-light); font-size: 14px; line-height: 1.7;">
                         <strong>&#128202; How This Works:</strong><br/>
                         Your monthly payment is based on your outstanding balance at the time. The more you pay down, the lower your payment. You're in complete control.
                     </p>
@@ -9697,6 +9737,54 @@
                 }, 800);
             };
 
+            // Rate Option Selection with Ezra Feedback
+            window.selectRateOption = function(event, tierNum, termKey, rateStr, paymentStr) {
+                if (event) event.stopPropagation();
+
+                // Track the selection
+                trackEvent('rate_option_selected', {
+                    code: code, tier: tierNum, term: termKey,
+                    rate: rateStr, payment: paymentStr
+                });
+
+                // Highlight selected row, remove previous selections
+                document.querySelectorAll('.rate-table tr.rate-selected').forEach(function(row) {
+                    row.classList.remove('rate-selected');
+                });
+                // Find the button that was clicked and highlight its parent row
+                var btn = event ? event.target.closest('.rate-select-btn') || event.target : null;
+                if (btn) {
+                    var detailTr = btn.closest('.rate-detail-tr');
+                    if (detailTr && detailTr.previousElementSibling) {
+                        detailTr.previousElementSibling.classList.add('rate-selected');
+                    }
+                }
+
+                // Check if this differs from LO recommendation
+                var qd = window._quoteData || {};
+                var recTier = parseInt(qd.recTier) || 0;
+                var recTerm = (qd.recTerm || '') + 'yr';
+                var isDifferent = (tierNum !== recTier || termKey !== recTerm);
+
+                if (isDifferent && typeof window.eqToggle === 'function') {
+                    // Store pending question for Ezra
+                    window._ezraPendingRateQuestion = {
+                        tier: tierNum, term: termKey, rate: rateStr, payment: paymentStr
+                    };
+                    // Open Ezra chat
+                    window.eqToggle();
+                    // Inject the question after a short delay to let chat open
+                    setTimeout(function() {
+                        if (window._ezraInjectRateQuestion) {
+                            window._ezraInjectRateQuestion();
+                        }
+                    }, 600);
+                } else {
+                    showToast('Great choice! That\'s the recommended option.');
+                    setTimeout(function() { window.openApplyModal(); }, 800);
+                }
+            };
+
             // Schedule Call Handler
             window.scheduleCall = function () {
                 var lo = window._loInfo;
@@ -10089,8 +10177,10 @@
                 if (slider) window.updateWhatIfBorrowScenario(slider.value);
             };
 
+            var _extraMonthlyPayment = 0;
+
             window.updatePaybackScenario = function(paidBackAmount) {
-                var paidBack = parseInt(paidBackAmount);
+                var paidBack = parseInt(paidBackAmount) || 0;
                 var remainingBalance = _wifData.amount - paidBack;
                 var monthlyRate = (_wifData.rate / 100) / 12;
                 var months = _wifData.term * 12;
@@ -10102,6 +10192,103 @@
                 document.getElementById('reducedBalance').textContent = '$' + remainingBalance.toLocaleString();
                 document.getElementById('reducedPayment').textContent = '$' + Math.round(newPayment).toLocaleString();
                 document.getElementById('paymentReduction').textContent = '$' + Math.round(Math.abs(savings)).toLocaleString();
+
+                // Calculate total interest saved from lump-sum paydown
+                if (paidBack > 0 && remainingBalance > 0) {
+                    var origTotalPaid = _wifData.payment * months;
+                    var newTotalPaid = newPayment * months;
+                    var interestSaved = Math.round(origTotalPaid - newTotalPaid - paidBack);
+                    var cardTimeline = document.getElementById('payback-card-timeline');
+                    if (cardTimeline && interestSaved > 0) {
+                        cardTimeline.style.display = '';
+                        cardTimeline.textContent = 'Saves ~$' + interestSaved.toLocaleString() + ' in total interest';
+                    } else if (cardTimeline) {
+                        cardTimeline.style.display = 'none';
+                    }
+                }
+            };
+
+            // Extra monthly payment calculator
+            window.setExtraPayment = function(amount) {
+                _extraMonthlyPayment = parseInt(amount) || 0;
+
+                // Highlight active button
+                document.querySelectorAll('.pb-extra-btn').forEach(function(btn) {
+                    var btnAmt = parseInt(btn.textContent.replace(/[^0-9]/g, '')) || 0;
+                    if (btnAmt === _extraMonthlyPayment && _extraMonthlyPayment > 0) {
+                        btn.style.background = '#3b82f6';
+                        btn.style.color = 'white';
+                    } else {
+                        btn.style.background = 'transparent';
+                        btn.style.color = '#3b82f6';
+                    }
+                });
+
+                var timelineCard = document.getElementById('payoff-timeline-card');
+                var timelineText = document.getElementById('payoff-timeline-text');
+                var warningEl = document.getElementById('payoff-realism-warning');
+
+                if (_extraMonthlyPayment <= 0 || !_wifData.amount) {
+                    if (timelineCard) timelineCard.style.display = 'none';
+                    // Reset insight
+                    var insight = document.getElementById('payback-insight');
+                    if (insight) {
+                        insight.innerHTML = '<strong>&#128202; How This Works:</strong><br/>At your current payment of $' + Math.round(_wifData.payment).toLocaleString() + '/mo, your HELOC pays off in ' + _wifData.term + ' years. Every extra dollar you pay goes straight to principal, lowering both your balance and future payments.';
+                    }
+                    return;
+                }
+
+                // Calculate months to payoff with extra payment
+                var balance = _wifData.amount;
+                var monthlyRate = (_wifData.rate / 100) / 12;
+                var basePmt = _wifData.payment;
+                var totalPmt = basePmt + _extraMonthlyPayment;
+                var standardMonths = _wifData.term * 12;
+
+                // Months to payoff with extra payment
+                var monthsToPayoff;
+                if (monthlyRate > 0 && totalPmt > balance * monthlyRate) {
+                    monthsToPayoff = Math.ceil(-Math.log(1 - (balance * monthlyRate / totalPmt)) / Math.log(1 + monthlyRate));
+                } else {
+                    monthsToPayoff = standardMonths; // can't pay off faster
+                }
+
+                var yearsSaved = Math.floor((standardMonths - monthsToPayoff) / 12);
+                var monthsSaved = (standardMonths - monthsToPayoff) % 12;
+                var payoffYears = Math.floor(monthsToPayoff / 12);
+                var payoffMonths = monthsToPayoff % 12;
+
+                // Total interest comparison
+                var standardTotalPaid = basePmt * standardMonths;
+                var accelTotalPaid = totalPmt * monthsToPayoff;
+                var interestSaved = Math.max(0, Math.round(standardTotalPaid - accelTotalPaid));
+
+                if (timelineCard) timelineCard.style.display = '';
+                if (timelineText) {
+                    var txt = '<strong>&#9889; With +$' + _extraMonthlyPayment.toLocaleString() + '/mo extra:</strong> ';
+                    txt += 'Your HELOC pays off in <strong>' + payoffYears + ' years' + (payoffMonths > 0 ? ', ' + payoffMonths + ' months' : '') + '</strong>';
+                    txt += ' — that\'s <strong>' + yearsSaved + ' years' + (monthsSaved > 0 ? ', ' + monthsSaved + ' months faster' : ' faster') + '</strong>!';
+                    if (interestSaved > 0) {
+                        txt += '<br/>You\'d save approximately <strong>$' + interestSaved.toLocaleString() + '</strong> in total interest.';
+                    }
+                    timelineText.innerHTML = txt;
+                }
+
+                // Realism warning
+                if (warningEl) {
+                    if (totalPmt > basePmt * 3 && balance > 50000) {
+                        warningEl.style.display = '';
+                        warningEl.textContent = 'Heads up: That\'s $' + Math.round(totalPmt).toLocaleString() + '/mo total. Make sure this fits comfortably in your monthly budget before committing to this pace.';
+                    } else {
+                        warningEl.style.display = 'none';
+                    }
+                }
+
+                // Update insight box
+                var insight = document.getElementById('payback-insight');
+                if (insight) {
+                    insight.innerHTML = '<strong>&#128202; Accelerated Payoff:</strong><br/>Your standard payment is $' + Math.round(basePmt).toLocaleString() + '/mo over ' + _wifData.term + ' years. Adding $' + _extraMonthlyPayment.toLocaleString() + '/mo extra means you\'d pay $' + Math.round(totalPmt).toLocaleString() + '/mo total and be done ' + yearsSaved + '+ years sooner. <strong>That\'s real savings you can feel.</strong>';
+                }
             };
 
             // Called after renderQuote to wire both What-If sections to actual data
@@ -10209,6 +10396,12 @@
                 // Fire initial display updates
                 window.updateWhatIfBorrowScenario(totalLoan);
                 window.updatePaybackScenario(0);
+
+                // Set initial dynamic insight
+                var insight = document.getElementById('payback-insight');
+                if (insight) {
+                    insight.innerHTML = '<strong>&#128202; How This Works:</strong><br/>At your current payment of $' + Math.round(payment).toLocaleString() + '/mo, your HELOC pays off in ' + term + ' years. Every extra dollar you pay goes straight to principal, lowering both your balance and future payments.';
+                }
             }
 
             // ===== EZRA TOUR =====
@@ -10855,17 +11048,123 @@
                 opts = opts || {};
                 var section = document.getElementById('sec-doc-upload');
                 if (!section) return;
-                
+
                 if (opts.showDocUpload !== false) {
                     section.style.display = '';
                 }
-                
+
                 // Show Florida note if property state is FL
                 var floridaNotes = section.querySelectorAll('.florida-note');
                 var isFlorida = data.propertyAddress && data.propertyAddress.toLowerCase().includes('fl');
                 floridaNotes.forEach(function(note) {
                     note.style.display = isFlorida ? 'block' : 'none';
                 });
+
+                // Wire click handlers on doc upload cards
+                var docTypes = ['photo_id', 'income', 'insurance', 'mortgage_statement'];
+                var acceptTypes = [
+                    'image/jpeg,image/png,image/webp,application/pdf',
+                    'application/pdf,image/jpeg,image/png',
+                    'application/pdf,image/jpeg,image/png',
+                    'application/pdf,image/jpeg,image/png'
+                ];
+                var cards = section.querySelectorAll('.doc-upload-item');
+                cards.forEach(function(card, idx) {
+                    if (idx >= docTypes.length) return;
+                    var docType = docTypes[idx];
+                    var fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.accept = acceptTypes[idx];
+                    fileInput.style.display = 'none';
+                    fileInput.dataset.docType = docType;
+                    card.appendChild(fileInput);
+
+                    card.addEventListener('click', function(e) {
+                        if (card.dataset.uploaded === 'true') return; // already uploaded
+                        fileInput.click();
+                    });
+
+                    fileInput.addEventListener('change', function() {
+                        if (fileInput.files && fileInput.files[0]) {
+                            handleDocUpload(fileInput.files[0], docType, card);
+                        }
+                    });
+                });
+            }
+
+            // Document upload handler
+            function handleDocUpload(file, docType, card) {
+                // Validate
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast('File is too large. Maximum size is 10MB.', 'error');
+                    return;
+                }
+                var allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+                if (allowedTypes.indexOf(file.type) === -1) {
+                    showToast('Unsupported file type. Please upload a JPEG, PNG, or PDF.', 'error');
+                    return;
+                }
+
+                // Show loading state on card
+                var origHTML = card.innerHTML;
+                card.style.borderColor = '#3b82f6';
+                card.style.borderStyle = 'solid';
+                var spinner = document.createElement('div');
+                spinner.innerHTML = '<div style="text-align:center;padding:20px;"><div style="border:3px solid rgba(0,0,0,0.1);border-top:3px solid #3b82f6;border-radius:50%;width:32px;height:32px;margin:0 auto 8px;animation:spin 1s linear infinite;"></div><div style="font-size:12px;color:var(--text-muted);">Uploading...</div></div>';
+                card.innerHTML = '';
+                card.appendChild(spinner);
+
+                // Convert to base64
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var base64Data = e.target.result.split(',')[1]; // strip data:... prefix
+
+                    var lo = window._loInfo || {};
+                    var qd = window._quoteData || {};
+                    var DOC_UPLOAD_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/doc-upload';
+
+                    fetch(DOC_UPLOAD_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            quoteCode: code,
+                            userId: _userId,
+                            docType: docType,
+                            fileName: file.name,
+                            mimeType: file.type,
+                            fileBase64: base64Data,
+                            loEmail: lo.email || '',
+                            loName: lo.name || '',
+                            clientName: qd.clientName || ''
+                        })
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(result) {
+                        if (result.success) {
+                            // Success state
+                            card.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:36px;color:var(--green);">&#10003;</div><div style="font-weight:600;font-size:13px;color:var(--green);margin-top:4px;">Uploaded</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">' + file.name.substring(0, 20) + '</div></div>';
+                            card.style.borderColor = 'var(--green)';
+                            card.style.borderStyle = 'solid';
+                            card.dataset.uploaded = 'true';
+                            trackEvent('doc_uploaded', { docType: docType, code: code });
+                            showToast('Document uploaded successfully!');
+                        } else {
+                            throw new Error(result.error || 'Upload failed');
+                        }
+                    })
+                    .catch(function(err) {
+                        console.error('Doc upload error:', err);
+                        // Restore card with error state
+                        card.innerHTML = origHTML;
+                        card.style.borderColor = '#ef4444';
+                        showToast('Upload failed. Please try again.', 'error');
+                        setTimeout(function() {
+                            card.style.borderColor = 'rgba(197,160,89,0.3)';
+                            card.style.borderStyle = 'dashed';
+                        }, 3000);
+                    });
+                };
+                reader.readAsDataURL(file);
             }
 
             // ===== TITANIUM v5.9.3: TIER COMPARISON =====
@@ -11485,6 +11784,21 @@
                         if (tourActive) endTour();
                     }
                 };
+
+                // Rate selection feedback injection for Ezra
+                window._ezraInjectRateQuestion = function() {
+                    var pending = window._ezraPendingRateQuestion;
+                    if (!pending) return;
+                    var loName = (loInfo && loInfo.name) ? loInfo.name : 'your loan officer';
+                    var msg = "I see you're interested in the **Tier " + pending.tier + ", " + pending.term + " option at " + pending.rate + "** — that's a solid choice! " +
+                        "Mind sharing what drew you to it? I'd love to pass your thoughts along to **" + loName + "** so they can tailor the best experience for you.";
+                    addMsg('assistant', msg);
+                    // Set flag so next user message is treated as rate feedback
+                    window._ezraAwaitingRateFeedback = true;
+                };
+
+                // Hook into message sending to capture rate feedback
+                var _origSendMsg = null;
 
                 // Draw attention to Ezra orb with glow, but don't auto-open
                 // Let user choose to engage
@@ -12112,6 +12426,27 @@
                     inp.value = ''; inp.style.height = 'auto'; document.getElementById('eq-send').disabled = true;
                     addMsg('user', msg);
                     trackEvent('chat_message_sent', { code: quoteCode, len: msg.length });
+
+                    // Check if this is rate preference feedback
+                    if (window._ezraAwaitingRateFeedback && window._ezraPendingRateQuestion) {
+                        var rateQ = window._ezraPendingRateQuestion;
+                        trackEvent('rate_preference_feedback', {
+                            code: quoteCode,
+                            tier: rateQ.tier, term: rateQ.term,
+                            rate: rateQ.rate, payment: rateQ.payment,
+                            feedback: msg
+                        });
+                        window._ezraAwaitingRateFeedback = false;
+                        window._ezraPendingRateQuestion = null;
+                        var loN = (loInfo && loInfo.name) ? loInfo.name : 'your loan officer';
+                        showTyping();
+                        setTimeout(function() {
+                            hideTyping();
+                            addMsg('assistant', "Thanks for sharing that! I've noted your preference for the **Tier " + rateQ.tier + ", " + rateQ.term + " option** and your feedback. **" + loN + "** will have this when they follow up with you.\n\nWould you like to proceed with this option, or do you have any other questions?");
+                            updateSmartChips();
+                        }, 400);
+                        return;
+                    }
 
                     // Try local KB first — zero API cost
                     var localResponse = localKBResponse(msg);
