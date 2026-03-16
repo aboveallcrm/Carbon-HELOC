@@ -392,10 +392,10 @@
         .header {
             background: linear-gradient(160deg, #0a1628 0%, var(--header-bg) 50%, #132240 100%);
             color: white;
-            padding: 24px 32px 20px;
+            padding: 40px 32px 24px;
             text-align: center;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
         }
 
         .header::before {
@@ -426,6 +426,7 @@
             color: var(--accent-color);
             text-transform: uppercase;
             letter-spacing: 2px;
+            margin-top: 12px;
             margin-bottom: 4px;
             position: relative;
         }
@@ -3221,7 +3222,7 @@
             }
 
             .header {
-                padding: 36px 28px 32px;
+                padding: 44px 28px 32px;
             }
 
             .header h1 {
@@ -3258,7 +3259,7 @@
             }
 
             .header {
-                padding: 32px 20px 28px;
+                padding: 40px 20px 28px;
             }
 
             .header h1 {
@@ -4588,7 +4589,7 @@
         }
 
         .faq-item.active .faq-answer {
-            max-height: 500px;
+            max-height: 2000px;
             padding: 0 20px 20px;
         }
 
@@ -6319,7 +6320,7 @@
         }
         
         .accordion-content.expanded {
-            max-height: 500px;
+            max-height: 2000px;
         }
         
         /* Show more/less */
@@ -7960,7 +7961,7 @@
                 // Recommendation
                 var recItems = [];
                 if (data.totalLoan) recItems.push({ label: 'Total Loan', value: data.totalLoan });
-                if (data.rate) recItems.push({ label: 'Rate', value: data.rate + '%' + ((data.recType === 'variable') ? ' (Var)' : '') });
+                if (data.rate) recItems.push({ label: 'Rate', value: data.rate + '%' });
                 if (data.term) recItems.push({ label: 'Term', value: data.term + ' yr' });
                 if (data.payment) recItems.push({ label: 'Payment', value: data.payment, final: true });
                 document.getElementById('q-rec-grid').innerHTML = recItems.map(function (r) {
@@ -8085,7 +8086,7 @@
                             '<div class="sc-savings-box">' +
                             '<div class="sc-savings-item"><div class="sc-big">$' + monthSavingsCC.toLocaleString() + '</div><div class="sc-sub">saved per month vs credit cards</div></div>' +
                             '<div class="sc-savings-item"><div class="sc-big">$' + yearSavingsCC.toLocaleString() + '</div><div class="sc-sub">saved per year</div></div>' +
-                            '<div class="sc-savings-item"><div class="sc-big">' + rateVal + '%</div><div class="sc-sub">' + (data.recType === 'variable' ? 'variable' : 'fixed') + ' rate vs 24%+ credit cards</div></div>' +
+                            '<div class="sc-savings-item"><div class="sc-big">' + rateVal + '%</div><div class="sc-sub">your rate vs 24%+ credit cards</div></div>' +
                             '</div>';
                     }
 
@@ -9179,12 +9180,12 @@
                                     <p style="color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;">2. Ask Questions</p>
                                     <p style="color: #94a3b8; margin: 0; font-size: 13px;">Close this tour and chat with me. I'll clarify anything you need.</p>
                                 </div>
-                                <div style="background: rgba(255,255,255,0.08); padding: 12px; border-radius: 6px; border-left: 4px solid #64748b;">
-                                    <p style="color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;">3. Take Your Time</p>
-                                    <p style="color: var(--text-muted); margin: 0; font-size: 13px;">Save this quote. Sleep on it. Come back when you're ready. It's locked in for 6 days.</p>
+                                <div style="background: rgba(197, 160, 89, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #c5a059;">
+                                    <p style="color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;">3. Lock In Your Rate</p>
+                                    <p style="color: #94a3b8; margin: 0; font-size: 13px;">Your rate is held for 6 days. Lock it in now before rates change — you can always take your time with the rest.</p>
                                 </div>
                             </div>
-                            <p style="color: var(--text-muted); font-size: 13px; margin-top: 16px; line-height: 1.6;">
+                            <p style="color: #94a3b8; font-size: 13px; margin-top: 16px; line-height: 1.6;">
                                 Whatever you choose, you're making the right call. This quote is personalized for you. The numbers are real. The process is simple. You're in control.
                             </p>
                         </div>
@@ -9308,47 +9309,54 @@
                 var baseRate = parseFloat(data.rate) || 7.0;
                 var termYears = parseInt(data.term) || 30;
                 var isVariable = data.recType === 'variable';
-                
+
+                // Build the term key to look up rates — use recommended term
+                var recTermKey = String(data.recTerm || data.term || '30').replace(/\s*yr\s*/i, '');
+                var termLookupKey = recTermKey + 'yr'; // e.g. "20yr"
+
                 // Define origination fee options
-                // Priority: 1. Custom options from linkOptions, 2. Actual tier data, 3. Default calculated options
+                // Priority: 1. Actual tier data (always preferred), 2. Custom options, 3. Default calculated options
                 var origOptions = [];
-                
-                // Check for custom origination options in linkOptions
-                if (options.originationOptions && Array.isArray(options.originationOptions) && options.originationOptions.length === 3) {
-                    // Use custom options provided by LO (e.g., [1.50, 2.99, 4.99])
-                    origOptions = options.originationOptions.map(function(opt, idx) {
-                        var pts = typeof opt === 'number' ? opt : parseFloat(opt);
-                        // Calculate rate based on offset from base rate
-                        // Middle option (index 1) is the base rate, others are +/- offsets
-                        var rate;
-                        if (idx === 0) {
-                            rate = Math.round((baseRate + 1.0) * 100) / 100; // Lowest points = higher rate
-                        } else if (idx === 1) {
-                            rate = baseRate; // Middle = base rate
-                        } else {
-                            rate = Math.round((baseRate - 0.75) * 100) / 100; // Highest points = lower rate
-                        }
-                        return { points: pts, rate: rate };
-                    });
-                }
-                // Try to extract actual tier data if available and no custom options
-                else if (data.tiers && data.tiers.length >= 3) {
+
+                // Try to extract actual tier data if available — use recommended term rates
+                if (data.tiers && data.tiers.length >= 3) {
                     // Sort tiers by origination points
                     var sortedTiers = data.tiers.slice().sort(function(a, b) {
                         return parseFloat(a.origPts) - parseFloat(b.origPts);
                     });
+                    var rateSource = isVariable ? 'varRates' : 'rates';
                     origOptions = sortedTiers.slice(0, 3).map(function(tier) {
                         var pts = parseFloat(tier.origPts) || 0;
-                        // Get rate for the selected term, or first available term
-                        var termKey = String(data.term) || '30';
-                        var rateData = tier.rates && tier.rates[termKey];
-                        if (!rateData && tier.rates) {
-                            var firstTerm = Object.keys(tier.rates)[0];
-                            rateData = tier.rates[firstTerm];
+                        // Get rate for the recommended term specifically
+                        var ratesObj = tier[rateSource] || tier.rates || {};
+                        var rateData = ratesObj[termLookupKey];
+                        // Fallback: try without 'yr' suffix, then numeric key
+                        if (!rateData) rateData = ratesObj[recTermKey];
+                        if (!rateData) rateData = ratesObj[String(termYears)];
+                        if (!rateData) rateData = ratesObj[String(termYears) + 'yr'];
+                        // Last resort: first available term
+                        if (!rateData) {
+                            var keys = Object.keys(ratesObj);
+                            if (keys.length) rateData = ratesObj[keys[0]];
                         }
-                        var rate = rateData ? parseFloat(rateData.rate.replace('%', '')) : baseRate;
+                        var rate = rateData ? parseFloat(String(rateData.rate).replace('%', '')) : baseRate;
                         return { points: pts, rate: rate };
                     }).sort(function(a, b) { return a.points - b.points; });
+                }
+                // Check for custom origination options in linkOptions
+                else if (options.originationOptions && Array.isArray(options.originationOptions) && options.originationOptions.length === 3) {
+                    origOptions = options.originationOptions.map(function(opt, idx) {
+                        var pts = typeof opt === 'number' ? opt : parseFloat(opt);
+                        var rate;
+                        if (idx === 0) {
+                            rate = Math.round((baseRate + 1.0) * 100) / 100;
+                        } else if (idx === 1) {
+                            rate = baseRate;
+                        } else {
+                            rate = Math.round((baseRate - 0.75) * 100) / 100;
+                        }
+                        return { points: pts, rate: rate };
+                    });
                 }
                 // Default fallback options
                 else {
@@ -9391,8 +9399,8 @@
                 var maxHeloc = Math.min(750000, Math.round((homeValue * maxCLTV) - mortgageBalance));
                 var minHeloc = Math.max(50000, Math.round(maxHeloc * 0.1));
                 
-                // Get original quote amount
-                var originalAmount = parseFloat(String(data.cashBack || data.totalLoan || '100000').replace(/[$,]/g, '')) || 100000;
+                // Get original quote amount — start at total HELOC amount (what borrower is getting)
+                var originalAmount = parseFloat(String(data.totalLoan || data.cashBack || '100000').replace(/[$,]/g, '')) || 100000;
                 
                 // Set slider bounds
                 slider.min = minHeloc;
