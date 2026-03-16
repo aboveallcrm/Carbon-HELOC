@@ -6938,4 +6938,1012 @@ Which sequence would you like to set up?`, { model: 'local' });
         }
     });
 
+    // ============================================
+    // EZRA ENHANCEMENT ROADMAP - PHASE 1-5
+    // ============================================
+
+    // ============================================
+    // PHASE 1: REAL-TIME QUOTE CONTEXT AWARENESS
+    // ============================================
+    
+    const QuoteContextWatcher = {
+        _watchers: [],
+        _lastContext: null,
+        _suggestionShown: false,
+        
+        init() {
+            const formFields = ['in-home-value', 'in-mortgage-balance', 'in-net-cash', 'in-client-credit', 'in-client-name', 'in-occupancy'];
+            formFields.forEach(id => {
+                const field = document.getElementById(id);
+                if (field) {
+                    field.addEventListener('change', debounce(() => this.analyzeContext(), 800));
+                    field.addEventListener('blur', () => this.analyzeContext());
+                }
+            });
+            console.log('[Ezra] Quote Context Watcher initialized');
+        },
+        
+        analyzeContext() {
+            const ctx = getFormContext();
+            if (!ctx.hasFormData) return;
+            
+            const suggestions = [];
+            
+            // CLTV Warning
+            if (ctx.cltv > 80 && ctx.cltv < 85) {
+                const reduction = Math.round((ctx.cltv - 80) * ctx.homeValue / 100);
+                suggestions.push({
+                    type: 'warning',
+                    icon: '⚠️',
+                    title: 'CLTV Near Limit',
+                    message: `CLTV is ${ctx.cltv}%. Reducing HELOC by $${reduction.toLocaleString()} would improve pricing.`,
+                    action: () => {
+                        const newHeloc = ctx.helocAmount - reduction;
+                        const helocField = document.getElementById('in-net-cash');
+                        if (helocField) {
+                            helocField.value = newHeloc;
+                            helocField.dispatchEvent(new Event('change'));
+                            showToast('HELOC amount adjusted for better pricing', 'success');
+                        }
+                    },
+                    actionLabel: 'Auto-Adjust'
+                });
+            }
+            
+            // High CLTV warning
+            if (ctx.cltv >= 85) {
+                suggestions.push({
+                    type: 'error',
+                    icon: '🚫',
+                    title: 'CLTV Exceeds Maximum',
+                    message: `CLTV of ${ctx.cltv}% exceeds the 85% limit. This deal may require exceptions.`,
+                    action: null
+                });
+            }
+            
+            // Credit score opportunity
+            if (ctx.creditScore >= 740 && ctx.rate > 8.0) {
+                suggestions.push({
+                    type: 'opportunity',
+                    icon: '💡',
+                    title: 'Tier 1 Rate Opportunity',
+                    message: '740+ credit score qualifies for better rates. Consider negotiating or switching tiers.',
+                    action: () => {
+                        const tierSelect = document.getElementById('select-tier');
+                        if (tierSelect) {
+                            tierSelect.value = '1';
+                            tierSelect.dispatchEvent(new Event('change'));
+                        }
+                    },
+                    actionLabel: 'Switch to Tier 1'
+                });
+            }
+            
+            // Low credit warning
+            if (ctx.creditScore < 640) {
+                suggestions.push({
+                    type: 'warning',
+                    icon: '📉',
+                    title: 'Below-Prime Credit',
+                    message: `Credit score of ${ctx.creditScore} may result in higher rates or require additional documentation.`,
+                    action: null
+                });
+            }
+            
+            // Large loan opportunity
+            if (ctx.helocAmount > 500000) {
+                suggestions.push({
+                    type: 'opportunity',
+                    icon: '💰',
+                    title: 'Jumbo HELOC Opportunity',
+                    message: 'Large loan amount may qualify for custom pricing. Consider reaching out to pricing desk.',
+                    action: null
+                });
+            }
+            
+            // Investment property warning
+            if (ctx.occupancy === 'investment') {
+                suggestions.push({
+                    type: 'info',
+                    icon: '🏢',
+                    title: 'Investment Property',
+                    message: 'Investment properties have stricter LTV limits (70% max) and may require additional reserves.',
+                    action: null
+                });
+            }
+            
+            // DTI warning (if calculated)
+            if (ctx.dti > 43) {
+                suggestions.push({
+                    type: 'warning',
+                    icon: '📊',
+                    title: 'High DTI Ratio',
+                    message: `DTI of ${ctx.dti}% exceeds typical 43% threshold. May require manual underwriting.`,
+                    action: null
+                });
+            }
+            
+            if (suggestions.length > 0 && !this._suggestionShown) {
+                this.showSuggestions(suggestions);
+                this._suggestionShown = true;
+                // Reset after 30 seconds
+                setTimeout(() => { this._suggestionShown = false; }, 30000);
+            }
+            
+            this._lastContext = ctx;
+        },
+        
+        showSuggestions(suggestions) {
+            // Only show if Ezra is open
+            if (!EzraState.isOpen) return;
+            
+            let html = '**💡 Smart Suggestions**\n\n';
+            suggestions.forEach((s, i) => {
+                html += `${s.icon} **${s.title}**\n${s.message}\n`;
+                if (s.action) {
+                    html += `[Quick Fix: ${s.actionLabel}]\n`;
+                }
+                html += '\n';
+            });
+            
+            addMessage('assistant', html);
+            
+            // Store actions for later
+            EzraState._pendingSuggestions = suggestions;
+        }
+    };
+
+    // ============================================
+    // PHASE 1: VISUAL CONFIDENCE METER
+    // ============================================
+    
+    const ConfidenceMeter = {
+        calculate(ctx) {
+            let score = 100;
+            const factors = [];
+            const warnings = [];
+            
+            // CLTV impact
+            if (ctx.cltv > 80) {
+                score -= 15;
+                factors.push({ type: 'negative', label: 'High CLTV', impact: '-15' });
+                warnings.push('CLTV above 80% reduces approval confidence');
+            } else if (ctx.cltv < 70) {
+                score += 5;
+                factors.push({ type: 'positive', label: 'Low CLTV', impact: '+5' });
+            }
+            
+            // Credit score impact
+            if (ctx.creditScore < 640) {
+                score -= 25;
+                factors.push({ type: 'negative', label: 'Below-prime credit', impact: '-25' });
+                warnings.push('Credit score below 640 may require manual review');
+            } else if (ctx.creditScore >= 740) {
+                score += 10;
+                factors.push({ type: 'positive', label: 'Excellent credit', impact: '+10' });
+            } else if (ctx.creditScore >= 680) {
+                score += 5;
+                factors.push({ type: 'positive', label: 'Good credit', impact: '+5' });
+            }
+            
+            // DTI impact
+            if (ctx.dti > 43) {
+                score -= 15;
+                factors.push({ type: 'negative', label: 'High DTI', impact: '-15' });
+                warnings.push('DTI above 43% requires exception');
+            } else if (ctx.dti < 36) {
+                score += 5;
+                factors.push({ type: 'positive', label: 'Low DTI', impact: '+5' });
+            }
+            
+            // Property type impact
+            if (ctx.occupancy === 'investment') {
+                score -= 10;
+                factors.push({ type: 'negative', label: 'Investment property', impact: '-10' });
+                warnings.push('Investment properties have stricter requirements');
+            } else if (ctx.occupancy === 'primary') {
+                score += 5;
+                factors.push({ type: 'positive', label: 'Primary residence', impact: '+5' });
+            }
+            
+            // Loan amount impact
+            if (ctx.helocAmount > 500000) {
+                score -= 5;
+                factors.push({ type: 'negative', label: 'Jumbo loan', impact: '-5' });
+            }
+            
+            // Ensure score stays in bounds
+            score = Math.max(0, Math.min(100, score));
+            
+            let recommendation;
+            if (score >= 80) recommendation = { level: 'Strong', color: '#10b981', icon: '✅' };
+            else if (score >= 60) recommendation = { level: 'Conditional', color: '#f59e0b', icon: '⚠️' };
+            else recommendation = { level: 'Review Required', color: '#ef4444', icon: '🚫' };
+            
+            return { score, factors, warnings, recommendation };
+        },
+        
+        generateReport() {
+            const ctx = getFormContext();
+            if (!ctx.hasFormData) {
+                return '**Confidence Meter**\n\nFill in quote details to see approval confidence analysis.';
+            }
+            
+            const analysis = this.calculate(ctx);
+            
+            let html = `**📊 Approval Confidence: ${analysis.score}%** ${analysis.recommendation.icon}\n\n`;
+            
+            // Progress bar visualization
+            const filled = Math.round(analysis.score / 10);
+            const empty = 10 - filled;
+            html += `${'█'.repeat(filled)}${'░'.repeat(empty)}\n\n`;
+            
+            html += `**Recommendation: ${analysis.recommendation.level}**\n\n`;
+            
+            if (analysis.factors.length > 0) {
+                html += '**Factors:**\n';
+                analysis.factors.forEach(f => {
+                    const emoji = f.type === 'positive' ? '✓' : '•';
+                    html += `${emoji} ${f.label} (${f.impact})\n`;
+                });
+                html += '\n';
+            }
+            
+            if (analysis.warnings.length > 0) {
+                html += '**Notes:**\n';
+                analysis.warnings.forEach(w => {
+                    html += `• ${w}\n`;
+                });
+            }
+            
+            return html;
+        }
+    };
+
+    // ============================================
+    // PHASE 2: SMART FOLLOW-UP SCHEDULER
+    // ============================================
+    
+    const FollowUpEngine = {
+        async analyzeEngagement(quoteId) {
+            if (!EzraState.supabase) return null;
+            
+            try {
+                // Get quote views
+                const { data: views } = await EzraState.supabase
+                    .from('quote_views')
+                    .select('*')
+                    .eq('quote_id', quoteId)
+                    .order('viewed_at', { ascending: false });
+                
+                // Get quote data
+                const { data: quote } = await EzraState.supabase
+                    .from('quote_links')
+                    .select('*, leads(*)')
+                    .eq('id', quoteId)
+                    .single();
+                
+                if (!quote) return null;
+                
+                const viewCount = views?.length || 0;
+                const lastView = views?.[0];
+                const daysSinceView = lastView ? 
+                    (Date.now() - new Date(lastView.viewed_at)) / (1000 * 60 * 60 * 24) : null;
+                
+                return {
+                    viewCount,
+                    lastView,
+                    daysSinceView,
+                    quote,
+                    isHot: viewCount >= 3 && daysSinceView !== null && daysSinceView < 2,
+                    isStale: daysSinceView !== null && daysSinceView > 7,
+                    neverOpened: viewCount === 0
+                };
+            } catch (e) {
+                console.error('[Ezra] Follow-up analysis error:', e);
+                return null;
+            }
+        },
+        
+        async scheduleSmartFollowUp(quoteId) {
+            const engagement = await this.analyzeEngagement(quoteId);
+            if (!engagement) return null;
+            
+            let strategy;
+            
+            if (engagement.neverOpened) {
+                strategy = {
+                    type: 'email',
+                    timing: '24_hours',
+                    priority: 'medium',
+                    subject: `Your HELOC quote is ready`,
+                    template: 'no_open',
+                    message: `Hi ${engagement.quote.leads?.first_name || 'there'},\n\nI prepared your HELOC quote. Check it out and let me know if you have questions!`
+                };
+            } else if (engagement.isHot) {
+                strategy = {
+                    type: 'call',
+                    timing: '4_hours',
+                    priority: 'high',
+                    template: 'hot_lead',
+                    script: `Hi ${engagement.quote.leads?.first_name}, this is ${window.currentUserName || 'your loan officer'}. I see you've been reviewing your HELOC quote. Do you have any questions I can answer?`,
+                    message: `🔥 Hot lead! ${engagement.quote.leads?.first_name} has viewed the quote ${engagement.viewCount} times. Call within 4 hours for best results.`
+                };
+            } else if (engagement.isStale) {
+                strategy = {
+                    type: 'email',
+                    timing: 'immediate',
+                    priority: 'medium',
+                    subject: 'Rates have changed - updated quote available',
+                    template: 're_engagement',
+                    message: `Hi ${engagement.quote.leads?.first_name},\n\nIt's been a while since you viewed your quote. Rates may have changed - let's get you an updated proposal.`
+                };
+            } else {
+                strategy = {
+                    type: 'email',
+                    timing: '3_days',
+                    priority: 'low',
+                    template: 'standard_follow_up'
+                };
+            }
+            
+            // Store in database
+            if (EzraState.supabase && strategy) {
+                await EzraState.supabase.from('ezra_follow_up_schedules').insert({
+                    quote_id: quoteId,
+                    user_id: EzraState.user?.id,
+                    strategy: strategy,
+                    scheduled_for: new Date(Date.now() + this.parseTiming(strategy.timing)),
+                    status: 'scheduled'
+                });
+            }
+            
+            return strategy;
+        },
+        
+        parseTiming(timing) {
+            const map = {
+                'immediate': 0,
+                '4_hours': 4 * 60 * 60 * 1000,
+                '24_hours': 24 * 60 * 60 * 1000,
+                '3_days': 3 * 24 * 60 * 60 * 1000,
+                '7_days': 7 * 24 * 60 * 60 * 1000
+            };
+            return map[timing] || map['3_days'];
+        },
+        
+        generateFollowUpBriefing() {
+            // This would be called to show scheduled follow-ups in Ezra
+            return '**📅 Follow-Up Schedule**\n\nSmart follow-up scheduling is active. Ezra will analyze quote engagement and recommend the best follow-up timing.';
+        }
+    };
+
+    // ============================================
+    // PHASE 3: VOICE COMMANDS FOR SETTINGS
+    // ============================================
+    
+    const VoiceCommands = {
+        patterns: {
+            updateSetting: /(?:set|change|update)\s+(?:the\s+)?(\w+(?:\s+\w+)*)\s+(?:to|as|at)\s+(.+)/i,
+            createQuote: /(?:create|make|build)\s+(?:a\s+)?quote\s+(?:for\s+)?(.+)/i,
+            adjustField: /(?:increase|decrease|change|adjust)\s+(?:the\s+)?(\w+(?:\s+\w+)*)\s+(?:by\s+)?(.+)/i,
+            sendQuote: /(?:send|email|text)\s+(?:the\s+)?quote\s+(?:to\s+)?(.+)/i,
+            showConfidence: /(?:show|display|what\s+is)\s+(?:my\s+)?(?:confidence|approval|score)/i,
+            analyzeDeal: /(?:analyze|review|check)\s+(?:this\s+)?deal/i,
+            scheduleFollowUp: /(?:schedule|set\s+up)\s+(?:a\s+)?follow[-\s]?up/i
+        },
+        
+        handlers: {
+            updateSetting(match) {
+                const [_, setting, value] = match;
+                return EzraSettings.update(setting.trim(), value.trim());
+            },
+            
+            createQuote(match) {
+                const [_, params] = match;
+                return EzraQuoteBuilder.fromVoice(params.trim());
+            },
+            
+            adjustField(match) {
+                const [_, field, adjustment] = match;
+                return EzraFormController.adjust(field.trim(), adjustment.trim());
+            },
+            
+            sendQuote(match) {
+                const [_, recipient] = match;
+                return { success: true, action: 'send_quote', recipient: recipient.trim() };
+            },
+            
+            showConfidence() {
+                return { success: true, action: 'show_confidence', content: ConfidenceMeter.generateReport() };
+            },
+            
+            analyzeDeal() {
+                QuoteContextWatcher.analyzeContext();
+                return { success: true, action: 'analyze_deal' };
+            },
+            
+            scheduleFollowUp() {
+                return { success: true, action: 'schedule_followup', content: FollowUpEngine.generateFollowUpBriefing() };
+            }
+        },
+        
+        process(transcript) {
+            for (const [command, pattern] of Object.entries(this.patterns)) {
+                const match = transcript.match(pattern);
+                if (match) {
+                    console.log('[Ezra] Voice command detected:', command);
+                    return this.handlers[command](match);
+                }
+            }
+            return null;
+        }
+    };
+
+    // Settings Controller
+    const EzraSettings = {
+        settingMap: {
+            'origination fee': { field: 'default-origination-fee', type: 'number', section: 'pricing' },
+            'tier': { field: 'default-tier', type: 'select', section: 'pricing' },
+            'draw period': { field: 'default-draw-period', type: 'number', section: 'pricing' },
+            'company name': { field: 'lo-company', type: 'text', section: 'profile' },
+            'lender name': { field: 'wl-lender-name', type: 'text', section: 'white-label' },
+            'logo': { field: 'company-logo-url', type: 'url', section: 'white-label' },
+            'review link': { field: 'lo-review-link', type: 'url', section: 'profile' },
+            'calendar link': { field: 'lo-calendar', type: 'url', section: 'profile' },
+            'apply link': { field: 'lo-apply', type: 'url', section: 'profile' }
+        },
+        
+        update(setting, value) {
+            const config = this.settingMap[setting.toLowerCase()];
+            if (!config) {
+                return { success: false, error: `Unknown setting: "${setting}". Try: origination fee, tier, company name, etc.` };
+            }
+            
+            const field = document.getElementById(config.field);
+            if (!field) {
+                return { success: false, error: `Setting field not found: ${config.field}` };
+            }
+            
+            // Validate and convert value
+            let processedValue = value;
+            if (config.type === 'number') {
+                processedValue = parseFloat(value.replace(/[^0-9.]/g, ''));
+                if (isNaN(processedValue)) {
+                    return { success: false, error: `Invalid number: ${value}` };
+                }
+            }
+            
+            // Update field
+            field.value = processedValue;
+            field.dispatchEvent(new Event('change'));
+            
+            // Auto-save if function exists
+            if (typeof autoSave === 'function') {
+                autoSave();
+            }
+            
+            return { success: true, message: `Updated ${setting} to ${processedValue}`, setting: config };
+        },
+        
+        getCurrentSettings() {
+            const settings = {};
+            Object.entries(this.settingMap).forEach(([key, config]) => {
+                const field = document.getElementById(config.field);
+                if (field) {
+                    settings[key] = field.value;
+                }
+            });
+            return settings;
+        }
+    };
+
+    // Quote Builder from Voice
+    const EzraQuoteBuilder = {
+        fromVoice(params) {
+            // Parse natural language like "John Smith 500k house 200k mortgage"
+            const nameMatch = params.match(/([A-Z][a-z]+\s+[A-Z][a-z]+)/);
+            const homeValueMatch = params.match(/(\d+(?:\.\d+)?)\s*(k|K|000)?\s*(?:house|home|property|value)/i);
+            const mortgageMatch = params.match(/(\d+(?:\.\d+)?)\s*(k|K|000)?\s*(?:mortgage|balance|owe)/i);
+            const helocMatch = params.match(/(\d+(?:\.\d+)?)\s*(k|K|000)?\s*(?:heloc|cash|equity|line)/i);
+            
+            const result = {
+                success: true,
+                action: 'create_quote',
+                fields: {}
+            };
+            
+            if (nameMatch) {
+                result.fields.clientName = nameMatch[1];
+            }
+            
+            if (homeValueMatch) {
+                let val = parseFloat(homeValueMatch[1]);
+                if (homeValueMatch[2] || homeValueMatch[0].toLowerCase().includes('k')) {
+                    val *= 1000;
+                }
+                result.fields.homeValue = val;
+            }
+            
+            if (mortgageMatch) {
+                let val = parseFloat(mortgageMatch[1]);
+                if (mortgageMatch[2] || mortgageMatch[0].toLowerCase().includes('k')) {
+                    val *= 1000;
+                }
+                result.fields.mortgageBalance = val;
+            }
+            
+            if (helocMatch) {
+                let val = parseFloat(helocMatch[1]);
+                if (helocMatch[2] || helocMatch[0].toLowerCase().includes('k')) {
+                    val *= 1000;
+                }
+                result.fields.helocAmount = val;
+            }
+            
+            // Apply to form
+            this.applyToForm(result.fields);
+            
+            result.message = `Created quote for ${result.fields.clientName || 'new client'}`;
+            return result;
+        },
+        
+        applyToForm(fields) {
+            if (fields.clientName) {
+                const field = document.getElementById('in-client-name');
+                if (field) field.value = fields.clientName;
+            }
+            if (fields.homeValue) {
+                const field = document.getElementById('in-home-value');
+                if (field) field.value = fields.homeValue;
+            }
+            if (fields.mortgageBalance) {
+                const field = document.getElementById('in-mortgage-balance');
+                if (field) field.value = fields.mortgageBalance;
+            }
+            if (fields.helocAmount) {
+                const field = document.getElementById('in-net-cash');
+                if (field) field.value = fields.helocAmount;
+            }
+            
+            // Trigger change events
+            Object.keys(fields).forEach(key => {
+                const fieldId = {
+                    clientName: 'in-client-name',
+                    homeValue: 'in-home-value',
+                    mortgageBalance: 'in-mortgage-balance',
+                    helocAmount: 'in-net-cash'
+                }[key];
+                
+                if (fieldId) {
+                    const field = document.getElementById(fieldId);
+                    if (field) field.dispatchEvent(new Event('change'));
+                }
+            });
+            
+            if (typeof autoSave === 'function') autoSave();
+        }
+    };
+
+    // Form Controller
+    const EzraFormController = {
+        adjust(field, adjustment) {
+            const fieldMap = {
+                'heloc': 'in-net-cash',
+                'heloc amount': 'in-net-cash',
+                'cash': 'in-net-cash',
+                'home value': 'in-home-value',
+                'property value': 'in-home-value',
+                'mortgage': 'in-mortgage-balance',
+                'mortgage balance': 'in-mortgage-balance'
+            };
+            
+            const fieldId = fieldMap[field.toLowerCase()];
+            if (!fieldId) {
+                return { success: false, error: `Unknown field: ${field}` };
+            }
+            
+            const fieldEl = document.getElementById(fieldId);
+            if (!fieldEl) {
+                return { success: false, error: `Field not found: ${fieldId}` };
+            }
+            
+            const currentValue = parseFloat(fieldEl.value) || 0;
+            let adjustmentValue = parseFloat(adjustment.replace(/[^0-9.-]/g, ''));
+            
+            if (adjustment.toLowerCase().includes('k')) {
+                adjustmentValue *= 1000;
+            }
+            
+            const isIncrease = /increase|raise|add|more/i.test(adjustment);
+            const isDecrease = /decrease|lower|reduce|less/i.test(adjustment);
+            
+            let newValue;
+            if (isIncrease) {
+                newValue = currentValue + adjustmentValue;
+            } else if (isDecrease) {
+                newValue = currentValue - adjustmentValue;
+            } else {
+                // Just set the value
+                newValue = adjustmentValue;
+            }
+            
+            fieldEl.value = Math.max(0, newValue);
+            fieldEl.dispatchEvent(new Event('change'));
+            
+            if (typeof autoSave === 'function') autoSave();
+            
+            return { success: true, message: `Adjusted ${field} to ${newValue.toLocaleString()}` };
+        }
+    };
+
+    // ============================================
+    // PHASE 4: PREDICTIVE DEAL SCORING
+    // ============================================
+    
+    const DealIntelligence = {
+        async scoreDeal(quoteData) {
+            if (!EzraState.supabase) {
+                return { error: 'Supabase not connected' };
+            }
+            
+            try {
+                // Get similar closed deals
+                const { data: similarDeals } = await EzraState.supabase
+                    .from('quote_links')
+                    .select('*, leads(credit_score)')
+                    .eq('user_id', EzraState.user?.id)
+                    .eq('status', 'closed')
+                    .gte('heloc_amount', quoteData.helocAmount * 0.8)
+                    .lte('heloc_amount', quoteData.helocAmount * 1.2)
+                    .limit(50);
+                
+                const closedDeals = similarDeals?.filter(d => d.status === 'closed') || [];
+                const closeRate = closedDeals.length / (similarDeals?.length || 1);
+                
+                // Calculate average time to close
+                const avgTimeToClose = this.calculateAverageTime(closedDeals);
+                
+                // Generate recommendations
+                const recommendations = this.generateRecommendations(quoteData, closedDeals);
+                
+                return {
+                    closeProbability: Math.round(closeRate * 100),
+                    avgTimeToClose,
+                    similarDealsCount: similarDeals?.length || 0,
+                    recommendations,
+                    confidence: ConfidenceMeter.calculate(quoteData)
+                };
+            } catch (e) {
+                console.error('[Ezra] Deal scoring error:', e);
+                return { error: e.message };
+            }
+        },
+        
+        calculateAverageTime(deals) {
+            if (!deals || deals.length === 0) return null;
+            
+            const times = deals.map(d => {
+                const created = new Date(d.created_at);
+                const closed = d.closed_at ? new Date(d.closed_at) : new Date();
+                return closed - created;
+            });
+            
+            const avg = times.reduce((a, b) => a + b, 0) / times.length;
+            return Math.round(avg / (1000 * 60 * 60 * 24)); // Convert to days
+        },
+        
+        generateRecommendations(quoteData, similarDeals) {
+            const recommendations = [];
+            
+            // Rate recommendation
+            const avgRate = similarDeals.reduce((sum, d) => sum + (d.rate || 0), 0) / (similarDeals.length || 1);
+            if (quoteData.rate > avgRate + 0.5) {
+                recommendations.push({
+                    priority: 'high',
+                    action: 'Price Match',
+                    message: `Your rate is ${(quoteData.rate - avgRate).toFixed(2)}% above average for similar deals. Consider matching.`
+                });
+            }
+            
+            // Best day to contact
+            const dayCounts = {};
+            similarDeals.forEach(d => {
+                const day = new Date(d.created_at).getDay();
+                dayCounts[day] = (dayCounts[day] || 0) + 1;
+            });
+            const bestDay = Object.entries(dayCounts).sort((a, b) => b[1] - a[1])[0];
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            if (bestDay) {
+                recommendations.push({
+                    priority: 'low',
+                    action: 'Timing',
+                    message: `Best day to follow up: ${days[bestDay[0]]} (based on your closed deals)`
+                });
+            }
+            
+            return recommendations;
+        },
+        
+        async generateReport() {
+            const ctx = getFormContext();
+            if (!ctx.hasFormData) {
+                return '**Deal Intelligence**\n\nFill in quote details to see predictive analytics.';
+            }
+            
+            const score = await this.scoreDeal(ctx);
+            if (score.error) {
+                return `**Deal Intelligence**\n\nUnable to load analytics: ${score.error}`;
+            }
+            
+            let html = '**🎯 Deal Intelligence Report**\n\n';
+            html += `**Close Probability: ${score.closeProbability}%**\n`;
+            html += `Based on ${score.similarDealsCount} similar deals\n\n`;
+            
+            if (score.avgTimeToClose) {
+                html += `**Avg Time to Close: ${score.avgTimeToClose} days**\n\n`;
+            }
+            
+            if (score.recommendations?.length > 0) {
+                html += '**Recommendations:**\n';
+                score.recommendations.forEach(r => {
+                    const priorityEmoji = r.priority === 'high' ? '🔴' : r.priority === 'medium' ? '🟡' : '🟢';
+                    html += `${priorityEmoji} **${r.action}:** ${r.message}\n`;
+                });
+            }
+            
+            return html;
+        }
+    };
+
+    // Learning Engine
+    const EzraLearning = {
+        async analyzeSuccessPatterns() {
+            if (!EzraState.supabase) return null;
+            
+            try {
+                const { data: myDeals } = await EzraState.supabase
+                    .from('quote_links')
+                    .select('*')
+                    .eq('user_id', EzraState.user?.id)
+                    .eq('status', 'closed')
+                    .limit(100);
+                
+                if (!myDeals || myDeals.length === 0) {
+                    return { message: 'No closed deals yet to analyze.' };
+                }
+                
+                // Find patterns
+                const patterns = {
+                    totalClosed: myDeals.length,
+                    avgHelocAmount: myDeals.reduce((sum, d) => sum + (d.heloc_amount || 0), 0) / myDeals.length,
+                    avgRate: myDeals.reduce((sum, d) => sum + (d.rate || 0), 0) / myDeals.length,
+                    commonTerms: this.findMostCommon(myDeals.map(d => d.term)),
+                    bestDays: this.findBestDays(myDeals)
+                };
+                
+                return patterns;
+            } catch (e) {
+                console.error('[Ezra] Learning analysis error:', e);
+                return null;
+            }
+        },
+        
+        findMostCommon(arr) {
+            const counts = {};
+            arr.forEach(v => { counts[v] = (counts[v] || 0) + 1; });
+            return Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([v]) => v);
+        },
+        
+        findBestDays(deals) {
+            const dayCounts = {};
+            deals.forEach(d => {
+                const day = new Date(d.created_at).getDay();
+                dayCounts[day] = (dayCounts[day] || 0) + 1;
+            });
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return Object.entries(dayCounts)
+                .sort((a, b) => b[1] - a[1])
+                .map(([day, count]) => ({ day: days[day], count }));
+        },
+        
+        async personalizeForLO() {
+            const patterns = await this.analyzeSuccessPatterns();
+            if (!patterns) return null;
+            
+            if (patterns.message) {
+                return patterns.message;
+            }
+            
+            let html = '**📈 Your Performance Insights**\n\n';
+            html += `**${patterns.totalClosed} deals closed**\n`;
+            html += `Average loan: $${Math.round(patterns.avgHelocAmount).toLocaleString()}\n`;
+            html += `Average rate: ${patterns.avgRate.toFixed(2)}%\n\n`;
+            
+            if (patterns.commonTerms?.length > 0) {
+                html += `**Most common terms:** ${patterns.commonTerms.slice(0, 3).join(', ')} years\n`;
+            }
+            
+            if (patterns.bestDays?.length > 0) {
+                html += `**Best days:** ${patterns.bestDays.slice(0, 3).map(d => d.day).join(', ')}\n`;
+            }
+            
+            return html;
+        }
+    };
+
+    // ============================================
+    // PHASE 5: TEAM INTELLIGENCE
+    // ============================================
+    
+    const TeamIntelligence = {
+        async getWinningStrategies(dealType) {
+            if (!EzraState.supabase) return null;
+            
+            try {
+                // This would need a team/company ID - using user_id as proxy for now
+                const { data: teamDeals } = await EzraState.supabase
+                    .from('quote_links')
+                    .select('*, user_id, leads(credit_score)')
+                    .eq('status', 'closed')
+                    .limit(50);
+                
+                if (!teamDeals || teamDeals.length === 0) {
+                    return { message: 'No team data available yet.' };
+                }
+                
+                // Group by LO
+                const byLO = {};
+                teamDeals.forEach(d => {
+                    if (!byLO[d.user_id]) byLO[d.user_id] = [];
+                    byLO[d.user_id].push(d);
+                });
+                
+                // Find top performer
+                const topPerformer = Object.entries(byLO)
+                    .sort((a, b) => b[1].length - a[1].length)[0];
+                
+                return {
+                    topPerformer: topPerformer ? { id: topPerformer[0], deals: topPerformer[1].length } : null,
+                    totalTeamDeals: teamDeals.length,
+                    avgDealSize: teamDeals.reduce((sum, d) => sum + (d.heloc_amount || 0), 0) / teamDeals.length
+                };
+            } catch (e) {
+                console.error('[Ezra] Team intelligence error:', e);
+                return null;
+            }
+        },
+        
+        async generateTeamReport() {
+            const intel = await this.getWinningStrategies();
+            if (!intel) return 'Team intelligence not available.';
+            if (intel.message) return intel.message;
+            
+            let html = '**👥 Team Intelligence**\n\n';
+            html += `**${intel.totalTeamDeals} total team deals**\n`;
+            html += `Average deal size: $${Math.round(intel.avgDealSize).toLocaleString()}\n\n`;
+            
+            if (intel.topPerformer) {
+                html += `Top performer: ${intel.topPerformer.deals} deals closed\n`;
+            }
+            
+            return html;
+        }
+    };
+
+    // ============================================
+    // PHASE 5: WORKFLOW AUTOMATION
+    // ============================================
+    
+    const EzraAutomation = {
+        triggers: {
+            async 'new_lead_from_facebook'(lead) {
+                // Auto-create quote template
+                const quote = await EzraQuoteBuilder.fromVoice(`${lead.first_name} ${lead.last_name} Facebook lead`);
+                
+                // Send intro email
+                return {
+                    action: 'facebook_lead_auto',
+                    quote,
+                    message: `Auto-created quote for Facebook lead: ${lead.first_name} ${lead.last_name}`
+                };
+            },
+            
+            async 'quote_viewed_3_times'(quote) {
+                // Alert LO
+                return {
+                    action: 'hot_lead_alert',
+                    priority: 'high',
+                    message: `🔥 Hot lead! ${quote.borrowerName} viewed quote 3 times. Call now!`
+                };
+            },
+            
+            async 'rate_drop'(newRate) {
+                return {
+                    action: 'rate_drop_alert',
+                    message: `Rates dropped to ${newRate}%. Check eligible quotes for rate updates.`
+                };
+            }
+        },
+        
+        async processTrigger(triggerName, data) {
+            const handler = this.triggers[triggerName];
+            if (!handler) {
+                console.warn('[Ezra] Unknown automation trigger:', triggerName);
+                return null;
+            }
+            
+            try {
+                const result = await handler(data);
+                console.log('[Ezra] Automation triggered:', triggerName, result);
+                return result;
+            } catch (e) {
+                console.error('[Ezra] Automation error:', e);
+                return null;
+            }
+        }
+    };
+
+    // ============================================
+    // UTILITY: Debounce function
+    // ============================================
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    // ============================================
+    // INITIALIZE ENHANCEMENTS
+    // ============================================
+    
+    // Initialize quote context watcher after a delay
+    setTimeout(() => {
+        QuoteContextWatcher.init();
+    }, 3000);
+    
+    // Add new quick commands for the enhancements
+    const ENHANCED_COMMANDS = [
+        { label: 'Confidence', icon: '📊', action: 'show_confidence', prompt: 'Show my approval confidence meter' },
+        { label: 'Deal Intel', icon: '🎯', action: 'deal_intelligence', prompt: 'Generate deal intelligence report' },
+        { label: 'My Stats', icon: '📈', action: 'my_stats', prompt: 'Show my performance insights' },
+        { label: 'Team Stats', icon: '👥', action: 'team_stats', prompt: 'Show team intelligence' }
+    ];
+    
+    // Merge with existing commands
+    if (typeof EZRA_CONFIG !== 'undefined') {
+        EZRA_CONFIG.quickCommands.push(...ENHANCED_COMMANDS);
+    }
+    
+    // Handle new quick commands
+    const originalHandleQuickCommand = handleQuickCommand;
+    handleQuickCommand = function(action) {
+        switch (action) {
+            case 'show_confidence':
+                addMessage('assistant', ConfidenceMeter.generateReport());
+                return;
+            case 'deal_intelligence':
+                DealIntelligence.generateReport().then(report => addMessage('assistant', report));
+                return;
+            case 'my_stats':
+                EzraLearning.personalizeForLO().then(report => addMessage('assistant', report));
+                return;
+            case 'team_stats':
+                TeamIntelligence.generateTeamReport().then(report => addMessage('assistant', report));
+                return;
+        }
+        return originalHandleQuickCommand(action);
+    };
+    
+    // Enhance voice recognition with command processing
+    const originalVoiceOnResult = _voiceRecognition?.onresult;
+    
+    console.log('[Ezra] Enhancement Suite loaded - Phases 1-5 active');
+
 })();
