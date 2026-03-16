@@ -1446,19 +1446,23 @@ RESPONSE RULES
                 </div>
 
                 <!-- Quick Commands -->
-                <div class="ezra-quick-commands">
-                    ${EzraState._upsellMode ? UPSELL_QUICK_COMMANDS.map(cmd => `
-                        <button class="ezra-quick-btn ezra-upsell-cmd" data-action="upsell" title="${cmd.desc}" style="opacity:0.7;position:relative;">
-                            <span>${cmd.icon}</span>
-                            <span>${cmd.label}</span>
-                            <span style="position:absolute;top:-4px;right:-4px;font-size:7px;background:rgba(167,139,250,0.9);color:white;padding:1px 4px;border-radius:6px;white-space:nowrap;">${cmd.tier}+</span>
-                        </button>
-                    `).join('') : EZRA_CONFIG.quickCommands.map(cmd => `
-                        <button class="ezra-quick-btn" data-action="${cmd.action}" title="${cmd.label}">
-                            <span>${cmd.icon}</span>
-                            <span>${cmd.label}</span>
-                        </button>
-                    `).join('')}
+                <div class="ezra-quick-commands-wrapper">
+                    <button class="ezra-scroll-btn ezra-scroll-left" onclick="scrollQuickCommands('left')" title="Scroll left">‹</button>
+                    <div class="ezra-quick-commands" id="ezra-quick-commands">
+                        ${EzraState._upsellMode ? UPSELL_QUICK_COMMANDS.map(cmd => `
+                            <button class="ezra-quick-btn ezra-upsell-cmd" data-action="upsell" title="${cmd.desc}" style="opacity:0.7;position:relative;">
+                                <span>${cmd.icon}</span>
+                                <span>${cmd.label}</span>
+                                <span style="position:absolute;top:-4px;right:-4px;font-size:7px;background:rgba(167,139,250,0.9);color:white;padding:1px 4px;border-radius:6px;white-space:nowrap;">${cmd.tier}+</span>
+                            </button>
+                        `).join('') : EZRA_CONFIG.quickCommands.map(cmd => `
+                            <button class="ezra-quick-btn" data-action="${cmd.action}" title="${cmd.label}">
+                                <span>${cmd.icon}</span>
+                                <span>${cmd.label}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                    <button class="ezra-scroll-btn ezra-scroll-right" onclick="scrollQuickCommands('right')" title="Scroll right">›</button>
                 </div>
 
                 <!-- Messages Area -->
@@ -2047,18 +2051,73 @@ RESPONSE RULES
                 border-color: var(--ezra-gold);
             }
 
-            /* ===== QUICK COMMANDS - ENHANCED ===== */
+            /* ===== QUICK COMMANDS - ENHANCED WITH SLIDER ===== */
+            .ezra-quick-commands-wrapper {
+                position: relative;
+                display: flex;
+                align-items: center;
+                border-bottom: 1px solid rgba(255,255,255,0.04);
+                background: linear-gradient(180deg, rgba(15,23,42,0.5) 0%, rgba(15,23,42,0) 100%);
+            }
+
             .ezra-quick-commands {
                 display: flex;
                 gap: 8px;
-                padding: 12px 16px;
+                padding: 12px 32px;
                 overflow-x: auto;
                 scrollbar-width: none;
-                border-bottom: 1px solid rgba(255,255,255,0.04);
+                scroll-behavior: smooth;
+                -webkit-overflow-scrolling: touch;
+                flex: 1;
+                mask-image: linear-gradient(90deg, transparent 0%, black 20px, black calc(100% - 20px), transparent 100%);
+                -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 20px, black calc(100% - 20px), transparent 100%);
             }
 
             .ezra-quick-commands::-webkit-scrollbar {
                 display: none;
+            }
+
+            .ezra-scroll-btn {
+                position: absolute;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, rgba(197,160,89,0.9) 0%, rgba(197,160,89,0.7) 100%);
+                border: none;
+                color: #0f172a;
+                font-size: 16px;
+                font-weight: 700;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10;
+                transition: all 0.2s ease;
+                box-shadow: 0 2px 8px rgba(197,160,89,0.3);
+                opacity: 0.85;
+            }
+
+            .ezra-scroll-btn:hover {
+                opacity: 1;
+                transform: scale(1.1);
+                box-shadow: 0 4px 12px rgba(197,160,89,0.5);
+            }
+
+            .ezra-scroll-btn:active {
+                transform: scale(0.95);
+            }
+
+            .ezra-scroll-left {
+                left: 4px;
+            }
+
+            .ezra-scroll-right {
+                right: 4px;
+            }
+
+            .ezra-scroll-btn.hidden {
+                opacity: 0;
+                pointer-events: none;
             }
 
             .ezra-quick-btn {
@@ -4214,6 +4273,54 @@ File name: ${fileName}`;
     // ============================================
     // QUICK COMMANDS
     // ============================================
+
+    // Scroll quick commands left/right
+    window.scrollQuickCommands = function(direction) {
+        const container = document.getElementById('ezra-quick-commands');
+        if (!container) return;
+        
+        const scrollAmount = 200;
+        const currentScroll = container.scrollLeft;
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        
+        if (direction === 'left') {
+            container.scrollTo({ left: Math.max(0, currentScroll - scrollAmount), behavior: 'smooth' });
+        } else {
+            container.scrollTo({ left: Math.min(maxScroll, currentScroll + scrollAmount), behavior: 'smooth' });
+        }
+        
+        // Update button visibility after scroll
+        setTimeout(updateScrollButtons, 300);
+    };
+
+    // Update scroll button visibility based on scroll position
+    function updateScrollButtons() {
+        const container = document.getElementById('ezra-quick-commands');
+        if (!container) return;
+        
+        const leftBtn = document.querySelector('.ezra-scroll-left');
+        const rightBtn = document.querySelector('.ezra-scroll-right');
+        
+        if (leftBtn) {
+            leftBtn.classList.toggle('hidden', container.scrollLeft <= 5);
+        }
+        if (rightBtn) {
+            const maxScroll = container.scrollWidth - container.clientWidth;
+            rightBtn.classList.toggle('hidden', container.scrollLeft >= maxScroll - 5);
+        }
+    }
+
+    // Initialize scroll button visibility
+    setTimeout(updateScrollButtons, 100);
+
+    // Update on scroll
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('ezra-quick-commands');
+        if (container) {
+            container.addEventListener('scroll', updateScrollButtons, { passive: true });
+        }
+    });
+
     function handleQuickCommand(action) {
         if (action === 'deal_radar') {
             showDealRadar();

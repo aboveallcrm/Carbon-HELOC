@@ -1880,7 +1880,7 @@
 
         .eq-panel {
             position: fixed;
-            width: 380px;
+            width: 560px;
             max-width: calc(100vw - 32px);
             height: 500px;
             max-height: calc(100vh - 120px);
@@ -2264,6 +2264,615 @@
             margin-left: auto;
             color: #64748b;
             font-style: italic;
+        }
+
+        /* ===== Ezra Side Navigation ===== */
+        .eq-main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .eq-sidebar {
+            width: 180px;
+            background: rgba(0, 0, 0, 0.3);
+            border-right: 1px solid rgba(197, 160, 89, 0.15);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease;
+        }
+
+        .eq-sidebar.collapsed {
+            width: 50px;
+        }
+
+        .eq-sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.15);
+        }
+
+        .eq-sidebar-title {
+            font-family: var(--font-heading);
+            font-size: 10px;
+            font-weight: 700;
+            color: #c5a059;
+            letter-spacing: 0.5px;
+        }
+
+        .eq-sidebar.collapsed .eq-sidebar-title {
+            display: none;
+        }
+
+        .eq-sidebar-toggle {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .eq-sidebar-toggle:hover {
+            background: rgba(197, 160, 89, 0.15);
+            color: #c5a059;
+        }
+
+        .eq-sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 6px;
+        }
+
+        .eq-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 4px;
+            background: none;
+            border: none;
+            border-radius: 8px;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 11px;
+            text-align: left;
+        }
+
+        .eq-nav-item:hover {
+            background: rgba(197, 160, 89, 0.1);
+            color: #c5a059;
+        }
+
+        .eq-nav-item.active {
+            background: rgba(197, 160, 89, 0.2);
+            color: #c5a059;
+            border-left: 3px solid #c5a059;
+        }
+
+        .eq-sidebar.collapsed .eq-nav-item {
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .eq-sidebar.collapsed .eq-nav-label {
+            display: none;
+        }
+
+        .eq-nav-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .eq-nav-label {
+            font-weight: 500;
+        }
+
+        .eq-sidebar-footer {
+            padding: 8px 6px;
+            border-top: 1px solid rgba(197, 160, 89, 0.15);
+        }
+
+        .eq-tool-content {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .eq-tool-panel {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .eq-tool-panel.active {
+            display: flex;
+        }
+
+        .eq-tool-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.15);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .eq-tool-header h3 {
+            margin: 0 0 4px 0;
+            font-family: var(--font-heading);
+            font-size: 14px;
+            color: #c5a059;
+        }
+
+        .eq-tool-header p {
+            margin: 0;
+            font-size: 10px;
+            color: #64748b;
+        }
+
+        .eq-tool-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .eq-form-group {
+            margin-bottom: 12px;
+        }
+
+        .eq-form-group label {
+            display: block;
+            font-size: 10px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .eq-form-group input,
+        .eq-form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-size: 11px;
+            font-family: var(--font-body);
+        }
+
+        .eq-form-group input:focus,
+        .eq-form-group select:focus {
+            outline: none;
+            border-color: rgba(197, 160, 89, 0.5);
+        }
+
+        .eq-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .eq-tool-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(197, 160, 89, 0.15);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            border-radius: 8px;
+            color: #c5a059;
+            font-family: var(--font-heading);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .eq-tool-btn:hover {
+            background: rgba(197, 160, 89, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .eq-tool-btn.primary {
+            background: linear-gradient(135deg, #c5a059, #a68543);
+            color: #0f172a;
+            border: none;
+        }
+
+        .eq-tool-btn.primary:hover {
+            box-shadow: 0 4px 12px rgba(197, 160, 89, 0.3);
+        }
+
+        .eq-strategy-cards {
+            display: grid;
+            gap: 10px;
+        }
+
+        .eq-strategy-card {
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(197, 160, 89, 0.15);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .eq-strategy-card:hover {
+            background: rgba(197, 160, 89, 0.1);
+            border-color: rgba(197, 160, 89, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .eq-strategy-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .eq-strategy-card h4 {
+            margin: 0 0 4px 0;
+            font-family: var(--font-heading);
+            font-size: 12px;
+            color: #e2e8f0;
+        }
+
+        .eq-strategy-card p {
+            margin: 0 0 8px 0;
+            font-size: 10px;
+            color: #64748b;
+        }
+
+        .eq-strategy-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            background: rgba(197, 160, 89, 0.15);
+            border-radius: 10px;
+            font-size: 9px;
+            color: #c5a059;
+        }
+
+        .eq-strategy-tag.recommended {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+        }
+
+        .eq-doc-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .eq-doc-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-size: 11px;
+        }
+
+        .eq-doc-check {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .eq-doc-name {
+            flex: 1;
+            color: #e2e8f0;
+        }
+
+        .eq-doc-status {
+            font-size: 9px;
+            color: #64748b;
+        }
+
+        .eq-notes-area {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 11px;
+            font-family: var(--font-body);
+            resize: vertical;
+        }
+
+        .eq-notes-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .eq-setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(197, 160, 89, 0.1);
+        }
+
+        .eq-setting-item label {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* ===== Slider Styles ===== */
+        .eq-slider-group {
+            margin-bottom: 16px;
+        }
+
+        .eq-slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .eq-slider-header label {
+            font-size: 10px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .eq-slider-value {
+            font-size: 12px;
+            color: #c5a059;
+            font-weight: 600;
+            font-family: var(--font-heading);
+        }
+
+        .eq-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(100, 116, 139, 0.3);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .eq-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c5a059, #d4af37);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(197, 160, 89, 0.4);
+            transition: all 0.2s;
+        }
+
+        .eq-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 3px 10px rgba(197, 160, 89, 0.5);
+        }
+
+        .eq-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c5a059, #d4af37);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 6px rgba(197, 160, 89, 0.4);
+        }
+
+        .eq-slider-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .eq-calc-result-large {
+            background: linear-gradient(135deg, rgba(197, 160, 89, 0.15), rgba(197, 160, 89, 0.05));
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .eq-result-label {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .eq-result-amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #c5a059;
+            font-family: var(--font-heading);
+        }
+
+        .eq-result-details {
+            font-size: 10px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .eq-calc-panel {
+            display: none;
+        }
+
+        .eq-calc-panel.active {
+            display: block;
+        }
+
+        .eq-calc-tab {
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            border-radius: 6px;
+            color: #94a3b8;
+            font-size: 10px;
+            font-family: var(--font-heading);
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 6px;
+        }
+
+        .eq-calc-tab.active {
+            background: rgba(197, 160, 89, 0.2);
+            color: #c5a059;
+            border-color: rgba(197, 160, 89, 0.4);
+        }
+
+        .eq-calc-tab:hover {
+            background: rgba(197, 160, 89, 0.1);
+        }
+
+        /* DTI Gauge */
+        .eq-dti-gauge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+        }
+
+        .eq-dti-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #10b981 0deg 120deg, #f59e0b 120deg 200deg, #ef4444 200deg 360deg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .eq-dti-circle::before {
+            content: '';
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: #1e293b;
+        }
+
+        .eq-dti-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #c5a059;
+            position: relative;
+            z-index: 1;
+        }
+
+        .eq-dti-label {
+            font-size: 9px;
+            color: #64748b;
+            position: relative;
+            z-index: 1;
+        }
+
+        .eq-dti-status {
+            margin-top: 12px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .eq-dti-status.warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+        .eq-dti-status.danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        /* Savings Result */
+        .eq-savings-result {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .eq-savings-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .eq-savings-label {
+            font-size: 10px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .eq-savings-amount {
+            font-size: 20px;
+            font-weight: 700;
+            color: #22c55e;
+            font-family: var(--font-heading);
+        }
+
+        .eq-savings-amount.large {
+            font-size: 24px;
+        }
+
+        .eq-toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 22px;
+        }
+
+        .eq-toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .eq-toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: rgba(100, 116, 139, 0.3);
+            border-radius: 22px;
+            transition: 0.3s;
+        }
+
+        .eq-toggle-slider:before {
+            content: "";
+            position: absolute;
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background: #e2e8f0;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .eq-toggle-switch input:checked + .eq-toggle-slider {
+            background: rgba(197, 160, 89, 0.5);
+        }
+
+        .eq-toggle-switch input:checked + .eq-toggle-slider:before {
+            transform: translateX(18px);
+            background: #c5a059;
         }
 
         /* ===== Ezra Tour ===== */
@@ -7348,7 +7957,7 @@
                                 <li><strong>Interest only on what you use:</strong> If you only use $50k of a $100k line, you only pay interest on $50k</li>
                                 <li><strong>No annual fee:</strong> Pay nothing if you don't use it</li>
                             </ul>
-                            <p style="margin-top: 16px; padding: 12px; background: rgba(197, 160, 89, 0.1); border-left: 3px solid var(--accent-color); border-radius: 0 6px 6px 0;"><strong>Payment Guarantee:</strong> After your draw period ends, your monthly payment will automatically adjust to your remaining balance at that time. But here's the important part: <strong>your payment will NEVER exceed the monthly payment you select in this quote.</strong></p>
+                            <p style="margin-top: 16px; padding: 12px; background: rgba(197, 160, 89, 0.1); border-left: 3px solid var(--accent-color); border-radius: 0 6px 6px 0;"><strong>Payment Guarantee:</strong> After your draw period ends, your monthly payment will automatically adjust to your remaining balance at that time. But here's the important part: <strong>your payment will NEVER exceed the monthly payment you select in this quote.</strong><span id="faq-var-disclaimer" style="display:none; color: #f59e0b; font-size: 13px;"><br><strong>Note:</strong> This payment guarantee applies to fixed-rate options only. Variable rate payments may adjust with market conditions.</span></p>
                             <p style="color: var(--text-muted); font-size: 13px; margin-top: 8px;"><em>Example: You lock in a $1,500/mo payment. During year 5, you've paid down to $100,000 balance. Your new amortized payment automatically recalculates. You'll never see a payment higher than $1,500/mo. This gives you certainty.</em></p>
                         </div>
                     </div>
@@ -7483,6 +8092,7 @@
                             </ul>
                             <p><strong>&#128640; Secure Your Rate Today</strong></p>
                             <p>Rates can change daily. The sooner you apply, the sooner you lock in your quoted rate. Don't let rising rates cost you thousands over the life of your loan. <strong>Apply now to secure your offer!</strong></p>
+                            <p style="margin-top: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border-left: 3px solid var(--green); border-radius: 0 6px 6px 0;"><strong>Refinance Anytime:</strong> If rates drop in the future, you can always refinance with <span id="faq-lo-name">your loan officer</span> for a lower rate — no need to shop around. No prepayment penalty means you're never locked in.</p>
                         </div>
                     </div>
                     
@@ -7668,7 +8278,18 @@
                 whatIfTimeSaved: 'Time Saved',
                 whatIfInterestSaved: 'Interest Saved',
                 testimonialsTitle: 'What Our Clients Say',
-                testimonialsSubtitle: 'Real stories from homeowners like you'
+                testimonialsSubtitle: 'Real stories from homeowners like you',
+                // Ezra Sidebar
+                quickTools: 'Quick Tools',
+                chat: 'Chat',
+                quickQuote: 'Quick Quote',
+                buildQuote: 'Build Quote',
+                structureDeal: 'Structure Deal',
+                compare: 'Compare',
+                calculator: 'Calculator',
+                documents: 'Documents',
+                notes: 'Notes',
+                settings: 'Settings'
             },
             es: {
                 subtitle: 'Linea de Credito con Garantia Hipotecaria Personalizada',
@@ -7740,7 +8361,18 @@
                 whatIfTimeSaved: 'Tiempo Ahorrado',
                 whatIfInterestSaved: 'Interes Ahorrado',
                 testimonialsTitle: 'Lo Que Dicen Nuestros Clientes',
-                testimonialsSubtitle: 'Historias reales de propietarios como usted'
+                testimonialsSubtitle: 'Historias reales de propietarios como usted',
+                // Ezra Sidebar (Spanish)
+                quickTools: 'Herramientas Rapidas',
+                chat: 'Chat',
+                quickQuote: 'Cotizacion Rapida',
+                buildQuote: 'Construir Cotizacion',
+                structureDeal: 'Estructurar Trato',
+                compare: 'Comparar',
+                calculator: 'Calculadora',
+                documents: 'Documentos',
+                notes: 'Notas',
+                settings: 'Ajustes'
             }
         };
         
@@ -8455,6 +9087,19 @@
                     });
                 }
                 document.getElementById('q-tiers').innerHTML = tiersHtml;
+
+                // Store quoteData on window for cross-section access
+                window._quoteData = data;
+
+                // Show variable rate disclaimer in FAQ if applicable
+                var varDisclaimer = document.getElementById('faq-var-disclaimer');
+                if (varDisclaimer && (hasVarRates || recType === 'variable')) {
+                    varDisclaimer.style.display = 'inline';
+                }
+
+                // Populate LO name in FAQ refinance note
+                var faqLoName = document.getElementById('faq-lo-name');
+                if (faqLoName && lo.name) faqLoName.textContent = lo.name;
 
                 // CTA handled by floating action bar — wire buttons with LO data
                 window._loInfo = lo;
@@ -9328,7 +9973,7 @@
 
                 currentHelocRate = parseFloat(data.rate) || 7.0;
                 var maxDraw = parseInt(String(data.cashBack || data.totalLoan || '500000').replace(/[$,]/g, '')) || 500000;
-                slider.max = Math.min(maxDraw, 500000);
+                slider.max = Math.min(maxDraw, 750000);
 
                 slider.addEventListener('input', function() {
                     currentDrawAmount = parseInt(this.value);
@@ -9918,14 +10563,18 @@
             };
 
             // ===== MULTI-LANGUAGE SUPPORT =====
-            // detectBrowserLanguage now delegates to unified setLanguage system
+            // Default is English - only switch to Spanish if explicitly set
             function detectBrowserLanguage() {
                 var lang = navigator.language || navigator.userLanguage;
                 var primaryLang = lang.split('-')[0];
-                window._ezraLanguage = primaryLang;
                 
-                // If browser is Spanish and no saved preference, auto-switch
-                if (primaryLang === 'es' && !localStorage.getItem('preferredLanguage')) {
+                // Always default to English first
+                window._ezraLanguage = 'en';
+                
+                // Only switch to Spanish if user has explicitly set it before
+                var savedPreference = localStorage.getItem('preferredLanguage');
+                if (savedPreference === 'es') {
+                    window._ezraLanguage = 'es';
                     if (typeof window.setLanguage === 'function') {
                         window.setLanguage('es');
                     }
@@ -10331,11 +10980,227 @@
                     '<div class="eq-panel pos-' + savedPos + '" id="eq-panel">' +
                     '<div class="eq-header"><div class="eq-header-left"><div class="eq-avatar">&#10022;</div><div><div class="eq-title">EZRA</div><div class="eq-subtitle"><span class="eq-activity-pulse" id="eq-live-dot" style="display:none;"></span>Your Quote Assistant</div></div></div><button class="eq-tour-btn" onclick="openEzraTour()">&#127919; Take a Tour</button><button class="eq-close" onclick="eqToggle()">&times;</button></div>' +
                     '<div class="eq-tour-overlay hidden" id="eq-tour-overlay"></div>' +
+                    '<div class="eq-main-content">' +
+                    '<!-- Side Navigation Bar -->' +
+                    '<div class="eq-sidebar" id="eq-sidebar">' +
+                    '<div class="eq-sidebar-header">' +
+                    '<span class="eq-sidebar-title" data-i18n="quickTools">Quick Tools</span>' +
+                    '<button class="eq-sidebar-toggle" onclick="toggleSidebar()" title="Collapse/Expand">&#9776;</button>' +
+                    '</div>' +
+                    '<div class="eq-sidebar-nav">' +
+                    '<button class="eq-nav-item active" onclick="switchTool(\'chat\', this)" data-tool="chat">' +
+                    '<span class="eq-nav-icon">&#128172;</span>' +
+                    '<span class="eq-nav-label" data-i18n="chat">Chat</span>' +
+                    '</button>' +
+                    '<button class="eq-nav-item" onclick="switchTool(\'quick-quote\', this)" data-tool="quick-quote">' +
+                    '<span class="eq-nav-icon">&#9889;</span>' +
+                    '<span class="eq-nav-label" data-i18n="quickQuote">Quick Quote</span>' +
+                    '</button>' +
+                    '<button class="eq-nav-item" onclick="switchTool(\'build-quote\', this)" data-tool="build-quote">' +
+                    '<span class="eq-nav-icon">&#128736;</span>' +
+                    '<span class="eq-nav-label" data-i18n="buildQuote">Build Quote</span>' +
+                    '</button>' +
+                    '<button class="eq-nav-item" onclick="switchTool(\'structure-deal\', this)" data-tool="structure-deal">' +
+                    '<span class="eq-nav-icon">&#128200;</span>' +
+                    '<span class="eq-nav-label" data-i18n="structureDeal">Structure Deal</span>' +
+                    '</button>' +
+                    '<button class="eq-nav-item" onclick="switchTool(\'compare\', this)" data-tool="compare">' +
+                    '<span class="eq-nav-icon">&#128260;</span>' +
+                    '<span class="eq-nav-label" data-i18n="compare">Compare</span>' +
+                    '</button>' +
+                    '<button class="eq-nav-item" onclick="switchTool(\'calculator\', this)" data-tool="calculator">' +
+                    '<span class="eq-nav-icon">&#128290;</span>' +
+                    '<span class="eq-nav-label" data-i18n="calculator">Calculator</span>' +
+                    '</button>' +
+                    '<button class="eq-nav-item" onclick="switchTool(\'documents\', this)" data-tool="documents">' +
+                    '<span class="eq-nav-icon">&#128196;</span>' +
+                    '<span class="eq-nav-label" data-i18n="documents">Documents</span>' +
+                    '</button>' +
+                    '<button class="eq-nav-item" onclick="switchTool(\'notes\', this)" data-tool="notes">' +
+                    '<span class="eq-nav-icon">&#9998;</span>' +
+                    '<span class="eq-nav-label" data-i18n="notes">Notes</span>' +
+                    '</button>' +
+                    '</div>' +
+                    '<div class="eq-sidebar-footer">' +
+                    '<button class="eq-nav-item" onclick="switchTool(\'settings\', this)" data-tool="settings">' +
+                    '<span class="eq-nav-icon">&#9881;</span>' +
+                    '<span class="eq-nav-label" data-i18n="settings">Settings</span>' +
+                    '</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- Tool Content Areas -->' +
+                    '<div class="eq-tool-content" id="eq-tool-content">' +
+                    '<!-- Chat Tool (Default) -->' +
+                    '<div class="eq-tool-panel active" id="tool-chat">' +
                     '<div class="eq-voice-note" id="eq-voice-note"><div class="eq-vn-wrap"><button class="eq-vn-play" id="eq-vn-play" onclick="eqPlayVoice()">&#9654;</button><div class="eq-vn-info"><div class="eq-vn-label">&#127908; Voice message from <span id="eq-vn-lo-name">your advisor</span></div><div class="eq-vn-bar"><div class="eq-vn-progress" id="eq-vn-progress"></div></div></div><div class="eq-vn-time" id="eq-vn-time">0:00</div></div></div>' +
                     '<div class="eq-chips" id="eq-chips"></div>' +
                     '<div class="eq-messages" id="eq-messages"></div>' +
                     '<div class="eq-typing" id="eq-typing"><span class="eq-dot"></span><span class="eq-dot"></span><span class="eq-dot"></span></div>' +
                     '<div class="eq-input-area"><button class="eq-voice-btn" id="eq-voice-btn" onclick="eqStartVoiceInput()" title="Voice input">&#127908;</button><textarea id="eq-input" class="eq-input" placeholder="Ask about your quote..." rows="1"></textarea><button class="eq-send" id="eq-send" onclick="eqSend()" disabled>&#9654;</button></div>' +
+                    '</div>' +
+                    '<!-- Quick Quote Tool -->' +
+                    '<div class="eq-tool-panel" id="tool-quick-quote">' +
+                    '<div class="eq-tool-header"><h3>&#9889; Quick Quote</h3><p>Generate a fast quote with sliders</p></div>' +
+                    '<div class="eq-tool-body">' +
+                    '<div class="eq-slider-group">' +
+                    '<div class="eq-slider-header"><label>Cash Amount Needed</label><span class="eq-slider-value" id="qq-cash-display">$50,000</span></div>' +
+                    '<input type="range" class="eq-slider" id="qq-cash-slider" min="10000" max="200000" step="5000" value="50000" oninput="updateQuickCash(this.value)">' +
+                    '<div class="eq-slider-labels"><span>$10k</span><span>$200k</span></div>' +
+                    '</div>' +
+                    '<div class="eq-slider-group">' +
+                    '<div class="eq-slider-header"><label>Home Value</label><span class="eq-slider-value" id="qq-home-display">$500,000</span></div>' +
+                    '<input type="range" class="eq-slider" id="qq-home-slider" min="200000" max="2000000" step="10000" value="500000" oninput="updateQuickHome(this.value)">' +
+                    '<div class="eq-slider-labels"><span>$200k</span><span>$2M</span></div>' +
+                    '</div>' +
+                    '<div class="eq-slider-group">' +
+                    '<div class="eq-slider-header"><label>Current Mortgage</label><span class="eq-slider-value" id="qq-mortgage-display">$300,000</span></div>' +
+                    '<input type="range" class="eq-slider" id="qq-mortgage-slider" min="0" max="1500000" step="10000" value="300000" oninput="updateQuickMortgage(this.value)">' +
+                    '<div class="eq-slider-labels"><span>$0</span><span>$1.5M</span></div>' +
+                    '</div>' +
+                    '<div class="eq-form-group"><label>Credit Score</label><select id="qq-credit" onchange="updateQuickCredit(this.value)"><option value="720+">720+ (Excellent)</option><option value="680-719">680-719 (Good)</option><option value="640-679">640-679 (Fair)</option><option value="<640">Below 640</option></select></div>' +
+                    '<button class="eq-tool-btn primary" onclick="generateQuickQuote()">Generate Quote</button>' +
+                    '<div class="eq-quick-results" id="qq-results"></div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- Build Quote Tool -->' +
+                    '<div class="eq-tool-panel" id="tool-build-quote">' +
+                    '<div class="eq-tool-header"><h3>&#128736; Build Quote</h3><p>Customize every detail of the quote</p></div>' +
+                    '<div class="eq-tool-body">' +
+                    '<div class="eq-form-row"><div class="eq-form-group"><label>Origination Fee</label><select id="bq-orig"><option value="1.5">1.5% (Lowest Rate)</option><option value="2.99" selected>2.99% (Most Popular)</option><option value="4.99">4.99% (Lowest Payment)</option></select></div><div class="eq-form-group"><label>Term</label><select id="bq-term"><option value="10">10 Years</option><option value="15">15 Years</option><option value="20" selected>20 Years</option><option value="30">30 Years</option></select></div></div>' +
+                    '<div class="eq-form-group"><label>Rate Type</label><div class="eq-toggle-group"><button class="eq-toggle active" onclick="setRateType(this, \'fixed\')">Fixed</button><button class="eq-toggle" onclick="setRateType(this, \'variable\')">Variable</button></div></div>' +
+                    '<div class="eq-form-group"><label>Add-ons</label><div class="eq-checkbox-group"><label><input type="checkbox" id="bq-io"> Interest-Only Option</label><label><input type="checkbox" id="bq-rate-lock" checked> Rate Lock (45 days)</label></div></div>' +
+                    '<button class="eq-tool-btn primary" onclick="buildCustomQuote()">Build Quote</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- Structure Deal Tool -->' +
+                    '<div class="eq-tool-panel" id="tool-structure-deal">' +
+                    '<div class="eq-tool-header"><h3>&#128200; Structure Deal</h3><p>Optimize the loan structure</p></div>' +
+                    '<div class="eq-tool-body">' +
+                    '<div class="eq-strategy-cards">' +
+                    '<div class="eq-strategy-card" onclick="applyStrategy(\'lowest-rate\')">' +
+                    '<div class="eq-strategy-icon">&#127942;</div><h4>Lowest Rate</h4><p>Maximize upfront points for lowest APR</p><span class="eq-strategy-tag">Best for long-term</span>' +
+                    '</div>' +
+                    '<div class="eq-strategy-card" onclick="applyStrategy(\'lowest-payment\')">' +
+                    '<div class="eq-strategy-icon">&#128176;</div><h4>Lowest Payment</h4><p>Minimize monthly payment</p><span class="eq-strategy-tag">Best for cash flow</span>' +
+                    '</div>' +
+                    '<div class="eq-strategy-card" onclick="applyStrategy(\'balanced\')">' +
+                    '<div class="eq-strategy-icon">&#9878;</div><h4>Balanced</h4><p>Sweet spot between rate and cost</p><span class="eq-strategy-tag recommended">Most Popular</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="eq-deal-summary" id="deal-summary"></div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- Compare Tool -->' +
+                    '<div class="eq-tool-panel" id="tool-compare">' +
+                    '<div class="eq-tool-header"><h3>&#128260; Compare Options</h3><p>Side-by-side comparison</p></div>' +
+                    '<div class="eq-tool-body"><div class="eq-compare-table" id="compare-table"><p style="color:#94a3b8;text-align:center;padding:40px;">Select options to compare</p></div></div>' +
+                    '</div>' +
+                    '<!-- Calculator Tool -->' +
+                    '<div class="eq-tool-panel" id="tool-calculator">' +
+                    '<div class="eq-tool-header"><h3>&#128290; Calculator</h3><p>Run the numbers with interactive sliders</p></div>' +
+                    '<div class="eq-tool-body">' +
+                    '<div class="eq-calc-tabs"><button class="eq-calc-tab active" onclick="switchCalc(\'payment\', this)">Payment</button><button class="eq-calc-tab" onclick="switchCalc(\'dti\', this)">DTI</button><button class="eq-calc-tab" onclick="switchCalc(\'savings\', this)">Savings</button></div>' +
+                    '<!-- Payment Calculator with Sliders -->' +
+                    '<div class="eq-calc-panel active" id="calc-panel-payment">' +
+                    '<div class="eq-slider-group">' +
+                    '<div class="eq-slider-header"><label>Loan Amount</label><span class="eq-slider-value" id="slider-loan-display">$150,000</span></div>' +
+                    '<input type="range" class="eq-slider" id="slider-loan" min="50000" max="500000" step="5000" value="150000" oninput="updateLoanSlider(this.value)">' +
+                    '<div class="eq-slider-labels"><span>$50k</span><span>$500k</span></div>' +
+                    '</div>' +
+                    '<div class="eq-slider-group">' +
+                    '<div class="eq-slider-header"><label>Interest Rate</label><span class="eq-slider-value" id="slider-rate-display">7.5%</span></div>' +
+                    '<input type="range" class="eq-slider" id="slider-rate" min="5" max="12" step="0.125" value="7.5" oninput="updateRateSlider(this.value)">' +
+                    '<div class="eq-slider-labels"><span>5%</span><span>12%</span></div>' +
+                    '</div>' +
+                    '<div class="eq-slider-group">' +
+                    '<div class="eq-slider-header"><label>Term (years)</label><span class="eq-slider-value" id="slider-term-display">20 years</span></div>' +
+                    '<input type="range" class="eq-slider" id="slider-term" min="10" max="30" step="5" value="20" oninput="updateTermSlider(this.value)">' +
+                    '<div class="eq-slider-labels"><span>10yr</span><span>30yr</span></div>' +
+                    '</div>' +
+                    '<div class="eq-calc-result-large" id="calc-payment-result">' +
+                    '<div class="eq-result-label">Monthly Payment</div>' +
+                    '<div class="eq-result-amount" id="payment-result-amount">$1,208</div>' +
+                    '<div class="eq-result-details">Principal + Interest</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- DTI Calculator with Sliders -->' +
+                    '<div class="eq-calc-panel" id="calc-panel-dti" style="display:none;">' +
+                    '<div class="eq-slider-group">' +
+                    '<div class="eq-slider-header"><label>Monthly Income</label><span class="eq-slider-value" id="slider-income-display">$8,000</span></div>' +
+                    '<input type="range" class="eq-slider" id="slider-income" min="3000" max="20000" step="500" value="8000" oninput="updateIncomeSlider(this.value)">' +
+                    '<div class="eq-slider-labels"><span>$3k</span><span>$20k</span></div>' +
+                    '</div>' +
+                    '<div class="eq-slider-group">' +
+                    '<div class="eq-slider-header"><label>Monthly Debts</label><span class="eq-slider-value" id="slider-debts-display">$2,000</span></div>' +
+                    '<input type="range" class="eq-slider" id="slider-debts" min="0" max="8000" step="100" value="2000" oninput="updateDebtsSlider(this.value)">' +
+                    '<div class="eq-slider-labels"><span>$0</span><span>$8k</span></div>' +
+                    '</div>' +
+                    '<div class="eq-slider-group">' +
+                    '<div class="eq-slider-header"><label>New HELOC Payment</label><span class="eq-slider-value" id="slider-heloc-display">$1,200</span></div>' +
+                    '<input type="range" class="eq-slider" id="slider-heloc-payment" min="500" max="3000" step="50" value="1200" oninput="updateHelocSlider(this.value)">' +
+                    '<div class="eq-slider-labels"><span>$500</span><span>$3k</span></div>' +
+                    '</div>' +
+                    '<div class="eq-dti-gauge" id="dti-gauge">' +
+                    '<div class="eq-dti-circle">' +
+                    '<div class="eq-dti-value" id="dti-value">40%</div>' +
+                    '<div class="eq-dti-label">DTI Ratio</div>' +
+                    '</div>' +
+                    '<div class="eq-dti-status" id="dti-status">Good</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- Savings Calculator with Sliders -->' +
+                    '<div class="eq-calc-panel" id="calc-panel-savings" style="display:none;">' +
+                    '<div class="eq-slider-group">' +
+                    '<div class="eq-slider-header"><label>Current Credit Card Debt</label><span class="eq-slider-value" id="slider-cc-display">$25,000</span></div>' +
+                    '<input type="range" class="eq-slider" id="slider-cc" min="0" max="100000" step="1000" value="25000" oninput="updateCCSlider(this.value)">' +
+                    '<div class="eq-slider-labels"><span>$0</span><span>$100k</span></div>' +
+                    '</div>' +
+                    '<div class="eq-slider-group">' +
+                    '<div class="eq-slider-header"><label>Credit Card APR</label><span class="eq-slider-value" id="slider-cc-rate-display">22%</span></div>' +
+                    '<input type="range" class="eq-slider" id="slider-cc-rate" min="15" max="30" step="0.5" value="22" oninput="updateCCRateSlider(this.value)">' +
+                    '<div class="eq-slider-labels"><span>15%</span><span>30%</span></div>' +
+                    '</div>' +
+                    '<div class="eq-savings-result" id="savings-result">' +
+                    '<div class="eq-savings-item">' +
+                    '<div class="eq-savings-label">Monthly Savings</div>' +
+                    '<div class="eq-savings-amount" id="monthly-savings">$458</div>' +
+                    '</div>' +
+                    '<div class="eq-savings-item">' +
+                    '<div class="eq-savings-label">5-Year Savings</div>' +
+                    '<div class="eq-savings-amount large" id="yearly-savings">$27,480</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- Documents Tool -->' +
+                    '<div class="eq-tool-panel" id="tool-documents">' +
+                    '<div class="eq-tool-header"><h3>&#128196; Documents</h3><p>Checklist and uploads</p></div>' +
+                    '<div class="eq-tool-body">' +
+                    '<div class="eq-doc-list"><div class="eq-doc-item"><span class="eq-doc-check">&#9744;</span><span class="eq-doc-name">Photo ID</span><span class="eq-doc-status">Pending</span></div><div class="eq-doc-item"><span class="eq-doc-check">&#9744;</span><span class="eq-doc-name">Income Verification</span><span class="eq-doc-status">Pending</span></div><div class="eq-doc-item"><span class="eq-doc-check">&#9744;</span><span class="eq-doc-name">Home Insurance</span><span class="eq-doc-status">Pending</span></div><div class="eq-doc-item"><span class="eq-doc-check">&#9744;</span><span class="eq-doc-name">Mortgage Statement</span><span class="eq-doc-status">Pending</span></div></div>' +
+                    '<button class="eq-tool-btn" onclick="requestDocuments()">Request Documents</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- Notes Tool -->' +
+                    '<div class="eq-tool-panel" id="tool-notes">' +
+                    '<div class="eq-tool-header"><h3>&#9998; Notes</h3><p>Client notes and reminders</p></div>' +
+                    '<div class="eq-tool-body">' +
+                    '<textarea class="eq-notes-area" id="client-notes" placeholder="Add notes about this client..."></textarea>' +
+                    '<div class="eq-notes-actions"><button class="eq-tool-btn" onclick="saveNotes()">Save Notes</button><button class="eq-tool-btn secondary" onclick="addReminder()">Add Reminder</button></div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- Settings Tool -->' +
+                    '<div class="eq-tool-panel" id="tool-settings">' +
+                    '<div class="eq-tool-header"><h3>&#9881; Settings</h3><p>Ezra preferences</p></div>' +
+                    '<div class="eq-tool-body">' +
+                    '<div class="eq-setting-item"><label>Language</label><select id="ezra-lang" onchange="setEzraLanguage(this.value)"><option value="en">English</option><option value="es">Español</option></select></div>' +
+                    '<div class="eq-setting-item"><label>Voice Input</label><div class="eq-toggle-switch"><input type="checkbox" id="ezra-voice" checked><span class="eq-toggle-slider"></span></div></div>' +
+                    '<div class="eq-setting-item"><label>Auto-Suggestions</label><div class="eq-toggle-switch"><input type="checkbox" id="ezra-suggestions" checked><span class="eq-toggle-slider"></span></div></div>' +
+                    '<div class="eq-setting-item"><label>Sound Effects</label><div class="eq-toggle-switch"><input type="checkbox" id="ezra-sound"><span class="eq-toggle-slider"></span></div></div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
                     '<div class="eq-position-bar" id="eq-position-bar">' +
                     '<span class="eq-pos-label">Position:</span>' +
                     '<button class="eq-pos-btn" onclick="eqMoveWidget(\'bottom-right\')" title="Bottom Right">&#8598;</button>' +
@@ -10538,6 +11403,309 @@
                     document.getElementById('eq-input').dispatchEvent(new Event('input'));
                     eqSend();
                 };
+
+                // ===== SIDEBAR & TOOL SWITCHING =====
+                window.toggleSidebar = function() {
+                    var sidebar = document.getElementById('eq-sidebar');
+                    if (sidebar) {
+                        sidebar.classList.toggle('collapsed');
+                        localStorage.setItem('ezraSidebarCollapsed', sidebar.classList.contains('collapsed'));
+                    }
+                };
+
+                window.switchTool = function(toolName, btn) {
+                    // Update nav items
+                    document.querySelectorAll('.eq-nav-item').forEach(function(item) {
+                        item.classList.remove('active');
+                    });
+                    if (btn) btn.classList.add('active');
+                    
+                    // Hide all tool panels
+                    document.querySelectorAll('.eq-tool-panel').forEach(function(panel) {
+                        panel.classList.remove('active');
+                    });
+                    
+                    // Show selected tool
+                    var targetPanel = document.getElementById('tool-' + toolName);
+                    if (targetPanel) {
+                        targetPanel.classList.add('active');
+                    }
+                    
+                    trackEvent('ezra_tool_switched', { tool: toolName, code: quoteCode });
+                };
+
+                // ===== QUICK TOOL FUNCTIONS =====
+                window.formatCurrency = function(input) {
+                    var value = input.value.replace(/[^\d]/g, '');
+                    if (value) {
+                        input.value = '$' + parseInt(value).toLocaleString();
+                    }
+                };
+
+                window.updateQuickCash = function(value) {
+                    document.getElementById('qq-cash-display').textContent = '$' + parseInt(value).toLocaleString();
+                };
+
+                window.updateQuickHome = function(value) {
+                    document.getElementById('qq-home-display').textContent = '$' + parseInt(value).toLocaleString();
+                };
+
+                window.updateQuickMortgage = function(value) {
+                    document.getElementById('qq-mortgage-display').textContent = '$' + parseInt(value).toLocaleString();
+                };
+
+                window.updateQuickCredit = function(value) {
+                    // Auto-update based on credit score
+                };
+
+                window.generateQuickQuote = function() {
+                    var cash = document.getElementById('qq-cash-slider')?.value || '50000';
+                    var credit = document.getElementById('qq-credit')?.value || '720+';
+                    
+                    // Calculate estimated rate based on credit
+                    var baseRate = 6.99;
+                    if (credit === '680-719') baseRate = 7.25;
+                    if (credit === '640-679') baseRate = 7.75;
+                    if (credit === '<640') baseRate = 8.50;
+                    
+                    // Calculate estimated payment
+                    var loanAmount = parseInt(cash);
+                    var monthlyRate = baseRate / 100 / 12;
+                    var numPayments = 20 * 12; // 20 years
+                    var payment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+                    
+                    var resultsDiv = document.getElementById('qq-results');
+                    if (resultsDiv) {
+                        resultsDiv.innerHTML = '<div style="padding: 16px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border-radius: 12px; margin-top: 16px; border: 1px solid rgba(16, 185, 129, 0.2);">' +
+                            '<div style="font-size: 14px; color: #10b981; font-weight: 700; margin-bottom: 12px; text-align: center;">✓ Quick Estimate Ready!</div>' +
+                            '<div style="font-size: 10px; color: #64748b; text-align: center; margin-bottom: 12px;">Based on ' + credit + ' credit score</div>' +
+                            '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">' +
+                            '<div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; text-align: center;">' +
+                            '<div style="font-size: 9px; color: #64748b; margin-bottom: 4px;">Est. Rate</div>' +
+                            '<div style="font-size: 18px; color: #c5a059; font-weight: 700;">' + baseRate + '%</div></div>' +
+                            '<div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; text-align: center;">' +
+                            '<div style="font-size: 9px; color: #64748b; margin-bottom: 4px;">Monthly</div>' +
+                            '<div style="font-size: 18px; color: #c5a059; font-weight: 700;">$' + payment.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '</div></div>' +
+                            '</div>' +
+                            '<div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 12px;">' +
+                            '<div style="font-size: 9px; color: #64748b;">Available Equity</div>' +
+                            '<div style="font-size: 16px; color: #22c55e; font-weight: 600;">$' + parseInt(cash).toLocaleString() + '</div>' +
+                            '</div>' +
+                            '<button class="eq-tool-btn primary" style="margin: 0;" onclick="switchTool(\'chat\', document.querySelector(\'[data-tool=chat]\'))">Discuss with Ezra</button>' +
+                            '</div>';
+                    }
+                    
+                    trackEvent('quick_quote_generated', { cash: cash, credit: credit, code: quoteCode });
+                };
+
+                window.setRateType = function(btn, type) {
+                    document.querySelectorAll('#tool-build-quote .eq-toggle').forEach(function(b) {
+                        b.classList.remove('active');
+                    });
+                    btn.classList.add('active');
+                };
+
+                window.buildCustomQuote = function() {
+                    showToast('Custom quote settings applied! Switch to Chat to discuss.', 'success');
+                    trackEvent('custom_quote_built', { code: quoteCode });
+                };
+
+                window.applyStrategy = function(strategy) {
+                    var summaryDiv = document.getElementById('deal-summary');
+                    var strategies = {
+                        'lowest-rate': { name: 'Lowest Rate Strategy', rate: '6.99%', payment: '$1,165', savings: '$12,400' },
+                        'lowest-payment': { name: 'Lowest Payment Strategy', rate: '7.75%', payment: '$1,025', savings: 'N/A' },
+                        'balanced': { name: 'Balanced Strategy', rate: '7.25%', payment: '$1,095', savings: '$8,200' }
+                    };
+                    
+                    var s = strategies[strategy];
+                    if (summaryDiv && s) {
+                        summaryDiv.innerHTML = '<div style="padding: 12px; background: rgba(197, 160, 89, 0.1); border-radius: 8px; margin-top: 12px; border: 1px solid rgba(197, 160, 89, 0.2);">' +
+                            '<div style="font-size: 12px; color: #c5a059; font-weight: 600; margin-bottom: 8px;">' + s.name + '</div>' +
+                            '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">' +
+                            '<div><div style="font-size: 10px; color: #64748b;">Rate</div><div style="font-size: 13px; color: #e2e8f0; font-weight: 600;">' + s.rate + '</div></div>' +
+                            '<div><div style="font-size: 10px; color: #64748b;">Payment</div><div style="font-size: 13px; color: #e2e8f0; font-weight: 600;">' + s.payment + '</div></div>' +
+                            '<div><div style="font-size: 10px; color: #64748b;">10yr Savings</div><div style="font-size: 13px; color: #22c55e; font-weight: 600;">' + s.savings + '</div></div>' +
+                            '</div></div>';
+                    }
+                    
+                    trackEvent('strategy_selected', { strategy: strategy, code: quoteCode });
+                };
+
+                window.switchCalc = function(calcType, btn) {
+                    // Update tab buttons
+                    document.querySelectorAll('.eq-calc-tab').forEach(function(tab) {
+                        tab.classList.remove('active');
+                    });
+                    if (btn) btn.classList.add('active');
+                    
+                    // Show/hide calc panels
+                    document.querySelectorAll('.eq-calc-panel').forEach(function(panel) {
+                        panel.classList.remove('active');
+                        panel.style.display = 'none';
+                    });
+                    
+                    var targetPanel = document.getElementById('calc-panel-' + calcType);
+                    if (targetPanel) {
+                        targetPanel.style.display = 'block';
+                        setTimeout(function() { targetPanel.classList.add('active'); }, 10);
+                    }
+                    
+                    trackEvent('calculator_switched', { calc: calcType, code: quoteCode });
+                };
+
+                // ===== SLIDER UPDATE FUNCTIONS =====
+                window.updateLoanSlider = function(value) {
+                    document.getElementById('slider-loan-display').textContent = '$' + parseInt(value).toLocaleString();
+                    calculatePaymentSlider();
+                };
+
+                window.updateRateSlider = function(value) {
+                    document.getElementById('slider-rate-display').textContent = value + '%';
+                    calculatePaymentSlider();
+                };
+
+                window.updateTermSlider = function(value) {
+                    document.getElementById('slider-term-display').textContent = value + ' years';
+                    calculatePaymentSlider();
+                };
+
+                function calculatePaymentSlider() {
+                    var loan = parseInt(document.getElementById('slider-loan')?.value) || 150000;
+                    var rate = parseFloat(document.getElementById('slider-rate')?.value) || 7.5;
+                    var term = parseInt(document.getElementById('slider-term')?.value) || 20;
+                    
+                    var monthlyRate = rate / 100 / 12;
+                    var numPayments = term * 12;
+                    var payment = loan * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+                    
+                    var resultEl = document.getElementById('payment-result-amount');
+                    if (resultEl) {
+                        resultEl.textContent = '$' + payment.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    }
+                }
+
+                window.updateIncomeSlider = function(value) {
+                    document.getElementById('slider-income-display').textContent = '$' + parseInt(value).toLocaleString();
+                    calculateDTI();
+                };
+
+                window.updateDebtsSlider = function(value) {
+                    document.getElementById('slider-debts-display').textContent = '$' + parseInt(value).toLocaleString();
+                    calculateDTI();
+                };
+
+                window.updateHelocSlider = function(value) {
+                    document.getElementById('slider-heloc-display').textContent = '$' + parseInt(value).toLocaleString();
+                    calculateDTI();
+                };
+
+                function calculateDTI() {
+                    var income = parseInt(document.getElementById('slider-income')?.value) || 8000;
+                    var debts = parseInt(document.getElementById('slider-debts')?.value) || 2000;
+                    var heloc = parseInt(document.getElementById('slider-heloc-payment')?.value) || 1200;
+                    
+                    var dti = ((debts + heloc) / income) * 100;
+                    
+                    var valueEl = document.getElementById('dti-value');
+                    var statusEl = document.getElementById('dti-status');
+                    
+                    if (valueEl) valueEl.textContent = dti.toFixed(1) + '%';
+                    
+                    if (statusEl) {
+                        statusEl.className = 'eq-dti-status';
+                        if (dti <= 36) {
+                            statusEl.textContent = 'Excellent';
+                            statusEl.style.background = 'rgba(16, 185, 129, 0.2)';
+                            statusEl.style.color = '#10b981';
+                        } else if (dti <= 43) {
+                            statusEl.textContent = 'Good';
+                            statusEl.classList.add('warning');
+                        } else if (dti <= 50) {
+                            statusEl.textContent = 'Fair';
+                            statusEl.classList.add('warning');
+                        } else {
+                            statusEl.textContent = 'High';
+                            statusEl.classList.add('danger');
+                        }
+                    }
+                }
+
+                window.updateCCSlider = function(value) {
+                    document.getElementById('slider-cc-display').textContent = '$' + parseInt(value).toLocaleString();
+                    calculateSavings();
+                };
+
+                window.updateCCRateSlider = function(value) {
+                    document.getElementById('slider-cc-rate-display').textContent = value + '%';
+                    calculateSavings();
+                };
+
+                function calculateSavings() {
+                    var ccDebt = parseInt(document.getElementById('slider-cc')?.value) || 25000;
+                    var ccRate = parseFloat(document.getElementById('slider-cc-rate')?.value) || 22;
+                    var helocRate = 7.5; // Assume average HELOC rate
+                    
+                    // Monthly interest savings
+                    var ccMonthlyInterest = ccDebt * (ccRate / 100 / 12);
+                    var helocMonthlyInterest = ccDebt * (helocRate / 100 / 12);
+                    var monthlySavings = ccMonthlyInterest - helocMonthlyInterest;
+                    var yearlySavings = monthlySavings * 12;
+                    var fiveYearSavings = yearlySavings * 5;
+                    
+                    var monthlyEl = document.getElementById('monthly-savings');
+                    var yearlyEl = document.getElementById('yearly-savings');
+                    
+                    if (monthlyEl) monthlyEl.textContent = '$' + monthlySavings.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    if (yearlyEl) yearlyEl.textContent = '$' + fiveYearSavings.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                }
+
+                window.calculatePayment = function() {
+                    var loan = parseFloat(document.getElementById('calc-loan')?.value.replace(/[^\d]/g, '')) || 0;
+                    var rate = parseFloat(document.getElementById('calc-rate')?.value) || 0;
+                    var term = parseInt(document.getElementById('calc-term')?.value) || 20;
+                    
+                    var monthlyRate = rate / 100 / 12;
+                    var numPayments = term * 12;
+                    var payment = loan * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+                    
+                    var resultDiv = document.getElementById('calc-result');
+                    if (resultDiv) {
+                        resultDiv.innerHTML = '<div style="padding: 12px; background: rgba(197, 160, 89, 0.1); border-radius: 8px; margin-top: 12px; text-align: center;">' +
+                            '<div style="font-size: 10px; color: #64748b;">Estimated Monthly Payment</div>' +
+                            '<div style="font-size: 24px; color: #c5a059; font-weight: 700;">$' + payment.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '</div>' +
+                            '<div style="font-size: 9px; color: #64748b; margin-top: 4px;">Principal + Interest only</div>' +
+                            '</div>';
+                    }
+                };
+
+                window.requestDocuments = function() {
+                    showToast('Document request sent to client!', 'success');
+                    trackEvent('documents_requested', { code: quoteCode });
+                };
+
+                window.saveNotes = function() {
+                    var notes = document.getElementById('client-notes')?.value;
+                    localStorage.setItem('ezra_client_notes_' + quoteCode, notes || '');
+                    showToast('Notes saved!', 'success');
+                };
+
+                window.addReminder = function() {
+                    showToast('Reminder feature coming soon!', 'info');
+                };
+
+                window.setEzraLanguage = function(lang) {
+                    window._ezraLanguage = lang;
+                    localStorage.setItem('ezraLanguage', lang);
+                    showToast('Language updated to ' + (lang === 'es' ? 'Español' : 'English'), 'success');
+                };
+
+                // Restore sidebar state
+                var sidebarCollapsed = localStorage.getItem('ezraSidebarCollapsed') === 'true';
+                if (sidebarCollapsed) {
+                    var sidebar = document.getElementById('eq-sidebar');
+                    if (sidebar) sidebar.classList.add('collapsed');
+                }
 
                 // ===== LOCAL KB FALLBACK — Zero API Cost Responses =====
                 // Handles common client questions without calling the server.

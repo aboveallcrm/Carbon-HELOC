@@ -1,345 +1,399 @@
-// Edge Function: Sync Carbon Leads to GoHighLevel
-// Processes sync queue and pushes updates to GHL
+// @ts-nocheck - Deno URL imports are resolved at runtime by Supabase
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { getCorsHeaders } from "../_shared/cors.ts"
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+// GoHighLevel API v2021-07-28 (matches ghl-proxy)
+const GHL_API = "https://services.leadconnectorhq.com"
+const GHL_VERSION = "2021-07-28"
+const GHL_FETCH_TIMEOUT_MS = 15_000
+const BATCH_LIMIT = 10
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+let corsHeaders: Record<string, string> = {}
+
+function jsonResponse(body: any, status = 200) {
+    return new Response(JSON.stringify(body), {
+        status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
 }
 
-const GHL_API_BASE = 'https://rest.gohighlevel.com/v1'
+async function timedFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), GHL_FETCH_TIMEOUT_MS)
+    try {
+        const resp = await fetch(url, { ...options, signal: controller.signal })
+        clearTimeout(timeout)
+        return resp
+    } catch (err) {
+        clearTimeout(timeout)
+        throw err
+    }
+}
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
+serve(async (req: Request) => {
+    corsHeaders = getCorsHeaders(req)
 
-  try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
-
-    // Get pending sync items for GHL
-    const { data: syncItems, error: fetchError } = await supabase
-      .from('crm_sync_queue')
-      .select(`
-        *,
-        lead:lead_id (*),
-        integration:crm_integration_id (*)
-      `)
-      .eq('status', 'pending')
-      .eq('integration.crm_type', 'ghl')
-      .order('priority', { ascending: true })
-      .order('created_at', { ascending: true })
-      .limit(10)
-
-    if (fetchError) throw fetchError
-
-    const results = []
-
-    for (const item of syncItems || []) {
-      try {
-        const result = await processSyncItem(supabase, item)
-        results.push(result)
-      } catch (error) {
-        console.error('Sync item failed:', item.id, error)
-        
-        // Update queue item with error
-        await supabase
-          .from('crm_sync_queue')
-          .update({
-            status: item.retry_count >= item.max_retries ? 'failed' : 'retrying',
-            retry_count: item.retry_count + 1,
-            error_message: error.message,
-            processed_at: new Date().toISOString()
-          })
-          .eq('id', item.id)
-      }
+    if (req.method === 'OPTIONS') {
+        return new Response(null, { status: 204, headers: corsHeaders })
+    }
+    if (req.method !== 'POST') {
+        return jsonResponse({ error: 'Method not allowed' }, 405)
     }
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        processed: results.length,
-        results 
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    try {
+        // 1. Authenticate caller via JWT
+        const authHeader = req.headers.get('Authorization')
+        if (!authHeader) return jsonResponse({ error: 'Missing authorization header' }, 401)
 
-  } catch (error) {
-    console.error('Sync error:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  }
+        const supabaseAdmin = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        )
+
+        const token = authHeader.replace('Bearer ', '')
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
+        if (authError || !user) return jsonResponse({ error: 'Invalid or expired token' }, 401)
+
+        const userId = user.id
+
+        // 2. Get GHL API key and location ID from user_integrations
+        const { data: integrations } = await supabaseAdmin
+            .from('user_integrations')
+            .select('provider, metadata')
+            .eq('user_id', userId)
+            .in('provider', ['heloc_keys', 'heloc_settings'])
+
+        let ghlApiKey = ''
+        let ghlLocationId = ''
+        for (const row of (integrations || [])) {
+            if (row.provider === 'heloc_keys') {
+                ghlApiKey = row.metadata?.ghl_api_key || ghlApiKey
+                ghlLocationId = row.metadata?.ghl_location_id || ghlLocationId
+            }
+            if (row.provider === 'heloc_settings') {
+                ghlApiKey = row.metadata?.ghl?.apiKey || ghlApiKey
+                ghlLocationId = row.metadata?.ghl?.locationId || ghlLocationId
+            }
+        }
+
+        if (!ghlApiKey) {
+            return jsonResponse({ error: 'No GHL API key configured. Go to Settings → Integrations → GHL.' }, 400)
+        }
+
+        const ghlHeaders: Record<string, string> = {
+            'Authorization': `Bearer ${ghlApiKey}`,
+            'Version': GHL_VERSION,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        }
+
+        // 3. Parse request body for optional filters
+        const body = await req.json().catch(() => ({}))
+        const { action } = body
+
+        // action = 'process_queue' (default) | 'sync_lead'
+        if (action === 'sync_lead') {
+            // One-off sync: push a single lead to GHL
+            return await syncSingleLead(supabaseAdmin, ghlHeaders, ghlLocationId, body, userId)
+        }
+
+        // 4. Fetch pending outbound_queue items for GHL
+        const { data: queueItems, error: fetchError } = await supabaseAdmin
+            .from('outbound_queue')
+            .select('*, lead:lead_id(id, first_name, last_name, email, phone, status, stage, metadata)')
+            .eq('provider', 'ghl')
+            .in('status', ['pending', 'retrying'])
+            .order('priority', { ascending: true })
+            .order('scheduled_at', { ascending: true })
+            .limit(BATCH_LIMIT)
+
+        if (fetchError) {
+            return jsonResponse({ error: 'Failed to fetch queue: ' + fetchError.message }, 500)
+        }
+
+        if (!queueItems || queueItems.length === 0) {
+            return jsonResponse({ success: true, processed: 0, message: 'No pending items' })
+        }
+
+        // 5. Process each queue item
+        const results: any[] = []
+
+        for (const item of queueItems) {
+            // Mark as dispatching
+            await supabaseAdmin
+                .from('outbound_queue')
+                .update({ status: 'dispatching', updated_at: new Date().toISOString() })
+                .eq('id', item.id)
+
+            try {
+                const result = await dispatchToGHL(ghlHeaders, ghlLocationId, item)
+
+                // Mark as dispatched
+                await supabaseAdmin
+                    .from('outbound_queue')
+                    .update({
+                        status: 'dispatched',
+                        dispatched_at: new Date().toISOString(),
+                        dispatch_result: result,
+                        error_message: null,
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', item.id)
+
+                results.push({ id: item.id, channel: item.channel, success: true })
+
+            } catch (err) {
+                const message = err instanceof Error ? err.message : String(err)
+                const newRetry = (item.retry_count || 0) + 1
+                const maxRetries = item.max_retries || 3
+
+                await supabaseAdmin
+                    .from('outbound_queue')
+                    .update({
+                        status: newRetry >= maxRetries ? 'failed' : 'retrying',
+                        retry_count: newRetry,
+                        error_message: message,
+                        failed_at: newRetry >= maxRetries ? new Date().toISOString() : null,
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', item.id)
+
+                results.push({ id: item.id, channel: item.channel, success: false, error: message })
+            }
+        }
+
+        return jsonResponse({
+            success: true,
+            processed: results.length,
+            succeeded: results.filter(r => r.success).length,
+            failed: results.filter(r => !r.success).length,
+            results,
+        })
+
+    } catch (err) {
+        if ((err as Error).name === 'AbortError') {
+            return jsonResponse({ error: 'Upstream GHL service timed out' }, 504)
+        }
+        const message = err instanceof Error ? err.message : String(err)
+        console.error('sync-ghl-outbound error:', message)
+        return jsonResponse({ error: message }, 500)
+    }
 })
 
-async function processSyncItem(supabase: any, item: any) {
-  const lead = item.lead
-  const integration = item.integration
-  
-  if (!lead || !integration) {
-    throw new Error('Missing lead or integration data')
-  }
+/**
+ * Dispatch a single outbound_queue item to GHL
+ */
+async function dispatchToGHL(
+    ghlHeaders: Record<string, string>,
+    locationId: string,
+    item: any
+): Promise<any> {
+    const lead = item.lead
+    const channel = item.channel // 'sms' | 'email'
 
-  // Get API key from config
-  const apiKey = integration.config?.api_key
-  if (!apiKey) {
-    throw new Error('GHL API key not configured')
-  }
+    // If we have a contact_id, use it directly as GHL contact ID
+    // Otherwise search by email/phone
+    let ghlContactId = item.metadata?.ghl_contact_id || ''
 
-  const headers = {
-    'Authorization': `Bearer ${apiKey}`,
-    'Content-Type': 'application/json'
-  }
+    if (!ghlContactId && lead) {
+        // Search for existing GHL contact
+        const searchParams = new URLSearchParams()
+        searchParams.set('locationId', locationId)
+        if (lead.email) searchParams.set('query', lead.email)
+        else if (lead.phone) searchParams.set('query', lead.phone)
 
-  let result
+        const searchResp = await timedFetch(
+            `${GHL_API}/contacts/?${searchParams.toString()}`,
+            { method: 'GET', headers: ghlHeaders }
+        )
 
-  switch (item.operation) {
-    case 'create':
-      result = await createGHLContact(headers, lead, integration)
-      break
-    case 'update':
-      result = await updateGHLContact(headers, lead, integration)
-      break
-    case 'delete':
-      result = await deleteGHLContact(headers, lead, integration)
-      break
-    default:
-      throw new Error(`Unknown operation: ${item.operation}`)
-  }
+        if (searchResp.ok) {
+            const searchData = await searchResp.json()
+            const contacts = searchData.contacts || []
+            if (contacts.length > 0) {
+                ghlContactId = contacts[0].id
+            }
+        }
 
-  // Update sync queue item
-  await supabase
-    .from('crm_sync_queue')
-    .update({
-      status: 'completed',
-      processed_at: new Date().toISOString(),
-      error_message: null
+        // If no contact found, create one
+        if (!ghlContactId && lead) {
+            const createResp = await timedFetch(`${GHL_API}/contacts/`, {
+                method: 'POST',
+                headers: ghlHeaders,
+                body: JSON.stringify({
+                    locationId,
+                    firstName: lead.first_name || '',
+                    lastName: lead.last_name || '',
+                    email: lead.email || '',
+                    phone: lead.phone || '',
+                }),
+            })
+
+            if (createResp.ok) {
+                const createData = await createResp.json()
+                ghlContactId = createData.contact?.id || ''
+            } else {
+                const errText = await createResp.text()
+                throw new Error(`GHL create contact failed (${createResp.status}): ${errText}`)
+            }
+        }
+    }
+
+    if (!ghlContactId) {
+        throw new Error('Could not resolve GHL contact ID')
+    }
+
+    // Send message via GHL conversations API
+    const messagePayload: any = {
+        type: channel === 'email' ? 'Email' : 'SMS',
+        contactId: ghlContactId,
+    }
+
+    if (channel === 'email') {
+        messagePayload.subject = item.subject || 'Your HELOC Quote'
+        messagePayload.html = item.content || ''
+    } else {
+        messagePayload.body = item.content || ''
+    }
+
+    const msgResp = await timedFetch(`${GHL_API}/conversations/messages`, {
+        method: 'POST',
+        headers: ghlHeaders,
+        body: JSON.stringify(messagePayload),
     })
-    .eq('id', item.id)
 
-  // Update lead sync status
-  await supabase
-    .from('leads')
-    .update({
-      sync_status: 'synced',
-      last_sync_at: new Date().toISOString(),
-      external_id: result.contact?.id || lead.external_id
+    const msgData = await msgResp.json().catch(() => ({}))
+
+    if (!msgResp.ok) {
+        throw new Error(`GHL send ${channel} failed (${msgResp.status}): ${JSON.stringify(msgData)}`)
+    }
+
+    return {
+        ghl_contact_id: ghlContactId,
+        ghl_message_id: msgData.messageId || msgData.id,
+        channel,
+        status: msgResp.status,
+    }
+}
+
+/**
+ * One-off sync: push a single lead's data to GHL as a contact
+ */
+async function syncSingleLead(
+    supabaseAdmin: any,
+    ghlHeaders: Record<string, string>,
+    locationId: string,
+    body: any,
+    userId: string
+): Promise<Response> {
+    const { leadId } = body
+
+    if (!leadId) {
+        return jsonResponse({ error: 'Missing leadId for sync_lead action' }, 400)
+    }
+    if (!locationId) {
+        return jsonResponse({ error: 'Missing GHL locationId. Configure in Settings → Integrations → GHL.' }, 400)
+    }
+
+    // Fetch lead
+    const { data: lead, error: leadErr } = await supabaseAdmin
+        .from('leads')
+        .select('*')
+        .eq('id', leadId)
+        .eq('user_id', userId)
+        .single()
+
+    if (leadErr || !lead) {
+        return jsonResponse({ error: 'Lead not found' }, 404)
+    }
+
+    // Search for existing GHL contact by email or phone
+    let ghlContactId = lead.metadata?.ghl_contact_id || ''
+    let operation = 'create'
+
+    if (!ghlContactId) {
+        const searchParams = new URLSearchParams()
+        searchParams.set('locationId', locationId)
+        if (lead.email) searchParams.set('query', lead.email)
+        else if (lead.phone) searchParams.set('query', lead.phone)
+
+        const searchResp = await timedFetch(
+            `${GHL_API}/contacts/?${searchParams.toString()}`,
+            { method: 'GET', headers: ghlHeaders }
+        )
+
+        if (searchResp.ok) {
+            const searchData = await searchResp.json()
+            const contacts = searchData.contacts || []
+            if (contacts.length > 0) {
+                ghlContactId = contacts[0].id
+                operation = 'update'
+            }
+        }
+    } else {
+        operation = 'update'
+    }
+
+    // Build contact payload
+    const contactPayload: any = {
+        firstName: lead.first_name || '',
+        lastName: lead.last_name || '',
+        email: lead.email || '',
+        phone: lead.phone || '',
+        tags: ['carbon-heloc'],
+    }
+
+    // Add metadata fields as custom fields if available
+    if (lead.metadata) {
+        const customFields: any[] = []
+        if (lead.metadata.credit_score) customFields.push({ key: 'credit_score', field_value: String(lead.metadata.credit_score) })
+        if (lead.metadata.home_value) customFields.push({ key: 'home_value', field_value: String(lead.metadata.home_value) })
+        if (lead.metadata.mortgage_balance) customFields.push({ key: 'mortgage_balance', field_value: String(lead.metadata.mortgage_balance) })
+        if (lead.metadata.loan_amount) customFields.push({ key: 'loan_amount', field_value: String(lead.metadata.loan_amount) })
+        if (customFields.length > 0) contactPayload.customFields = customFields
+    }
+
+    let ghlResp: Response
+    if (operation === 'update' && ghlContactId) {
+        ghlResp = await timedFetch(`${GHL_API}/contacts/${ghlContactId}`, {
+            method: 'PUT',
+            headers: ghlHeaders,
+            body: JSON.stringify(contactPayload),
+        })
+    } else {
+        contactPayload.locationId = locationId
+        ghlResp = await timedFetch(`${GHL_API}/contacts/`, {
+            method: 'POST',
+            headers: ghlHeaders,
+            body: JSON.stringify(contactPayload),
+        })
+    }
+
+    const ghlData = await ghlResp.json().catch(() => ({}))
+
+    if (!ghlResp.ok) {
+        return jsonResponse({
+            error: `GHL ${operation} failed`,
+            status: ghlResp.status,
+            detail: ghlData,
+        }, 502)
+    }
+
+    // Store GHL contact ID back on lead metadata
+    const newContactId = ghlData.contact?.id || ghlContactId
+    if (newContactId) {
+        const existingMeta = lead.metadata || {}
+        await supabaseAdmin
+            .from('leads')
+            .update({ metadata: { ...existingMeta, ghl_contact_id: newContactId } })
+            .eq('id', leadId)
+    }
+
+    return jsonResponse({
+        success: true,
+        operation,
+        ghl_contact_id: newContactId,
+        data: ghlData,
     })
-    .eq('id', lead.id)
-
-  return { itemId: item.id, operation: item.operation, success: true }
-}
-
-async function createGHLContact(headers: any, lead: any, integration: any) {
-  const fieldMappings = integration.field_mappings || {}
-  
-  const contactData = {
-    firstName: lead.name?.split(' ')[0] || '',
-    lastName: lead.name?.split(' ').slice(1).join(' ') || '',
-    email: lead.email,
-    phone: lead.phone,
-    address1: lead.address,
-    city: lead.city,
-    state: lead.state,
-    postalCode: lead.zip,
-    customFields: [
-      {
-        id: fieldMappings.credit_score || 'credit_score',
-        field_value: lead.credit_score
-      },
-      {
-        id: fieldMappings.home_value || 'home_value',
-        field_value: lead.home_value?.toString()
-      },
-      {
-        id: fieldMappings.mortgage_balance || 'mortgage_balance',
-        field_value: lead.mortgage_balance?.toString()
-      },
-      {
-        id: fieldMappings.heloc_status || 'heloc_status',
-        field_value: lead.status
-      },
-      {
-        id: fieldMappings.loan_amount || 'loan_amount',
-        field_value: lead.loan_amount?.toString()
-      },
-      {
-        id: fieldMappings.interest_rate || 'interest_rate',
-        field_value: lead.interest_rate?.toString()
-      }
-    ]
-  }
-
-  const response = await fetch(`${GHL_API_BASE}/contacts/`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(contactData)
-  })
-
-  if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`GHL API error: ${error}`)
-  }
-
-  const data = await response.json()
-  
-  // Create opportunity if pipeline is configured
-  if (integration.config?.pipeline_id && integration.config?.stage_id) {
-    await createGHLOpportunity(headers, data.contact.id, lead, integration)
-  }
-
-  return data
-}
-
-async function updateGHLContact(headers: any, lead: any, integration: any) {
-  if (!lead.external_id) {
-    // No external ID - create instead
-    return createGHLContact(headers, lead, integration)
-  }
-
-  const fieldMappings = integration.field_mappings || {}
-  
-  const contactData = {
-    firstName: lead.name?.split(' ')[0] || '',
-    lastName: lead.name?.split(' ').slice(1).join(' ') || '',
-    email: lead.email,
-    phone: lead.phone,
-    address1: lead.address,
-    city: lead.city,
-    state: lead.state,
-    postalCode: lead.zip,
-    customFields: [
-      {
-        id: fieldMappings.credit_score || 'credit_score',
-        field_value: lead.credit_score
-      },
-      {
-        id: fieldMappings.home_value || 'home_value',
-        field_value: lead.home_value?.toString()
-      },
-      {
-        id: fieldMappings.mortgage_balance || 'mortgage_balance',
-        field_value: lead.mortgage_balance?.toString()
-      },
-      {
-        id: fieldMappings.heloc_status || 'heloc_status',
-        field_value: lead.status
-      },
-      {
-        id: fieldMappings.loan_amount || 'loan_amount',
-        field_value: lead.loan_amount?.toString()
-      },
-      {
-        id: fieldMappings.interest_rate || 'interest_rate',
-        field_value: lead.interest_rate?.toString()
-      }
-    ]
-  }
-
-  const response = await fetch(`${GHL_API_BASE}/contacts/${lead.external_id}`, {
-    method: 'PUT',
-    headers,
-    body: JSON.stringify(contactData)
-  })
-
-  if (!response.ok) {
-    const error = await response.text()
-    throw new Error(`GHL API error: ${error}`)
-  }
-
-  const data = await response.json()
-  
-  // Update opportunity if exists
-  await updateGHLOpportunity(headers, lead.external_id, lead, integration)
-
-  return data
-}
-
-async function deleteGHLContact(headers: any, lead: any, integration: any) {
-  if (!lead.external_id) {
-    return { success: true, message: 'No external ID to delete' }
-  }
-
-  const response = await fetch(`${GHL_API_BASE}/contacts/${lead.external_id}`, {
-    method: 'DELETE',
-    headers
-  })
-
-  if (!response.ok && response.status !== 404) {
-    const error = await response.text()
-    throw new Error(`GHL API error: ${error}`)
-  }
-
-  return { success: true }
-}
-
-async function createGHLOpportunity(headers: any, contactId: string, lead: any, integration: any) {
-  const opportunityData = {
-    name: `HELOC - ${lead.name}`,
-    pipelineId: integration.config.pipeline_id,
-    stageId: integration.config.stage_id,
-    status: 'open',
-    contactId: contactId,
-    value: lead.loan_amount || 0
-  }
-
-  const response = await fetch(`${GHL_API_BASE}/opportunities/`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(opportunityData)
-  })
-
-  if (!response.ok) {
-    console.error('Failed to create GHL opportunity:', await response.text())
-    return null
-  }
-
-  return await response.json()
-}
-
-async function updateGHLOpportunity(headers: any, contactId: string, lead: any, integration: any) {
-  // Find opportunity by contact ID
-  const searchResponse = await fetch(
-    `${GHL_API_BASE}/opportunities/?contactId=${contactId}`,
-    { headers }
-  )
-
-  if (!searchResponse.ok) return null
-
-  const opportunities = await searchResponse.json()
-  
-  if (!opportunities.opportunities?.length) return null
-
-  const opportunity = opportunities.opportunities[0]
-
-  // Map Carbon status to GHL stage
-  const stageMapping: Record<string, string> = integration.config?.stage_mappings || {
-    'new': integration.config?.stage_id,
-    'quote_sent': integration.config?.stage_id,
-    'funded': integration.config?.won_stage_id
-  }
-
-  const updateData = {
-    stageId: stageMapping[lead.status] || opportunity.stageId,
-    status: lead.status === 'funded' ? 'won' : lead.status === 'lost' ? 'lost' : 'open',
-    value: lead.loan_amount || opportunity.value
-  }
-
-  const response = await fetch(`${GHL_API_BASE}/opportunities/${opportunity.id}`, {
-    method: 'PUT',
-    headers,
-    body: JSON.stringify(updateData)
-  })
-
-  if (!response.ok) {
-    console.error('Failed to update GHL opportunity:', await response.text())
-  }
-
-  return await response.json()
 }
