@@ -7615,7 +7615,7 @@
             </div>
 
             <!-- What If: Borrow More Calculator -->
-            <div class="what-if-section reveal" id="sec-what-if">
+            <div class="what-if-section reveal" id="sec-what-if" style="display:none !important;"
                 <div class="what-if-header">
                     <div class="what-if-icon">&#128640;</div>
                     <div class="what-if-title">What If You Borrowed More?</div>
@@ -10803,7 +10803,16 @@
                 if (mode === 'two' && tiers.length > 2) {
                     tiers = tiers.slice(0, 2);
                 }
-                
+                // Filter by custom tier selection if provided
+                if (opts.tierCompareCustom && Array.isArray(opts.tierCompareCustom) && opts.tierCompareCustom.length > 0) {
+                    tiers = tiers.filter(function(t) { return opts.tierCompareCustom.indexOf(parseInt(t.tier)) !== -1; });
+                }
+
+                // Determine recommended tier/term from LO settings
+                var recTierNum = parseInt(data.recTier) || 2;
+                var recTermKey = (data.recTerm || '20') + 'yr';
+                var recTermKey2 = data.recTerm || '20';
+
                 var html = '<div class="tier-compare-table" style="overflow-x: auto;">';
                 html += '<table style="width: 100%; border-collapse: collapse;">';
                 html += '<thead><tr style="background: var(--primary-color); color: white;">';
@@ -10812,7 +10821,7 @@
                     html += '<th style="padding: 12px; text-align: center; font-family: var(--font-heading); font-size: 12px;">Tier ' + tier.tier + '</th>';
                 });
                 html += '</tr></thead><tbody>';
-                
+
                 // Origination fee row
                 html += '<tr style="border-bottom: 1px solid rgba(0,0,0,0.08);">';
                 html += '<td style="padding: 12px; font-weight: 600;">Origination Fee</td>';
@@ -10820,30 +10829,38 @@
                     html += '<td style="padding: 12px; text-align: center;">' + tier.origPts + '%</td>';
                 });
                 html += '</tr>';
-                
-                // Rate row (using first term)
+
+                // Rate row (using recommended term, not just first)
                 html += '<tr style="border-bottom: 1px solid rgba(0,0,0,0.08);">';
                 html += '<td style="padding: 12px; font-weight: 600;">Starting Rate</td>';
                 tiers.forEach(function(tier) {
-                    var firstRate = Object.values(tier.rates)[0];
-                    html += '<td style="padding: 12px; text-align: center; font-weight: 700; color: var(--accent-dark);">' + (firstRate ? firstRate.rate : '--') + '</td>';
+                    var matchedRate = tier.rates[recTermKey] || tier.rates[recTermKey2] || Object.values(tier.rates)[0];
+                    html += '<td style="padding: 12px; text-align: center; font-weight: 700; color: var(--accent-dark);">' + (matchedRate ? matchedRate.rate : '--') + '</td>';
                 });
                 html += '</tr>';
-                
-                // Payment row
+
+                // Payment row (using recommended term)
                 html += '<tr style="border-bottom: 1px solid rgba(0,0,0,0.08);">';
                 html += '<td style="padding: 12px; font-weight: 600;">Monthly Payment</td>';
                 tiers.forEach(function(tier) {
-                    var firstRate = Object.values(tier.rates)[0];
-                    html += '<td style="padding: 12px; text-align: center;">' + (firstRate ? firstRate.payment : '--') + '</td>';
+                    var matchedRate = tier.rates[recTermKey] || tier.rates[recTermKey2] || Object.values(tier.rates)[0];
+                    html += '<td style="padding: 12px; text-align: center;">' + (matchedRate ? matchedRate.payment : '--') + '</td>';
                 });
                 html += '</tr>';
-                
-                // Select button row
+
+                // Term row
+                html += '<tr style="border-bottom: 1px solid rgba(0,0,0,0.08);">';
+                html += '<td style="padding: 12px; font-weight: 600;">Term</td>';
+                tiers.forEach(function(tier) {
+                    html += '<td style="padding: 12px; text-align: center;">' + (data.recTerm || '20') + ' years</td>';
+                });
+                html += '</tr>';
+
+                // Select button row — use recTier to highlight
                 html += '<tr>';
                 html += '<td style="padding: 12px;"></td>';
                 tiers.forEach(function(tier, idx) {
-                    var isRec = (idx === 1); // Middle tier as recommended
+                    var isRec = (parseInt(tier.tier) === recTierNum);
                     html += '<td style="padding: 12px; text-align: center;">';
                     html += '<button onclick="selectTier(' + tier.tier + ')" style="padding: 10px 24px; border-radius: 8px; border: none; background: ' + (isRec ? 'linear-gradient(135deg, var(--accent-color), var(--accent-dark))' : 'var(--primary-color)') + '; color: white; font-weight: 600; cursor: pointer; font-size: 13px;">' + (isRec ? '&#9733; Recommended' : 'Select') + '</button>';
                     html += '</td>';
