@@ -1,5 +1,6 @@
 const ALLOWED_ORIGINS = [
   "https://carbon-heloc.vercel.app",
+  "https://carbon-heloc-updated.vercel.app",
   "https://aboveallcrm.com",
   "https://www.aboveallcrm.com",
   "http://localhost:8080",
