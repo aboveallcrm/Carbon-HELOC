@@ -7892,7 +7892,7 @@
                     <label style="display: block; font-weight: 600; color: var(--text-light); margin-bottom: 8px;">
                         Explore Higher HELOC Amount
                     </label>
-                    <input type="range" id="whatIfBorrowSlider" min="50000" max="750000" step="10000" value="278810" 
+                    <input type="range" id="whatIfBorrowSlider" class="what-if-slider" min="50000" max="750000" step="10000" value="278810"
                         style="width: 100%; height: 8px; border-radius: 5px; background: var(--border-color); outline: none; -webkit-appearance: none; cursor: pointer;"
                         oninput="updateWhatIfBorrowScenario(this.value)">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 12px; color: var(--text-muted);">
@@ -7980,7 +7980,7 @@
                     <label style="display: block; font-weight: 600; color: var(--text-light); margin-bottom: 8px;">
                         Amount Paid Back Toward Principal
                     </label>
-                    <input type="range" id="paybackSlider" min="0" max="278810" step="10000" value="0"
+                    <input type="range" id="paybackSlider" class="what-if-slider" min="0" max="278810" step="10000" value="0"
                         style="width: 100%; height: 8px; border-radius: 5px; background: var(--border-color); outline: none; -webkit-appearance: none; cursor: pointer;"
                         oninput="updatePaybackScenario(this.value)">
                     <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--text-muted);">
@@ -8829,16 +8829,17 @@
                         });
                     }
 
-                    // ── PLATINUM+ (level >= 2): Sales psychology, Ezra AI, testimonials, proactive ──
-                    if (tierLevel >= 2) {
-                        // Ezra AI Chat (default on unless explicitly disabled)
-                        if (!link.quote_data.linkOptions || link.quote_data.linkOptions.showAiChat !== false) {
-                            try {
-                                initEzraChat(link.quote_data, link.lo_info || {}, code);
-                            } catch (e) {
-                                console.warn('Ezra chat init error:', e);
-                            }
+                    // Ezra AI Chat — always available (default on unless explicitly disabled)
+                    if (!link.quote_data.linkOptions || link.quote_data.linkOptions.showAiChat !== false) {
+                        try {
+                            initEzraChat(link.quote_data, link.lo_info || {}, code);
+                        } catch (e) {
+                            console.warn('Ezra chat init error:', e);
                         }
+                    }
+
+                    // ── PLATINUM+ (level >= 2): Sales psychology, testimonials, proactive ──
+                    if (tierLevel >= 2) {
                         try {
                             initTestimonials(link.quote_data.linkOptions || {});
                         } catch (e) {
@@ -8919,7 +8920,7 @@
             // ===== TRACKING =====
             var _userId = null, _leadId = null;
             function trackEvent(type, data) {
-                if (!_userId) return;
+                if (!_userId || !_leadId || _leadId === 'none') return;
                 var url = TRACK_URL + '?lead_id=' + (_leadId || 'none') + '&user_id=' + _userId + '&event=' + type;
                 if (type === 'time_on_page' && navigator.sendBeacon) {
                     navigator.sendBeacon(url + '&duration=' + (data.duration_sec || 0));
@@ -9362,7 +9363,7 @@
                                 {icon:'&#128533;',label:'Confused',key:'confused'}
                             ];
                             emojis.forEach(function(em) {
-                                tiersHtml += '<button onclick="rateEmojiFeedback(\'' + tier.tier + '\',\'' + esc(termKey) + '\',\'' + em.key + '\',this)" title="' + em.label + '" style="font-size:22px;background:none;border:none;cursor:pointer;opacity:0.5;transition:all 0.2s;padding:4px 6px;border-radius:8px;" onmouseover="this.style.opacity=1;this.style.transform=\'scale(1.2)\'" onmouseout="if(!this.classList.contains(\'emoji-selected\')){this.style.opacity=0.5;this.style.transform=\'scale(1)\'}">' + em.icon + '</button>';
+                                tiersHtml += '<button onclick="rateEmojiFeedback(\'' + tier.tier + '\',\'' + esc(termKey) + '\',\'' + em.key + '\',this)" title="' + em.label + '" style="font-size:26px;background:none;border:none;cursor:pointer;opacity:0.7;transition:all 0.2s;padding:6px 8px;border-radius:8px;" onmouseover="this.style.opacity=1;this.style.transform=\'scale(1.2)\'" onmouseout="if(!this.classList.contains(\'emoji-selected\')){this.style.opacity=0.7;this.style.transform=\'scale(1)\'}">' + em.icon + '</button>';
                             });
                             tiersHtml += '</div>';
                             tiersHtml += '</div></td></tr>';
@@ -11642,8 +11643,8 @@
                     3: { color: '#3b82f6', bestForEn: 'Lowest Upfront', bestForEs: 'Menor Costo Inicial', icon: '&#128176;', descEn: 'Lowest upfront cost, higher rate. Best if you plan to pay off quickly.', descEs: 'Menor costo inicial, tasa mas alta. Ideal si planea pagar rapidamente.' }
                 };
 
-                var html = '<div class="tier-compare-table" style="overflow-x: auto;">';
-                html += '<table style="width: 100%; border-collapse: separate; border-spacing: 0;">';
+                var html = '<div class="tier-compare-table" style="overflow-x: auto; overflow-y: visible;">';
+                html += '<table style="width: 100%; border-collapse: separate; border-spacing: 0; overflow: visible;">';
                 
                 // Header row with tier columns
                 html += '<thead><tr>';
@@ -11652,8 +11653,8 @@
                     var tn = parseInt(tier.tier);
                     var isRec = (tn === recTierNum);
                     var meta = tierMeta[tn] || tierMeta[2];
-                    html += '<th style="padding: 14px 16px; text-align: center; font-family: var(--font-heading); font-size: 13px; background: ' + (isRec ? 'linear-gradient(135deg, ' + meta.color + ', ' + meta.color + 'cc)' : 'var(--primary-color)') + '; color: white; border-bottom: 2px solid rgba(255,255,255,0.1);' + (isRec ? ' position: relative;' : '') + '">';
-                    if (isRec) html += '<span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent-color);color:#0f172a;font-size:9px;font-weight:800;padding:2px 10px;border-radius:10px;white-space:nowrap;">&#9733; ' + (t.tierRecommended || 'Recommended') + '</span>';
+                    html += '<th style="padding: ' + (isRec ? '22px' : '14px') + ' 16px 14px; text-align: center; font-family: var(--font-heading); font-size: 13px; background: ' + (isRec ? 'linear-gradient(135deg, ' + meta.color + ', ' + meta.color + 'cc)' : 'var(--primary-color)') + '; color: white; border-bottom: 2px solid rgba(255,255,255,0.1);' + (isRec ? ' position: relative; overflow: visible;' : '') + '">';
+                    if (isRec) html += '<span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent-color);color:#0f172a;font-size:9px;font-weight:800;padding:2px 10px;border-radius:10px;white-space:nowrap;z-index:2;">&#9733; ' + (t.tierRecommended || 'Recommended') + '</span>';
                     html += (lang === 'es' ? 'Nivel ' : 'Tier ') + tier.tier;
                     html += '</th>';
                 });
