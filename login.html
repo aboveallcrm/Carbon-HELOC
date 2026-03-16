@@ -293,6 +293,49 @@
             text-decoration: underline;
         }
 
+        /* ── Magic Link Button ── */
+        .magic-link-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 13px 20px;
+            background: transparent;
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            border-radius: 10px;
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 12px;
+        }
+
+        .magic-link-btn:hover {
+            background: rgba(197, 160, 89, 0.08);
+            border-color: var(--accent-light);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(197, 160, 89, 0.15);
+        }
+
+        .magic-link-btn:active {
+            transform: translateY(0);
+        }
+
+        .magic-link-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .magic-link-btn svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
         /* ── Submit Button ── */
         .submit-btn {
             width: 100%;
@@ -518,6 +561,14 @@
 
                 <button type="submit" class="submit-btn" id="btn-submit">Sign In</button>
 
+                <button type="button" class="magic-link-btn" id="magic-link-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"/>
+                        <line x1="8" y1="12" x2="16" y2="12"/>
+                    </svg>
+                    Send Magic Link
+                </button>
+
                 <div id="error-msg" class="msg error"></div>
                 <div id="success-msg" class="msg success"></div>
             </form>
@@ -583,6 +634,44 @@
                 success.innerText = 'Password reset email sent! Check your inbox.';
                 success.style.display = 'block';
             }
+        });
+
+        // ── Magic Link ──
+        document.getElementById('magic-link-btn').addEventListener('click', async () => {
+            const email = document.getElementById('email').value.trim();
+            const err = document.getElementById('error-msg');
+            const success = document.getElementById('success-msg');
+            const btn = document.getElementById('magic-link-btn');
+
+            if (!email) {
+                err.innerText = 'Enter your email address above, then click Send Magic Link.';
+                err.style.display = 'block';
+                success.style.display = 'none';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="border-color:rgba(197,160,89,0.3);border-top-color:var(--accent-color);"></span> Sending...';
+            err.style.display = 'none';
+            success.style.display = 'none';
+
+            const { error } = await supabase.auth.signInWithOtp({
+                email,
+                options: {
+                    emailRedirectTo: window.location.origin + '/AboveAllCarbon_HELOC_v12_FIXED.html'
+                }
+            });
+
+            if (error) {
+                err.innerText = error.message;
+                err.style.display = 'block';
+            } else {
+                success.innerText = 'Magic link sent! Check your email and click the link to sign in.';
+                success.style.display = 'block';
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Send Magic Link';
         });
 
         // ── Email/Password Login ──

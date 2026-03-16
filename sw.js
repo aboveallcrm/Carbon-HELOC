@@ -3,9 +3,7 @@
  * Provides caching, offline functionality, push notifications, and background sync
  */
 
-const CACHE_NAME = 'aac-heloc-v10';
-// Only pre-cache small, stable assets. HTML pages use network-first
-// and should NOT be pre-cached (they change frequently and are large).
+const CACHE_NAME = 'aac-heloc-v11';
 const STATIC_ASSETS = [
   './js/main.js',
   './js/auth.js',
@@ -15,11 +13,17 @@ const STATIC_ASSETS = [
   './js/carbon-commands-v3.js',
   './js/carbon-commands-v3.css',
   './js/ezra-chat.js',
+  './js/pwa-install.js',
+  './js/dom-cache.js',
+  './offline.html',
   './manifest.json',
   './favicon.png',
   './favicon-192x192.png',
   './apple-touch-icon.png'
 ];
+
+// Offline fallback page
+const OFFLINE_PAGE = './offline.html';
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
@@ -33,6 +37,12 @@ self.addEventListener('install', (event) => {
         console.log('[SW] Cache install error:', err);
       })
   );
+  
+  // Enable navigation preload if available
+  if (self.registration.navigationPreload) {
+    self.registration.navigationPreload.enable();
+  }
+  
   self.skipWaiting();
 });
 
@@ -86,61 +96,75 @@ self.addEventListener('fetch', (event) => {
 
   // NEVER cache client-quote.html — always go to network, no fallback
   if (url.pathname.includes('client-quote')) {
-    return; // Let browser handle normally (no SW interception)
+    return;
   }
 
-  // Network-first for HTML pages (they change frequently)
-  // Cache-first for static assets (JS, CSS, images, fonts)
-  const isHTML = request.mode === 'navigate' || url.pathname.endsWith('.html');
-
-  if (isHTML) {
-    // Network-first: try network, fall back to cache
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok && response.type === 'basic') {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          return caches.match(request).then((cached) => {
-            return cached || caches.match('./AboveAllCarbon_HELOC_v12_FIXED.html');
-          });
-        })
-    );
-  } else {
-    // Cache-first for static assets, update in background
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) {
-          fetch(request)
-            .then((response) => {
-              if (response.ok) {
-                caches.open(CACHE_NAME).then((cache) => {
-                  cache.put(request, response);
-                });
-              }
-            })
-            .catch(() => {});
-          return cached;
-        }
-        return fetch(request).then((response) => {
-          if (response.ok && response.type === 'basic') {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseClone);
-            });
-          }
-          return response;
-        });
-      })
-    );
+  // Handle navigation requests (HTML pages)
+  if (request.mode === 'navigate') {
+    event.respondWith(handleNavigation(request));
+    return;
   }
+
+  // Cache-first for static assets with stale-while-revalidate
+  event.respondWith(handleStaticAsset(request));
 });
+
+// Handle navigation requests with network-first + offline fallback
+async function handleNavigation(request) {
+  try {
+    // Try network first
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+      return networkResponse;
+    }
+    throw new Error('Network response not ok');
+  } catch (error) {
+    // Fall back to cache
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    
+    // Last resort: return main app page
+    const fallback = await caches.match('./AboveAllCarbon_HELOC_v12_FIXED.html');
+    if (fallback) return fallback;
+    
+    // Ultimate fallback: simple offline message
+    return new Response(
+      '<!DOCTYPE html><html><head><title>Offline</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:sans-serif;text-align:center;padding:40px 20px;"><h1>You\'re Offline</h1><p>Please check your internet connection and try again.</p><button onclick="location.reload()" style="padding:12px 24px;font-size:16px;cursor:pointer;">Retry</button></body></html>',
+      { headers: { 'Content-Type': 'text/html' } }
+    );
+  }
+}
+
+// Handle static assets with cache-first + background update
+async function handleStaticAsset(request) {
+  const cached = await caches.match(request);
+  
+  // Return cached immediately if available
+  if (cached) {
+    // Update cache in background
+    fetch(request).then(response => {
+      if (response.ok) {
+        caches.open(CACHE_NAME).then(cache => cache.put(request, response));
+      }
+    }).catch(() => {});
+    return cached;
+  }
+  
+  // No cache: fetch and store
+  try {
+    const response = await fetch(request);
+    if (response.ok && response.type === 'basic') {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    // Return 404 for failed requests
+    return new Response('Not found', { status: 404 });
+  }
+}
 
 // Background sync for offline form submissions
 self.addEventListener('sync', (event) => {
