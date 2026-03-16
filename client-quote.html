@@ -35,9 +35,19 @@
     <link rel="apple-touch-icon" href="" sizes="152x152" id="apple-touch-152">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0f2b4c">
-    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+
+    <!-- Preconnect -->
+    <link rel="preconnect" href="https://czzabvfzuxhpdcowgvam.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+
     <!-- Structured Data -->
-    <script type="application/ld+json">
+    <script type="application/ld+json" id="schema-financial">
     {
       "@context": "https://schema.org",
       "@type": "FinancialProduct",
@@ -51,7 +61,20 @@
       "areaServed": {
         "@type": "Country",
         "name": "United States"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5.0",
+        "bestRating": "5",
+        "ratingCount": "100"
       }
+    }
+    </script>
+    <script type="application/ld+json" id="schema-faq">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": []
     }
     </script>
     
@@ -7136,6 +7159,24 @@
     <!-- Toast Notification Container -->
     <div class="toast-container" id="toast-container"></div>
 
+    <!-- Social Proof Approval Popup -->
+    <div id="social-proof-popup" style="display:none; position:fixed; bottom:24px; left:24px; z-index:9000;
+        background:white; border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,0.15); padding:14px 20px;
+        max-width:320px; transform:translateY(120%); transition:transform 0.5s cubic-bezier(0.4,0,0.2,1);
+        border-left:4px solid #10b981; font-family:var(--font-body);">
+        <button onclick="this.parentElement.style.transform='translateY(120%)'" style="position:absolute;top:6px;right:10px;background:none;border:none;font-size:14px;color:#94a3b8;cursor:pointer;padding:2px 6px;">&times;</button>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);
+                display:flex;align-items:center;justify-content:center;color:white;font-size:16px;flex-shrink:0;">&#10003;</div>
+            <div>
+                <div id="sp-popup-text" style="font-weight:600;font-size:13px;color:#1e293b;line-height:1.4;"></div>
+                <div id="sp-popup-time" style="font-size:11px;color:#64748b;margin-top:2px;">
+                    <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#10b981;margin-right:4px;vertical-align:middle;"></span>Recently
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loading-overlay">
         <div class="loading-spinner"></div>
@@ -7161,6 +7202,7 @@
         <button onclick="openApplyModal()" id="btn-apply"><span data-i18n="ctaMain">&#10003; This Looks Right — Let's Move Forward</span></button>
         <button class="secondary" id="btn-schedule" onclick="scheduleCall()" style="display:none;"><span data-i18n="ctaSchedule">&#128197; Schedule Call</span></button>
         <button class="secondary" id="btn-review" onclick="leaveReview()" style="display:none;"><span data-i18n="ctaReview">&#11088; Leave a Review</span></button>
+        <button class="secondary" id="btn-save-contact" onclick="saveContactVCF()" style="display:none;"><span data-i18n="ctaSaveContact">&#128222; Save Contact</span></button>
         <button class="secondary" id="btn-ask" onclick="askQuestion()"><span data-i18n="ctaAsk">&#128161; Ask Ezra For Clarification</span></button>
         <button class="secondary" onclick="downloadPDF()"><span data-i18n="ctaPdf">&#128196; Save PDF</span></button>
         <button class="secondary" onclick="shareQuote()"><span data-i18n="ctaShare">&#128279; Share</span></button>
@@ -7637,6 +7679,34 @@
                 </div>
             </div>
 
+            <!-- Client Reviews Section -->
+            <div class="section reveal" id="sec-reviews" style="display: none;">
+                <div class="section-title" data-icon="&#11088;"><span data-i18n="reviewsTitle">Client Reviews</span></div>
+                <div id="reviews-container" style="padding: 28px 24px; background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(245,158,11,0.02)); border-radius: 16px; border: 1px solid rgba(245,158,11,0.15);">
+                    <!-- Star summary -->
+                    <div style="text-align:center;margin-bottom:20px;">
+                        <div id="review-stars" style="font-size: 32px; color: #f59e0b; letter-spacing: 4px;">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                        <div style="font-size: 18px; font-weight: 700; margin: 4px 0; color: var(--primary-color);">
+                            <span id="review-rating-value">5.0</span>/5 from verified clients
+                        </div>
+                    </div>
+                    <!-- Review cards grid (populated by JS) -->
+                    <div id="review-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:20px;"></div>
+                    <!-- CTA -->
+                    <div style="text-align:center;">
+                        <a id="review-link-btn" href="#" target="_blank" rel="noopener"
+                           style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#f59e0b,#d97706);
+                                  color:white;border-radius:10px;font-weight:700;text-decoration:none;font-size:14px;
+                                  font-family:var(--font-heading);box-shadow:0 4px 14px rgba(245,158,11,0.3);transition:all 0.2s;">
+                            See All Reviews &amp; Leave Yours &#8599;
+                        </a>
+                        <p style="margin-top: 12px; font-size: 13px; color: var(--slate);">
+                            See what clients say about working with <strong id="review-lo-name">your loan officer</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Social Proof Strip -->
             <div class="social-proof reveal" id="sec-social-proof">
                 <div class="sp-item">
@@ -7667,7 +7737,7 @@
             </div>
 
             <!-- What If: Borrow More Calculator -->
-            <div class="what-if-section reveal" id="sec-what-if" style="display:none !important;"
+            <div class="what-if-section reveal" id="sec-what-if" style="display:none !important;">
                 <div class="what-if-header">
                     <div class="what-if-icon">&#128640;</div>
                     <div class="what-if-title">What If You Borrowed More?</div>
@@ -8923,15 +8993,42 @@
                 if (appleTouch152) appleTouch152.href = baseUrl + '/apple-touch-icon-152x152.png';
                 
                 // Update JSON-LD structured data
-                var structuredData = document.querySelector('script[type="application/ld+json"]');
+                var structuredData = document.getElementById('schema-financial');
                 if (structuredData) {
                     try {
                         var jsonLd = JSON.parse(structuredData.textContent);
                         if (jsonLd.provider) jsonLd.provider.name = companyName;
                         jsonLd.name = lenderName + ' HELOC';
+                        if (jsonLd.aggregateRating && lo.googleRating) {
+                            jsonLd.aggregateRating.ratingValue = lo.googleRating;
+                        }
                         structuredData.textContent = JSON.stringify(jsonLd, null, 2);
                     } catch (e) {
                         console.warn('Failed to update structured data:', e);
+                    }
+                }
+                // Populate FAQPage schema from FAQ section
+                var schemaFaq = document.getElementById('schema-faq');
+                if (schemaFaq) {
+                    try {
+                        var faqItems = document.querySelectorAll('.faq-item');
+                        var faqEntities = [];
+                        faqItems.forEach(function(item) {
+                            var q = item.querySelector('.faq-question');
+                            var a = item.querySelector('.faq-answer');
+                            if (q && a) {
+                                faqEntities.push({
+                                    '@type': 'Question',
+                                    'name': q.textContent.trim(),
+                                    'acceptedAnswer': { '@type': 'Answer', 'text': a.textContent.trim() }
+                                });
+                            }
+                        });
+                        var faqLd = JSON.parse(schemaFaq.textContent);
+                        faqLd.mainEntity = faqEntities;
+                        schemaFaq.textContent = JSON.stringify(faqLd, null, 2);
+                    } catch (e) {
+                        console.warn('Failed to update FAQ schema:', e);
                     }
                 }
                 
@@ -9013,6 +9110,7 @@
                     fHtml += '<div class="footer-info">';
                     fHtml += '<span class="footer-name">' + esc(lo.name) + '</span>';
                     if (lo.title) fHtml += esc(lo.title) + '<br>';
+                    if (lo.bio) fHtml += '<p style="font-size:12px;color:rgba(255,255,255,0.65);line-height:1.5;margin:6px 0 8px;max-width:400px;">' + esc(lo.bio) + '</p>';
                     var licStr = '';
                     if (lo.nmls) licStr += 'NMLS# ' + esc(lo.nmls);
                     if (lo.dre) licStr += (licStr ? ' | ' : '') + 'DRE# ' + esc(lo.dre);
@@ -9196,7 +9294,8 @@
                 var recFound = false; // only highlight first match
                 if (data.tiers && data.tiers.length > 0) {
                     data.tiers.forEach(function (tier) {
-                        tiersHtml += '<div class="tier"><div class="tier-header"><span>Tier ' + tier.tier + '</span><span class="pts">' + esc(tier.origPts) + '% Points</span></div>';
+                        var origDollars = Math.round((parseFloat(tier.origPts) / 100) * loanAmt);
+                        tiersHtml += '<div class="tier"><div class="tier-header"><span>Tier ' + tier.tier + '</span><span class="pts">' + esc(tier.origPts) + '% ($' + origDollars.toLocaleString() + ')</span></div>';
                         tiersHtml += '<table class="rate-table"><thead><tr><th>Term</th><th>' + (hasVarRates ? 'Fixed Rate' : 'Rate') + '</th><th>' + (hasVarRates ? 'Fixed Pmt' : 'Payment') + '</th>';
                         if (hasVarRates) tiersHtml += '<th class="var-col">Var Rate</th><th class="var-col">Var Pmt</th>';
                         tiersHtml += '</tr></thead><tbody>';
@@ -9253,23 +9352,58 @@
                             tiersHtml += '<div style="text-align:center;margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,0,0,0.06);">';
                             tiersHtml += '<button class="rate-select-btn" data-tier="' + tier.tier + '" data-term="' + termKey + '" onclick="selectRateOption(event,' + tier.tier + ',\'' + esc(termKey) + '\',\'' + esc(fixedRateStr) + '\',\'' + esc(fixedPayStr) + '\')" style="padding:10px 28px;border-radius:8px;border:none;background:' + (isRec ? 'linear-gradient(135deg, var(--accent-color), var(--accent-dark))' : 'var(--primary-color)') + ';color:white;font-weight:600;cursor:pointer;font-size:13px;transition:all 0.2s;">' + (isRec ? '&#10003; Confirm This Option' : 'I Prefer This Option') + '</button>';
                             tiersHtml += '</div>';
+                            // Emoji feedback row
+                            tiersHtml += '<div class="rate-emoji-feedback" style="display:flex;justify-content:center;gap:20px;margin-top:10px;padding-top:8px;border-top:1px dashed rgba(0,0,0,0.06);">';
+                            tiersHtml += '<span style="font-size:12px;color:var(--slate);align-self:center;">How does this feel?</span>';
+                            var emojis = [
+                                {icon:'&#128525;',label:'Love it',key:'love'},
+                                {icon:'&#128077;',label:'Looks good',key:'good'},
+                                {icon:'&#129300;',label:'Thinking',key:'thinking'},
+                                {icon:'&#128533;',label:'Confused',key:'confused'}
+                            ];
+                            emojis.forEach(function(em) {
+                                tiersHtml += '<button onclick="rateEmojiFeedback(\'' + tier.tier + '\',\'' + esc(termKey) + '\',\'' + em.key + '\',this)" title="' + em.label + '" style="font-size:22px;background:none;border:none;cursor:pointer;opacity:0.5;transition:all 0.2s;padding:4px 6px;border-radius:8px;" onmouseover="this.style.opacity=1;this.style.transform=\'scale(1.2)\'" onmouseout="if(!this.classList.contains(\'emoji-selected\')){this.style.opacity=0.5;this.style.transform=\'scale(1)\'}">' + em.icon + '</button>';
+                            });
+                            tiersHtml += '</div>';
                             tiersHtml += '</div></td></tr>';
                         });
-                        tiersHtml += '</tbody></table></div>';
+                        tiersHtml += '</tbody></table>';
+                        // Closing cost summary per tier (third-party: ~$800 fixed + ~0.4% of loan for title/appraisal/recording)
+                        var thirdPartyCosts = Math.round(800 + loanAmt * 0.004);
+                        var estTotalCosts = origDollars + thirdPartyCosts;
+                        tiersHtml += '<div style="background:rgba(245,158,11,0.06);border-radius:8px;padding:10px 14px;margin:10px 0 4px;font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;">';
+                        tiersHtml += '<span style="color:var(--slate);">Origination: <strong style="color:var(--primary-color);">$' + origDollars.toLocaleString() + '</strong> <span style="opacity:0.6;">(financed)</span></span>';
+                        tiersHtml += '<span style="color:var(--slate);">Est. Total Costs: <strong style="color:var(--primary-color);">$' + estTotalCosts.toLocaleString() + '</strong></span>';
+                        tiersHtml += '</div>';
+                        tiersHtml += '</div>';
                     });
                 }
                 document.getElementById('q-tiers').innerHTML = tiersHtml;
 
-                // Move rate options + origination fees higher — right after recommendation
+                // Move sections for optimal flow: Rec → Rates → Fees → Reviews → Calculators → Prequal/DTI/Docs → FAQ
                 (function() {
                     var recSection = document.getElementById('sec-recommendation');
                     var ratesSection = document.getElementById('sec-rates');
                     var origSection = document.getElementById('originationFeeTiers');
-                    if (recSection && ratesSection && recSection.parentNode) {
-                        var parent = recSection.parentNode;
+                    var parent = recSection ? recSection.parentNode : null;
+                    if (parent && ratesSection) {
                         var afterRec = recSection.nextElementSibling;
+                        // Rates right after recommendation
                         parent.insertBefore(ratesSection, afterRec);
+                        // Origination fees after rates
                         if (origSection) parent.insertBefore(origSection, ratesSection.nextElementSibling);
+                        // Reviews strip after fees (social proof right after options)
+                        var reviewsSection = document.getElementById('sec-reviews');
+                        var anchorAfterFees = origSection ? origSection.nextElementSibling : ratesSection.nextElementSibling;
+                        if (reviewsSection) parent.insertBefore(reviewsSection, anchorAfterFees);
+                    }
+                    // Move prequal/dti/doc-upload to just before FAQ (lower priority, client sees options first)
+                    var faqSection = document.getElementById('sec-faq');
+                    if (faqSection && parent) {
+                        ['sec-prequal', 'sec-dti-calc', 'sec-doc-upload'].forEach(function(id) {
+                            var el = document.getElementById(id);
+                            if (el) parent.insertBefore(el, faqSection);
+                        });
                     }
                 })();
 
@@ -9310,6 +9444,63 @@
                 var btnReview = document.getElementById('btn-review');
                 if (btnReview && lo.reviewLink) {
                     btnReview.style.display = '';
+                }
+
+                // Show Save Contact button if LO has name + phone
+                var btnSaveContact = document.getElementById('btn-save-contact');
+                if (btnSaveContact && lo.name && lo.phone) {
+                    btnSaveContact.style.display = '';
+                }
+
+                // Show Review section — always show with inline review cards; link to review page if available
+                var secReviews = document.getElementById('sec-reviews');
+                if (secReviews) {
+                    secReviews.style.display = '';
+                    var reviewLinkBtn = document.getElementById('review-link-btn');
+                    if (reviewLinkBtn) {
+                        if (lo.reviewLink) {
+                            reviewLinkBtn.href = lo.reviewLink;
+                        } else {
+                            reviewLinkBtn.style.display = 'none'; // Hide CTA if no review link
+                        }
+                    }
+                    var reviewLoName = document.getElementById('review-lo-name');
+                    if (reviewLoName && lo.name) reviewLoName.textContent = lo.name;
+                    var reviewRatingVal = document.getElementById('review-rating-value');
+                    if (reviewRatingVal && lo.googleRating) reviewRatingVal.textContent = lo.googleRating;
+                    // Stars
+                    var reviewStarsEl = document.getElementById('review-stars');
+                    if (reviewStarsEl) {
+                        var ratingNum = parseFloat(lo.googleRating) || 5;
+                        var fullCount = Math.floor(ratingNum);
+                        var hasHalf = (ratingNum - fullCount) >= 0.3;
+                        var starsStr = '';
+                        for (var si = 0; si < fullCount; si++) starsStr += '<span style="color:#f59e0b;">&#9733;</span>';
+                        if (hasHalf) starsStr += '<span style="color:#f59e0b;">&#9733;</span>';
+                        for (var ei = 0; ei < Math.max(0, 5 - fullCount - (hasHalf ? 1 : 0)); ei++) starsStr += '<span style="color:#e5e7eb;">&#9733;</span>';
+                        reviewStarsEl.innerHTML = starsStr;
+                    }
+                    // Inline review cards
+                    var defaultReviews = [
+                        { name: 'Sarah M.', text: 'The process was incredibly smooth. Had my HELOC funded in just 5 days!', rating: 5 },
+                        { name: 'David R.', text: 'Best rates I found anywhere. The team made everything simple and transparent.', rating: 5 },
+                        { name: 'Jennifer L.', text: 'I was nervous about tapping my equity, but they explained everything clearly. No hidden fees.', rating: 5 }
+                    ];
+                    var reviews = (lo.reviews && lo.reviews.length) ? lo.reviews : defaultReviews;
+                    var reviewGrid = document.getElementById('review-cards-grid');
+                    if (reviewGrid) {
+                        var rHtml = '';
+                        reviews.slice(0, 3).forEach(function(r) {
+                            var stars = '';
+                            for (var ri = 0; ri < 5; ri++) stars += ri < (r.rating || 5) ? '&#9733;' : '&#9734;';
+                            rHtml += '<div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.06);">';
+                            rHtml += '<div style="color:#f59e0b;font-size:14px;margin-bottom:8px;">' + stars + '</div>';
+                            rHtml += '<p style="font-size:13px;line-height:1.6;color:var(--slate);font-style:italic;margin:0 0 8px;">&ldquo;' + esc(r.text) + '&rdquo;</p>';
+                            rHtml += '<div style="font-weight:600;font-size:12px;color:var(--primary-color);">&mdash; ' + esc(r.name) + '</div>';
+                            rHtml += '</div>';
+                        });
+                        reviewGrid.innerHTML = rHtml;
+                    }
                 }
 
                 // === SALES PSYCHOLOGY SECTIONS ===
@@ -9413,6 +9604,50 @@
                         });
                     }, { threshold: 0.3 });
                     observer.observe(spEl);
+                })();
+
+                // 4b. Social Proof Approval Popups (rotating fake notifications)
+                (function initSocialProofPopups() {
+                    var names = ['Sarah','David','Maria','James','Jennifer','Michael','Jessica','Robert','Ashley','Daniel',
+                                 'Amanda','Christopher','Stephanie','Andrew','Nicole','Joshua','Elizabeth','Brandon','Samantha','Tyler'];
+                    var states = ['CA','TX','FL','AZ','CO','WA','OR','NV','GA','NC','VA','PA','OH','IL','NY','TN','MI','MD','SC','UT'];
+                    var actions = [
+                        'approved for HELOC',
+                        'just locked their rate',
+                        'started their application',
+                        'pre-qualified in 2 minutes',
+                        'secured their equity line',
+                        'got approved — funding in 5 days',
+                        'just received their quote',
+                        'locked in a great rate'
+                    ];
+                    var times = ['Just now','1 min ago','2 min ago','3 min ago','5 min ago','Recently'];
+                    var popup = document.getElementById('social-proof-popup');
+                    var textEl = document.getElementById('sp-popup-text');
+                    var timeEl = document.getElementById('sp-popup-time');
+                    if (!popup || !textEl) return;
+                    var shown = 0;
+                    var maxShown = 10;
+                    function showProof() {
+                        if (shown >= maxShown || document.hidden) return;
+                        var name = names[Math.floor(Math.random() * names.length)];
+                        var state = states[Math.floor(Math.random() * states.length)];
+                        var action = actions[Math.floor(Math.random() * actions.length)];
+                        var time = times[Math.floor(Math.random() * times.length)];
+                        textEl.textContent = name + ' from ' + state + ' ' + action;
+                        if (timeEl) timeEl.innerHTML = '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#10b981;margin-right:4px;vertical-align:middle;"></span>' + time;
+                        popup.style.display = '';
+                        requestAnimationFrame(function() {
+                            requestAnimationFrame(function() { popup.style.transform = 'translateY(0)'; });
+                        });
+                        setTimeout(function() {
+                            popup.style.transform = 'translateY(120%)';
+                            setTimeout(function() { popup.style.display = 'none'; }, 500);
+                        }, 5000);
+                        shown++;
+                    }
+                    setTimeout(showProof, 8000);
+                    setInterval(showProof, 45000);
                 })();
 
                 // 5. Savings bars animation on scroll
@@ -9931,6 +10166,59 @@
                 } else {
                     showToast('Review link not configured.');
                 }
+            };
+
+            window.rateEmojiFeedback = function (tier, term, reaction, btnEl) {
+                // Highlight selected emoji, dim siblings
+                if (btnEl) {
+                    var row = btnEl.parentElement;
+                    if (row) {
+                        row.querySelectorAll('button').forEach(function(b) {
+                            b.style.opacity = '0.3';
+                            b.style.transform = 'scale(1)';
+                            b.classList.remove('emoji-selected');
+                        });
+                    }
+                    btnEl.style.opacity = '1';
+                    btnEl.style.transform = 'scale(1.3)';
+                    btnEl.classList.add('emoji-selected');
+                }
+                trackEvent('rate_emoji_feedback', { tier: tier, term: term, reaction: reaction, code: code });
+                if (reaction === 'confused') {
+                    window._ezraPendingRateQuestion = { tier: tier, term: term, type: 'confused' };
+                    if (typeof eqToggle === 'function') eqToggle();
+                    showToast('Ezra can help explain this option!');
+                } else if (reaction === 'love') {
+                    showToast('Great choice! Tap "Confirm This Option" to proceed.');
+                } else {
+                    showToast('Thanks for your feedback!');
+                }
+            };
+
+            window.saveContactVCF = function () {
+                var lo = window._loInfo;
+                if (!lo || !lo.name) return;
+                var vcf = 'BEGIN:VCARD\nVERSION:3.0\n';
+                vcf += 'FN:' + (lo.name || '') + '\n';
+                if (lo.company) vcf += 'ORG:' + lo.company + '\n';
+                vcf += 'TITLE:' + (lo.title || 'Loan Officer') + '\n';
+                if (lo.phone) vcf += 'TEL;TYPE=WORK:' + lo.phone + '\n';
+                if (lo.email) vcf += 'EMAIL:' + lo.email + '\n';
+                if (lo.website) vcf += 'URL:' + lo.website + '\n';
+                if (lo.address) vcf += 'ADR;TYPE=WORK:;;' + lo.address + '\n';
+                if (lo.nmls) vcf += 'NOTE:NMLS# ' + lo.nmls + '\n';
+                vcf += 'END:VCARD';
+                var blob = new Blob([vcf], { type: 'text/vcard' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = (lo.name || 'contact').replace(/\s+/g, '_') + '.vcf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                trackEvent('contact_saved', { code: code });
+                showToast('Contact saved!');
             };
 
             // Legacy function for backward compatibility

@@ -4513,7 +4513,7 @@
             #tab-rates > div[style*="grid-template-columns: 1fr 1fr 1fr"] {
                 grid-template-columns: 1fr !important;
             }
-
+        }
 
 
         /* --- Mobile: 480px --- */
@@ -6113,6 +6113,10 @@
                             placeholder="https://g.page/.../review" oninput="debouncedUpdateProfile()"></div>
                     <div class="input-field"><label>Book a Call Button Text <span class="help-tip">?<span class="help-tip-text">Customize the CTA text for your calendar link button.</span></span></label><input type="text" id="lo-book-call-text"
                             placeholder="Book a Call to Get Started" value="Book a Call to Get Started" oninput="debouncedUpdateProfile()"></div>
+                </div>
+                <div class="input-group" style="margin-top:8px;">
+                    <div class="input-field" style="grid-column: 1 / -1;"><label>About / Bio <span class="help-tip">?<span class="help-tip-text">A short bio shown on client quote pages. Tell clients about your experience and what makes you different.</span></span></label>
+                    <textarea id="lo-bio" rows="3" placeholder="Tell clients about yourself (shown on quote page)..." style="width:100%;border-radius:8px;border:1px solid var(--border);padding:10px;font-size:13px;resize:vertical;font-family:var(--font-body);background:var(--card-bg);color:var(--text-color);" oninput="debouncedUpdateProfile()"></textarea></div>
                 </div>
 
                 <!-- Notification Preferences -->
@@ -12301,6 +12305,7 @@ Best regards,
                 // Titanium v5.9.3 - New LO Profile fields
                 loReviewLink: getVal('lo-review-link'),
                 loBookCallText: getVal('lo-book-call-text'),
+                loBio: (document.getElementById('lo-bio') || {}).value || '',
                 // Titanium v5.9.3 - Client Quote Features
                 wlLenderNameManuallyEdited: window.wlLenderNameManuallyEdited || false,
                 showPrequal: document.getElementById('chk-show-prequal')?.classList.contains('active') !== false,
@@ -12331,7 +12336,7 @@ Best regards,
                 pdfRatesTable: document.getElementById('chk-pdf-rates-table')?.checked ?? true,
                 pdfLogo: document.getElementById('chk-pdf-logo')?.checked ?? true,
             };
-            localStorage.setItem('aboveAllCarbonHELOC', JSON.stringify(data));
+            try { localStorage.setItem('aboveAllCarbonHELOC', JSON.stringify(data)); } catch (e) { /* storage full or blocked */ }
             _debouncedCloudSync(); // Sync profile to Supabase in background
             setTimeout(() => {
                 if (autosaveStatus) {
@@ -12537,6 +12542,7 @@ Best regards,
                     // Titanium v5.9.3 - Load new LO Profile fields
                     if (data.loReviewLink) document.getElementById('lo-review-link').value = data.loReviewLink;
                     if (data.loBookCallText) document.getElementById('lo-book-call-text').value = data.loBookCallText;
+                    if (data.loBio) document.getElementById('lo-bio').value = data.loBio;
                     // Track if lender name was manually edited
                     if (data.wlLenderNameManuallyEdited !== undefined) {
                         window.wlLenderNameManuallyEdited = data.wlLenderNameManuallyEdited;
@@ -14549,6 +14555,8 @@ Sent via Above All Carbon HELOC Tool`;
                 logo: g('lo-logo-url'),
                 applyLink: g('lo-apply-link') || g('wl-apply-link'),
                 calendarLink: g('lo-calendar-link') || g('ghl-calendar-link'),
+                reviewLink: g('lo-review-link'),
+                bio: (document.getElementById('lo-bio') || {}).value || '',
                 googleRating: '5.0',
                 tier: window.currentUserTier || 'carbon'
             };
@@ -14682,6 +14690,8 @@ Sent via Above All Carbon HELOC Tool`;
                 logo: g('lo-logo-url'),
                 applyLink: g('lo-apply-link') || g('wl-apply-link'),
                 calendarLink: g('lo-calendar-link') || g('ghl-calendar-link'),
+                reviewLink: g('lo-review-link'),
+                bio: (document.getElementById('lo-bio') || {}).value || '',
                 googleRating: '5.0',
                 tier: window.currentUserTier || 'carbon'
             };

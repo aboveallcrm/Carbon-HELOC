@@ -889,7 +889,7 @@
 
         searchLocalKB(query) {
             if (!query) return '';
-            const terms = query.toLowerCase().split(/\\s+/).filter(t => t.length > 2);
+            const terms = query.toLowerCase().split(/\s+/).filter(t => t.length > 2);
             if (terms.length === 0) return '';
 
             const matches = this.localDocuments.map(doc => {
@@ -1236,8 +1236,7 @@ RESPONSE RULES
 
         // Tier gate: Carbon users get upsell-only mode, Titanium+ gets full Ezra
         const tier = (EzraState.userTier || 'carbon').toLowerCase();
-        const tierLevels = { carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 };
-        const userLevel = tierLevels[tier] || 0;
+        const userLevel = TIER_LEVELS[tier] || 0;
         if (userLevel < 1 && window.currentUserRole !== 'super_admin') {
             EzraState._upsellMode = true;
             console.log('Ezra: Carbon tier — upsell mode active');
@@ -1336,6 +1335,9 @@ RESPONSE RULES
         EzraState._upsellMsgIndex++;
         return msg;
     }
+
+    // Tier level mapping — IIFE-scoped so all functions can access it
+    const TIER_LEVELS = { carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 };
 
     // Intent-to-tier mapping for granular feature gating
     const INTENT_TIER_MAP = {
@@ -5020,7 +5022,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         // ── INTENT TIER GATING — check if user has access to this feature ──
         const requiredLevel = INTENT_TIER_MAP[intent];
         if (requiredLevel !== undefined && window.currentUserRole !== 'super_admin') {
-            const currentLevel = tierLevels[(EzraState.userTier || 'carbon').toLowerCase()] || 0;
+            const currentLevel = TIER_LEVELS[(EzraState.userTier || 'carbon').toLowerCase()] || 0;
             if (currentLevel < requiredLevel) {
                 return { content: getIntentUpgradeMessage(intent), metadata: { model: 'local', intent: 'tier_gate' } };
             }
@@ -6645,7 +6647,7 @@ Just tell me what you know, like "property is worth $750k" or "they owe $350k on
                 // Handle rates input
                 const portalData = parseLenderPortalData(message);
                 if (portalData) {
-                    applyPortalData(portalData);
+                    applyMultiTierData(portalData);
                     EzraState.onboardingStep = 4;
                     return `\u2705 **Rates imported successfully!**
 
@@ -6664,7 +6666,7 @@ Your quote is ready! Click **"Generate Client Link"** in the Presentation sectio
                 
                 const convRates = parseConversationalRates(message);
                 if (convRates.tiers.length > 0) {
-                    applyConversationalRates(convRates);
+                    applyMultiTierData(convRates);
                     EzraState.onboardingStep = 4;
                     return `\u2705 **Rates added!**
 

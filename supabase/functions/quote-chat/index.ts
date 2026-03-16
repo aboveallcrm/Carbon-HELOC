@@ -2,8 +2,11 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error("Missing required env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY");
+}
 
 const PROVIDER_FETCH_TIMEOUT_MS = 15_000;
 
@@ -553,7 +556,7 @@ serve(async (req: Request) => {
     if (link.lead_id && link.user_id) {
       sb.rpc("update_lead_engagement", { lead_uuid: link.lead_id }).then(
         () => {}
-      );
+      ).catch((err: unknown) => console.error("Failed to update engagement:", err));
     }
 
     const remaining = Math.max(0, RATE_LIMIT - currentCount);

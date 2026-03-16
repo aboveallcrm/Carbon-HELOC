@@ -68,78 +68,83 @@ async function handleContactUpsert(supabase: any, payload: any) {
   const contact = payload.contact || payload
   const locationId = contact.locationId || payload.locationId
   
-  // Find the user with this GHL integration
-  const { data: integration, error: intError } = await supabase
-    .from('crm_integrations')
-    .select('user_id, field_mappings, config')
-    .eq('crm_type', 'ghl')
-    .eq('ghl_location_id', locationId)
+  // Find the user with this GHL integration (uses user_integrations table)
+  const { data: integrations } = await supabase
+    .from('user_integrations')
+    .select('user_id, metadata')
+    .eq('provider', 'ghl')
     .eq('is_active', true)
-    .single()
 
-  if (intError || !integration) {
+  // Match by location ID in metadata
+  const integration = (integrations || []).find((i: any) =>
+    i.metadata?.location_id === locationId || i.metadata?.ghl_location_id === locationId
+  ) || (integrations && integrations.length === 1 ? integrations[0] : null)
+
+  if (!integration) {
     console.log('No active GHL integration found for location:', locationId)
     return
   }
 
   // Map GHL contact to Carbon lead format
   const customFields = contact.customFields || {}
-  const fieldMappings = integration.field_mappings || {}
+  const config = integration.metadata || {}
+  const fieldMappings = config.field_mappings || {}
   
-  const leadData = {
+  const leadData: Record<string, any> = {
     user_id: integration.user_id,
-    external_id: contact.id,
+    crm_contact_id: contact.id,
     crm_source: 'ghl',
-    name: `${contact.firstName || ''} ${contact.lastName || ''}`.trim(),
+    source: 'ghl',
+    first_name: contact.firstName || '',
+    last_name: contact.lastName || '',
     email: contact.email,
     phone: contact.phone,
-    address: contact.address1,
-    city: contact.city,
-    state: contact.state,
-    zip: contact.postalCode,
-    
-    // Map custom fields
-    credit_score: customFields[fieldMappings.credit_score || 'credit_score'],
-    home_value: parseFloat(customFields[fieldMappings.home_value || 'home_value']) || null,
-    mortgage_balance: parseFloat(customFields[fieldMappings.mortgage_balance || 'mortgage_balance']) || null,
-    loan_amount: parseFloat(customFields[fieldMappings.loan_amount || 'loan_amount']) || null,
-    interest_rate: parseFloat(customFields[fieldMappings.interest_rate || 'interest_rate']) || null,
-    
-    sync_status: 'synced',
-    last_sync_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+    status: 'new',
+    stage: 'new',
+    metadata: {
+      address: contact.address1,
+      city: contact.city,
+      state: contact.state,
+      zip: contact.postalCode,
+      credit_score: customFields[fieldMappings.credit_score || 'credit_score'] || null,
+      home_value: parseFloat(customFields[fieldMappings.home_value || 'home_value']) || null,
+      mortgage_balance: parseFloat(customFields[fieldMappings.mortgage_balance || 'mortgage_balance']) || null,
+      loan_amount: parseFloat(customFields[fieldMappings.loan_amount || 'loan_amount']) || null,
+      interest_rate: parseFloat(customFields[fieldMappings.interest_rate || 'interest_rate']) || null,
+      ghl_location_id: locationId,
+      raw: contact
+    }
   }
 
-  // Check if lead already exists
+  // Check if lead already exists by crm_contact_id or email
   const { data: existingLead } = await supabase
     .from('leads')
     .select('id')
-    .eq('external_id', contact.id)
+    .eq('crm_contact_id', contact.id)
     .eq('crm_source', 'ghl')
     .single()
 
   if (existingLead) {
-    // Update existing lead
+    // Update existing lead — don't overwrite status/stage
+    delete leadData.status
+    delete leadData.stage
     const { error } = await supabase
       .from('leads')
       .update(leadData)
       .eq('id', existingLead.id)
-    
+
     if (error) throw error
     console.log('Updated lead from GHL:', existingLead.id)
   } else {
     // Create new lead
-    leadData.created_at = new Date().toISOString()
-    leadData.status = 'new'
-    
     const { data: newLead, error } = await supabase
       .from('leads')
       .insert(leadData)
       .select()
       .single()
-    
+
     if (error) throw error
-    console.log('Created new lead from GHL:', newLead.id)
+    console.log('Created new lead from GHL:', newLead?.id)
   }
 }
 
