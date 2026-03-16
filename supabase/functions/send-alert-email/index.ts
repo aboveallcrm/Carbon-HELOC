@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-const ALERT_TO_EMAIL = Deno.env.get("ALERT_TO_EMAIL") || "barraganmortgage@gmail.com";
+const ALERT_TO_EMAIL = Deno.env.get("ALERT_TO_EMAIL") || "";
 const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "alerts@notifications.aboveallcrm.com";
 
 const corsHeaders = {
@@ -41,6 +41,10 @@ serve(async (req: Request) => {
 
     if (!RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY not configured");
+    }
+
+    if (!ALERT_TO_EMAIL) {
+      throw new Error("ALERT_TO_EMAIL not configured");
     }
 
     const { type, subject, details } = await req.json();

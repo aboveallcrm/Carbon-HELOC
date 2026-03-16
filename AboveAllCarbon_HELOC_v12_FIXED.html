@@ -6234,20 +6234,20 @@
                     Company Settings</h4>
                 <div class="input-group">
                     <div class="input-field"><label>Company Name</label><input type="text" id="lo-company"
-                            value="West Capital Lending" oninput="debouncedUpdateProfile()"></div>
-                    <div class="input-field"><label>Co NMLS</label><input type="text" id="co-nmls" value="1566096"
-                            oninput="debouncedUpdateProfile()"></div>
-                    <div class="input-field"><label>Co DRE</label><input type="text" id="co-dre" value="02022356"
-                            oninput="debouncedUpdateProfile()"></div>
+                            value="" placeholder="Your Company Name" oninput="debouncedUpdateProfile()"></div>
+                    <div class="input-field"><label>Co NMLS</label><input type="text" id="co-nmls" value=""
+                            placeholder="Company NMLS#" oninput="debouncedUpdateProfile()"></div>
+                    <div class="input-field"><label>Co DRE</label><input type="text" id="co-dre" value=""
+                            placeholder="Company DRE#" oninput="debouncedUpdateProfile()"></div>
                 </div>
                 <div class="input-group" style="margin-top:8px;">
                     <div class="input-field" style="flex: 2;"><label>Office Address</label><input type="text"
-                            id="lo-address" value="17911 Von Karman Ave Suite 400, Irvine, CA 92614"
-                            oninput="debouncedUpdateProfile()"></div>
+                            id="lo-address" value=""
+                            placeholder="123 Main St, Suite 100, City, ST 12345" oninput="debouncedUpdateProfile()"></div>
                     <div class="input-field"><label>Logo URL</label>
                         <div style="display:flex;gap:6px;"><input type="text" id="lo-logo-url"
-                                value="https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/696029737cc1b904fa792d8c.png"
-                                oninput="debouncedUpdateProfile()" style="flex:1;"><button type="button" class="btn"
+                                value=""
+                                placeholder="https://your-logo-url.png" oninput="debouncedUpdateProfile()" style="flex:1;"><button type="button" class="btn"
                                 style="background:rgba(255,255,255,0.1);font-size:9px;padding:6px 12px;white-space:nowrap;"
                                 onclick="uploadSettingsImage('lo-logo-url','logoUrl')">📷 Upload</button></div>
                     </div>
@@ -6264,7 +6264,7 @@
                     White Label Branding</h4>
                 <div class="input-group">
                     <div class="input-field" style="flex: 2;"><label>Lender Name (Header)</label><input type="text"
-                            id="wl-lender-name" value="West Capital HELOC Proposal" oninput="debouncedApplyWhiteLabel()"></div>
+                            id="wl-lender-name" value="" placeholder="Your Company HELOC Proposal" oninput="debouncedApplyWhiteLabel()"></div>
                     <div class="input-field"><label>Tagline</label><input type="text" id="wl-tagline"
                             value="Unlock Your Wealth Without Selling" oninput="debouncedApplyWhiteLabel()"></div>
                 </div>
@@ -7323,7 +7323,7 @@ Best regards,
     <!-- PROPOSAL OUTPUT -->
     <div class="main-container" id="proposal-container">
         <div class="premium-header" id="proposal-header">
-            <h1 id="header-title">West Capital HELOC Proposal</h1>
+            <h1 id="header-title">HELOC Proposal</h1>
             <div class="header-subtitle" id="header-subtitle">Unlock Your Wealth Without Selling</div>
         </div>
         <div class="content-body">
@@ -7730,21 +7730,21 @@ Best regards,
                     <span id="footer-website">—</span>
                     <div class="footer-stars">★★★★★ 5.0 Google Rating</div>
                 </div>
-                <img src="https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/696029737cc1b904fa792d8c.png"
-                    alt="Company Logo" class="company-logo-footer" id="company-logo-footer" loading="lazy">
+                <img src=""
+                    alt="Company Logo" class="company-logo-footer" id="company-logo-footer" loading="lazy" style="display:none;">
             </div>
             <div class="footer-legal">
                 <img src="https://assets.cdn.filesafe.space/eVB3bUDr8bdQfRu6ae03/media/693bb403ed957f64da26426c.jpg"
                     class="ehl-logo" alt="Equal Housing Lender" loading="lazy">
-                <div><strong id="footer-company">West Capital Lending</strong> | NMLS# <span
-                        id="footer-co-nmls">1566096</span> | DRE# <span id="footer-co-dre">02022356</span><br><span
-                        id="footer-address">17911 Von Karman Ave Suite 400, Irvine, CA 92614</span><br><br>Equal Housing
+                <div><strong id="footer-company">—</strong> | NMLS# <span
+                        id="footer-co-nmls">—</span> | DRE# <span id="footer-co-dre">—</span><br><span
+                        id="footer-address">—</span><br><br>Equal Housing
                     Lender. All loan programs subject to credit approval. Rates, terms, and conditions are subject to
                     change without notice. This is not a commitment to lend. Licensed by the California Department of
                     Financial Protection and Innovation under the California Residential Mortgage Lending Act.</div>
             </div>
             <div class="tool-protection">PROPRIETARY TOOL NOTICE: This Above All Carbon HELOC Quote Tool is proprietary
-                software owned by Above All CRM / West Capital Lending. Unauthorized copying, distribution,
+                software owned by Above All CRM. Unauthorized copying, distribution,
                 modification, or reverse engineering is strictly prohibited. © 2024-2026 Above All CRM. All rights
                 reserved.</div>
         </footer>
@@ -9199,10 +9199,10 @@ Best regards,
                     '<div class="ob-body">' +
                     '<div style="display:flex;gap:20px;align-items:flex-start;">' +
                     '<div style="flex:1;">' +
-                    '<div class="ob-field"><label>Company Name *</label><input type="text" data-ob-field="loCompany" data-ob-required placeholder="e.g., West Capital Lending"><div class="ob-error">Company name is required</div></div>' +
+                    '<div class="ob-field"><label>Company Name *</label><input type="text" data-ob-field="loCompany" data-ob-required placeholder="e.g., ABC Lending"><div class="ob-error">Company name is required</div></div>' +
                     '<div class="ob-row">' +
-                    '<div class="ob-field"><label>Company NMLS</label><input type="text" data-ob-field="coNmls" placeholder="e.g., 1566096"></div>' +
-                    '<div class="ob-field"><label>Company DRE</label><input type="text" data-ob-field="coDre" placeholder="e.g., 02022356"></div>' +
+                    '<div class="ob-field"><label>Company NMLS</label><input type="text" data-ob-field="coNmls" placeholder="e.g., 1234567"></div>' +
+                    '<div class="ob-field"><label>Company DRE</label><input type="text" data-ob-field="coDre" placeholder="e.g., 01234567"></div>' +
                     '</div>' +
                     '<div class="ob-field"><label>Office Address</label><input type="text" data-ob-field="loAddress" placeholder="123 Main St, Suite 100, City, ST 12345"></div>' +
                     '<div class="ob-field ob-upload-group"><label>LO Headshot</label><div class="ob-upload-row"><input type="url" data-ob-field="headshotUrl" placeholder="https://... or upload" oninput="OnboardingWizard._updatePreview()"><button type="button" class="ob-upload-btn" id="ob-upload-btn-headshotUrl" onclick="OnboardingWizard._uploadFile(\'headshotUrl\',\'image/*\')">&#128247; Upload</button></div><div id="ob-file-preview-headshotUrl"></div><div class="ob-hint">Square crop works best. Upload an image or paste a URL.</div></div>' +
@@ -11753,7 +11753,9 @@ Best regards,
             if (coDre) document.getElementById('footer-co-dre').innerText = coDre.value;
             if (loAddress) document.getElementById('footer-address').innerText = loAddress.value;
             if (loHeadshotUrl && loHeadshotUrl.value) document.getElementById('footer-img').src = loHeadshotUrl.value;
-            if (loLogoUrl && loLogoUrl.value) document.getElementById('company-logo-footer').src = loLogoUrl.value;
+            var footerLogo = document.getElementById('company-logo-footer');
+            if (loLogoUrl && loLogoUrl.value) { footerLogo.src = loLogoUrl.value; footerLogo.style.display = ''; }
+            else if (footerLogo) { footerLogo.style.display = 'none'; }
             autoSave();
         }
 
@@ -12035,7 +12037,8 @@ Best regards,
 
         function resetWhiteLabel() {
             loadPreset('westcap');
-            document.getElementById('wl-lender-name').value = 'West Capital HELOC Proposal';
+            var companyName = document.getElementById('lo-company')?.value || 'HELOC';
+            document.getElementById('wl-lender-name').value = companyName + ' HELOC Proposal';
             document.getElementById('wl-tagline').value = 'Unlock Your Wealth Without Selling';
             applyWhiteLabel();
         }
@@ -13330,7 +13333,7 @@ Sent via Above All Carbon HELOC Tool`;
                         subject: emailSubject,
                         html: emailHtml,
                         emailFrom: fromEmail,
-                        emailFromName: fromName || 'West Capital Lending'
+                        emailFromName: fromName || (document.getElementById('lo-company')?.value || 'Your Loan Officer')
                     })
                 });
 
