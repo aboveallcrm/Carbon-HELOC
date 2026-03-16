@@ -473,11 +473,10 @@
             margin-top: 12px;
             margin-bottom: 4px;
             position: relative;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
             max-width: 100%;
             padding: 0 10px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .header h1.dynamic-lender-name {
@@ -1190,12 +1189,12 @@
             text-transform: uppercase;
             letter-spacing: 0.8px;
             color: var(--slate);
-            opacity: 0.55;
+            opacity: 0.7;
             transition: opacity 0.3s ease;
         }
 
         .trust-badge:hover {
-            opacity: 0.85;
+            opacity: 1;
         }
 
         .trust-badge-icon {
@@ -4373,6 +4372,41 @@
             .pvf-trust-bar {
                 flex-direction: column;
                 gap: 12px;
+            }
+
+            /* Fix 3: Tier comparison — card layout on mobile instead of table */
+            .tier-compare-container {
+                padding: 12px !important;
+            }
+
+            .tier-compare-container table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                font-size: 12px;
+            }
+
+            .tier-compare-container th,
+            .tier-compare-container td {
+                padding: 10px 8px !important;
+                font-size: 11px !important;
+                min-width: 90px;
+            }
+
+            /* Fix 4: Floating bar — add bottom padding to page content */
+            .body-content {
+                padding-bottom: 100px !important;
+            }
+
+            /* Fix 6: Ezra sidebar — hide on mobile, full chat only */
+            .eq-sidebar {
+                display: none !important;
+            }
+
+            /* Fix 7: Trust badges — cleaner mobile layout */
+            .trust-badges {
+                flex-wrap: wrap;
+                justify-content: center;
             }
         }
 
@@ -8187,11 +8221,11 @@
             </div>
         </div>
         <div class="trust-badges reveal" id="trust-badges">
-            <div class="trust-badge"><span class="trust-badge-icon">&#128274;</span>Licensed Lender</div>
-            <div class="trust-badge"><span class="trust-badge-icon">&#9989;</span>Insured</div>
-            <div class="trust-badge"><span class="trust-badge-icon">&#127942;</span>BBB Accredited</div>
-            <div class="trust-badge"><span class="trust-badge-icon">&#128196;</span>NMLS Registered</div>
-            <div class="trust-badge"><span class="trust-badge-icon">&#128197;</span>Est. 2018</div>
+            <div class="trust-badge"><span class="trust-badge-icon">&#128274;&#65039;</span>Licensed Lender</div>
+            <div class="trust-badge"><span class="trust-badge-icon">&#9989;&#65039;</span>Insured</div>
+            <div class="trust-badge"><span class="trust-badge-icon">&#127942;&#65039;</span>BBB Accredited</div>
+            <div class="trust-badge"><span class="trust-badge-icon">&#128203;</span>NMLS Registered</div>
+            <div class="trust-badge"><span class="trust-badge-icon">&#127968;</span>Est. 2018</div>
         </div>
         <div class="quote-footer reveal" id="sec-footer"></div>
         <div class="footer-powered" id="footer-powered">Powered by <span class="powered-by-name">Above All Carbon</span></div>
@@ -8517,9 +8551,21 @@
             window._ezraSpanishMode = (lang === 'es');
             window._ezraLanguage = lang;
 
+            // Re-render dynamically generated sections with correct language
+            if (window._quoteData) {
+                var qd = window._quoteData;
+                var opts = qd.linkOptions || {};
+                if (typeof initTierComparison === 'function') {
+                    try { initTierComparison(opts, qd); } catch (e) {}
+                }
+                if (typeof initTestimonials === 'function') {
+                    try { initTestimonials(opts); } catch (e) {}
+                }
+            }
+
             // Store preference
             localStorage.setItem('preferredLanguage', lang);
-            
+
             // Show toast confirmation
             if (typeof showToast === 'function') {
                 showToast(lang === 'es' ? 'Idioma cambiado a Espa\u00f1ol' : 'Language switched to English', 'success');
@@ -8926,10 +8972,8 @@
                 var qTitle = document.getElementById('q-title');
                 if (qTitle) {
                     qTitle.textContent = titleText;
-                    // Add dynamic class for very long names
-                    if (lenderName.length > 25) {
-                        qTitle.classList.add('dynamic-lender-name');
-                    }
+                    // Always add dynamic class to handle mobile truncation
+                    qTitle.classList.add('dynamic-lender-name');
                 }
                 
                 var pageTitle = document.getElementById('page-title');
@@ -9213,6 +9257,19 @@
                     });
                 }
                 document.getElementById('q-tiers').innerHTML = tiersHtml;
+
+                // Move rate options + origination fees higher — right after recommendation
+                (function() {
+                    var recSection = document.getElementById('sec-recommendation');
+                    var ratesSection = document.getElementById('sec-rates');
+                    var origSection = document.getElementById('originationFeeTiers');
+                    if (recSection && ratesSection && recSection.parentNode) {
+                        var parent = recSection.parentNode;
+                        var afterRec = recSection.nextElementSibling;
+                        parent.insertBefore(ratesSection, afterRec);
+                        if (origSection) parent.insertBefore(origSection, ratesSection.nextElementSibling);
+                    }
+                })();
 
                 // Store quoteData on window for cross-section access
                 window._quoteData = data;

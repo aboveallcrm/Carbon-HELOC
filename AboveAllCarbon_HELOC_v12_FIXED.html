@@ -8084,17 +8084,21 @@ Best regards,
             updateQuote();
             setupAddressAutocomplete();
 
-            // Show welcome hero if this looks like a first visit (no client name saved)
+            // Show welcome hero only on very first visit (never seen before)
             var hero = document.getElementById('welcome-hero');
             var clientName = document.getElementById('in-client-name');
             if (hero && clientName) {
-                if (!clientName.value || clientName.value.trim() === '') {
+                var heroSeen = localStorage.getItem('heroSeen');
+                if (!heroSeen && (!clientName.value || clientName.value.trim() === '')) {
                     hero.style.display = 'block';
                 } else {
                     hero.style.display = 'none';
                 }
-                // Auto-hide hero when user opens settings or starts interacting
-                var hideHero = function () { if (hero) hero.style.display = 'none'; };
+                // Auto-hide hero and mark as seen permanently
+                var hideHero = function () {
+                    if (hero) hero.style.display = 'none';
+                    localStorage.setItem('heroSeen', '1');
+                };
                 document.getElementById('btn-toggle-admin').addEventListener('click', hideHero);
                 clientName.addEventListener('input', hideHero);
             }
