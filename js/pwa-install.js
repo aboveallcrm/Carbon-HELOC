@@ -56,6 +56,11 @@
     }
 
     // ==================== INSTALL PROMPT ====================
+    function isMobileDevice() {
+        return /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+               (window.innerWidth <= 768 && 'ontouchstart' in window);
+    }
+
     function setupInstallPrompt() {
         // Capture the install prompt event (Android/Chrome)
         window.addEventListener('beforeinstallprompt', (e) => {
@@ -63,9 +68,14 @@
             e.preventDefault();
             // Store the event for later use
             deferredPrompt = e;
-            
+
             // Update UI in profile tab if it exists
             updateInstallButtonUI();
+
+            // Show install banner on mobile only (after short delay)
+            if (isMobileDevice() && !isRunningStandalone() && !getInstallDismissed()) {
+                setTimeout(() => showMobileInstallBanner(), 3000);
+            }
         });
 
         // Handle app installed
@@ -73,12 +83,20 @@
             if (CONFIG.debug) console.log('[PWA] App installed');
             isInstalled = true;
             deferredPrompt = null;
-            showToast('🎉 App installed! Access it from your home screen.', 'success');
+            hideMobileInstallBanner();
+            showToast('App installed! Access it from your home screen.', 'success');
             updateInstallButtonUI();
         });
-        
+
         // Update UI on load
         updateInstallButtonUI();
+
+        // iOS: show install banner on mobile Safari after delay
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        if (isIOS && isSafari && !isRunningStandalone() && !getInstallDismissed()) {
+            setTimeout(() => showMobileInstallBanner(), 4000);
+        }
     }
     
     // Update the install button in Profile tab
@@ -184,6 +202,67 @@
     
     function dismissIOSPrompt() {
         hideIOSPrompt();
+        const dismissUntil = Date.now() + (7 * 24 * 60 * 60 * 1000);
+        localStorage.setItem('pwa_install_dismissed', dismissUntil.toString());
+    }
+
+    // ==================== MOBILE INSTALL BANNER ====================
+    function showMobileInstallBanner() {
+        if (getInstallDismissed() || isRunningStandalone()) return;
+
+        // Remove existing
+        const existing = document.getElementById('pwa-mobile-banner');
+        if (existing) existing.remove();
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+        const banner = document.createElement('div');
+        banner.id = 'pwa-mobile-banner';
+        banner.innerHTML = `
+            <div style="
+                position:fixed; bottom:0; left:0; right:0; z-index:99999;
+                background:linear-gradient(135deg, #0f2b4c 0%, #1a3a5c 100%);
+                border-top:2px solid #c5a059;
+                padding:14px 16px; display:flex; align-items:center; gap:12px;
+                box-shadow:0 -4px 20px rgba(0,0,0,0.4);
+                font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+                animation: pwa-slide-up 0.4s ease-out;
+            ">
+                <img src="./favicon-96x96.png" alt="Above All CRM" style="width:44px;height:44px;border-radius:10px;flex-shrink:0;">
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:700;font-size:14px;color:#fff;line-height:1.3;">Above All CRM</div>
+                    <div style="font-size:12px;color:#c5a059;line-height:1.3;">
+                        ${isIOS ? 'Tap Share then "Add to Home Screen"' : 'Install for quick access & notifications'}
+                    </div>
+                </div>
+                ${isIOS
+                    ? '<button onclick="PWA.showIOSInstallPrompt();PWA.hideMobileBanner();" style="padding:8px 16px;border-radius:8px;border:none;background:#c5a059;color:#0f172a;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0;">How?</button>'
+                    : '<button onclick="PWA.install();PWA.hideMobileBanner();" style="padding:8px 16px;border-radius:8px;border:none;background:#c5a059;color:#0f172a;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0;">Install</button>'
+                }
+                <button onclick="PWA.dismissMobileBanner()" style="background:none;border:none;color:#ffffff80;font-size:20px;cursor:pointer;padding:0 4px;line-height:1;flex-shrink:0;">&times;</button>
+            </div>
+            <style>
+                @keyframes pwa-slide-up {
+                    from { transform: translateY(100%); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+            </style>
+        `;
+        document.body.appendChild(banner);
+    }
+
+    function hideMobileInstallBanner() {
+        const banner = document.getElementById('pwa-mobile-banner');
+        if (banner) {
+            banner.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            banner.style.transform = 'translateY(100%)';
+            banner.style.opacity = '0';
+            setTimeout(() => banner.remove(), 300);
+        }
+    }
+
+    function dismissMobileBanner() {
+        hideMobileInstallBanner();
         const dismissUntil = Date.now() + (7 * 24 * 60 * 60 * 1000);
         localStorage.setItem('pwa_install_dismissed', dismissUntil.toString());
     }
@@ -507,7 +586,10 @@
         // iOS specific
         dismissIOSPrompt: dismissIOSPrompt,
         showIOSInstallPrompt: showIOSInstallPrompt,
-        isRunningStandalone: isRunningStandalone
+        isRunningStandalone: isRunningStandalone,
+        // Mobile banner
+        hideMobileBanner: hideMobileInstallBanner,
+        dismissMobileBanner: dismissMobileBanner
     };
 
     // Initialize when DOM is ready

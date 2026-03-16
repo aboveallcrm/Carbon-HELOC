@@ -594,9 +594,9 @@
 
         .section-title::before {
             content: attr(data-icon);
-            font-size: 16px;
-            width: 32px;
-            height: 32px;
+            font-size: 20px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1439,14 +1439,14 @@
         }
 
         .step-dot {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             border: 2px solid #cbd5e1;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 14px;
             transition: all 0.4s ease;
             background: var(--white);
             font-family: var(--font-heading);
@@ -2385,8 +2385,8 @@
         }
 
         .eq-nav-icon {
-            font-size: 16px;
-            width: 20px;
+            font-size: 20px;
+            width: 24px;
             text-align: center;
         }
 
@@ -8298,6 +8298,18 @@
                 cltv: 'CLTV',
                 rateOptionsTitle: 'Rate Options',
                 originationTitle: 'Origination Fee Options — Choose Your Strategy',
+                origFeeSubtitle: 'We offer three origination fee tiers. The trade-off is simple:',
+                origFeeTradeoff1: 'pay more upfront → lower monthly payment',
+                origFeeTradeoff2: 'pay less upfront → higher monthly payment',
+                origFeeChoose: 'Choose based on your goals.',
+                origFeeBestFor: 'Best for:',
+                origFeeExample: 'Example:',
+                origFeeAllFinanced: 'All fees are financed into your payment',
+                origFeeAllFinancedDesc: 'nothing paid out of pocket. Move the slider above to see how each fee impacts YOUR specific scenario.',
+                origFeeMostPopular: 'Most Popular',
+                origFee1Desc: '"I want the lowest possible rate" — You prioritize long-term savings over upfront cost.',
+                origFee2Desc: '"I want balance" — Sweet spot between rate and payment. Most borrowers choose this.',
+                origFee3Desc: '"I want the lowest monthly payment now" — You need maximum monthly cash flow today.',
                 whatIfBorrowTitle: 'What If You Borrowed More?',
                 whatIfPaybackTitle: 'What If You Paid This Back?',
                 exitTitle: 'Hold on — one question.',
@@ -8307,6 +8319,15 @@
                 tourBack: 'Back',
                 tourNext: 'Next',
                 tourDone: 'Got It',
+                // FAQ
+                faqHelocWork: 'What is a HELOC and how does it work?',
+                faqOrigFee: 'What\'s the difference between the origination fee options?',
+                faqClosingCosts: 'What are closing costs and what\'s included?',
+                faqHowFast: 'How fast can I get my money?',
+                faqPayEarly: 'Can I pay off my HELOC early?',
+                faqTaxDeductible: 'Is the interest tax deductible?',
+                faqRatesChange: 'What happens if rates change?',
+                faqDocuments: 'What documents do I need?',
                 // Titanium v5.9.3 - New Client Quote Features
                 prequalTitle: 'Pre-Qualification Checklist',
                 prequalSubtitle: 'Let\'s make sure you\'re ready to apply',
@@ -8326,6 +8347,18 @@
                 docUploadMortgage: 'Current Mortgage Statement',
                 tierCompareTitle: 'Compare All Tiers',
                 tierCompareSubtitle: 'Side-by-side comparison of your options',
+                tierFeature: 'Feature',
+                tierOrigFee: 'Origination Fee',
+                tierStartRate: 'Starting Rate',
+                tierPayment: 'Monthly Payment',
+                tierTerm: 'Term',
+                tierBestFor: 'Best For',
+                tierBestRate: 'Best Rate',
+                tierBestBalance: 'Best Balance',
+                tierLowestUpfront: 'Lowest Upfront',
+                tierRecommended: 'Recommended',
+                tierSelect: 'Select',
+                tierYears: 'years',
                 dtiCalcTitle: 'DTI Calculator',
                 dtiCalcSubtitle: 'Calculate your debt-to-income ratio',
                 dtiCalcMonthlyIncome: 'Monthly Income',
@@ -8338,17 +8371,10 @@
                 whatIfInterestSaved: 'Interest Saved',
                 testimonialsTitle: 'What Our Clients Say',
                 testimonialsSubtitle: 'Real stories from homeowners like you',
-                // Ezra Sidebar
-                quickTools: 'Quick Tools',
+                // Ezra Sidebar (client-facing only)
+                quickTools: 'Tools',
                 chat: 'Chat',
-                quickQuote: 'Quick Quote',
-                buildQuote: 'Build Quote',
-                structureDeal: 'Structure Deal',
-                compare: 'Compare',
-                calculator: 'Calculator',
-                documents: 'Documents',
-                notes: 'Notes',
-                settings: 'Settings'
+                calculator: 'Calculator'
             },
             es: {
                 subtitle: 'Linea de Credito con Garantia Hipotecaria Personalizada',
@@ -8380,7 +8406,19 @@
                 cashAvailable: 'Efectivo Disponible',
                 cltv: 'Relacion Prestamo-Valor',
                 rateOptionsTitle: 'Opciones de Tasa',
-                originationTitle: 'Opciones de Tarifa de Originacion',
+                originationTitle: 'Opciones de Tarifa de Originacion — Elija Su Estrategia',
+                origFeeSubtitle: 'Ofrecemos tres niveles de tarifa de originacion. El intercambio es simple:',
+                origFeeTradeoff1: 'pague mas por adelantado → pago mensual mas bajo',
+                origFeeTradeoff2: 'pague menos por adelantado → pago mensual mas alto',
+                origFeeChoose: 'Elija segun sus metas.',
+                origFeeBestFor: 'Ideal para:',
+                origFeeExample: 'Ejemplo:',
+                origFeeAllFinanced: 'Todas las tarifas se financian en su pago',
+                origFeeAllFinancedDesc: 'nada de su bolsillo. Mueva el control deslizante arriba para ver como cada tarifa impacta SU escenario especifico.',
+                origFeeMostPopular: 'Mas Popular',
+                origFee1Desc: '"Quiero la tasa mas baja posible" — Prioriza ahorros a largo plazo sobre el costo inicial.',
+                origFee2Desc: '"Quiero equilibrio" — El punto ideal entre tasa y pago. La mayoria de los prestatarios eligen esto.',
+                origFee3Desc: '"Quiero el pago mensual mas bajo ahora" — Necesita maximo flujo de efectivo mensual hoy.',
                 whatIfBorrowTitle: 'Que Pasa Si Pide Prestado Mas?',
                 whatIfPaybackTitle: 'Que Pasa Si Paga Esto?',
                 exitTitle: 'Espere — una pregunta.',
@@ -8390,6 +8428,15 @@
                 tourBack: 'Atras',
                 tourNext: 'Siguiente',
                 tourDone: 'Entendido',
+                // FAQ (Spanish)
+                faqHelocWork: 'Que es un HELOC y como funciona?',
+                faqOrigFee: 'Cual es la diferencia entre las opciones de tarifa de originacion?',
+                faqClosingCosts: 'Cuales son los costos de cierre y que incluyen?',
+                faqHowFast: 'Que tan rapido puedo obtener mi dinero?',
+                faqPayEarly: 'Puedo pagar mi HELOC antes de tiempo?',
+                faqTaxDeductible: 'Es deducible de impuestos el interes?',
+                faqRatesChange: 'Que pasa si las tasas cambian?',
+                faqDocuments: 'Que documentos necesito?',
                 // Titanium v5.9.3 - New Client Quote Features (Spanish)
                 prequalTitle: 'Lista de Verificacion Pre-Calificacion',
                 prequalSubtitle: 'Aseguremonos de que este listo para aplicar',
@@ -8409,6 +8456,18 @@
                 docUploadMortgage: 'Estado de Hipoteca Actual',
                 tierCompareTitle: 'Compare Todos los Niveles',
                 tierCompareSubtitle: 'Comparacion lado a lado de sus opciones',
+                tierFeature: 'Caracteristica',
+                tierOrigFee: 'Tarifa de Originacion',
+                tierStartRate: 'Tasa Inicial',
+                tierPayment: 'Pago Mensual',
+                tierTerm: 'Plazo',
+                tierBestFor: 'Ideal Para',
+                tierBestRate: 'Mejor Tasa',
+                tierBestBalance: 'Mejor Equilibrio',
+                tierLowestUpfront: 'Menor Costo Inicial',
+                tierRecommended: 'Recomendado',
+                tierSelect: 'Seleccionar',
+                tierYears: 'anos',
                 dtiCalcTitle: 'Calculadora DTI',
                 dtiCalcSubtitle: 'Calcule su relacion deuda a ingresos',
                 dtiCalcMonthlyIncome: 'Ingreso Mensual',
@@ -8421,17 +8480,10 @@
                 whatIfInterestSaved: 'Interes Ahorrado',
                 testimonialsTitle: 'Lo Que Dicen Nuestros Clientes',
                 testimonialsSubtitle: 'Historias reales de propietarios como usted',
-                // Ezra Sidebar (Spanish)
-                quickTools: 'Herramientas Rapidas',
+                // Ezra Sidebar (Spanish - client-facing only)
+                quickTools: 'Herramientas',
                 chat: 'Chat',
-                quickQuote: 'Cotizacion Rapida',
-                buildQuote: 'Construir Cotizacion',
-                structureDeal: 'Estructurar Trato',
-                compare: 'Comparar',
-                calculator: 'Calculadora',
-                documents: 'Documentos',
-                notes: 'Notas',
-                settings: 'Ajustes'
+                calculator: 'Calculadora'
             }
         };
         
@@ -8858,6 +8910,16 @@
                 
                 // Apply template mode - hide/show sections based on mode
                 applyTemplateMode(templateMode, linkOpts);
+
+                // Fee section visibility — synced from LO's "Show Fees" toggle
+                var origFeeSection = document.getElementById('originationFeeTiers');
+                if (origFeeSection) {
+                    if (linkOpts.showFees === false) {
+                        origFeeSection.style.display = 'none';
+                    } else {
+                        origFeeSection.style.display = '';
+                    }
+                }
 
                 // Title - Dynamic based on LO data
                 var titleText = lenderName + ' HELOC Proposal';
@@ -11190,7 +11252,7 @@
                 reader.readAsDataURL(file);
             }
 
-            // ===== TITANIUM v5.9.3: TIER COMPARISON =====
+            // ===== TITANIUM v5.9.3: TIER COMPARISON (Interactive with Reasoning) =====
             function initTierComparison(opts, data) {
                 opts = opts || {};
                 var section = document.getElementById('sec-tier-compare');
@@ -11223,57 +11285,100 @@
                 var recTierNum = parseInt(data.recTier) || 2;
                 var recTermKey = (data.recTerm || '20') + 'yr';
                 var recTermKey2 = data.recTerm || '20';
+                var lang = currentLanguage || 'en';
+                var t = i18n[lang] || i18n.en;
+
+                // Tier colors and "Best For" labels
+                var tierMeta = {
+                    1: { color: '#c5a059', bestForEn: 'Best Rate', bestForEs: 'Mejor Tasa', icon: '&#127942;', descEn: 'Lowest APR — best for long-term savings. Pay more upfront, save more over time.', descEs: 'Menor APR — ideal para ahorros a largo plazo. Pague mas por adelantado, ahorre mas con el tiempo.' },
+                    2: { color: '#10b981', bestForEn: 'Best Balance', bestForEs: 'Mejor Equilibrio', icon: '&#9878;', descEn: 'Sweet spot between rate and payment. Most popular choice for a reason.', descEs: 'Punto ideal entre tasa y pago. La opcion mas popular por una razon.' },
+                    3: { color: '#3b82f6', bestForEn: 'Lowest Upfront', bestForEs: 'Menor Costo Inicial', icon: '&#128176;', descEn: 'Lowest upfront cost, higher rate. Best if you plan to pay off quickly.', descEs: 'Menor costo inicial, tasa mas alta. Ideal si planea pagar rapidamente.' }
+                };
 
                 var html = '<div class="tier-compare-table" style="overflow-x: auto;">';
-                html += '<table style="width: 100%; border-collapse: collapse;">';
-                html += '<thead><tr style="background: var(--primary-color); color: white;">';
-                html += '<th style="padding: 12px; text-align: left; font-family: var(--font-heading); font-size: 12px;">Feature</th>';
+                html += '<table style="width: 100%; border-collapse: separate; border-spacing: 0;">';
+                
+                // Header row with tier columns
+                html += '<thead><tr>';
+                html += '<th style="padding: 14px 16px; text-align: left; font-family: var(--font-heading); font-size: 13px; font-weight: 700; color: var(--text-muted); background: transparent; border-bottom: 2px solid rgba(255,255,255,0.1);">' + (t.tierFeature || 'Feature') + '</th>';
                 tiers.forEach(function(tier) {
-                    html += '<th style="padding: 12px; text-align: center; font-family: var(--font-heading); font-size: 12px;">Tier ' + tier.tier + '</th>';
+                    var tn = parseInt(tier.tier);
+                    var isRec = (tn === recTierNum);
+                    var meta = tierMeta[tn] || tierMeta[2];
+                    html += '<th style="padding: 14px 16px; text-align: center; font-family: var(--font-heading); font-size: 13px; background: ' + (isRec ? 'linear-gradient(135deg, ' + meta.color + ', ' + meta.color + 'cc)' : 'var(--primary-color)') + '; color: white; border-bottom: 2px solid rgba(255,255,255,0.1);' + (isRec ? ' position: relative;' : '') + '">';
+                    if (isRec) html += '<span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent-color);color:#0f172a;font-size:9px;font-weight:800;padding:2px 10px;border-radius:10px;white-space:nowrap;">&#9733; ' + (t.tierRecommended || 'Recommended') + '</span>';
+                    html += (lang === 'es' ? 'Nivel ' : 'Tier ') + tier.tier;
+                    html += '</th>';
                 });
                 html += '</tr></thead><tbody>';
 
+                // Best For row
+                html += '<tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">';
+                html += '<td style="padding: 14px 16px; font-weight: 600; color: var(--text-light);">' + (t.tierBestFor || 'Best For') + '</td>';
+                tiers.forEach(function(tier) {
+                    var tn = parseInt(tier.tier);
+                    var meta = tierMeta[tn] || tierMeta[2];
+                    var label = lang === 'es' ? meta.bestForEs : meta.bestForEn;
+                    html += '<td style="padding: 14px 16px; text-align: center;"><span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:' + meta.color + '22;color:' + meta.color + ';border:1px solid ' + meta.color + '44;">' + meta.icon + ' ' + label + '</span></td>';
+                });
+                html += '</tr>';
+
                 // Origination fee row
-                html += '<tr style="border-bottom: 1px solid rgba(0,0,0,0.08);">';
-                html += '<td style="padding: 12px; font-weight: 600;">Origination Fee</td>';
+                html += '<tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">';
+                html += '<td style="padding: 14px 16px; font-weight: 600; color: var(--text-light);">' + (t.tierOrigFee || 'Origination Fee') + '</td>';
                 tiers.forEach(function(tier) {
-                    html += '<td style="padding: 12px; text-align: center;">' + tier.origPts + '%</td>';
+                    html += '<td style="padding: 14px 16px; text-align: center; color: var(--text-light);">' + tier.origPts + '%</td>';
                 });
                 html += '</tr>';
 
-                // Rate row (using recommended term, not just first)
-                html += '<tr style="border-bottom: 1px solid rgba(0,0,0,0.08);">';
-                html += '<td style="padding: 12px; font-weight: 600;">Starting Rate</td>';
+                // Rate row
+                html += '<tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">';
+                html += '<td style="padding: 14px 16px; font-weight: 600; color: var(--text-light);">' + (t.tierStartRate || 'Starting Rate') + '</td>';
                 tiers.forEach(function(tier) {
+                    var tn = parseInt(tier.tier);
+                    var meta = tierMeta[tn] || tierMeta[2];
                     var matchedRate = tier.rates[recTermKey] || tier.rates[recTermKey2] || Object.values(tier.rates)[0];
-                    html += '<td style="padding: 12px; text-align: center; font-weight: 700; color: var(--accent-dark);">' + (matchedRate ? matchedRate.rate : '--') + '</td>';
+                    html += '<td style="padding: 14px 16px; text-align: center; font-weight: 700; color: ' + meta.color + '; font-size: 16px;">' + (matchedRate ? matchedRate.rate : '--') + '</td>';
                 });
                 html += '</tr>';
 
-                // Payment row (using recommended term)
-                html += '<tr style="border-bottom: 1px solid rgba(0,0,0,0.08);">';
-                html += '<td style="padding: 12px; font-weight: 600;">Monthly Payment</td>';
+                // Payment row
+                html += '<tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">';
+                html += '<td style="padding: 14px 16px; font-weight: 600; color: var(--text-light);">' + (t.tierPayment || 'Monthly Payment') + '</td>';
                 tiers.forEach(function(tier) {
                     var matchedRate = tier.rates[recTermKey] || tier.rates[recTermKey2] || Object.values(tier.rates)[0];
-                    html += '<td style="padding: 12px; text-align: center;">' + (matchedRate ? matchedRate.payment : '--') + '</td>';
+                    html += '<td style="padding: 14px 16px; text-align: center; font-weight: 600; color: var(--text-light);">' + (matchedRate ? matchedRate.payment : '--') + '</td>';
                 });
                 html += '</tr>';
 
                 // Term row
-                html += '<tr style="border-bottom: 1px solid rgba(0,0,0,0.08);">';
-                html += '<td style="padding: 12px; font-weight: 600;">Term</td>';
+                html += '<tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">';
+                html += '<td style="padding: 14px 16px; font-weight: 600; color: var(--text-light);">' + (t.tierTerm || 'Term') + '</td>';
                 tiers.forEach(function(tier) {
-                    html += '<td style="padding: 12px; text-align: center;">' + (data.recTerm || '20') + ' years</td>';
+                    html += '<td style="padding: 14px 16px; text-align: center; color: var(--text-light);">' + (data.recTerm || '20') + ' ' + (t.tierYears || 'years') + '</td>';
                 });
                 html += '</tr>';
 
-                // Select button row — use recTier to highlight
+                // Why this tier — reasoning row
+                html += '<tr style="border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02);">';
+                html += '<td style="padding: 14px 16px; font-weight: 600; color: var(--text-light); vertical-align: top;">&#128161;</td>';
+                tiers.forEach(function(tier) {
+                    var tn = parseInt(tier.tier);
+                    var meta = tierMeta[tn] || tierMeta[2];
+                    var desc = lang === 'es' ? meta.descEs : meta.descEn;
+                    html += '<td style="padding: 14px 16px; text-align: center; font-size: 12px; color: var(--text-muted); line-height: 1.5;">' + desc + '</td>';
+                });
+                html += '</tr>';
+
+                // Select button row
                 html += '<tr>';
-                html += '<td style="padding: 12px;"></td>';
-                tiers.forEach(function(tier, idx) {
-                    var isRec = (parseInt(tier.tier) === recTierNum);
-                    html += '<td style="padding: 12px; text-align: center;">';
-                    html += '<button onclick="selectTier(' + tier.tier + ')" style="padding: 10px 24px; border-radius: 8px; border: none; background: ' + (isRec ? 'linear-gradient(135deg, var(--accent-color), var(--accent-dark))' : 'var(--primary-color)') + '; color: white; font-weight: 600; cursor: pointer; font-size: 13px;">' + (isRec ? '&#9733; Recommended' : 'Select') + '</button>';
+                html += '<td style="padding: 16px;"></td>';
+                tiers.forEach(function(tier) {
+                    var tn = parseInt(tier.tier);
+                    var isRec = (tn === recTierNum);
+                    var meta = tierMeta[tn] || tierMeta[2];
+                    html += '<td style="padding: 16px; text-align: center;">';
+                    html += '<button onclick="selectTier(' + tier.tier + ')" style="padding: 12px 28px; border-radius: 8px; border: ' + (isRec ? 'none' : '1px solid ' + meta.color) + '; background: ' + (isRec ? 'linear-gradient(135deg, ' + meta.color + ', ' + meta.color + 'cc)' : 'transparent') + '; color: ' + (isRec ? 'white' : meta.color) + '; font-weight: 700; cursor: pointer; font-size: 13px; transition: all 0.2s ease; width: 100%; max-width: 160px;" onmouseover="this.style.transform=\'scale(1.05)\';this.style.boxShadow=\'0 4px 15px ' + meta.color + '40\';" onmouseout="this.style.transform=\'scale(1)\';this.style.boxShadow=\'none\';">' + (isRec ? '&#9733; ' + (t.tierRecommended || 'Recommended') : (t.tierSelect || 'Select')) + '</button>';
                     html += '</td>';
                 });
                 html += '</tr>';
@@ -11409,52 +11514,23 @@
                     '<div class="eq-header"><div class="eq-header-left"><div class="eq-avatar">&#10022;</div><div><div class="eq-title">EZRA</div><div class="eq-subtitle"><span class="eq-activity-pulse" id="eq-live-dot" style="display:none;"></span>Your Quote Assistant</div></div></div><button class="eq-tour-btn" onclick="openEzraTour()">&#127919; Take a Tour</button><button class="eq-close" onclick="eqToggle()">&times;</button></div>' +
                     '<div class="eq-tour-overlay hidden" id="eq-tour-overlay"></div>' +
                     '<div class="eq-main-content">' +
-                    '<!-- Side Navigation Bar -->' +
+                    '<!-- Side Navigation Bar (Client-facing: Chat + Calculator only) -->' +
                     '<div class="eq-sidebar" id="eq-sidebar">' +
                     '<div class="eq-sidebar-header">' +
-                    '<span class="eq-sidebar-title" data-i18n="quickTools">Quick Tools</span>' +
+                    '<span class="eq-sidebar-title" data-i18n="quickTools">Tools</span>' +
                     '<button class="eq-sidebar-toggle" onclick="toggleSidebar()" title="Collapse/Expand">&#9776;</button>' +
                     '</div>' +
                     '<div class="eq-sidebar-nav">' +
                     '<button class="eq-nav-item active" onclick="switchTool(\'chat\', this)" data-tool="chat">' +
-                    '<span class="eq-nav-icon">&#128172;</span>' +
+                    '<span class="eq-nav-icon" style="font-size:18px;">&#128172;</span>' +
                     '<span class="eq-nav-label" data-i18n="chat">Chat</span>' +
                     '</button>' +
-                    '<button class="eq-nav-item" onclick="switchTool(\'quick-quote\', this)" data-tool="quick-quote">' +
-                    '<span class="eq-nav-icon">&#9889;</span>' +
-                    '<span class="eq-nav-label" data-i18n="quickQuote">Quick Quote</span>' +
-                    '</button>' +
-                    '<button class="eq-nav-item" onclick="switchTool(\'build-quote\', this)" data-tool="build-quote">' +
-                    '<span class="eq-nav-icon">&#128736;</span>' +
-                    '<span class="eq-nav-label" data-i18n="buildQuote">Build Quote</span>' +
-                    '</button>' +
-                    '<button class="eq-nav-item" onclick="switchTool(\'structure-deal\', this)" data-tool="structure-deal">' +
-                    '<span class="eq-nav-icon">&#128200;</span>' +
-                    '<span class="eq-nav-label" data-i18n="structureDeal">Structure Deal</span>' +
-                    '</button>' +
-                    '<button class="eq-nav-item" onclick="switchTool(\'compare\', this)" data-tool="compare">' +
-                    '<span class="eq-nav-icon">&#128260;</span>' +
-                    '<span class="eq-nav-label" data-i18n="compare">Compare</span>' +
-                    '</button>' +
                     '<button class="eq-nav-item" onclick="switchTool(\'calculator\', this)" data-tool="calculator">' +
-                    '<span class="eq-nav-icon">&#128290;</span>' +
+                    '<span class="eq-nav-icon" style="font-size:18px;">&#128290;</span>' +
                     '<span class="eq-nav-label" data-i18n="calculator">Calculator</span>' +
                     '</button>' +
-                    '<button class="eq-nav-item" onclick="switchTool(\'documents\', this)" data-tool="documents">' +
-                    '<span class="eq-nav-icon">&#128196;</span>' +
-                    '<span class="eq-nav-label" data-i18n="documents">Documents</span>' +
-                    '</button>' +
-                    '<button class="eq-nav-item" onclick="switchTool(\'notes\', this)" data-tool="notes">' +
-                    '<span class="eq-nav-icon">&#9998;</span>' +
-                    '<span class="eq-nav-label" data-i18n="notes">Notes</span>' +
-                    '</button>' +
                     '</div>' +
-                    '<div class="eq-sidebar-footer">' +
-                    '<button class="eq-nav-item" onclick="switchTool(\'settings\', this)" data-tool="settings">' +
-                    '<span class="eq-nav-icon">&#9881;</span>' +
-                    '<span class="eq-nav-label" data-i18n="settings">Settings</span>' +
-                    '</button>' +
-                    '</div>' +
+                    '<div class="eq-sidebar-footer"></div>' +
                     '</div>' +
                     '<!-- Tool Content Areas -->' +
                     '<div class="eq-tool-content" id="eq-tool-content">' +

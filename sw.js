@@ -3,7 +3,7 @@
  * Provides caching, offline functionality, push notifications, and background sync
  */
 
-const CACHE_NAME = 'aac-heloc-v11';
+const CACHE_NAME = 'aac-heloc-v12';
 const STATIC_ASSETS = [
   './js/main.js',
   './js/auth.js',
@@ -17,9 +17,14 @@ const STATIC_ASSETS = [
   './js/dom-cache.js',
   './offline.html',
   './manifest.json',
+  './favicon.ico',
   './favicon.png',
+  './favicon-96x96.png',
   './favicon-192x192.png',
-  './apple-touch-icon.png'
+  './favicon-512x512.png',
+  './apple-touch-icon.png',
+  './above-all-crm-logo.svg',
+  './above-all-crm-horizontal.svg'
 ];
 
 // Offline fallback page

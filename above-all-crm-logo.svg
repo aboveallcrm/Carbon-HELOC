@@ -1,0 +1,300 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200">
+  <defs>
+    <!-- Premium gradient -->
+    <linearGradient id="comboGreen" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1B9B5E;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#25C274;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#34D399;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Glass fill -->
+    <linearGradient id="comboGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#25C274;stop-opacity:0.12" />
+      <stop offset="100%" style="stop-color:#1B9B5E;stop-opacity:0.04" />
+    </linearGradient>
+    
+    <!-- Inner shine -->
+    <linearGradient id="comboShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.15" />
+      <stop offset="40%" style="stop-color:#FFFFFF;stop-opacity:0" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0.05" />
+    </linearGradient>
+    
+    <!-- Glow filters -->
+    <filter id="comboGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur1"/>
+      <feGaussianBlur stdDeviation="6" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <filter id="nodeGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Border gradients -->
+    <linearGradient id="borderHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4ADE80;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#25C274;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1B9B5E;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="border60" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#25C274;stop-opacity:0.5" />
+      <stop offset="100%" style="stop-color:#1B9B5E;stop-opacity:0.3" />
+    </linearGradient>
+    
+    <linearGradient id="border30" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#25C274;stop-opacity:0.25" />
+      <stop offset="100%" style="stop-color:#1B9B5E;stop-opacity:0.12" />
+    </linearGradient>
+    
+    <linearGradient id="border15" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#25C274;stop-opacity:0.12" />
+      <stop offset="100%" style="stop-color:#1B9B5E;stop-opacity:0.06" />
+    </linearGradient>
+    
+    <!-- Node gradient -->
+    <radialGradient id="nodeGradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#4ADE80;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#25C274;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1B9B5E;stop-opacity:0.8" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="200" fill="#0a0a0a"/>
+  
+  <!-- STACKED TRIANGLES -->
+  <g transform="translate(30, 20)">
+    
+    <!-- Layer 4 - Furthest back -->
+    <path 
+      d="M70 150 L70 25 L140 150 Z" 
+      fill="none" 
+      stroke="url(#border15)" 
+      stroke-width="2"
+      stroke-linejoin="round"
+      transform="translate(24, 0) scale(1.08)"
+      transform-origin="105 87.5"
+    />
+    
+    <!-- Layer 3 -->
+    <path 
+      d="M70 150 L70 25 L140 150 Z" 
+      fill="none" 
+      stroke="url(#border30)" 
+      stroke-width="2"
+      stroke-linejoin="round"
+      transform="translate(16, 0) scale(1.05)"
+      transform-origin="105 87.5"
+    >
+      <animate attributeName="opacity" values="0.7;0.9;0.7" dur="3s" repeatCount="indefinite" begin="0.5s"/>
+    </path>
+    
+    <!-- Layer 2 -->
+    <path 
+      d="M70 150 L70 25 L140 150 Z" 
+      fill="none" 
+      stroke="url(#border60)" 
+      stroke-width="2.5"
+      stroke-linejoin="round"
+      transform="translate(8, 0) scale(1.025)"
+      transform-origin="105 87.5"
+    >
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite" begin="0.25s"/>
+    </path>
+    
+    <!-- MAIN Triangle - Layer 1 -->
+    <path 
+      d="M70 150 L70 25 L140 150 Z" 
+      fill="url(#comboGlass)"
+    />
+    
+    <path 
+      d="M70 150 L70 25 L140 150 Z" 
+      fill="url(#comboShine)"
+    />
+    
+    <!-- Outer glow stroke -->
+    <path 
+      d="M70 150 L70 25 L140 150 Z" 
+      fill="none" 
+      stroke="url(#comboGreen)" 
+      stroke-width="5"
+      stroke-linejoin="round"
+      filter="url(#comboGlow)"
+      opacity="0.4"
+    >
+      <animate attributeName="opacity" values="0.3;0.5;0.3" dur="2s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Main triangle stroke -->
+    <path 
+      d="M70 150 L70 25 L140 150 Z" 
+      fill="none" 
+      stroke="url(#borderHighlight)" 
+      stroke-width="3"
+      stroke-linejoin="round"
+      stroke-linecap="round"
+    />
+    
+    <!-- Inner accent triangle -->
+    <path 
+      d="M80 135 L80 55 L120 135 Z" 
+      fill="none" 
+      stroke="url(#border60)" 
+      stroke-width="1"
+      stroke-linejoin="round"
+      opacity="0.4"
+    >
+      <animate attributeName="opacity" values="0.3;0.5;0.3" dur="2.5s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- DATA NODES at main triangle vertices -->
+    <!-- Top vertex node -->
+    <g filter="url(#nodeGlow)">
+      <circle cx="70" cy="25" r="4" fill="url(#nodeGradient)">
+        <animate attributeName="r" values="3.5;4.5;3.5" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.9;1;0.9" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="70" cy="25" r="2" fill="#FFFFFF" opacity="0.6">
+        <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+    
+    <!-- Bottom left vertex node -->
+    <g filter="url(#nodeGlow)">
+      <circle cx="70" cy="150" r="4" fill="url(#nodeGradient)">
+        <animate attributeName="r" values="3.5;4.5;3.5" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+        <animate attributeName="opacity" values="0.9;1;0.9" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+      </circle>
+      <circle cx="70" cy="150" r="2" fill="#FFFFFF" opacity="0.6">
+        <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+      </circle>
+    </g>
+    
+    <!-- Bottom right vertex node -->
+    <g filter="url(#nodeGlow)">
+      <circle cx="140" cy="150" r="4" fill="url(#nodeGradient)">
+        <animate attributeName="r" values="3.5;4.5;3.5" dur="2s" repeatCount="indefinite" begin="0.6s"/>
+        <animate attributeName="opacity" values="0.9;1;0.9" dur="2s" repeatCount="indefinite" begin="0.6s"/>
+      </circle>
+      <circle cx="140" cy="150" r="2" fill="#FFFFFF" opacity="0.6">
+        <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite" begin="0.6s"/>
+      </circle>
+    </g>
+    
+    <!-- Pulsing Bars -->
+    <g>
+      <rect x="52" y="115" width="12" height="25" rx="2" fill="url(#comboGreen)" filter="url(#softGlow)">
+        <animate attributeName="opacity" values="0.75;1;0.75" dur="1.8s" repeatCount="indefinite" begin="0s"/>
+        <animate attributeName="height" values="25;27;25" dur="1.8s" repeatCount="indefinite" begin="0s"/>
+        <animate attributeName="y" values="115;113;115" dur="1.8s" repeatCount="indefinite" begin="0s"/>
+      </rect>
+      <rect x="52" y="115" width="5" height="25" rx="1" fill="url(#comboShine)">
+        <animate attributeName="height" values="25;27;25" dur="1.8s" repeatCount="indefinite" begin="0s"/>
+        <animate attributeName="y" values="115;113;115" dur="1.8s" repeatCount="indefinite" begin="0s"/>
+      </rect>
+    </g>
+    
+    <g>
+      <rect x="68" y="95" width="12" height="45" rx="2" fill="url(#comboGreen)" filter="url(#softGlow)">
+        <animate attributeName="opacity" values="0.75;1;0.75" dur="1.8s" repeatCount="indefinite" begin="0.25s"/>
+        <animate attributeName="height" values="45;49;45" dur="1.8s" repeatCount="indefinite" begin="0.25s"/>
+        <animate attributeName="y" values="95;91;95" dur="1.8s" repeatCount="indefinite" begin="0.25s"/>
+      </rect>
+      <rect x="68" y="95" width="5" height="45" rx="1" fill="url(#comboShine)">
+        <animate attributeName="height" values="45;49;45" dur="1.8s" repeatCount="indefinite" begin="0.25s"/>
+        <animate attributeName="y" values="95;91;95" dur="1.8s" repeatCount="indefinite" begin="0.25s"/>
+      </rect>
+    </g>
+    
+    <g>
+      <rect x="84" y="70" width="12" height="70" rx="2" fill="url(#comboGreen)" filter="url(#softGlow)">
+        <animate attributeName="opacity" values="0.75;1;0.75" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+        <animate attributeName="height" values="70;75;70" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+        <animate attributeName="y" values="70;65;70" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+      </rect>
+      <rect x="84" y="70" width="5" height="70" rx="1" fill="url(#comboShine)">
+        <animate attributeName="height" values="70;75;70" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+        <animate attributeName="y" values="70;65;70" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+      </rect>
+    </g>
+    
+    <!-- Rising particles -->
+    <g fill="#34D399">
+      <circle cx="58" cy="110" r="1.5" opacity="0">
+        <animate attributeName="cy" values="110;50" dur="2.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;0.7;0" dur="2.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="74" cy="90" r="2" opacity="0">
+        <animate attributeName="cy" values="90;35" dur="2.2s" repeatCount="indefinite" begin="0.4s"/>
+        <animate attributeName="opacity" values="0;0.8;0" dur="2.2s" repeatCount="indefinite" begin="0.4s"/>
+      </circle>
+      <circle cx="90" cy="65" r="2" opacity="0">
+        <animate attributeName="cy" values="65;20" dur="2s" repeatCount="indefinite" begin="0.2s"/>
+        <animate attributeName="opacity" values="0;0.9;0" dur="2s" repeatCount="indefinite" begin="0.2s"/>
+      </circle>
+    </g>
+    
+    <!-- Glowing Arrow -->
+    <g filter="url(#comboGlow)">
+      <rect x="101" y="55" width="10" height="50" rx="2" fill="url(#comboGreen)">
+        <animate attributeName="opacity" values="0.85;1;0.85" dur="1.2s" repeatCount="indefinite"/>
+      </rect>
+      <polygon points="106,30 122,58 90,58" fill="url(#comboGreen)">
+        <animate attributeName="opacity" values="0.85;1;0.85" dur="1.2s" repeatCount="indefinite"/>
+      </polygon>
+    </g>
+  </g>
+  
+  <!-- Typography -->
+  <g transform="translate(175, 60)">
+    <text 
+      x="0" 
+      y="0" 
+      font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif" 
+      font-size="42" 
+      font-weight="700" 
+      fill="#FFFFFF"
+      letter-spacing="2"
+    >ABOVE</text>
+    
+    <text 
+      x="0" 
+      y="48" 
+      font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif" 
+      font-size="42" 
+      font-weight="700" 
+      fill="#FFFFFF"
+      letter-spacing="2"
+    >ALL</text>
+    
+    <text 
+      x="0" 
+      y="85" 
+      font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif" 
+      font-size="24" 
+      font-weight="500" 
+      fill="#25C274"
+      letter-spacing="8"
+      filter="url(#softGlow)"
+    >CRM</text>
+  </g>
+</svg>

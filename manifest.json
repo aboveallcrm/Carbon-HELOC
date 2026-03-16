@@ -36,6 +36,12 @@
       "purpose": "any"
     },
     {
+      "src": "./favicon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "./favicon-128x128.png",
       "sizes": "128x128",
       "type": "image/png",
@@ -58,6 +64,28 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "./above-all-crm-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Above All CRM HELOC Quote Tool"
+    },
+    {
+      "src": "./favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Above All CRM HELOC Quote Tool - Desktop"
     }
   ],
   "categories": ["business", "finance", "productivity"],

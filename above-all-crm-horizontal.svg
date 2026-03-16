@@ -1,0 +1,206 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 80" width="360" height="80">
+  <defs>
+    <!-- Premium gradient -->
+    <linearGradient id="hGreen" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1B9B5E;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#25C274;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#34D399;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Glass fill -->
+    <linearGradient id="hGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#25C274;stop-opacity:0.12" />
+      <stop offset="100%" style="stop-color:#1B9B5E;stop-opacity:0.04" />
+    </linearGradient>
+    
+    <!-- Shine -->
+    <linearGradient id="hShine" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.15" />
+      <stop offset="40%" style="stop-color:#FFFFFF;stop-opacity:0" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0.05" />
+    </linearGradient>
+    
+    <!-- Glow filters -->
+    <filter id="hGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="blur1"/>
+      <feGaussianBlur stdDeviation="4" result="blur2"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <filter id="hSoftGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <filter id="hNodeGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Border gradients -->
+    <linearGradient id="hBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4ADE80;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#25C274;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1B9B5E;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="hBorder50" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#25C274;stop-opacity:0.5" />
+      <stop offset="100%" style="stop-color:#1B9B5E;stop-opacity:0.3" />
+    </linearGradient>
+    
+    <linearGradient id="hBorder25" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#25C274;stop-opacity:0.25" />
+      <stop offset="100%" style="stop-color:#1B9B5E;stop-opacity:0.12" />
+    </linearGradient>
+    
+    <!-- Node gradient -->
+    <radialGradient id="hNode" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#4ADE80;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#25C274;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1B9B5E;stop-opacity:0.8" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="360" height="80" fill="#0a0a0a"/>
+  
+  <!-- Icon section -->
+  <g transform="translate(8, 8)">
+    <!-- Stacked triangles - scaled down -->
+    <!-- Layer 3 -->
+    <path 
+      d="M32 60 L32 8 L60 60 Z" 
+      fill="none" 
+      stroke="url(#hBorder25)" 
+      stroke-width="1.5"
+      stroke-linejoin="round"
+      transform="translate(8, 0) scale(1.06)"
+      transform-origin="46 34"
+    />
+    
+    <!-- Layer 2 -->
+    <path 
+      d="M32 60 L32 8 L60 60 Z" 
+      fill="none" 
+      stroke="url(#hBorder50)" 
+      stroke-width="1.5"
+      stroke-linejoin="round"
+      transform="translate(4, 0) scale(1.03)"
+      transform-origin="46 34"
+    >
+      <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Main triangle -->
+    <path 
+      d="M32 60 L32 8 L60 60 Z" 
+      fill="url(#hGlass)"
+    />
+    <path 
+      d="M32 60 L32 8 L60 60 Z" 
+      fill="url(#hShine)"
+    />
+    <path 
+      d="M32 60 L32 8 L60 60 Z" 
+      fill="none" 
+      stroke="url(#hGreen)" 
+      stroke-width="3"
+      stroke-linejoin="round"
+      filter="url(#hGlow)"
+      opacity="0.4"
+    >
+      <animate attributeName="opacity" values="0.3;0.5;0.3" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <path 
+      d="M32 60 L32 8 L60 60 Z" 
+      fill="none" 
+      stroke="url(#hBorder)" 
+      stroke-width="2"
+      stroke-linejoin="round"
+    />
+    
+    <!-- Data nodes -->
+    <g filter="url(#hNodeGlow)">
+      <circle cx="32" cy="8" r="2.5" fill="url(#hNode)">
+        <animate attributeName="r" values="2;3;2" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="32" cy="8" r="1.2" fill="#FFFFFF" opacity="0.6">
+        <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+    <g filter="url(#hNodeGlow)">
+      <circle cx="32" cy="60" r="2.5" fill="url(#hNode)">
+        <animate attributeName="r" values="2;3;2" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+      </circle>
+      <circle cx="32" cy="60" r="1.2" fill="#FFFFFF" opacity="0.6">
+        <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+      </circle>
+    </g>
+    <g filter="url(#hNodeGlow)">
+      <circle cx="60" cy="60" r="2.5" fill="url(#hNode)">
+        <animate attributeName="r" values="2;3;2" dur="2s" repeatCount="indefinite" begin="0.6s"/>
+      </circle>
+      <circle cx="60" cy="60" r="1.2" fill="#FFFFFF" opacity="0.6">
+        <animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite" begin="0.6s"/>
+      </circle>
+    </g>
+    
+    <!-- Bars -->
+    <g fill="url(#hGreen)" filter="url(#hSoftGlow)">
+      <rect x="22" y="48" width="6" height="10" rx="1">
+        <animate attributeName="opacity" values="0.75;1;0.75" dur="1.8s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="30" y="40" width="6" height="18" rx="1">
+        <animate attributeName="opacity" values="0.75;1;0.75" dur="1.8s" repeatCount="indefinite" begin="0.25s"/>
+      </rect>
+      <rect x="38" y="30" width="6" height="28" rx="1">
+        <animate attributeName="opacity" values="0.75;1;0.75" dur="1.8s" repeatCount="indefinite" begin="0.5s"/>
+      </rect>
+    </g>
+    
+    <!-- Arrow -->
+    <g fill="url(#hGreen)" filter="url(#hGlow)">
+      <rect x="47" y="24" width="5" height="20" rx="1">
+        <animate attributeName="opacity" values="0.85;1;0.85" dur="1.2s" repeatCount="indefinite"/>
+      </rect>
+      <polygon points="49.5,12 57,24 42,24">
+        <animate attributeName="opacity" values="0.85;1;0.85" dur="1.2s" repeatCount="indefinite"/>
+      </polygon>
+    </g>
+  </g>
+  
+  <!-- Typography - Horizontal -->
+  <g transform="translate(90, 28)">
+    <text 
+      x="0" 
+      y="0" 
+      font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif" 
+      font-size="28" 
+      font-weight="700" 
+      fill="#FFFFFF"
+      letter-spacing="1"
+    >ABOVE ALL</text>
+    
+    <text 
+      x="0" 
+      y="28" 
+      font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif" 
+      font-size="16" 
+      font-weight="500" 
+      fill="#25C274"
+      letter-spacing="6"
+      filter="url(#hSoftGlow)"
+    >CRM</text>
+  </g>
+</svg>
