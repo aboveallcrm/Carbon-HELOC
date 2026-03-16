@@ -9033,171 +9033,32 @@
             }
 
             // ===== EZRA TOUR =====
-            var ezraTourSlides = [
-                {
-                    title: "Welcome to Your HELOC Quote",
-                    content: `
-                        <div style="text-align: center; padding: 20px 0;">
-                            <span style="font-size: 48px; display: block; margin-bottom: 16px;">&#128176;</span>
-                            <p style="font-size: 16px; color: #e2e8f0; line-height: 1.6; margin-bottom: 16px;">
-                                <strong style="color: #c5a059;">This is your personalized HELOC quote.</strong> It shows exactly what you'd get, what it costs, and what your payment looks like.
-                            </p>
-                            <p style="color: #94a3b8; font-size: 14px;">
-                                I'm going to walk you through each section so you understand every detail. No surprises. Let's go.
-                            </p>
-                        </div>
-                    `,
-                    highlight: null
-                },
-                {
-                    title: "Your Amount & Payment",
-                    content: `
-                        <div style="padding: 16px 0;">
-                            <p style="font-size: 14px; color: #e2e8f0; margin-bottom: 16px; line-height: 1.6;">
-                                <strong style="color: #c5a059; font-size: 18px;">$278,810</strong> is what you'd walk away with in cash. <strong style="color: #c5a059; font-size: 18px;">$1,879/month</strong> is your fixed payment.
-                            </p>
-                            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
-                                This payment is locked in. It won't change. You know exactly what you're paying every month for the next 20 years.
-                            </p>
-                            <div style="background: rgba(16, 185, 129, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #10b981;">
-                                <p style="color: #e2e8f0; font-size: 13px; margin: 0;">
-                                    &#128161; <strong style="color: #10b981;">Why this matters:</strong> No surprises. You can budget with certainty.
-                                </p>
-                            </div>
-                        </div>
-                    `,
-                    highlight: '#sec-recommendation'
-                },
-                {
-                    title: "The Origination Fee — How It Works",
-                    content: `
-                        <div style="padding: 16px 0;">
-                            <p style="font-size: 14px; color: #e2e8f0; margin-bottom: 16px; line-height: 1.6;">
-                                We show <strong style="color: #c5a059;">three origination fee options: 1.50%, 2.99%, and 4.99%.</strong>
-                            </p>
-                            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
-                                Here's the deal: <strong style="color: #e2e8f0;">Higher fee = Lower rate. Lower fee = Higher monthly payment.</strong> You pick based on what matters most to you.
-                            </p>
-                            <div style="background: rgba(197, 160, 89, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #c5a059;">
-                                <p style="color: #e2e8f0; font-size: 13px; margin: 0; line-height: 1.5;">
-                                    &#127919; <strong style="color: #c5a059;">Here's the secret:</strong> All fees are <u style="color: #c5a059;">financed into your payment</u>. You don't pay anything at closing. You're not missing cash at the end. The fee just spreads over 20 years.
-                                </p>
-                            </div>
-                        </div>
-                    `,
-                    highlight: '#originationFeeTiers'
-                },
-                {
-                    title: "What You Actually Get (Cash in Pocket)",
-                    content: `
-                        <div style="padding: 16px 0;">
-                            <p style="font-size: 14px; color: #e2e8f0; margin-bottom: 16px; line-height: 1.6;">
-                                <strong style="color: #c5a059; font-size: 20px;">$259,420</strong> — This is the net amount hitting your bank account.
-                            </p>
-                            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
-                                We've already subtracted all closing costs and the origination fee. This is what's actually yours to use.
-                            </p>
-                            <div style="background: rgba(16, 185, 129, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #10b981;">
-                                <p style="color: #e2e8f0; font-size: 13px; margin: 0;">
-                                    &#10003; <strong style="color: #10b981;">No surprises at closing.</strong> You see the number, that's what you get.
-                                </p>
-                            </div>
-                        </div>
-                    `,
-                    highlight: '.what-if-result-card.highlight'
-                },
-                {
-                    title: "Closing Costs Breakdown",
-                    content: `
-                        <div style="padding: 16px 0;">
-                            <p style="font-size: 14px; color: #e2e8f0; margin-bottom: 16px; line-height: 1.6;">
-                                Your total closing costs are <strong style="color: #c5a059;">$19,390.</strong> Here's where that money goes:
-                            </p>
-                            <ul style="color: #94a3b8; font-size: 13px; line-height: 1.8; margin: 0 0 16px 0; padding-left: 20px;">
-                                <li><strong style="color: #e2e8f0;">$13,913</strong> — Origination fee (financed, not paid out of pocket)</li>
-                                <li><strong style="color: #e2e8f0;">Third-party fees</strong> — Title, appraisal, and county recording fees paid directly to third parties</li>
-                            </ul>
-                            <div style="background: rgba(59, 130, 246, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #3b82f6;">
-                                <p style="color: #e2e8f0; font-size: 13px; margin: 0;">
-                                    &#128161; <strong style="color: #3b82f6;">The important part:</strong> You don't write a check for these. They're built into your payment. You get the full $259,420 in your account.
-                                </p>
-                            </div>
-                        </div>
-                    `,
-                    highlight: '.what-if-breakdown'
-                },
-                {
-                    title: "The Draw Period — How You Use It",
-                    content: `
-                        <div style="padding: 16px 0;">
-                            <p style="font-size: 14px; color: #e2e8f0; margin-bottom: 16px; line-height: 1.6;">
-                                You have a <strong style="color: #c5a059;">5-year draw period.</strong> During this time, you can borrow and repay as much as you want. Like a credit card, but for your home equity.
-                            </p>
-                            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
-                                <strong style="color: #e2e8f0;">After year 5,</strong> the draw period ends. Your payment automatically adjusts based on your remaining balance. But here's the guarantee: <u style="color: #c5a059;">You'll never pay more than the $1,879/month you see here.</u>
-                            </p>
-                            <div style="background: rgba(16, 185, 129, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #10b981;">
-                                <p style="color: #e2e8f0; font-size: 13px; margin: 0; line-height: 1.5;">
-                                    &#127970; <strong style="color: #10b981;">Why this is powerful:</strong> You have a safety net for 5 years. After that, you know your max payment. Zero surprises.
-                                </p>
-                            </div>
-                        </div>
-                    `,
-                    highlight: '#sec-payment-scenario'
-                },
-                {
-                    title: "Your Home Equity (The Money You're Borrowing)",
-                    content: `
-                        <div style="padding: 16px 0;">
-                            <p style="font-size: 14px; color: #e2e8f0; margin-bottom: 16px; line-height: 1.6;">
-                                Your home is worth <strong style="color: #c5a059;">$709,000.</strong> You owe <strong style="color: #c5a059;">$100,000</strong> on your mortgage.
-                            </p>
-                            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
-                                That means you have <strong style="color: #c5a059;">$609,000 in equity.</strong> We're giving you access to <strong style="color: #c5a059;">$278,810</strong> of that (about 36%). You're only using 36% of what you have available.
-                            </p>
-                            <div style="background: rgba(16, 185, 129, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #10b981;">
-                                <p style="color: #e2e8f0; font-size: 13px; margin: 0;">
-                                    &#10003; <strong style="color: #10b981;">You still have $300K+ in untapped equity</strong> if you ever need it.
-                                </p>
-                            </div>
-                        </div>
-                    `,
-                    highlight: '#sec-valuation'
-                },
-                {
-                    title: "The Decision: What Happens Next?",
-                    content: `
-                        <div style="padding: 16px 0;">
-                            <p style="font-size: 14px; color: #e2e8f0; font-weight: 600; margin-bottom: 16px;">
-                                You have three options:
-                            </p>
-                            <div style="display: flex; flex-direction: column; gap: 12px;">
-                                <div style="background: rgba(16, 185, 129, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #10b981;">
-                                    <p style="color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;">1. Move Forward</p>
-                                    <p style="color: #94a3b8; margin: 0; font-size: 13px;">Click "Lock This In" &#8594; Quick 5-minute application &#8594; We handle the rest.</p>
-                                </div>
-                                <div style="background: rgba(59, 130, 246, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #3b82f6;">
-                                    <p style="color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;">2. Ask Questions</p>
-                                    <p style="color: #94a3b8; margin: 0; font-size: 13px;">Close this tour and chat with me. I'll clarify anything you need.</p>
-                                </div>
-                                <div style="background: rgba(197, 160, 89, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #c5a059;">
-                                    <p style="color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;">3. Lock In Your Rate</p>
-                                    <p style="color: #94a3b8; margin: 0; font-size: 13px;">Your rate is held for 6 days. Lock it in now before rates change — you can always take your time with the rest.</p>
-                                </div>
-                            </div>
-                            <p style="color: #94a3b8; font-size: 13px; margin-top: 16px; line-height: 1.6;">
-                                Whatever you choose, you're making the right call. This quote is personalized for you. The numbers are real. The process is simple. You're in control.
-                            </p>
-                        </div>
-                    `,
-                    highlight: null
+            function getEzraTourSlides() {
+                var isSpanish = window._ezraLanguage === 'es';
+                if (isSpanish) {
+                    return [
+                        { title: "Bienvenido a Su Cotizacion de HELOC", content: "<div style='text-align: center; padding: 20px 0;'><span style='font-size: 48px; display: block; margin-bottom: 16px;'>&#128176;</span><p style='font-size: 16px; color: #e2e8f0; line-height: 1.6; margin-bottom: 16px;'><strong style='color: #c5a059;'>Esta es su cotizacion personalizada de HELOC.</strong> Muestra exactamente lo que recibiria.</p><p style='color: #94a3b8; font-size: 14px;'>Le voy a explicar cada seccion. Sin sorpresas. Vamos.</p></div>", highlight: null },
+                        { title: "Su Monto y Pago", content: "<div style='padding: 16px 0;'><p style='font-size: 14px; color: #e2e8f0; margin-bottom: 16px;'><strong style='color: #c5a059; font-size: 18px;'>$278,810</strong> es lo que recibiria en efectivo. <strong style='color: #c5a059; font-size: 18px;'>$1,879/mes</strong> es su pago fijo.</p><p style='color: #94a3b8; font-size: 14px;'>Este pago esta asegurado. No cambiara.</p></div>", highlight: '#sec-recommendation' },
+                        { title: "La Tarifa de Originacion", content: "<div style='padding: 16px 0;'><p style='font-size: 14px; color: #e2e8f0; margin-bottom: 16px;'>Mostramos <strong style='color: #c5a059;'>tres opciones: 1.50%, 2.99%, y 4.99%.</strong></p><p style='color: #94a3b8; font-size: 14px;'>Tarifa mas alta = Tasa mas baja. Usted elige.</p></div>", highlight: '#originationFeeTiers' },
+                        { title: "Su Decision", content: "<div style='padding: 16px 0;'><p style='font-size: 14px; color: #e2e8f0; font-weight: 600; margin-bottom: 16px;'>Tiene tres opciones:</p><div style='background: rgba(16, 185, 129, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #10b981; margin-bottom: 12px;'><p style='color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;'>1. Avanzar</p><p style='color: #94a3b8; margin: 0; font-size: 13px;'>Solicitud rapida de 5 minutos</p></div><div style='background: rgba(59, 130, 246, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #3b82f6; margin-bottom: 12px;'><p style='color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;'>2. Hacer Preguntas</p><p style='color: #94a3b8; margin: 0; font-size: 13px;'>Converse conmigo</p></div><div style='background: rgba(255,255,255,0.08); padding: 12px; border-radius: 6px; border-left: 4px solid #64748b;'><p style='color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;'>3. Tomar Su Tiempo</p><p style='color: #94a3b8; margin: 0; font-size: 13px;'>Guarde esta cotizacion</p></div></div>", highlight: null }
+                    ];
                 }
-            ];
+                return [
+                    { title: "Welcome to Your HELOC Quote", content: "<div style='text-align: center; padding: 20px 0;'><span style='font-size: 48px; display: block; margin-bottom: 16px;'>&#128176;</span><p style='font-size: 16px; color: #e2e8f0; line-height: 1.6; margin-bottom: 16px;'><strong style='color: #c5a059;'>This is your personalized HELOC quote.</strong> It shows exactly what you'd get.</p><p style='color: #94a3b8; font-size: 14px;'>I'm going to walk you through each section. No surprises. Let's go.</p></div>", highlight: null },
+                    { title: "Your Amount & Payment", content: "<div style='padding: 16px 0;'><p style='font-size: 14px; color: #e2e8f0; margin-bottom: 16px;'><strong style='color: #c5a059; font-size: 18px;'>$278,810</strong> is what you'd walk away with in cash. <strong style='color: #c5a059; font-size: 18px;'>$1,879/month</strong> is your fixed payment.</p><p style='color: #94a3b8; font-size: 14px;'>This payment is locked in. It won't change.</p></div>", highlight: '#sec-recommendation' },
+                    { title: "The Origination Fee", content: "<div style='padding: 16px 0;'><p style='font-size: 14px; color: #e2e8f0; margin-bottom: 16px;'>We show <strong style='color: #c5a059;'>three options: 1.50%, 2.99%, and 4.99%.</strong></p><p style='color: #94a3b8; font-size: 14px;'>Higher fee = Lower rate. You pick.</p></div>", highlight: '#originationFeeTiers' },
+                    { title: "Your Decision", content: "<div style='padding: 16px 0;'><p style='font-size: 14px; color: #e2e8f0; font-weight: 600; margin-bottom: 16px;'>You have three options:</p><div style='background: rgba(16, 185, 129, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #10b981; margin-bottom: 12px;'><p style='color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;'>1. Move Forward</p><p style='color: #94a3b8; margin: 0; font-size: 13px;'>Quick 5-minute application</p></div><div style='background: rgba(59, 130, 246, 0.15); padding: 12px; border-radius: 6px; border-left: 4px solid #3b82f6; margin-bottom: 12px;'><p style='color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;'>2. Ask Questions</p><p style='color: #94a3b8; margin: 0; font-size: 13px;'>Chat with me</p></div><div style='background: rgba(255,255,255,0.08); padding: 12px; border-radius: 6px; border-left: 4px solid #64748b;'><p style='color: #e2e8f0; font-weight: 600; margin: 0 0 4px 0; font-size: 13px;'>3. Take Your Time</p><p style='color: #94a3b8; margin: 0; font-size: 13px;'>Save this quote</p></div></div>", highlight: null }
+                ];
+            }
+            
+            var ezraTourSlides = getEzraTourSlides();
 
             var currentTourSlide = 0;
 
             window.openEzraTour = function() {
                 currentTourSlide = 0;
+                // Refresh slides based on current language
+                ezraTourSlides = getEzraTourSlides();
                 document.getElementById('ezraTourModal').style.display = 'flex';
                 renderTourSlide();
             };
@@ -9962,16 +9823,156 @@
                 // Returns a response string or null (null = send to API).
                 function localKBResponse(msg) {
                     var lower = msg.toLowerCase();
-                    var cn = (quoteData.clientName || 'there').split(' ')[0];
-                    if (cn === 'Borrower') cn = 'there';
+                    var isSpanish = window._ezraLanguage === 'es';
+                    var cn = (quoteData.clientName || (isSpanish ? 'amigo' : 'there')).split(' ')[0];
+                    if (cn === 'Borrower') cn = isSpanish ? 'amigo' : 'there';
                     var cashStr = '$' + Number(quoteData.cashBack || 0).toLocaleString();
-                    var rateStr = quoteData.rate || 'your quoted';
-                    var pmtStr = quoteData.payment || 'your quoted payment';
+                    var rateStr = quoteData.rate || (isSpanish ? 'su tasa cotizada' : 'your quoted');
+                    var pmtStr = quoteData.payment || (isSpanish ? 'su pago cotizado' : 'your quoted payment');
                     var termStr = quoteData.term || '15';
                     var homeStr = '$' + Number(quoteData.homeValue || 0).toLocaleString();
-                    var loN = loInfo.name || 'your loan officer';
-                    var loP = loInfo.phone ? ' at ' + loInfo.phone : '';
+                    var loN = loInfo.name || (isSpanish ? 'su oficial de préstamos' : 'your loan officer');
+                    var loP = loInfo.phone ? (isSpanish ? ' al ' : ' at ') + loInfo.phone : '';
 
+                    // Spanish responses
+                    if (isSpanish) {
+                        // How does a HELOC work / what is a HELOC
+                        if (/como funciona|que es.*heloc|explica.*heloc/i.test(lower)) {
+                            return cn + ", excelente pregunta! Un HELOC — Línea de Crédito con Garantía Hipotecaria — le permite acceder al capital que ha acumulado en su hogar.\n\n" +
+                                "Así funciona:\n" +
+                                "**1. Su capital** — Su hogar vale " + homeStr + ", y después de su hipoteca, tiene " + cashStr + " en capital accesible.\n" +
+                                "**2. Período de extracción** — Durante los primeros años, puede acceder a sus fondos. Su pago cotizado de " + pmtStr + " aplica durante esta fase.\n" +
+                                "**3. Pago** — Después del período de extracción, el préstamo entra en pago basado en el saldo restante.\n" +
+                                "**4. Sin penalidad por pago anticipado** — Puede pagarlo en cualquier momento sin penalidades.\n\n" +
+                                "Piense en ello como **dinero sentado en sus paredes** — un HELOC le permite desbloquearlo a una fracción de lo que costarían tarjetas de crédito o préstamos personales. ¿Listo para comenzar? ¡Toque el botón **Avancemos** abajo!";
+                        }
+
+                        // Payment / monthly payment question
+                        if (/pago|cuanto.*pago|costo.*mensual/i.test(lower)) {
+                            return "Basado en su cotización personalizada, " + cn + ":\n\n" +
+                                "Su opción recomendada es **" + rateStr + "% por " + termStr + " años** con un pago mensual de **" + pmtStr + "**.\n\n" +
+                                (quoteData.tiers && quoteData.tiers.length > 0 ? "También tiene otras opciones disponibles — desplácese hacia abajo para ver todos los niveles de tasa y plazos. Cada nivel equilibra costos iniciales vs tasa continua de manera diferente.\n\n" : "") +
+                                "Ese pago cubre **tanto principal como interés**, así que su saldo se paga desde el día uno. Y siempre puede pagar extra con **cero penalidad por pago anticipado**.\n\n" +
+                                "¿Quiere asegurar esto? Toque **Avancemos** abajo — ¡solo toma un minuto!";
+                        }
+
+                        // Rate question
+                        if (/tasa|buena.*tasa|competitiva/i.test(lower)) {
+                            return "Su tasa de **" + rateStr + "%** es altamente competitiva, " + cn + ".\n\n" +
+                                "Para ponerlo en perspectiva:\n" +
+                                "- Tarjetas de crédito: **22-29%**\n" +
+                                "- Préstamos personales: **12-18%**\n" +
+                                "- Su HELOC: **" + rateStr + "%**\n\n" +
+                                "Esa es una diferencia masiva. En " + cashStr + ", pagaría aproximadamente **$" + Math.round(Number(quoteData.cashBack || 50000) * 0.24 / 12).toLocaleString() + "/mes** solo en interés de tarjeta de crédito. Su pago de HELOC de " + pmtStr + " cubre principal Y interés.\n\n" +
+                                "¡Cuando esté listo, toque **Avancemos** para asegurar su tasa!";
+                        }
+
+                        // Credit score
+                        if (/puntaje.*credito|afecta.*credito|verificacion/i.test(lower)) {
+                            return "¡Excelente pregunta, " + cn + "! La verificación inicial es una **consulta suave** — tiene **cero impacto** en su puntaje de crédito.\n\n" +
+                                "Una consulta dura solo ocurre si decide proceder oficialmente con una solicitud. Así que no hay riesgo en ver sus opciones.\n\n" +
+                                "Piense en ello como mirar escaparates — puede ver exactamente lo que está disponible sin compromiso. ¿Listo para echar un vistazo? ¡Toque **Avancemos** abajo!";
+                        }
+
+                        // How long / timeline
+                        if (/cuanto.*tarda|tiempo|proceso|dias/i.test(lower)) {
+                            return "¡El proceso es más rápido de lo que la mayoría espera, " + cn + "!\n\n" +
+                                "Nuestra plataforma usa **suscripción asistida por IA** y **verificación de ingresos digital** — sin montones de papeleo o semanas de espera.\n\n" +
+                                "Algunos préstamos se financian en **tan solo 5 días**, y la mayoría ni siquiera requiere una evaluación tradicional (usamos tecnología para obtener el valor de su hogar automáticamente).\n\n" +
+                                "¡La parte más larga suele ser simplemente comenzar — y eso toma unos 2 minutos. Toque **Avancemos** para empezar!";
+                        }
+
+                        // Apply / get started
+                        if (/aplicar|comenzar|empezar|siguiente.*paso/i.test(lower)) {
+                            return "¡Me encanta que esté listo, " + cn + "! Así de fácil es:\n\n" +
+                                "**Paso 1:** Toque el botón **Avancemos** en la parte inferior de su pantalla\n" +
+                                "**Paso 2:** Complete algunos detalles rápidos (toma unos 2 minutos)\n" +
+                                "**Paso 3:** Hacemos una verificación de crédito suave — sin impacto en su puntaje\n" +
+                                "**Paso 4:** Verá sus ofertas reales y elija lo que funcione mejor\n\n" +
+                                "Algunas aprobaciones se financian en tan solo 5 días. " + cashStr + " en capital están esperando — ¡hagámoslo realidad!\n\n" +
+                                "También puede contactar a " + loN + loP + " si desea discutir algo primero.";
+                        }
+
+                        // Debt consolidation
+                        if (/deuda|consolidar|tarjeta.*credito/i.test(lower)) {
+                            return "La consolidación de deuda es uno de los usos más inteligentes de un HELOC, " + cn + ".\n\n" +
+                                "Aquí están los números: Las tarjetas de crédito cobran **22-29%** de interés y nunca se pagan realmente con los mínimos. Su HELOC al **" + rateStr + "%** le da un pago estructurado con una fecha final real.\n\n" +
+                                "En " + cashStr + ", podría ahorrar **cientos por mes** comparado con pagos mínimos de tarjeta de crédito — Y realmente estar libre de deuda en " + termStr + " años.\n\n" +
+                                "No está agregando deuda — está **reestructurándola en algo más barato** con una fecha de pago real. Esa es una estrategia de *reducción* de deuda.\n\n" +
+                                "¿Listo para empezar a ahorrar? ¡Toque **Avancemos** abajo!";
+                        }
+
+                        // Home improvement
+                        if (/mejora|renovacion|remodelar|cocina|bano/i.test(lower)) {
+                            return "¡Un HELOC es la forma más inteligente de financiar mejoras en el hogar, " + cn + "!\n\n" +
+                                "Está pidiendo prestado contra el capital que ya posee — al **" + rateStr + "%**, eso es una fracción de lo que costaría un plan de financiamiento de contratista o préstamo personal.\n\n" +
+                                "Además, las mejoras pueden **aumentar el valor de su hogar**, lo que significa que su capital crece aún más. Solo las remodelaciones de cocina típicamente devuelven 60-80% del costo en valor de la vivienda.\n\n" +
+                                "Es como usar su hogar para **invertir en su hogar**. ¿Listo para comenzar? ¡Toque **Avancemos**!";
+                        }
+
+                        // Prepayment / early payoff
+                        if (/pago.*anticipado|pagar.*antes|penalidad/i.test(lower)) {
+                            return "¡Excelentes noticias, " + cn + " — **absolutamente no hay penalidad por pago anticipado** en ninguno de nuestros productos HELOC!\n\n" +
+                                "Así funciona el pago según su producto:\n\n" +
+                                "**Tasa Variable (Extracción Solo Interés):** Durante el período de extracción, los mínimos cubren solo interés. Pague el principal en cualquier momento — cada dólar extra reduce su saldo, y puede volver a pedir prestado según sea necesario.\n\n" +
+                                "**Fija o Variable (P+I):** Cada pago incluye principal e interés, así que su saldo baja desde el día uno. Pague extra en cualquier momento para acelerar.\n\n" +
+                                "**Solo Interés 10 Años:** Máxima flexibilidad — pague solo interés por hasta 10 años, haga pagos de principal cuando elija.\n\n" +
+                                "Todas las opciones: **cero penalidad por pago anticipado, cero tarifa anual.** Usted siempre tiene el control. ¡Cuando esté listo, toque **Avancemos** abajo!";
+                        }
+
+                        // Refinance comparison
+                        if (/refinanciamiento|refi|vs.*refi/i.test(lower)) {
+                            return "¡Excelente pregunta, " + cn + "! Aquí está por qué un HELOC a menudo vence a un refinanciamiento con efectivo:\n\n" +
+                                "**Un refinanciamiento** reemplaza toda su primera hipoteca — renunciaría a su tasa actual.\n" +
+                                "**Un HELOC** accede al capital **sin tocar su primera hipoteca**.\n\n" +
+                                "Además:\n" +
+                                "- Más rápido: tan solo 5 días vs 30-45 para un refi\n" +
+                                "- Costos de cierre más bajos\n" +
+                                "- Generalmente no se necesita evaluación\n" +
+                                "- **Mantiene su tasa de hipoteca existente**\n\n" +
+                                "¡Es lo mejor de ambos mundos — acceda a su capital Y mantenga su hipoteca actual. Toque **Avancemos** para comenzar!";
+                        }
+
+                        // Appraisal
+                        if (/evaluacion|valor.*hogar|AVM/i.test(lower)) {
+                            return "¡Buenas noticias, " + cn + " — en la mayoría de los casos, **no se necesita evaluación tradicional**!\n\n" +
+                                "Usamos un AVM (Modelo de Valoración Automatizado) para determinar el valor de su hogar automáticamente. Sin programar, sin esperar a que venga un evaluador.\n\n" +
+                                "Acelera significativamente todo el proceso. Su hogar está actualmente valorado en **" + homeStr + "** basado en datos disponibles.\n\n" +
+                                "¡Una cosa menos de qué preocuparse! ¿Listo para avanzar? ¡Toque **Avancemos**!";
+                        }
+
+                        // Safety / trust
+                        if (/seguro|confianza|seguridad|privacidad/i.test(lower)) {
+                            return "Entiendo completamente querer estar seguro, " + cn + ". Su seguridad es la máxima prioridad.\n\n" +
+                                "**Encriptación de nivel bancario** — el mismo nivel usado por instituciones financieras principales\n" +
+                                "**Nunca vendido** — su información NUNCA se comparte ni se vende a terceros\n" +
+                                "**Transparencia total** — ve todas las opciones y elige lo que funcione mejor\n" +
+                                "**Sin obligación** — puede revisar ofertas y retirarse en cualquier momento\n\n" +
+                                "Su oficial de préstamos " + loN + " está aquí para responder cualquier pregunta personalmente" + loP + ". ¡Está en buenas manos!";
+                        }
+
+                        // Fees / closing costs
+                        if (/tarifa|costos.*cierre|originacion/i.test(lower)) {
+                            var origStr = quoteData.origination ? quoteData.origination + '%' : 'varía por nivel';
+                            return cn + ", permítame desglosarle los costos.\n\n" +
+                                "Su tarifa de originación es **" + origStr + "** — este es el principal costo inicial. Está incorporada en su préstamo, así que no hay gasto de su bolsillo al cierre.\n\n" +
+                                (quoteData.tiers && quoteData.tiers.length > 1 ? "Notará en su cotización que diferentes niveles equilibran originación vs tasa:\n- **Mayor originación** = tasa mensual más baja (mejor a largo plazo)\n- **Menor originación** = tasa más alta (mejor a corto plazo)\n\n" : "") +
+                                "La mayoría de HELOCs tienen **costos de cierre significativamente más bajos** que un refinanciamiento, y **no hay tarifa de evaluación** en la mayoría de los casos.\n\n" +
+                                "¿Quiere discutir qué nivel tiene más sentido para usted? ¡Toque **Avancemos** o contacte a " + loN + loP + "!";
+                        }
+
+                        // Thank you / goodbye
+                        if (/^(gracias|muchas gracias|ty|perfecto|excelente|ok|okay)/i.test(lower)) {
+                            return "¡De nada, " + cn + "! Me alegra haber podido ayudar.\n\n" +
+                                "Recuerde, tiene **" + cashStr + " en capital accesible** y una gran tasa asegurada. Cuando esté listo, el botón **Avancemos** está ahí para usted.\n\n" +
+                                "Y " + loN + " siempre está disponible" + loP + " si desea discutir algo más. ¡Que tenga un gran día!";
+                        }
+
+                        // No match — return null to send to API
+                        return null;
+                    }
+
+                    // ENGLISH responses (default)
                     // How does a HELOC work / what is a HELOC
                     if (/how does.*(heloc|this) work|what is a heloc|explain.*(heloc|this loan)/i.test(lower)) {
                         return cn + ", great question! A HELOC — Home Equity Line of Credit — lets you access the equity you've built in your home.\n\n" +
