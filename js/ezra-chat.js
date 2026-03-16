@@ -3139,6 +3139,88 @@ RESPONSE RULES
                     border-radius: 0;
                     border: none;
                 }
+
+                /* Mobile-optimized quick commands slider */
+                .ezra-quick-commands-wrapper {
+                    background: linear-gradient(180deg, rgba(15,23,42,0.8) 0%, rgba(15,23,42,0.3) 100%);
+                }
+
+                .ezra-quick-commands {
+                    padding: 10px 28px;
+                    gap: 6px;
+                    -webkit-overflow-scrolling: touch;
+                    scroll-snap-type: x mandatory;
+                }
+
+                .ezra-quick-btn {
+                    padding: 6px 12px;
+                    font-size: 11px;
+                    border-radius: 20px;
+                    scroll-snap-align: start;
+                    -webkit-tap-highlight-color: transparent;
+                }
+
+                .ezra-quick-btn span:first-child {
+                    font-size: 14px;
+                }
+
+                .ezra-scroll-btn {
+                    width: 22px;
+                    height: 22px;
+                    font-size: 14px;
+                    opacity: 0.9;
+                }
+
+                .ezra-scroll-left {
+                    left: 2px;
+                }
+
+                .ezra-scroll-right {
+                    right: 2px;
+                }
+
+                /* Ensure touch targets are large enough */
+                .ezra-quick-btn,
+                .ezra-scroll-btn {
+                    min-height: 32px;
+                    min-width: 32px;
+                }
+            }
+
+            /* Extra small devices */
+            @media (max-width: 375px) {
+                .ezra-quick-commands {
+                    padding: 8px 26px;
+                }
+
+                .ezra-quick-btn {
+                    padding: 5px 10px;
+                    font-size: 10px;
+                }
+
+                .ezra-scroll-btn {
+                    width: 20px;
+                    height: 20px;
+                    font-size: 12px;
+                }
+            }
+
+            /* Touch device optimizations */
+            @media (hover: none) and (pointer: coarse) {
+                .ezra-quick-commands {
+                    overflow-x: scroll;
+                    scrollbar-width: none;
+                }
+
+                .ezra-scroll-btn {
+                    display: flex;
+                    opacity: 0.95;
+                }
+
+                .ezra-quick-btn:active {
+                    transform: scale(0.95);
+                    background: linear-gradient(135deg, rgba(197,160,89,0.3) 0%, rgba(197,160,89,0.15) 100%);
+                }
             }
         `;
 
@@ -4313,11 +4395,39 @@ File name: ${fileName}`;
     // Initialize scroll button visibility
     setTimeout(updateScrollButtons, 100);
 
-    // Update on scroll
+    // Update on scroll and setup touch swipe
     document.addEventListener('DOMContentLoaded', function() {
         const container = document.getElementById('ezra-quick-commands');
         if (container) {
             container.addEventListener('scroll', updateScrollButtons, { passive: true });
+            
+            // Touch swipe support for mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            container.addEventListener('touchstart', function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+            
+            container.addEventListener('touchend', function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, { passive: true });
+            
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const diff = touchStartX - touchEndX;
+                
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        // Swiped left - scroll right
+                        scrollQuickCommands('right');
+                    } else {
+                        // Swiped right - scroll left
+                        scrollQuickCommands('left');
+                    }
+                }
+            }
         }
     });
 

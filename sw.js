@@ -3,7 +3,7 @@
  * Provides caching, offline functionality, push notifications, and background sync
  */
 
-const CACHE_NAME = 'aac-heloc-v9';
+const CACHE_NAME = 'aac-heloc-v10';
 // Only pre-cache small, stable assets. HTML pages use network-first
 // and should NOT be pre-cached (they change frequently and are large).
 const STATIC_ASSETS = [
@@ -14,6 +14,7 @@ const STATIC_ASSETS = [
   './js/link-shortener-universal.js',
   './js/carbon-commands-v3.js',
   './js/carbon-commands-v3.css',
+  './js/ezra-chat.js',
   './manifest.json',
   './favicon.png',
   './favicon-192x192.png',
