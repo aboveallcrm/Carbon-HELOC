@@ -76,18 +76,37 @@ const DEFAULT_URLS: Record<string, string> = {
   grok: "https://api.x.ai/v1/chat/completions",
 };
 
+// Get a single key (first available) for a provider
 function getProviderKey(provider: string, userKey?: string): string {
-  if (userKey) return userKey;
+  const all = getAllProviderKeys(provider, userKey);
+  return all[0] || "";
+}
+
+// Get ALL available keys for a provider (user key + env key + numbered variants)
+// This allows the cascade to exhaust every cheap key before moving to expensive providers
+function getAllProviderKeys(provider: string, userKey?: string): string[] {
+  const keys: string[] = [];
+  const seen = new Set<string>();
+
+  const addKey = (k: string) => {
+    if (k && !seen.has(k)) { seen.add(k); keys.push(k); }
+  };
+
+  // Per-user key first
+  if (userKey) addKey(userKey);
+
   const envName = ENV_KEY_MAP[provider];
-  if (!envName) return "";
-  let key = Deno.env.get(envName) || "";
-  if (!key) {
-    for (let i = 1; i <= 5; i++) {
-      key = Deno.env.get(envName.replace("_KEY", `_KEY_${i}`)) || "";
-      if (key) break;
-    }
+  if (!envName) return keys;
+
+  // Primary env key
+  addKey(Deno.env.get(envName) || "");
+
+  // Numbered variants: GEMINI_API_KEY_1 through _10
+  for (let i = 1; i <= 10; i++) {
+    addKey(Deno.env.get(envName.replace("_KEY", `_KEY_${i}`)) || "");
   }
-  return key;
+
+  return keys;
 }
 
 interface CallResult {
@@ -294,24 +313,33 @@ serve(async (req: Request) => {
       return json({ success: true, text: result.text, provider: result.provider, model: result.model, usage: result.usage });
     }
 
-    // ── generate_cascade (try cheapest providers first) ──
+    // ── generate_cascade (try cheapest providers first, exhaust all keys per provider) ──
     if (action === "generate_cascade") {
       if (!userMessage) return json({ error: "Missing userMessage for generate_cascade action" }, 400);
 
+      // Order: cheapest first — exhaust ALL Gemini keys, then ALL Groq keys, before OpenAI/Anthropic
       const cascadeOrder = ["gemini", "groq", "openai", "anthropic"];
       const attempts: string[] = [];
 
       for (const prov of cascadeOrder) {
-        const key = getProviderKey(prov, prov === aiProvider ? userAiKey : "");
-        if (!key) continue; // Skip provider if no key available
-        attempts.push(prov);
+        const keys = getAllProviderKeys(prov, prov === aiProvider ? userAiKey : "");
+        if (keys.length === 0) continue;
 
         const provModel = DEFAULT_MODELS[prov] || "gpt-4o";
-        const result = await callProvider(prov, provModel, key, aiMaxTokens, aiSystemPrompt, userMessage, "");
-        if (result.ok) {
-          await logUsage(supabaseAdmin, userId, prov, provModel, "generate_cascade", intent || "generate", result.usage, { cascade_attempts: attempts });
-          return json({ success: true, text: result.text, provider: prov, model: provModel, usage: result.usage, cascadeAttempts: attempts });
+
+        // Try every available key for this provider before moving on
+        for (let ki = 0; ki < keys.length; ki++) {
+          const keyLabel = keys.length > 1 ? `${prov}[${ki + 1}/${keys.length}]` : prov;
+          attempts.push(keyLabel);
+
+          const result = await callProvider(prov, provModel, keys[ki], aiMaxTokens, aiSystemPrompt, userMessage, "");
+          if (result.ok) {
+            await logUsage(supabaseAdmin, userId, prov, provModel, "generate_cascade", intent || "generate", result.usage, { cascade_attempts: attempts, key_index: ki });
+            return json({ success: true, text: result.text, provider: prov, model: provModel, usage: result.usage, cascadeAttempts: attempts });
+          }
+          // Key failed (rate limit, quota, error) — try next key for same provider
         }
+        // All keys for this provider exhausted — move to next provider
       }
       return json({ error: "All AI providers failed", cascadeAttempts: attempts }, 502);
     }
@@ -322,19 +350,25 @@ serve(async (req: Request) => {
       const message = userMessage || "Analyze this image and describe what you see in detail.";
 
       // Vision cascade: Gemini → OpenAI → Anthropic (Groq has no vision)
+      // Exhaust all keys per provider before moving to the next
       const visionCascade = ["gemini", "openai", "anthropic"];
       const attempts: string[] = [];
 
       for (const prov of visionCascade) {
-        const key = getProviderKey(prov, prov === aiProvider ? userAiKey : "");
-        if (!key) continue;
-        attempts.push(prov);
+        const keys = getAllProviderKeys(prov, prov === aiProvider ? userAiKey : "");
+        if (keys.length === 0) continue;
 
         const provModel = DEFAULT_MODELS[prov] || "gpt-4o";
-        const result = await callProvider(prov, provModel, key, aiMaxTokens, aiSystemPrompt, message, "", imageBase64, imageMimeType);
-        if (result.ok) {
-          await logUsage(supabaseAdmin, userId, prov, provModel, "analyze_image", intent || "document_analysis", result.usage, { cascade_attempts: attempts });
-          return json({ success: true, text: result.text, provider: prov, model: provModel, usage: result.usage, cascadeAttempts: attempts });
+
+        for (let ki = 0; ki < keys.length; ki++) {
+          const keyLabel = keys.length > 1 ? `${prov}[${ki + 1}/${keys.length}]` : prov;
+          attempts.push(keyLabel);
+
+          const result = await callProvider(prov, provModel, keys[ki], aiMaxTokens, aiSystemPrompt, message, "", imageBase64, imageMimeType);
+          if (result.ok) {
+            await logUsage(supabaseAdmin, userId, prov, provModel, "analyze_image", intent || "document_analysis", result.usage, { cascade_attempts: attempts, key_index: ki });
+            return json({ success: true, text: result.text, provider: prov, model: provModel, usage: result.usage, cascadeAttempts: attempts });
+          }
         }
       }
       return json({ error: "All vision providers failed", cascadeAttempts: attempts }, 502);

@@ -1167,7 +1167,8 @@ RESPONSE RULES
             { label: 'Compare Scenarios', icon: '⚖️', action: 'compare_scenarios', prompt: 'Compare the different rate and term scenarios in plain English' },
             { label: 'Lead Briefing', icon: '📋', action: 'lead_briefing', prompt: '' },
             { label: 'Compliance Check', icon: '⚠️', action: 'compliance_check', prompt: '' },
-            { label: 'Predict Questions', icon: '❓', action: 'predict_questions', prompt: 'What questions will my client likely ask about this quote?' }
+            { label: 'Predict Questions', icon: '❓', action: 'predict_questions', prompt: 'What questions will my client likely ask about this quote?' },
+            { label: 'Upload Rate Sheet', icon: '📊', action: 'upload_rate_sheet', prompt: '' }
         ],
         models: {
             gemini: { name: 'Fast', color: '#4285f4', desc: 'Quick answers & simple questions' },
@@ -1267,6 +1268,24 @@ RESPONSE RULES
 
         // Load user preferences
         loadUserPreferences();
+
+        // Load saved rate sheet matrix
+        loadSavedRateSheet();
+
+        // Auto-price listeners: debounced re-fill when form fields change
+        const autoPriceFields = ['in-client-credit', 'in-home-value', 'in-mortgage-balance', 'in-net-cash', 't1-orig', 't2-orig', 't3-orig'];
+        let _autoPriceTimer = null;
+        autoPriceFields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('change', () => {
+                    if (EzraState.autoPrePrice && EzraState.rateSheetMatrix) {
+                        clearTimeout(_autoPriceTimer);
+                        _autoPriceTimer = setTimeout(() => autoFillRatesFromMatrix(), 500);
+                    }
+                });
+            }
+        });
 
         console.log('Ezra: Initialized successfully');
         
@@ -3713,6 +3732,308 @@ Would you like me to fill in the quote form with these details?`, { model: 'loca
         if (preview) preview.style.display = 'none';
     }
 
+    // ============================================
+    // RATE SHEET UPLOAD + PRE-PRICING ENGINE
+    // ============================================
+
+    // Trigger file picker for rate sheet upload
+    function handleRateSheetUpload() {
+        addMessage('assistant', '**Rate Sheet Upload**\n\nUpload a lender rate sheet (PDF or image) and I\'ll extract the pricing grid for auto-pricing.\n\nSupported formats: PDF, JPEG, PNG, WebP (max 5MB)', { model: 'local' });
+
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/jpeg,image/png,image/webp,application/pdf';
+        fileInput.style.display = 'none';
+        document.body.appendChild(fileInput);
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files?.[0];
+            document.body.removeChild(fileInput);
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                addMessage('assistant', 'File too large. Max 5MB.', { model: 'local' });
+                return;
+            }
+
+            addMessage('user', `Uploading rate sheet: ${file.name}`);
+            showTypingIndicator();
+
+            try {
+                const reader = new FileReader();
+                const dataUrl = await new Promise((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+
+                const base64 = dataUrl.split(',')[1];
+                const matrix = await parseRateSheet(base64, file.type, file.name);
+                hideTypingIndicator();
+
+                if (matrix) {
+                    EzraState.rateSheetMatrix = matrix;
+                    // Save to user_integrations
+                    await saveRateSheetMatrix(matrix);
+
+                    // Build confirmation message
+                    const ficoRanges = Object.keys(matrix.baseRates || {});
+                    const cltvRanges = ficoRanges.length > 0 ? Object.keys(matrix.baseRates[ficoRanges[0]] || {}) : [];
+                    const termCount = Object.keys(matrix.termAdj || {}).length;
+
+                    addMessage('assistant',
+                        `**Rate Sheet Parsed Successfully!**\n\n` +
+                        `**FICO Ranges:** ${ficoRanges.join(', ')}\n` +
+                        `**CLTV Ranges:** ${cltvRanges.join(', ')}\n` +
+                        `**Term Adjustments:** ${termCount} terms\n` +
+                        (matrix.stateAdj ? `**State Adjustments:** ${Object.keys(matrix.stateAdj).length} states\n` : '') +
+                        (matrix.autopayDiscount ? `**Autopay Discount:** ${matrix.autopayDiscount}%\n` : '') +
+                        `\nThe rate sheet is saved. You can now use **auto-pricing** in Settings → AI → Rate Sheet Pre-Pricing, or say **"price this out"** to fill rates from the sheet.`,
+                        { model: 'local', intent: 'rate_sheet_parse' }
+                    );
+                } else {
+                    addMessage('assistant', 'I wasn\'t able to parse the rate sheet. Please try a clearer image or a different format.', { model: 'local' });
+                }
+            } catch (err) {
+                hideTypingIndicator();
+                console.error('Rate sheet parse error:', err);
+                addMessage('assistant', `Error parsing rate sheet: ${err.message}`, { model: 'local' });
+            }
+        });
+
+        fileInput.click();
+    }
+
+    // Parse rate sheet via AI vision
+    async function parseRateSheet(imageBase64, mimeType, fileName) {
+        const extractionPrompt = `You are a mortgage rate sheet parser. Extract the pricing grid from this lender rate sheet document.
+
+Return ONLY a valid JSON object (no markdown, no explanation) with this exact structure:
+{
+  "baseRates": {
+    "780+": { "0-50": 4.99, "50-60": 5.24, "60-70": 5.49, "70-80": 5.99 },
+    "760-779": { "0-50": 5.24, "50-60": 5.49, "60-70": 5.74, "70-80": 6.24 },
+    "740-759": { ... },
+    "720-739": { ... },
+    "700-719": { ... },
+    "680-699": { ... }
+  },
+  "termAdj": { "5": -0.50, "10": -0.25, "15": 0.00, "20": 0.25, "30": 0.50 },
+  "oFeeAdj": { "0": 1.50, "1": 0.75, "2": 0.00, "3": -0.50, "4": -0.75, "5": -1.00 },
+  "stateAdj": { "TX": 0.25, "NY": 0.00 },
+  "occupancyAdj": { "primary": 0.00, "secondary": 0.50, "investment": 1.00 },
+  "autopayDiscount": 0.25,
+  "baseTerm": "30",
+  "baseOFee": "2"
+}
+
+Rules:
+- baseRates keys are FICO ranges, values are objects with CLTV range keys and rate values
+- termAdj: adjustment relative to the base term (positive = higher rate for longer terms)
+- oFeeAdj: adjustment based on origination fee percentage
+- If a field isn't in the document, omit it from the JSON
+- Use the EXACT numbers from the document
+- FICO ranges should be strings like "780+", "760-779"
+- CLTV ranges should be strings like "0-50", "50-60"
+- All rate values should be numbers (not strings)
+
+File name: ${fileName}`;
+
+        const result = await callAIVisionProxy(imageBase64, mimeType, extractionPrompt, 'rate_sheet_parse');
+        if (!result || !result.text) return null;
+
+        // Strip markdown fences if present
+        let jsonStr = result.text.trim();
+        jsonStr = jsonStr.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+
+        try {
+            const matrix = JSON.parse(jsonStr);
+            // Basic validation
+            if (!matrix.baseRates || typeof matrix.baseRates !== 'object') return null;
+            return matrix;
+        } catch (e) {
+            console.error('Rate sheet JSON parse error:', e, jsonStr.substring(0, 200));
+            return null;
+        }
+    }
+
+    // Save rate sheet matrix to user_integrations
+    async function saveRateSheetMatrix(matrix) {
+        if (!EzraState.supabase) return;
+        const session = await EzraState.supabase.auth.getSession();
+        const userId = session?.data?.session?.user?.id;
+        if (!userId) return;
+
+        // Upsert into heloc_settings
+        const { data: existing } = await EzraState.supabase
+            .from('user_integrations')
+            .select('id, metadata')
+            .eq('user_id', userId)
+            .eq('provider', 'heloc_settings')
+            .maybeSingle();
+
+        const metadata = existing?.metadata || {};
+        metadata.rateSheetMatrix = matrix;
+        metadata.rateSheetUpdatedAt = new Date().toISOString();
+
+        if (existing) {
+            await EzraState.supabase.from('user_integrations')
+                .update({ metadata })
+                .eq('id', existing.id);
+        } else {
+            await EzraState.supabase.from('user_integrations')
+                .insert({ user_id: userId, provider: 'heloc_settings', metadata });
+        }
+    }
+
+    // Calculate rate from the parsed matrix — pure local, zero API cost
+    function calculateRateFromMatrix(matrix, fico, cltv, term, oFee) {
+        if (!matrix || !matrix.baseRates) return null;
+
+        // Find matching FICO range
+        const ficoRange = findFicoRange(Object.keys(matrix.baseRates), fico);
+        if (!ficoRange) return null;
+
+        // Find matching CLTV range
+        const cltvRanges = Object.keys(matrix.baseRates[ficoRange] || {});
+        const cltvRange = findCltvRange(cltvRanges, cltv);
+        if (!cltvRange) return null;
+
+        let rate = matrix.baseRates[ficoRange][cltvRange];
+        if (typeof rate !== 'number') return null;
+
+        // Apply term adjustment
+        if (matrix.termAdj && matrix.termAdj[String(term)] !== undefined) {
+            rate += matrix.termAdj[String(term)];
+        }
+
+        // Apply origination fee adjustment
+        if (matrix.oFeeAdj && matrix.oFeeAdj[String(oFee)] !== undefined) {
+            rate += matrix.oFeeAdj[String(oFee)];
+        }
+
+        // Apply autopay discount if enabled
+        if (matrix.autopayDiscount) {
+            rate -= matrix.autopayDiscount;
+        }
+
+        return Math.max(0, parseFloat(rate.toFixed(3)));
+    }
+
+    function findFicoRange(ranges, fico) {
+        // Sort ranges by lower bound descending
+        const sorted = ranges.slice().sort((a, b) => {
+            const aLow = parseInt(a.replace('+', ''));
+            const bLow = parseInt(b.replace('+', ''));
+            return bLow - aLow;
+        });
+
+        for (const range of sorted) {
+            if (range.includes('+')) {
+                const min = parseInt(range);
+                if (fico >= min) return range;
+            } else {
+                const parts = range.split('-').map(Number);
+                if (parts.length === 2 && fico >= parts[0] && fico <= parts[1]) return range;
+            }
+        }
+        // Fall back to lowest range
+        return sorted[sorted.length - 1] || null;
+    }
+
+    function findCltvRange(ranges, cltv) {
+        for (const range of ranges) {
+            const parts = range.split('-').map(Number);
+            if (parts.length === 2) {
+                if (cltv >= parts[0] && cltv < parts[1]) return range;
+                // Handle "70-80" where 80 is inclusive upper bound
+                if (cltv === parts[1] && parts[1] >= 80) return range;
+            }
+        }
+        // Fall back to highest range
+        const sorted = ranges.slice().sort((a, b) => parseInt(b.split('-')[0]) - parseInt(a.split('-')[0]));
+        return sorted[0] || null;
+    }
+
+    // Auto-fill rate dropdowns from the parsed matrix
+    function autoFillRatesFromMatrix() {
+        const matrix = EzraState.rateSheetMatrix;
+        if (!matrix) return;
+
+        const fico = parseFloat(document.getElementById('in-client-credit')?.value) || 0;
+        if (fico < 600) return; // Need valid FICO
+
+        const homeValue = parseFloat(document.getElementById('in-home-value')?.value?.replace(/,/g, '')) || 0;
+        const mortBalance = parseFloat(document.getElementById('in-mortgage-balance')?.value?.replace(/,/g, '')) || 0;
+        const helocAmt = parseFloat(document.getElementById('in-net-cash')?.value?.replace(/,/g, '')) || 0;
+        if (homeValue <= 0) return;
+
+        const cltv = ((mortBalance + helocAmt) / homeValue) * 100;
+
+        // Enable manual rates
+        const toggle = document.getElementById('toggle-manual-rates');
+        if (toggle && !toggle.classList.contains('active')) toggle.click();
+
+        let filledCount = 0;
+        const terms = [5, 10, 15, 20, 30];
+        const tiers = ['t1', 't2', 't3'];
+
+        for (const tier of tiers) {
+            const origEl = document.getElementById(tier + '-orig');
+            const oFee = parseFloat(origEl?.value) || 2;
+
+            for (const term of terms) {
+                const rate = calculateRateFromMatrix(matrix, fico, cltv, term, oFee);
+                if (rate !== null && rate > 0) {
+                    const baseId = `${tier}-${term}-rate`;
+                    const manualEl = document.getElementById(baseId + '-manual');
+                    if (manualEl) {
+                        manualEl.value = rate.toFixed(2);
+                        manualEl.style.display = 'block';
+                        manualEl.dispatchEvent(new Event('input', { bubbles: true }));
+                        filledCount++;
+                        // Green flash
+                        manualEl.style.transition = 'background 0.3s';
+                        manualEl.style.background = '#dcfce7';
+                        setTimeout(() => manualEl.style.background = '', 1500);
+                    }
+                    const selectEl = document.getElementById(baseId);
+                    if (selectEl) selectEl.style.display = 'none';
+                }
+            }
+        }
+
+        if (filledCount > 0 && typeof updateQuote === 'function') {
+            setTimeout(updateQuote, 100);
+        }
+        return filledCount;
+    }
+
+    // Load saved rate sheet matrix on init
+    async function loadSavedRateSheet() {
+        if (!EzraState.supabase) return;
+        try {
+            const session = await EzraState.supabase.auth.getSession();
+            const userId = session?.data?.session?.user?.id;
+            if (!userId) return;
+
+            const { data } = await EzraState.supabase
+                .from('user_integrations')
+                .select('metadata')
+                .eq('user_id', userId)
+                .eq('provider', 'heloc_settings')
+                .maybeSingle();
+
+            if (data?.metadata?.rateSheetMatrix) {
+                EzraState.rateSheetMatrix = data.metadata.rateSheetMatrix;
+                EzraState.autoPrePrice = data.metadata.autoPrePrice || false;
+                console.debug('Ezra: Rate sheet matrix loaded from DB');
+            }
+        } catch (e) {
+            console.warn('Ezra: Failed to load rate sheet:', e);
+        }
+    }
+
     function addMessage(role, content, metadata = {}) {
         const messagesContainer = document.getElementById('ezra-messages');
 
@@ -3793,6 +4114,12 @@ Would you like me to fill in the quote form with these details?`, { model: 'loca
         // Handle Quick Quote Wizard
         if (action === 'quick_quote_wizard') {
             window.ezraStartOnboarding();
+            return;
+        }
+
+        // Upload Rate Sheet — trigger file picker for rate sheet PDF/image
+        if (action === 'upload_rate_sheet') {
+            handleRateSheetUpload();
             return;
         }
 
@@ -4318,6 +4645,20 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         if (intent === 'objection_handling') {
             const objCtx = parseMessageContext(message, ctx);
             return { content: getSmartObjectionResponse(message, objCtx), metadata: { model: 'local', intent } };
+        }
+
+        // ── "Price this out" — auto-fill from rate sheet matrix (zero API cost) ──
+        if (/price\s*(this|it)\s*out|auto.?price|fill.*rates.*sheet|pre.?price/i.test(message)) {
+            if (EzraState.rateSheetMatrix) {
+                const filled = autoFillRatesFromMatrix();
+                if (filled > 0) {
+                    return { content: `**Rate sheet auto-pricing applied!**\n\nFilled ${filled} rate fields from the uploaded rate sheet. All rates based on the current FICO, CLTV, origination fees, and term.`, metadata: { model: 'local', intent: 'rate_sheet_price' } };
+                } else {
+                    return { content: 'Couldn\'t auto-price — make sure FICO and home value are filled in.', metadata: { model: 'local', intent: 'rate_sheet_price' } };
+                }
+            } else {
+                return { content: 'No rate sheet uploaded yet. Use the **Upload Rate Sheet** quick command or go to Settings → AI → Rate Sheet Pre-Pricing.', metadata: { model: 'local', intent: 'rate_sheet_price' } };
+            }
         }
 
         // ── KB-FIRST: Try local knowledge base before any AI call ──
@@ -5991,7 +6332,11 @@ What would you like to do?`;
         // Follow-Up Sequence API
         generateFollowUpSequence: generateFollowUpSequence,
         previewFollowUpMessage: previewFollowUpMessage,
-        scheduleFollowUps: scheduleFollowUpSequence
+        scheduleFollowUps: scheduleFollowUpSequence,
+        // Document & Rate Sheet API
+        uploadDocument: handleDocUpload,
+        uploadRateSheet: handleRateSheetUpload,
+        autoFillFromRateSheet: autoFillRatesFromMatrix,
     };
 
     // ============================================

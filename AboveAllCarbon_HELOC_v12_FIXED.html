@@ -6710,6 +6710,32 @@ Best regards,
                             how the AI generates sales strategies. The default prompt is tailored for HELOC — only
                             override if you need a specific approach.</p>
                     </div>
+                    <!-- Rate Sheet Pre-Pricing (Platinum+) -->
+                    <div id="ezra-rate-sheet-section"
+                        style="display:none; margin-top: 10px; padding: 10px; background: rgba(245,158,11,0.05); border-radius: 6px; border: 1px solid rgba(245,158,11,0.2);">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                            <h6 style="font-family: var(--font-heading); font-size: 9px; color: #f59e0b; margin: 0;">
+                                Rate Sheet Pre-Pricing</h6>
+                            <span style="font-size: 7px; background: #334155; color: #94a3b8; padding: 1px 6px; border-radius: 8px; font-weight: 700;">PLATINUM+</span>
+                        </div>
+                        <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 0 0 8px 0;">Upload a lender rate sheet and Ezra will auto-fill rates based on FICO, CLTV, term, and origination fee.</p>
+                        <!-- Auto-price toggle -->
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; padding:6px 10px; background:rgba(0,0,0,0.2); border-radius:6px;">
+                            <label style="font-size:9px; color:rgba(255,255,255,0.7); cursor:pointer; display:flex; align-items:center; gap:6px; flex:1;">
+                                <input type="checkbox" id="toggle-auto-preprice" style="accent-color:#f59e0b;">
+                                Auto-fill rates from uploaded sheet when form fields change
+                            </label>
+                        </div>
+                        <!-- Upload + Status -->
+                        <div style="display:flex; gap:6px; align-items:center;">
+                            <button class="btn" style="background:#f59e0b; color:#000; font-size:8px; padding:4px 12px;" id="btn-upload-rate-sheet"
+                                onclick="document.getElementById('ezra-orb')?.click(); setTimeout(()=>{if(window.Ezra) window.Ezra.uploadRateSheet?.();}, 300);">
+                                Upload Rate Sheet</button>
+                            <span id="rate-sheet-status" style="font-size:8px; color:rgba(255,255,255,0.4);">No rate sheet uploaded</span>
+                            <button class="btn" style="background:#6b7280; font-size:7px; padding:3px 8px; display:none;" id="btn-clear-rate-sheet"
+                                onclick="clearSavedRateSheet()">Clear</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- HEYGEN AI VIDEO (Diamond exclusive) -->
@@ -8854,6 +8880,13 @@ Best regards,
                     company.classList.remove('locked');
                     company.onclick = null;
                 }
+            }
+
+            // ---- PLATINUM+ (level >= 2): Rate Sheet Pre-Pricing ----
+            var rateSheetSection = document.getElementById('ezra-rate-sheet-section');
+            if (rateSheetSection) {
+                rateSheetSection.style.display = level >= 2 ? '' : 'none';
+                if (level >= 2) _loadRateSheetStatus();
             }
 
             // ---- OBSIDIAN+ (level >= 3): Custom AI System Prompt ----
@@ -13064,6 +13097,92 @@ Best regards,
             var saved = localStorage.getItem('heloc_custom_ai_prompt') || '';
             var el = document.getElementById('custom-ai-system-prompt');
             if (el && saved) el.value = saved;
+        }
+
+        // Rate Sheet Pre-Pricing Settings
+        async function _loadRateSheetStatus() {
+            var sb = window._supabase;
+            if (!sb) return;
+            try {
+                var session = (await sb.auth.getSession()).data.session;
+                if (!session) return;
+                var { data } = await sb.from('user_integrations')
+                    .select('metadata')
+                    .eq('user_id', session.user.id)
+                    .eq('provider', 'heloc_settings')
+                    .maybeSingle();
+
+                var statusEl = document.getElementById('rate-sheet-status');
+                var clearBtn = document.getElementById('btn-clear-rate-sheet');
+                var toggleEl = document.getElementById('toggle-auto-preprice');
+
+                if (data?.metadata?.rateSheetMatrix) {
+                    var updated = data.metadata.rateSheetUpdatedAt;
+                    var dateStr = updated ? new Date(updated).toLocaleDateString() : 'saved';
+                    if (statusEl) { statusEl.textContent = 'Rate sheet loaded (' + dateStr + ')'; statusEl.style.color = '#10b981'; }
+                    if (clearBtn) clearBtn.style.display = '';
+                } else {
+                    if (statusEl) { statusEl.textContent = 'No rate sheet uploaded'; statusEl.style.color = 'rgba(255,255,255,0.4)'; }
+                    if (clearBtn) clearBtn.style.display = 'none';
+                }
+
+                if (toggleEl) {
+                    toggleEl.checked = data?.metadata?.autoPrePrice || false;
+                    toggleEl.addEventListener('change', async function() {
+                        await _saveAutoPrePriceSetting(this.checked);
+                    });
+                }
+            } catch (e) {
+                console.warn('Failed to load rate sheet status:', e);
+            }
+        }
+
+        async function _saveAutoPrePriceSetting(enabled) {
+            var sb = window._supabase;
+            if (!sb) return;
+            var session = (await sb.auth.getSession()).data.session;
+            if (!session) return;
+
+            var { data: existing } = await sb.from('user_integrations')
+                .select('id, metadata')
+                .eq('user_id', session.user.id)
+                .eq('provider', 'heloc_settings')
+                .maybeSingle();
+
+            var metadata = existing?.metadata || {};
+            metadata.autoPrePrice = enabled;
+
+            if (existing) {
+                await sb.from('user_integrations').update({ metadata }).eq('id', existing.id);
+            } else {
+                await sb.from('user_integrations').insert({ user_id: session.user.id, provider: 'heloc_settings', metadata });
+            }
+            showToast(enabled ? 'Auto-pricing enabled' : 'Auto-pricing disabled', 'success');
+        }
+
+        async function clearSavedRateSheet() {
+            var sb = window._supabase;
+            if (!sb) return;
+            var session = (await sb.auth.getSession()).data.session;
+            if (!session) return;
+
+            var { data: existing } = await sb.from('user_integrations')
+                .select('id, metadata')
+                .eq('user_id', session.user.id)
+                .eq('provider', 'heloc_settings')
+                .maybeSingle();
+
+            if (existing) {
+                var metadata = existing.metadata || {};
+                delete metadata.rateSheetMatrix;
+                delete metadata.rateSheetUpdatedAt;
+                await sb.from('user_integrations').update({ metadata }).eq('id', existing.id);
+            }
+
+            var statusEl = document.getElementById('rate-sheet-status');
+            if (statusEl) { statusEl.textContent = 'No rate sheet uploaded'; statusEl.style.color = 'rgba(255,255,255,0.4)'; }
+            document.getElementById('btn-clear-rate-sheet').style.display = 'none';
+            showToast('Rate sheet cleared', 'success');
         }
 
         async function generateCustomAIStrategy() {
