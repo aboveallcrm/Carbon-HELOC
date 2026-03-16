@@ -13031,7 +13031,8 @@ Best regards,
             nums += '• Rate: ' + rate + '% (' + kbRateTypeLabel + ')  |  Term: ' + term + ' years\n';
             nums += '• Monthly Payment: ' + payment + '\n';
             if (origPct && origPct !== '0') nums += '• Origination: ' + origPct + '%\n';
-            nums += '• Combined LTV: ' + ctx.cltv + '\n';
+            var maxCltvNum = ctx.isInvestment ? 70 : 85;
+            nums += '• Combined LTV: ' + ctx.cltv + (cltv > maxCltvNum ? '  ⚠️ EXCEEDS ' + maxCltvNum + '% MAX' : '  (max ' + maxCltvNum + '%)') + '\n';
             if (savingsNum > 0) nums += '• Net Monthly Savings: ' + savings + ' (' + (savingsNum * 12).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) + '/yr)\n';
             if (ctx.breakEvenMonths) nums += '• Break-Even: ' + ctx.breakEvenMonths + ' months\n';
             if (helocPayoff > 0) nums += '• Paying off existing HELOC: $' + helocPayoff.toLocaleString() + '\n';
@@ -13060,10 +13061,18 @@ Best regards,
             if (cashBack > 0 && !helocPayoff) {
                 why += '→ Accessing $' + cashBack.toLocaleString() + ' in equity without touching the first mortgage rate\n';
             }
-            if (cltv <= 80) {
-                why += '→ CLTV at ' + ctx.cltv + ' — well within guidelines, strong equity position\n';
-            } else if (cltv <= 90) {
-                why += '→ CLTV at ' + ctx.cltv + ' — within range, still solid equity cushion\n';
+            var maxCltvWhy = ctx.isInvestment ? 70 : 85;
+            if (cltv > maxCltvWhy) {
+                why += '→ ⚠️ CLTV at ' + ctx.cltv + ' — EXCEEDS max ' + maxCltvWhy + '% guideline. Loan amount needs adjustment to qualify.\n';
+                // Calculate max eligible HELOC
+                var maxHelocEligible = Math.floor((homeVal * maxCltvWhy / 100) - mortBal);
+                if (maxHelocEligible > 0) {
+                    why += '→ Max eligible HELOC at ' + maxCltvWhy + '% CLTV: ~$' + maxHelocEligible.toLocaleString() + '\n';
+                }
+            } else if (cltv <= 80) {
+                why += '→ CLTV at ' + ctx.cltv + ' — well within ' + maxCltvWhy + '% max, strong equity position\n';
+            } else if (cltv <= maxCltvWhy) {
+                why += '→ CLTV at ' + ctx.cltv + ' — within ' + maxCltvWhy + '% max guideline, solid equity cushion\n';
             }
             if (ctx.isInterestOnly) {
                 why += '→ Interest-only structure keeps the payment minimal during the draw period\n';
@@ -13107,10 +13116,15 @@ Best regards,
                 objCount++;
             }
 
-            // High CLTV
-            if (cltv > 80) {
+            // CLTV guidance — max 85% primary, 70% investment
+            var maxCltv = ctx.isInvestment ? 70 : 85;
+            if (cltv > maxCltv) {
                 objections += '\n"Is my CLTV too high?"\n';
-                objections += '→ "At ' + ctx.cltv + ', we\'re within program guidelines. The lender is comfortable because your property supports the value, and the fixed rate means predictable payments for the full term."\n';
+                objections += '→ ⚠️ CLTV at ' + ctx.cltv + ' EXCEEDS the max ' + maxCltv + '% for ' + (ctx.isInvestment ? 'investment properties' : 'primary residences with this credit profile') + '. The loan amount may need to be reduced, or the client needs a higher home value / lower mortgage balance to qualify. Consider adjusting the HELOC amount down to stay within guidelines.\n';
+                objCount++;
+            } else if (cltv > 80) {
+                objections += '\n"Is my CLTV too high?"\n';
+                objections += '→ "At ' + ctx.cltv + ', we\'re within program guidelines (max ' + maxCltv + '%). The lender is comfortable because your property supports the value, and the ' + (ctx.recType === 'variable' ? 'competitive rate' : 'fixed rate') + ' means predictable payments for the full term."\n';
                 objCount++;
             }
 

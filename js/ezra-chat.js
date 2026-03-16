@@ -772,8 +772,13 @@
         if (ctx.helocAmount > 0) summary += `Requested HELOC Amount: $${ctx.helocAmount.toLocaleString()}\n`;
         summary += `Occupancy: ${ctx.occupancy}\n`;
         if (ctx.homeValue > 0) {
-            summary += `CLTV: ${ctx.cltv}%\n`;
-            summary += `Max Equity at 85% CLTV: $${ctx.maxEquityAt85.toLocaleString()}\n`;
+            const isInvestment = (ctx.occupancy || '').toLowerCase().includes('investment');
+            const maxCltvPct = isInvestment ? 70 : 85;
+            const maxEquityAtCap = Math.floor(ctx.homeValue * maxCltvPct / 100 - ctx.mortgageBalance);
+            summary += `CLTV: ${ctx.cltv}%`;
+            if (ctx.cltv > maxCltvPct) summary += ` ⚠️ EXCEEDS ${maxCltvPct}% MAX`;
+            summary += `\n`;
+            summary += `Max HELOC at ${maxCltvPct}% CLTV: $${Math.max(0, maxEquityAtCap).toLocaleString()}\n`;
         }
 
         // Include rates if available
