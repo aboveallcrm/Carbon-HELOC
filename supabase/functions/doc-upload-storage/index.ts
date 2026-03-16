@@ -17,21 +17,39 @@ serve(async (req) => {
   }
 
   try {
-    const { fileData, fileName, fileType, docType, quoteId, leadId, userId } = await req.json()
-
-    if (!fileData || !fileName || !docType || !userId) {
+    // Authenticate via JWT
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        JSON.stringify({ error: 'Missing authorization' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
       )
     }
 
-    // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
       { auth: { persistSession: false } }
     )
+
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid or expired token' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 401 }
+      )
+    }
+
+    const { fileData, fileName, fileType, docType, quoteId, leadId } = await req.json()
+    const userId = user.id  // Use authenticated user ID, not from request body
+
+    if (!fileData || !fileName || !docType) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
 
     // Decode base64 file
     const binaryData = Uint8Array.from(atob(fileData), c => c.charCodeAt(0))
@@ -58,11 +76,12 @@ serve(async (req) => {
       )
     }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabaseClient
+    // Get signed URL (24 hour expiry) — loan documents should NOT be public
+    const { data: signedUrlData, error: signedUrlError } = await supabaseClient
       .storage
       .from('loan-documents')
-      .getPublicUrl(filePath)
+      .createSignedUrl(filePath, 86400) // 24 hours
+    const publicUrl = signedUrlData?.signedUrl || ''
 
     // Store document metadata in database
     const { data: docRecord, error: dbError } = await supabaseClient

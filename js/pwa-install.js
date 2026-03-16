@@ -465,7 +465,7 @@
         
         // Otherwise fetch from API
         try {
-            const response = await fetch('/functions/v1/push-config');
+            const response = await fetch('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/push-config');
             const data = await response.json();
             return data.vapidPublicKey;
         } catch (error) {

@@ -4104,7 +4104,6 @@
 
             .eq-input-area {
                 padding: 12px;
-            }
                 font-size: 10px;
             }
 
@@ -8288,7 +8287,9 @@
             
             var toast = document.createElement('div');
             toast.className = 'toast ' + type;
-            toast.innerHTML = '<span class="toast-icon">' + icons[type] + '</span><span>' + message + '</span>';
+            var iconSpan = document.createElement('span'); iconSpan.className = 'toast-icon'; iconSpan.textContent = icons[type] || '';
+            var msgSpan = document.createElement('span'); msgSpan.textContent = message;
+            toast.appendChild(iconSpan); toast.appendChild(msgSpan);
             
             container.appendChild(toast);
             
@@ -8989,12 +8990,13 @@
 
                 // Personalized Greeting
                 var hour = new Date().getHours();
-                var timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+                var isEs = (currentLanguage === 'es');
+                var timeGreeting = hour < 12 ? (isEs ? 'Buenos dias' : 'Good morning') : hour < 17 ? (isEs ? 'Buenas tardes' : 'Good afternoon') : (isEs ? 'Buenas noches' : 'Good evening');
                 var greetName = data.clientName ? data.clientName.split(' ')[0] : '';
                 var greetEl = document.getElementById('greeting-banner');
                 if (greetEl) {
                     greetEl.innerHTML = '<div class="greeting-text">' + esc(timeGreeting) + (greetName ? ', ' + esc(greetName) : '') + '! &#128075;</div>' +
-                        '<div class="greeting-sub">Your personalized HELOC quote is ready for review</div>';
+                        '<div class="greeting-sub">' + (isEs ? 'Su cotizacion HELOC personalizada esta lista para revisar' : 'Your personalized HELOC quote is ready for review') + '</div>';
                 }
 
                 // Dark footer
@@ -12683,7 +12685,7 @@
                 
                 // Send schedule request to API
                 function sendScheduleRequest(requestType, phone, preferredTime, isUrgent) {
-                    var SCHEDULE_API_URL = 'https://' + window.location.host + '/functions/v1/schedule-request';
+                    var SCHEDULE_API_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/schedule-request';
                     
                     fetch(SCHEDULE_API_URL, {
                         method: 'POST',
@@ -13420,8 +13422,8 @@
 
                 function sendHeartbeat(status) {
                     if (!_leadId || !_userId || quoteCode === 'preview') return;
-                    var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                    sb.from('lead_activity').upsert({
+                    if (!window._sbClient) window._sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    window._sbClient.from('lead_activity').upsert({
                         lead_id: _leadId,
                         user_id: _userId,
                         quote_code: quoteCode,

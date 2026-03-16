@@ -11,10 +11,13 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Cached user object — avoids repeated API calls on autosave
+// TTL: 5 minutes — ensures role/tier changes propagate within a reasonable window
 let _cachedUser = null;
+let _cacheTime = 0;
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 export async function getCurrentUser() {
-    if (_cachedUser) return _cachedUser;
+    if (_cachedUser && (Date.now() - _cacheTime) < CACHE_TTL_MS) return _cachedUser;
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
@@ -26,16 +29,37 @@ export async function getCurrentUser() {
         .eq('id', user.id)
         .single();
 
-    if (profileError) {
-        console.warn('Profile fetch error:', profileError.message);
+    if (profileError || !profile) {
+        // Auto-create profile for Google/magic-link signups that bypassed register()
+        if (!profile) {
+            const { data: newProfile, error: createErr } = await supabase
+                .from('profiles')
+                .upsert({
+                    id: user.id,
+                    email: user.email,
+                    role: 'user',
+                    tier: 'carbon',
+                    subscription_status: 'trialing'
+                }, { onConflict: 'id' })
+                .select()
+                .single();
+            if (!createErr && newProfile) {
+                _cachedUser = { ...user, ...newProfile };
+                _cacheTime = Date.now();
+                return _cachedUser;
+            }
+        }
+        console.warn('Profile fetch error:', profileError?.message || 'no profile');
     }
 
     // Merge profile over user, with profile taking precedence
     _cachedUser = { ...user, ...(profile || {}) };
-    
+    _cacheTime = Date.now();
+
     return _cachedUser;
 }
 
 export function clearUserCache() {
     _cachedUser = null;
+    _cacheTime = 0;
 }

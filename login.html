@@ -624,7 +624,7 @@
             success.style.display = 'none';
 
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + window.location.pathname.replace('login.html', 'login.html')
+                redirectTo: window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'AboveAllCarbon_HELOC_v12_FIXED.html'
             });
 
             if (error) {
@@ -658,7 +658,7 @@
             const { error } = await supabase.auth.signInWithOtp({
                 email,
                 options: {
-                    emailRedirectTo: window.location.origin + '/AboveAllCarbon_HELOC_v12_FIXED.html'
+                    emailRedirectTo: window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'AboveAllCarbon_HELOC_v12_FIXED.html'
                 }
             });
 
