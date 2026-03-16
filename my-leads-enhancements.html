@@ -1,0 +1,2350 @@
+<!--
+================================================================================
+MY LEADS SECTION - COMPREHENSIVE ENHANCEMENTS
+================================================================================
+This file contains the complete enhanced My Leads section with:
+1. Extended status management with 20+ statuses
+2. Status change logging
+3. Date tracking for key milestones
+4. Enhanced filters with multi-select and presets
+5. Advanced sorting options
+6. Lead detail panel with timeline
+7. CRM sync preparation fields
+================================================================================
+-->
+
+<!-- ENHANCED CSS FOR MY LEADS SECTION -->
+<style>
+/* ===== LEAD STATUS BADGES ===== */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 8px;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.status-badge:hover {
+    transform: scale(1.05);
+}
+
+.status-new { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+.status-contacted { background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3); }
+.status-qualified { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.status-quoted { background: rgba(6, 182, 212, 0.2); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
+.status-quote_sent { background: rgba(6, 182, 212, 0.25); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.4); }
+.status-application_sent { background: rgba(167, 139, 250, 0.2); color: #c4b5fd; border: 1px solid rgba(167, 139, 250, 0.3); }
+.status-in_underwriting { background: rgba(251, 146, 60, 0.2); color: #fdba74; border: 1px solid rgba(251, 146, 60, 0.3); }
+.status-approved { background: rgba(52, 211, 153, 0.2); color: #6ee7b7; border: 1px solid rgba(52, 211, 153, 0.3); }
+.status-docs_out { background: rgba(45, 212, 191, 0.2); color: #5eead4; border: 1px solid rgba(45, 212, 191, 0.3); }
+.status-funded { background: rgba(16, 185, 129, 0.25); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+.status-rate_locked { background: rgba(236, 72, 153, 0.2); color: #f9a8d4; border: 1px solid rgba(236, 72, 153, 0.3); }
+.status-follow_up { background: rgba(234, 179, 8, 0.2); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.3); }
+.status-needs_quote { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
+.status-not_interested { background: rgba(107, 114, 128, 0.2); color: #9ca3af; border: 1px solid rgba(107, 114, 128, 0.3); }
+.status-refi { background: rgba(20, 184, 166, 0.2); color: #5eead4; border: 1px solid rgba(20, 184, 166, 0.3); }
+.status-went_with_competitor { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+.status-disqualified { background: rgba(120, 53, 15, 0.3); color: #d97706; border: 1px solid rgba(120, 53, 15, 0.4); }
+.status-nurture { background: rgba(147, 197, 253, 0.2); color: #93c5fd; border: 1px solid rgba(147, 197, 253, 0.3); }
+.status-on_hold { background: rgba(107, 114, 128, 0.2); color: #9ca3af; border: 1px solid rgba(107, 114, 128, 0.3); }
+.status-lost { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+.status-dnc { background: rgba(153, 27, 27, 0.3); color: #fca5a5; border: 1px solid rgba(153, 27, 27, 0.4); }
+
+/* ===== STATUS DROPDOWN MENU ===== */
+.status-dropdown-menu {
+    position: absolute;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 6px;
+    min-width: 180px;
+    z-index: 10000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.status-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 9px;
+    font-family: var(--font-heading);
+    transition: background 0.15s ease;
+}
+
+.status-option:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.status-option.selected {
+    background: rgba(197, 160, 89, 0.15);
+}
+
+.status-option-group {
+    font-size: 7px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 8px 10px 4px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 4px;
+}
+
+.status-option-group:first-child {
+    border-top: none;
+    margin-top: 0;
+}
+
+/* ===== QUICK STATUS BUTTONS (HOVER MENU) ===== */
+.quick-status-menu {
+    position: absolute;
+    display: none;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 4px;
+    gap: 2px;
+    z-index: 10001;
+}
+
+.quick-status-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease;
+}
+
+.quick-status-btn:hover {
+    transform: scale(1.1);
+}
+
+/* ===== ENHANCED FILTERS BAR ===== */
+.leads-filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.filter-label {
+    font-size: 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: var(--font-heading);
+}
+
+.filter-control {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    padding: 5px 8px;
+    color: white;
+    font-family: var(--font-body);
+    font-size: 10px;
+    min-width: 120px;
+}
+
+.filter-control:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.filter-control option {
+    background: #1e293b;
+    color: white;
+}
+
+/* Multi-select dropdown styling */
+.filter-multi-select {
+    position: relative;
+    min-width: 140px;
+}
+
+.filter-multi-trigger {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    padding: 5px 8px;
+    color: white;
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.filter-multi-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    margin-top: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10000;
+    display: none;
+}
+
+.filter-multi-dropdown.active {
+    display: block;
+}
+
+.filter-multi-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.filter-multi-option:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.filter-multi-option input[type="checkbox"] {
+    accent-color: var(--accent-color);
+}
+
+/* Date range filters */
+.date-range-inputs {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.date-range-inputs input {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    padding: 5px 8px;
+    color: white;
+    font-size: 10px;
+    width: 100px;
+}
+
+/* Filter presets */
+.filter-presets {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.filter-preset-btn {
+    background: rgba(197, 160, 89, 0.15);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    border-radius: 12px;
+    padding: 3px 10px;
+    color: var(--accent-color);
+    font-size: 8px;
+    font-family: var(--font-heading);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-preset-btn:hover {
+    background: rgba(197, 160, 89, 0.25);
+}
+
+.filter-preset-btn.active {
+    background: rgba(197, 160, 89, 0.35);
+}
+
+/* ===== SORTING CONTROLS ===== */
+.sort-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+.sort-label {
+    font-size: 8px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: var(--font-heading);
+}
+
+.sort-select {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    padding: 4px 8px;
+    color: white;
+    font-size: 9px;
+    font-family: var(--font-body);
+}
+
+.sort-direction-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    padding: 4px 8px;
+    color: white;
+    cursor: pointer;
+    font-size: 10px;
+    transition: all 0.2s ease;
+}
+
+.sort-direction-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* ===== LEAD DETAIL SLIDE-OUT PANEL ===== */
+.lead-detail-panel {
+    position: fixed;
+    top: 0;
+    right: -500px;
+    width: 500px;
+    max-width: 100vw;
+    height: 100vh;
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 60000;
+    transition: right 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+}
+
+.lead-detail-panel.active {
+    right: 0;
+}
+
+.lead-detail-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.lead-detail-name {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 4px 0;
+}
+
+.lead-detail-contact {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    gap: 12px;
+}
+
+.lead-detail-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.2s ease;
+}
+
+.lead-detail-close:hover {
+    color: white;
+}
+
+.lead-detail-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.lead-detail-section {
+    margin-bottom: 24px;
+}
+
+.lead-detail-section-title {
+    font-family: var(--font-heading);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent-color);
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Timeline */
+.lead-timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+.lead-timeline::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 16px;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -17px;
+    top: 2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    border: 2px solid #0f172a;
+}
+
+.timeline-item.status-change::before { background: #3b82f6; }
+.timeline-item.quote-sent::before { background: #06b6d4; }
+.timeline-item.contact::before { background: #8b5cf6; }
+.timeline-item.note::before { background: #f59e0b; }
+.timeline-item.funded::before { background: #10b981; }
+
+.timeline-date {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: var(--font-heading);
+}
+
+.timeline-content {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 2px;
+}
+
+.timeline-meta {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 2px;
+}
+
+/* Quick Actions */
+.lead-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.lead-action-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 10px;
+    color: white;
+    font-size: 10px;
+    font-family: var(--font-heading);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.lead-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.lead-action-btn.primary {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #34d399;
+}
+
+.lead-action-btn.primary:hover {
+    background: rgba(16, 185, 129, 0.25);
+}
+
+/* Info Grid */
+.lead-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.lead-info-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.lead-info-label {
+    font-size: 8px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: var(--font-heading);
+    letter-spacing: 0.5px;
+}
+
+.lead-info-value {
+    font-size: 12px;
+    color: white;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.lead-info-value.money {
+    color: var(--accent-color);
+}
+
+/* Date tracking fields */
+.date-tracking-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.date-tracking-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.date-tracking-item label {
+    font-size: 8px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: var(--font-heading);
+}
+
+.date-tracking-item input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 6px 8px;
+    color: white;
+    font-size: 10px;
+}
+
+.date-tracking-item input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+/* ===== BULK ACTION BAR ENHANCEMENTS ===== */
+.bulk-action-bar {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: linear-gradient(90deg, rgba(197, 160, 89, 0.15), rgba(197, 160, 89, 0.05));
+    border: 1px solid rgba(197, 160, 89, 0.3);
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.bulk-action-bar.visible {
+    display: flex;
+}
+
+.bulk-count {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.bulk-action-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    padding: 5px 12px;
+    color: white;
+    font-size: 9px;
+    font-family: var(--font-heading);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.bulk-action-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.bulk-action-btn.danger {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #f87171;
+}
+
+.bulk-action-btn.danger:hover {
+    background: rgba(239, 68, 68, 0.25);
+}
+
+/* ===== TABLE ENHANCEMENTS ===== */
+.leads-table-container {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 12px;
+    overflow-x: auto;
+}
+
+#leads-table th {
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+}
+
+#leads-table th:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+#leads-table th.sortable::after {
+    content: '⇅';
+    font-size: 8px;
+    margin-left: 4px;
+    opacity: 0.4;
+}
+
+#leads-table th.sort-asc::after {
+    content: '↑';
+    opacity: 1;
+    color: var(--accent-color);
+}
+
+#leads-table th.sort-desc::after {
+    content: '↓';
+    opacity: 1;
+    color: var(--accent-color);
+}
+
+/* Expandable row */
+.lead-row {
+    transition: background 0.2s ease;
+}
+
+.lead-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.lead-row.expanded {
+    background: rgba(197, 160, 89, 0.05);
+}
+
+.lead-expand-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    font-size: 10px;
+    padding: 2px;
+    transition: all 0.2s ease;
+}
+
+.lead-expand-btn:hover {
+    color: white;
+}
+
+.lead-row.expanded .lead-expand-btn {
+    transform: rotate(90deg);
+    color: var(--accent-color);
+}
+
+/* ===== MODAL FOR STATUS REASONS ===== */
+.status-reason-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 65000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-reason-content {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 400px;
+    width: 90%;
+}
+
+.status-reason-title {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    color: white;
+    margin: 0 0 16px 0;
+}
+
+.status-reason-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 10px 12px;
+    color: white;
+    font-size: 12px;
+    margin-bottom: 16px;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.status-reason-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.status-reason-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+/* ===== CRM SYNC INDICATORS ===== */
+.crm-sync-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 7px;
+    font-family: var(--font-heading);
+    text-transform: uppercase;
+}
+
+.crm-sync-badge.synced {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+
+.crm-sync-badge.pending {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}
+
+.crm-sync-badge.error {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .leads-filters-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    .filter-control {
+        width: 100%;
+    }
+    
+    .lead-detail-panel {
+        width: 100%;
+        right: -100%;
+    }
+    
+    .sort-controls {
+        flex-wrap: wrap;
+    }
+}
+</style>
+
+<!-- ENHANCED MY LEADS HTML SECTION -->
+<!-- Replace the existing My Leads tab content (around line 5770-5924) with this: -->
+
+<!-- MY LEADS TAB -->
+<div id="tab-leads" class="tab-content">
+    <div class="control-section">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+            <h4 style="font-family: var(--font-heading); color: white; margin: 0; font-size: 11px;">👥 My Leads</h4>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button class="btn" style="background: linear-gradient(135deg, #10b981, #059669); font-size: 9px; padding: 5px 12px;" onclick="showAddLeadPanel()">➕ Add Lead</button>
+                <button id="bonzo-sync-btn" class="btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); font-size: 9px; padding: 5px 12px; display: none;" onclick="syncFromBonzo()">🔄 Sync Bonzo</button>
+                <button class="btn" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); font-size: 9px; padding: 5px 12px;" onclick="exportLeadsCSV()">📥 Export CSV</button>
+                <button class="btn" style="background: rgba(255,255,255,0.1); font-size: 9px; padding: 5px 12px;" onclick="showSavedFilters()">🔖 Saved Filters</button>
+            </div>
+        </div>
+        
+        <!-- Enhanced Search -->
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <input type="text" id="leads-search" class="section-search" placeholder="Search name, email, phone, address..." oninput="debouncedFilterLeads(this.value)" style="flex: 1;">
+            <button class="btn" style="background: rgba(255,255,255,0.1); font-size: 9px; padding: 5px 12px;" onclick="toggleAdvancedFilters()" id="advanced-filters-toggle">⚙️ Filters</button>
+        </div>
+
+        <!-- Advanced Filters Bar (Collapsible) -->
+        <div id="advanced-filters-bar" class="leads-filters-bar" style="display: none;">
+            <!-- Status Multi-Select -->
+            <div class="filter-group">
+                <span class="filter-label">Status</span>
+                <div class="filter-multi-select" id="status-multi-select">
+                    <div class="filter-multi-trigger" onclick="toggleMultiSelect('status')">
+                        <span id="status-multi-label">All Statuses</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="filter-multi-dropdown" id="status-multi-dropdown">
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('all')">
+                            <input type="checkbox" id="status-all" checked> <label for="status-all">All Statuses</label>
+                        </div>
+                        <div class="status-option-group">Pipeline</div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('new')">
+                            <input type="checkbox" id="status-new"> <label for="status-new">New</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('contacted')">
+                            <input type="checkbox" id="status-contacted"> <label for="status-contacted">Contacted</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('qualified')">
+                            <input type="checkbox" id="status-qualified"> <label for="status-qualified">Qualified</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('needs_quote')">
+                            <input type="checkbox" id="status-needs_quote"> <label for="status-needs_quote">Needs Quote</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('quoted')">
+                            <input type="checkbox" id="status-quoted"> <label for="status-quoted">Quoted</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('quote_sent')">
+                            <input type="checkbox" id="status-quote_sent"> <label for="status-quote_sent">Quote Sent</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('rate_locked')">
+                            <input type="checkbox" id="status-rate_locked"> <label for="status-rate_locked">Rate Locked</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('application_sent')">
+                            <input type="checkbox" id="status-application_sent"> <label for="status-application_sent">App Sent</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('in_underwriting')">
+                            <input type="checkbox" id="status-in_underwriting"> <label for="status-in_underwriting">Underwriting</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('approved')">
+                            <input type="checkbox" id="status-approved"> <label for="status-approved">Approved</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('docs_out')">
+                            <input type="checkbox" id="status-docs_out"> <label for="status-docs_out">Docs Out</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('funded')">
+                            <input type="checkbox" id="status-funded"> <label for="status-funded">Funded</label>
+                        </div>
+                        <div class="status-option-group">Follow-up</div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('follow_up')">
+                            <input type="checkbox" id="status-follow_up"> <label for="status-follow_up">Follow Up Needed</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('nurture')">
+                            <input type="checkbox" id="status-nurture"> <label for="status-nurture">Long-term Nurture</label>
+                        </div>
+                        <div class="status-option-group">Closed/Lost</div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('not_interested')">
+                            <input type="checkbox" id="status-not_interested"> <label for="status-not_interested">Not Interested</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('went_with_competitor')">
+                            <input type="checkbox" id="status-went_with_competitor"> <label for="status-went_with_competitor">Went with Competitor</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('disqualified')">
+                            <input type="checkbox" id="status-disqualified"> <label for="status-disqualified">Disqualified</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('refi')">
+                            <input type="checkbox" id="status-refi"> <label for="status-refi">Refi Opportunity</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('on_hold')">
+                            <input type="checkbox" id="status-on_hold"> <label for="status-on_hold">On Hold</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('lost')">
+                            <input type="checkbox" id="status-lost"> <label for="status-lost">Lost</label>
+                        </div>
+                        <div class="filter-multi-option" onclick="toggleStatusFilter('dnc')">
+                            <input type="checkbox" id="status-dnc"> <label for="status-dnc">DNC Only</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Source Filter -->
+            <div class="filter-group">
+                <span class="filter-label">Source</span>
+                <select id="leads-filter-source" class="filter-control" onchange="loadUserLeads()">
+                    <option value="all">All Sources</option>
+                    <option value="bonzo">Bonzo</option>
+                    <option value="ghl">GoHighLevel</option>
+                    <option value="manual">Manual</option>
+                    <option value="webhook">Webhook</option>
+                    <option value="csv">CSV Import</option>
+                    <option value="zapier">Zapier</option>
+                    <option value="n8n">n8n</option>
+                    <option value="leadmailbox">LeadMailbox</option>
+                </select>
+            </div>
+
+            <!-- Assigned LO Filter -->
+            <div class="filter-group" id="assigned-lo-filter-group" style="display: none;">
+                <span class="filter-label">Assigned LO</span>
+                <select id="leads-filter-assigned" class="filter-control" onchange="loadUserLeads()">
+                    <option value="all">All LOs</option>
+                </select>
+            </div>
+
+            <!-- Date Range Filter -->
+            <div class="filter-group">
+                <span class="filter-label">Date Range</span>
+                <select id="leads-filter-date-type" class="filter-control" style="margin-bottom: 4px;">
+                    <option value="created">Date Created</option>
+                    <option value="quoted">Quote Sent Date</option>
+                    <option value="funded">Funding Date</option>
+                    <option value="follow_up">Follow-up Date</option>
+                    <option value="updated">Last Updated</option>
+                </select>
+                <div class="date-range-inputs">
+                    <input type="date" id="leads-date-from" placeholder="From">
+                    <span style="color: rgba(255,255,255,0.4);">-</span>
+                    <input type="date" id="leads-date-to" placeholder="To">
+                </div>
+            </div>
+
+            <!-- Loan Amount Range -->
+            <div class="filter-group">
+                <span class="filter-label">Loan Amount</span>
+                <div class="date-range-inputs">
+                    <input type="number" id="leads-amount-min" placeholder="Min $" style="width: 80px;">
+                    <span style="color: rgba(255,255,255,0.4);">-</span>
+                    <input type="number" id="leads-amount-max" placeholder="Max $" style="width: 80px;">
+                </div>
+            </div>
+
+            <!-- Credit Score Range -->
+            <div class="filter-group">
+                <span class="filter-label">Credit Score</span>
+                <div class="date-range-inputs">
+                    <input type="number" id="leads-credit-min" placeholder="Min" style="width: 60px;">
+                    <span style="color: rgba(255,255,255,0.4);">-</span>
+                    <input type="number" id="leads-credit-max" placeholder="Max" style="width: 60px;">
+                </div>
+            </div>
+
+            <!-- Tags Filter -->
+            <div class="filter-group">
+                <span class="filter-label">Tags</span>
+                <input type="text" id="leads-filter-tags" class="filter-control" placeholder="Enter tags..." style="min-width: 100px;">
+            </div>
+
+            <!-- Filter Presets -->
+            <div class="filter-group" style="margin-left: auto;">
+                <span class="filter-label">Quick Filters</span>
+                <div class="filter-presets">
+                    <button class="filter-preset-btn" onclick="applyFilterPreset('today')">Today</button>
+                    <button class="filter-preset-btn" onclick="applyFilterPreset('week')">This Week</button>
+                    <button class="filter-preset-btn" onclick="applyFilterPreset('month')">This Month</button>
+                    <button class="filter-preset-btn" onclick="applyFilterPreset('follow_up_due')">Follow-up Due</button>
+                    <button class="filter-preset-btn" onclick="applyFilterPreset('rate_lock_expiring')">Lock Expiring</button>
+                    <button class="filter-preset-btn" onclick="applyFilterPreset('hot_leads')">🔥 Hot Leads</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sort Controls -->
+        <div class="sort-controls">
+            <span class="sort-label">Sort by:</span>
+            <select id="leads-sort-field" class="sort-select" onchange="loadUserLeads()">
+                <option value="created_at">Date Created</option>
+                <option value="updated_at">Date Updated</option>
+                <option value="first_name">Name</option>
+                <option value="status">Status</option>
+                <option value="source">Source</option>
+                <option value="loan_amount">Loan Amount</option>
+                <option value="credit_score">Credit Score</option>
+                <option value="next_follow_up">Next Follow-up</option>
+                <option value="quote_sent_date">Quote Sent Date</option>
+                <option value="funding_date">Funding Date</option>
+            </select>
+            <button id="leads-sort-direction" class="sort-direction-btn" onclick="toggleSortDirection()">↓</button>
+            <button class="sort-direction-btn" onclick="saveSortPreference()" title="Save as default">💾</button>
+            <span id="leads-count" style="margin-left: auto; font-family: var(--font-heading); font-size: 9px; color: rgba(255,255,255,0.5);"></span>
+        </div>
+
+        <!-- Bulk Action Bar -->
+        <div id="leads-bulk-bar" class="bulk-action-bar">
+            <span style="font-size: 10px; color: rgba(255,255,255,0.8);"><span class="bulk-count" id="leads-selected-count">0</span> lead(s) selected</span>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <select id="bulk-status-select" class="filter-control" style="min-width: 140px; font-size: 9px;" onchange="bulkChangeStatus(this.value)">
+                    <option value="">Change Status to...</option>
+                    <optgroup label="Pipeline">
+                        <option value="new">New</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="qualified">Qualified</option>
+                        <option value="needs_quote">Needs Quote</option>
+                        <option value="quoted">Quoted</option>
+                        <option value="quote_sent">Quote Sent</option>
+                        <option value="rate_locked">Rate Locked</option>
+                        <option value="application_sent">Application Sent</option>
+                        <option value="in_underwriting">In Underwriting</option>
+                        <option value="approved">Approved</option>
+                        <option value="docs_out">Docs Out</option>
+                        <option value="funded">Funded</option>
+                    </optgroup>
+                    <optgroup label="Follow-up">
+                        <option value="follow_up">Follow Up Needed</option>
+                        <option value="nurture">Long-term Nurture</option>
+                    </optgroup>
+                    <optgroup label="Closed/Lost">
+                        <option value="not_interested">Not Interested</option>
+                        <option value="went_with_competitor">Went with Competitor</option>
+                        <option value="disqualified">Disqualified</option>
+                        <option value="refi">Refi Opportunity</option>
+                        <option value="on_hold">On Hold</option>
+                        <option value="lost">Lost</option>
+                    </optgroup>
+                </select>
+                <button class="bulk-action-btn" onclick="bulkAssignLO()">👤 Assign LO</button>
+                <button class="bulk-action-btn" onclick="bulkAddTag()">🏷️ Add Tag</button>
+                <button class="bulk-action-btn" onclick="bulkSendEmail()">📧 Email</button>
+                <button class="bulk-action-btn danger" onclick="bulkDeleteLeads()">🗑 Delete</button>
+                <button class="bulk-action-btn" onclick="clearLeadSelection()">✕ Clear</button>
+            </div>
+        </div>
+
+        <!-- Add Lead Panel -->
+        <div id="add-lead-panel" style="display: none; background: rgba(0,0,0,0.4); border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #10b981;">
+            <h5 style="font-family: var(--font-heading); color: #10b981; margin: 0 0 12px 0; font-size: 11px;">Add New Lead</h5>
+            <div class="input-group">
+                <div class="input-field"><label>First Name</label><input type="text" id="add-lead-fname" placeholder="John"></div>
+                <div class="input-field"><label>Last Name</label><input type="text" id="add-lead-lname" placeholder="Smith"></div>
+                <div class="input-field"><label>Email</label><input type="email" id="add-lead-email" placeholder="john@example.com"></div>
+                <div class="input-field"><label>Phone</label><input type="text" id="add-lead-phone" placeholder="(555) 123-4567"></div>
+            </div>
+            <div class="input-group" style="margin-top: 8px;">
+                <div class="input-field"><label>Credit Score</label><input type="number" id="add-lead-credit" placeholder="740"></div>
+                <div class="input-field" style="flex: 2;"><label>Property Address</label><input type="text" id="add-lead-address" placeholder="123 Main St, City, ST 12345"></div>
+                <div class="input-field"><label>Home Value ($)</label><input type="number" id="add-lead-home-value" placeholder="750000"></div>
+                <div class="input-field"><label>1st Mortgage ($)</label><input type="number" id="add-lead-mortgage" placeholder="350000"></div>
+                <div class="input-field"><label>Cash Out ($)</label><input type="number" id="add-lead-cashout" placeholder="100000"></div>
+            </div>
+            <div class="input-group" style="margin-top: 8px;">
+                <div class="input-field"><label>Loan Type</label>
+                    <select id="add-lead-loan-type" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; border-radius: 4px; padding: 6px 8px; font-size: 9px;">
+                        <option value="">—</option>
+                        <option value="HELOC">HELOC</option>
+                        <option value="Fixed HELOC">Fixed HELOC</option>
+                        <option value="Cash-Out Refi">Cash-Out Refi</option>
+                        <option value="DSCR">DSCR</option>
+                        <option value="Conventional">Conventional</option>
+                        <option value="FHA">FHA</option>
+                        <option value="VA">VA</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="input-field"><label>Property Type</label>
+                    <select id="add-lead-occupancy" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; border-radius: 4px; padding: 6px 8px; font-size: 9px;">
+                        <option value="">—</option>
+                        <option value="Primary Residence">Primary Residence</option>
+                        <option value="Second Home">Second Home</option>
+                        <option value="Investment Property">Investment Property</option>
+                        <option value="Multi-Family">Multi-Family (2-4 units)</option>
+                        <option value="Condo">Condo</option>
+                        <option value="Townhome">Townhome</option>
+                    </select>
+                </div>
+                <div class="input-field"><label>Initial Status</label>
+                    <select id="add-lead-status" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; border-radius: 4px; padding: 6px 8px; font-size: 9px;">
+                        <option value="new">New</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="qualified">Qualified</option>
+                        <option value="needs_quote">Needs Quote</option>
+                        <option value="follow_up">Follow Up Needed</option>
+                    </select>
+                </div>
+                <div class="input-field"><label>Follow-up Date</label>
+                    <input type="date" id="add-lead-follow-up" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; border-radius: 4px; padding: 6px 8px; font-size: 9px;">
+                </div>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                <button class="btn" style="background: #10b981;" onclick="saveNewLead()">Save Lead</button>
+                <button class="btn" style="background: #6b7280;" onclick="document.getElementById('add-lead-panel').style.display='none'">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Leads Table -->
+        <div class="leads-table-container">
+            <table id="leads-table" style="width: 100%; border-collapse: collapse; font-size: 10px; font-family: var(--font-body);">
+                <thead>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.15);">
+                        <th style="text-align:center;padding:8px 4px;width:30px;"><input type="checkbox" class="lead-checkbox" id="leads-select-all" onchange="toggleAllLeads(this.checked)" title="Select all"></th>
+                        <th style="width: 20px;"></th>
+                        <th class="th-lead sortable" onclick="sortLeads('first_name')">Name</th>
+                        <th class="th-lead">Phone</th>
+                        <th class="th-lead">Email</th>
+                        <th class="th-lead">Address</th>
+                        <th class="th-lead" style="text-align:center;">Credit</th>
+                        <th class="th-lead" style="text-align:right;">Home Value</th>
+                        <th class="th-lead" style="text-align:right;">Balance</th>
+                        <th class="th-lead" style="text-align:right;">Cashout</th>
+                        <th class="th-lead">Loan Type</th>
+                        <th class="th-lead">Property</th>
+                        <th class="th-lead">Source</th>
+                        <th class="th-lead" style="min-width: 120px;">Status</th>
+                        <th class="th-lead" style="text-align:center;">Quoted</th>
+                        <th class="th-lead sortable" onclick="sortLeads('created_at')">Date</th>
+                        <th class="th-lead" style="text-align:center;">Views</th>
+                        <th class="th-lead" style="text-align:center;">DNC</th>
+                        <th class="th-lead"></th>
+                    </tr>
+                </thead>
+                <tbody id="leads-tbody">
+                    <tr>
+                        <td colspan="19" style="padding: 20px; text-align: center; color: rgba(255,255,255,0.4);">Click "Refresh" to load leads</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Lead Detail Slide-out Panel -->
+<div id="lead-detail-panel" class="lead-detail-panel">
+    <div class="lead-detail-header">
+        <div>
+            <h3 class="lead-detail-name" id="detail-lead-name">Lead Name</h3>
+            <div class="lead-detail-contact">
+                <span id="detail-lead-phone">📞 —</span>
+                <span id="detail-lead-email">✉️ —</span>
+            </div>
+            <div style="margin-top: 8px;" id="detail-lead-status-container">
+                <span class="status-badge" id="detail-lead-status">New</span>
+            </div>
+        </div>
+        <button class="lead-detail-close" onclick="closeLeadDetail()">✕</button>
+    </div>
+    
+    <div class="lead-detail-content">
+        <!-- Quick Actions -->
+        <div class="lead-detail-section">
+            <h4 class="lead-detail-section-title">⚡ Quick Actions</h4>
+            <div class="lead-quick-actions">
+                <button class="lead-action-btn primary" onclick="sendEmailToLead()">📧 Send Email</button>
+                <button class="lead-action-btn primary" onclick="sendSMSToLead()">💬 Send SMS</button>
+                <button class="lead-action-btn" onclick="scheduleCallWithLead()">📅 Schedule Call</button>
+                <button class="lead-action-btn" onclick="createQuoteForLead()">📄 Create Quote</button>
+                <button class="lead-action-btn" onclick="loadLeadIntoFormFromDetail()">📝 Load in Builder</button>
+                <button class="lead-action-btn" onclick="viewLeadAnalytics()">📊 View Analytics</button>
+            </div>
+        </div>
+
+        <!-- Date Tracking -->
+        <div class="lead-detail-section">
+            <h4 class="lead-detail-section-title">📅 Key Dates</h4>
+            <div class="date-tracking-grid">
+                <div class="date-tracking-item">
+                    <label>Quote Sent Date</label>
+                    <input type="date" id="detail-quote-sent-date" onchange="updateLeadDateField('quote_sent_date', this.value)">
+                </div>
+                <div class="date-tracking-item">
+                    <label>Rate Lock Date</label>
+                    <input type="date" id="detail-rate-lock-date" onchange="updateLeadDateField('rate_lock_date', this.value)">
+                </div>
+                <div class="date-tracking-item">
+                    <label>Lock Expiration</label>
+                    <input type="date" id="detail-lock-expiration" onchange="updateLeadDateField('lock_expiration_date', this.value)">
+                </div>
+                <div class="date-tracking-item">
+                    <label>Funding Date</label>
+                    <input type="date" id="detail-funding-date" onchange="updateLeadDateField('funding_date', this.value)">
+                </div>
+                <div class="date-tracking-item">
+                    <label>Follow-up Date</label>
+                    <input type="date" id="detail-follow-up-date" onchange="updateLeadDateField('follow_up_date', this.value)">
+                </div>
+                <div class="date-tracking-item">
+                    <label>Last Contact</label>
+                    <input type="date" id="detail-last-contact" onchange="updateLeadDateField('last_contact_date', this.value)">
+                </div>
+                <div class="date-tracking-item">
+                    <label>Next Action</label>
+                    <input type="date" id="detail-next-action" onchange="updateLeadDateField('next_action_date', this.value)">
+                </div>
+                <div class="date-tracking-item">
+                    <label>Created</label>
+                    <input type="text" id="detail-created-date" readonly style="opacity: 0.6;">
+                </div>
+            </div>
+        </div>
+
+        <!-- Lead Info -->
+        <div class="lead-detail-section">
+            <h4 class="lead-detail-section-title">💰 Loan Details</h4>
+            <div class="lead-info-grid">
+                <div class="lead-info-item">
+                    <div class="lead-info-label">Home Value</div>
+                    <div class="lead-info-value money" id="detail-home-value">—</div>
+                </div>
+                <div class="lead-info-item">
+                    <div class="lead-info-label">1st Mortgage Balance</div>
+                    <div class="lead-info-value money" id="detail-mortgage-balance">—</div>
+                </div>
+                <div class="lead-info-item">
+                    <div class="lead-info-label">Cash Out Requested</div>
+                    <div class="lead-info-value money" id="detail-cash-out">—</div>
+                </div>
+                <div class="lead-info-item">
+                    <div class="lead-info-label">Available Equity</div>
+                    <div class="lead-info-value money" id="detail-equity">—</div>
+                </div>
+                <div class="lead-info-item">
+                    <div class="lead-info-label">Credit Score</div>
+                    <div class="lead-info-value" id="detail-credit-score">—</div>
+                </div>
+                <div class="lead-info-item">
+                    <div class="lead-info-label">Loan Type</div>
+                    <div class="lead-info-value" id="detail-loan-type">—</div>
+                </div>
+                <div class="lead-info-item">
+                    <div class="lead-info-label">Property Type</div>
+                    <div class="lead-info-value" id="detail-property-type">—</div>
+                </div>
+                <div class="lead-info-item">
+                    <div class="lead-info-label">Source</div>
+                    <div class="lead-info-value" id="detail-source">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CRM Sync Info -->
+        <div class="lead-detail-section" id="crm-sync-section" style="display: none;">
+            <h4 class="lead-detail-section-title">🔄 CRM Sync</h4>
+            <div class="lead-info-grid">
+                <div class="lead-info-item">
+                    <div class="lead-info-label">External ID</div>
+                    <div class="lead-info-value" id="detail-external-id">—</div>
+                </div>
+                <div class="lead-info-item">
+                    <div class="lead-info-label">CRM Source</div>
+                    <div class="lead-info-value" id="detail-crm-source">—</div>
+                </div>
+                <div class="lead-info-item">
+                    <div class="lead-info-label">Last Sync</div>
+                    <div class="lead-info-value" id="detail-last-sync">—</div>
+                </div>
+                <div class="lead-info-item">
+                    <div class="lead-info-label">Sync Status</div>
+                    <div class="lead-info-value" id="detail-sync-status">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status History Timeline -->
+        <div class="lead-detail-section">
+            <h4 class="lead-detail-section-title">📜 Activity Timeline</h4>
+            <div class="lead-timeline" id="lead-timeline">
+                <!-- Timeline items populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Quotes Sent -->
+        <div class="lead-detail-section" id="quotes-section">
+            <h4 class="lead-detail-section-title">📄 Quotes Sent</h4>
+            <div id="lead-quotes-list" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Quotes populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Communication Log -->
+        <div class="lead-detail-section">
+            <h4 class="lead-detail-section-title">💬 Communication Log</h4>
+            <div id="lead-comm-log" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Communication log populated dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Change Reason Modal -->
+<div id="status-reason-modal" class="status-reason-modal" style="display: none;">
+    <div class="status-reason-content">
+        <h4 class="status-reason-title" id="status-reason-title">Status Change Reason</h4>
+        <p style="font-size: 11px; color: rgba(255,255,255,0.6); margin: -8px 0 12px 0;">Please provide details for this status change.</p>
+        <textarea id="status-reason-input" class="status-reason-input" placeholder="Enter reason or notes..."></textarea>
+        <div id="status-extra-fields">
+            <!-- Dynamic extra fields based on status -->
+        </div>
+        <div class="status-reason-buttons">
+            <button class="btn" style="background: #6b7280;" onclick="closeStatusReasonModal()">Cancel</button>
+            <button class="btn" style="background: var(--accent-color);" onclick="confirmStatusChangeWithReason()">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ===== ENHANCED CRM STATUS MAP WITH ALL STATUSES =====
+var CRM_STATUS_MAP = {
+    // Pipeline statuses
+    new:              { label: 'New',                 bonzo: 'new_lead',        ghl: 'open',      color: '#3b82f6', category: 'pipeline' },
+    contacted:        { label: 'Contacted',           bonzo: 'contacted',       ghl: 'open',      color: '#8b5cf6', category: 'pipeline' },
+    qualified:        { label: 'Qualified',           bonzo: 'qualified',       ghl: 'open',      color: '#f59e0b', category: 'pipeline' },
+    needs_quote:      { label: 'Needs Quote',         bonzo: 'needs_quote',     ghl: 'open',      color: '#6366f1', category: 'pipeline' },
+    quoted:           { label: 'Quoted',              bonzo: 'quoted',          ghl: 'open',      color: '#06b6d4', category: 'pipeline' },
+    quote_sent:       { label: 'Quote Sent',          bonzo: 'quote_sent',      ghl: 'open',      color: '#22d3ee', category: 'pipeline', dateField: 'quote_sent_date' },
+    rate_locked:      { label: 'Rate Locked',         bonzo: 'rate_locked',     ghl: 'open',      color: '#ec4899', category: 'pipeline', dateField: 'rate_lock_date' },
+    application_sent: { label: 'App Sent',            bonzo: 'app_submitted',   ghl: 'open',      color: '#a78bfa', category: 'pipeline' },
+    in_underwriting:  { label: 'Underwriting',        bonzo: 'in_underwriting', ghl: 'open',      color: '#fb923c', category: 'pipeline' },
+    approved:         { label: 'Approved',            bonzo: 'approved',        ghl: 'won',       color: '#34d399', category: 'pipeline' },
+    docs_out:         { label: 'Docs Out',            bonzo: 'docs_out',        ghl: 'won',       color: '#2dd4bf', category: 'pipeline' },
+    funded:           { label: 'Funded',              bonzo: 'funded',          ghl: 'won',       color: '#10b981', category: 'pipeline', dateField: 'funding_date' },
+    
+    // Follow-up statuses
+    follow_up:        { label: 'Follow Up Needed',    bonzo: 'follow_up',       ghl: 'open',      color: '#eab308', category: 'followup', dateField: 'follow_up_date' },
+    nurture:          { label: 'Long-term Nurture',   bonzo: 'nurture',         ghl: 'open',      color: '#93c5fd', category: 'followup' },
+    
+    // Closed/Lost statuses
+    not_interested:   { label: 'Not Interested',      bonzo: 'not_interested',  ghl: 'lost',      color: '#6b7280', category: 'closed', requiresReason: true },
+    went_with_competitor: { label: 'W/ Competitor',   bonzo: 'lost_competitor', ghl: 'lost',      color: '#ef4444', category: 'closed', requiresReason: true, extraField: { name: 'competitor_name', label: 'Competitor Name' } },
+    disqualified:     { label: 'Disqualified',        bonzo: 'disqualified',    ghl: 'lost',      color: '#d97706', category: 'closed', requiresReason: true },
+    refi:             { label: 'Refi Opportunity',    bonzo: 'refi_opportunity', ghl: 'open',     color: '#14b8a6', category: 'closed' },
+    on_hold:          { label: 'On Hold',             bonzo: 'on_hold',         ghl: 'open',      color: '#6b7280', category: 'closed' },
+    lost:             { label: 'Lost',                bonzo: 'lost',            ghl: 'lost',      color: '#ef4444', category: 'closed' },
+    dnc:              { label: 'DNC',                 bonzo: 'dnc',             ghl: 'lost',      color: '#991b1b', category: 'closed' }
+};
+
+// ===== STATE MANAGEMENT =====
+var _leadsState = {
+    filters: {
+        status: ['all'],
+        source: 'all',
+        assignedLO: 'all',
+        dateType: 'created',
+        dateFrom: null,
+        dateTo: null,
+        amountMin: null,
+        amountMax: null,
+        creditMin: null,
+        creditMax: null,
+        tags: []
+    },
+    sort: {
+        field: 'created_at',
+        direction: 'desc'
+    },
+    selectedLeads: new Set(),
+    currentDetailLead: null,
+    pendingStatusChange: null
+};
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', function() {
+    loadSortPreference();
+    loadSavedFilters();
+});
+
+// ===== ENHANCED LOAD LEADS FUNCTION =====
+async function loadUserLeads() {
+    const sb = window._supabase;
+    const userId = window.currentUserId;
+    const tbody = document.getElementById('leads-tbody');
+    const countEl = document.getElementById('leads-count');
+
+    // Show Bonzo sync button if key exists
+    updateBonzoSyncButton();
+
+    if (!sb || !userId) {
+        if (tbody) tbody.innerHTML = '<tr><td colspan="19" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">Log in to see your leads</td></tr>';
+        updateDashboard([], 0);
+        return;
+    }
+
+    tbody.innerHTML = '<tr><td colspan="19" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);">Loading...</td></tr>';
+
+    try {
+        // Fetch leads with all new fields
+        const { data: leads, error } = await sb
+            .from('leads')
+            .select(`
+                *,
+                lead_status_logs(*),
+                quotes_sent:quotes(id, quote_data, created_at, status)
+            `)
+            .eq('user_id', userId)
+            .order(_leadsState.sort.field, { ascending: _leadsState.sort.direction === 'asc' })
+            .limit(1000);
+
+        if (error) throw error;
+
+        // Fetch quotes for cross-reference
+        const { data: quotes } = await sb
+            .from('quotes')
+            .select('id, quote_data, created_at')
+            .eq('user_id', userId);
+
+        // Build lookup sets
+        const quotedEmails = new Set();
+        const quotedNames = new Set();
+        if (quotes) {
+            quotes.forEach(function(q) {
+                const d = q.quote_data || {};
+                if (d.clientEmail) quotedEmails.add(d.clientEmail.toLowerCase().trim());
+                if (d.clientName) quotedNames.add(d.clientName.toLowerCase().trim());
+            });
+        }
+
+        if (!leads || leads.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="19" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">No leads yet. Add one manually or connect your CRM webhook.</td></tr>';
+            if (countEl) countEl.innerText = '0 leads';
+            updateDashboard([], 0);
+            return;
+        }
+
+        // Enrich leads with quoted status
+        var allEnriched = leads.map(function(lead) {
+            var leadEmail = (lead.email || '').toLowerCase().trim();
+            var leadName = ((lead.first_name || '') + ' ' + (lead.last_name || '')).toLowerCase().trim();
+            var isQuoted = false;
+            if (leadEmail && quotedEmails.has(leadEmail)) isQuoted = true;
+            if (leadName && leadName.length > 1 && quotedNames.has(leadName)) isQuoted = true;
+            return Object.assign({}, lead, { isQuoted: isQuoted });
+        });
+
+        // Apply all filters
+        var filtered = applyAdvancedFilters(allEnriched);
+
+        // Update dashboard
+        updateDashboard(allEnriched, allEnriched.filter(function(l) { return l.isQuoted; }).length);
+
+        if (countEl) countEl.innerText = filtered.length + ' lead' + (filtered.length !== 1 ? 's' : '');
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="19" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);font-family:var(--font-heading);font-size:10px;">No leads match this filter.</td></tr>';
+            return;
+        }
+
+        // Store in cache
+        window._leadsCache = filtered;
+
+        // Render table
+        renderLeadsTable(filtered);
+
+        // Reset selection
+        clearLeadSelection();
+
+    } catch (e) {
+        console.error('Error loading leads:', e);
+        tbody.innerHTML = '<tr><td colspan="19" style="padding:20px;text-align:center;color:#f87171;font-family:var(--font-heading);font-size:10px;">Error loading leads: ' + escapeHtml(e.message) + '</td></tr>';
+    }
+}
+
+// ===== APPLY ADVANCED FILTERS =====
+function applyAdvancedFilters(leads) {
+    var filtered = leads;
+    var f = _leadsState.filters;
+
+    // Status filter (multi-select)
+    if (f.status && f.status.length > 0 && !f.status.includes('all')) {
+        filtered = filtered.filter(function(l) {
+            return f.status.includes((l.status || 'new').toLowerCase());
+        });
+    }
+
+    // Source filter
+    if (f.source && f.source !== 'all') {
+        filtered = filtered.filter(function(l) {
+            return (l.source || l.crm_source || '') === f.source;
+        });
+    }
+
+    // Assigned LO filter
+    if (f.assignedLO && f.assignedLO !== 'all') {
+        filtered = filtered.filter(function(l) {
+            return l.assigned_lo_id === f.assignedLO;
+        });
+    }
+
+    // Date range filter
+    if (f.dateFrom || f.dateTo) {
+        var dateField = getDateFieldForFilter(f.dateType);
+        filtered = filtered.filter(function(l) {
+            var date = l[dateField] || l.created_at;
+            if (!date) return false;
+            var d = new Date(date);
+            if (f.dateFrom && d < new Date(f.dateFrom)) return false;
+            if (f.dateTo && d > new Date(f.dateTo + 'T23:59:59')) return false;
+            return true;
+        });
+    }
+
+    // Loan amount range
+    if (f.amountMin || f.amountMax) {
+        filtered = filtered.filter(function(l) {
+            var meta = l.metadata || {};
+            var amount = parseFloat(meta.cash_out || meta.loan_amount || 0);
+            if (f.amountMin && amount < parseFloat(f.amountMin)) return false;
+            if (f.amountMax && amount > parseFloat(f.amountMax)) return false;
+            return true;
+        });
+    }
+
+    // Credit score range
+    if (f.creditMin || f.creditMax) {
+        filtered = filtered.filter(function(l) {
+            var meta = l.metadata || {};
+            var credit = parseInt(meta.credit_score || 0);
+            if (!credit) return false;
+            if (f.creditMin && credit < parseInt(f.creditMin)) return false;
+            if (f.creditMax && credit > parseInt(f.creditMax)) return false;
+            return true;
+        });
+    }
+
+    // Tags filter
+    if (f.tags && f.tags.length > 0) {
+        filtered = filtered.filter(function(l) {
+            var leadTags = l.tags || [];
+            return f.tags.some(function(tag) { return leadTags.includes(tag); });
+        });
+    }
+
+    return filtered;
+}
+
+function getDateFieldForFilter(type) {
+    var fieldMap = {
+        'created': 'created_at',
+        'quoted': 'quote_sent_date',
+        'funded': 'funding_date',
+        'follow_up': 'follow_up_date',
+        'updated': 'updated_at'
+    };
+    return fieldMap[type] || 'created_at';
+}
+
+// ===== RENDER LEADS TABLE =====
+function renderLeadsTable(leads) {
+    var tbody = document.getElementById('leads-tbody');
+    var sourceColors = { bonzo: '#f59e0b', ghl: '#3b82f6', webhook: '#8b5cf6', csv: '#10b981', manual: '#6b7280', zapier: '#ff4a00', n8n: '#ef4444', leadmailbox: '#06b6d4' };
+
+    tbody.innerHTML = leads.map(function(l) {
+        // Build name
+        var fn = l.first_name || '';
+        var ln = l.last_name || '';
+        if (!fn && !ln && l.metadata && l.metadata.raw) {
+            var raw = l.metadata.raw;
+            fn = raw.firstName || raw.first_name || raw.fname || raw.name || '';
+            ln = raw.lastName || raw.last_name || raw.lname || '';
+        }
+        if (!fn && !ln && l.email) {
+            fn = l.email.split('@')[0].replace(/[._-]/g, ' ');
+        }
+        var name = escapeAttr(((fn || '') + ' ' + (ln || '')).trim() || 'Unknown');
+        var email = escapeAttr(l.email || '—');
+        var phone = escapeAttr(l.phone || '—');
+        var src = escapeAttr(l.source || 'webhook');
+        var st = l.status || 'new';
+        var srcColor = sourceColors[src] || '#6b7280';
+        var date = l.created_at ? new Date(l.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+        var safeId = escapeAttr(l.id);
+
+        // Quoted badge
+        var quotedBadge = l.isQuoted
+            ? '<span style="background:#10b981;color:white;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);">YES</span>'
+            : '<span style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);">NO</span>';
+
+        // Metadata
+        var meta = l.metadata || {};
+        var credit = meta.credit_score || '';
+        var homeVal = meta.home_value || '';
+        var mortBal = meta.mortgage_balance || '';
+        var cashAmt = meta.cash_out || '';
+        var propAddr = meta.property_address || '';
+        var loanType = meta.loan_type || '';
+        var propType = meta.property_type || meta.occupancy || '';
+
+        var fmtMoney = function(v) { var n = Number(String(v).replace(/[$,]/g, '')); return n ? '$' + n.toLocaleString() : '—'; };
+        var fmtCredit = credit ? '<span style="color:' + (Number(credit) >= 740 ? '#10b981' : Number(credit) >= 680 ? '#f59e0b' : '#ef4444') + ';">' + credit + '</span>' : '—';
+
+        // Status badge
+        var statusInfo = CRM_STATUS_MAP[st.toLowerCase()] || { label: st, color: '#6b7280' };
+        var statusBadge = '<span class="status-badge status-' + st.toLowerCase().replace(/\s+/g, '_') + '" onclick="showStatusDropdown(event, \'' + safeId + '\')">' + statusInfo.label + '</span>';
+
+        // CRM sync badge
+        var syncBadge = '';
+        if (l.external_id) {
+            var syncClass = l.sync_status || 'synced';
+            syncBadge = '<span class="crm-sync-badge ' + syncClass + '">🔄 ' + (l.crm_source || 'CRM') + '</span>';
+        }
+
+        // Analytics
+        var viewsBadge = '<span style="color:rgba(255,255,255,0.2);font-size:8px;font-family:var(--font-heading);">—</span>';
+        if (l.view_count > 0) {
+            viewsBadge = '<span onclick="event.stopPropagation();showLeadAnalytics(\'' + safeId + '\',\'' + escapeAttr(name) + '\')" style="background:rgba(59,130,246,0.2);color:#60a5fa;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);cursor:pointer;">👁 ' + l.view_count + '</span>';
+        }
+
+        // DNC badge
+        var dncBadge = l.dnc
+            ? '<span class="dnc-badge" onclick="event.stopPropagation();DNCProtection.toggleLeadDNC(\'' + safeId + '\',true)" title="' + escapeAttr(l.dnc_reason || 'Marked DNC') + '">DNC</span>'
+            : '<span class="dnc-badge inactive" onclick="event.stopPropagation();DNCProtection.toggleLeadDNC(\'' + safeId + '\',false)">—</span>';
+
+        // Follow-up indicator
+        var followUpIndicator = '';
+        if (l.follow_up_date) {
+            var fuDate = new Date(l.follow_up_date);
+            var today = new Date();
+            var isOverdue = fuDate < today;
+            var isToday = fuDate.toDateString() === today.toDateString();
+            if (isOverdue) followUpIndicator = '<span title="Follow-up overdue" style="color:#ef4444;margin-left:4px;">🔴</span>';
+            else if (isToday) followUpIndicator = '<span title="Follow-up today" style="color:#f59e0b;margin-left:4px;">🟡</span>';
+        }
+
+        return '<tr class="lead-row" data-lead-id="' + safeId + '">' +
+            '<td style="padding:8px 4px;text-align:center;"><input type="checkbox" class="lead-checkbox" data-lead-id="' + safeId + '" onchange="onLeadCheckboxChange()"></td>' +
+            '<td style="padding:8px 4px;text-align:center;"><button class="lead-expand-btn" onclick="event.stopPropagation();toggleLeadDetail(\'' + safeId + '\')">▶</button></td>' +
+            '<td style="padding:8px 6px;color:white;font-size:10px;font-weight:600;min-width:120px;" onclick="toggleLeadDetail(\'' + safeId + '\')">' + name + followUpIndicator + '</td>' +
+            '<td style="padding:8px 6px;color:rgba(255,255,255,0.7);font-size:10px;">' + phone + '</td>' +
+            '<td style="padding:8px 6px;color:rgba(255,255,255,0.7);font-size:10px;">' + email + '</td>' +
+            '<td class="td-addr" title="' + escapeAttr(propAddr) + '">' + escapeAttr(propAddr || '—') + '</td>' +
+            '<td style="text-align:center;font-size:10px;font-weight:600;">' + fmtCredit + '</td>' +
+            '<td class="td-money">' + fmtMoney(homeVal) + '</td>' +
+            '<td class="td-money">' + fmtMoney(mortBal) + '</td>' +
+            '<td class="td-money">' + fmtMoney(cashAmt) + '</td>' +
+            '<td style="font-size:9px;color:rgba(255,255,255,0.6);">' + escapeAttr(loanType || '—') + '</td>' +
+            '<td style="font-size:9px;color:rgba(255,255,255,0.6);">' + escapeAttr(propType || '—') + '</td>' +
+            '<td><span style="background:' + srcColor + ';color:white;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);text-transform:uppercase;">' + src + '</span>' + syncBadge + '</td>' +
+            '<td>' + statusBadge + '</td>' +
+            '<td style="text-align:center;">' + quotedBadge + '</td>' +
+            '<td style="color:rgba(255,255,255,0.5);font-size:9px;">' + date + '</td>' +
+            '<td style="text-align:center;">' + viewsBadge + '</td>' +
+            '<td style="text-align:center;">' + dncBadge + '</td>' +
+            '<td style="text-align:center;"><button onclick="event.stopPropagation();deleteLead(\'' + safeId + '\')" title="Delete lead" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;opacity:0.4;transition:opacity 0.2s;" onmouseover="this.style.opacity=1;this.style.color=\'#ef4444\'" onmouseout="this.style.opacity=0.4;this.style.color=\'\'">🗑</button></td>' +
+            '</tr>';
+    }).join('');
+}
+
+// ===== STATUS DROPDOWN =====
+function showStatusDropdown(event, leadId) {
+    event.stopPropagation();
+    
+    // Remove existing dropdowns
+    var existing = document.querySelector('.status-dropdown-menu');
+    if (existing) existing.remove();
+    
+    var lead = (window._leadsCache || []).find(function(l) { return l.id === leadId; });
+    if (!lead) return;
+    
+    var currentStatus = (lead.status || 'new').toLowerCase();
+    
+    var dropdown = document.createElement('div');
+    dropdown.className = 'status-dropdown-menu';
+    dropdown.style.left = event.pageX + 'px';
+    dropdown.style.top = event.pageY + 'px';
+    
+    var groups = {
+        pipeline: 'Pipeline',
+        followup: 'Follow-up',
+        closed: 'Closed/Lost'
+    };
+    
+    var html = '';
+    var currentGroup = '';
+    
+    Object.keys(CRM_STATUS_MAP).forEach(function(key) {
+        var status = CRM_STATUS_MAP[key];
+        if (status.category !== currentGroup) {
+            if (currentGroup) html += '</div>';
+            currentGroup = status.category;
+            html += '<div class="status-option-group">' + groups[currentGroup] + '</div>';
+        }
+        var selected = key === currentStatus ? ' selected' : '';
+        html += '<div class="status-option' + selected + '" onclick="changeLeadStatus(\'' + leadId + '\', \'' + key + '\')">' +
+            '<span style="width:8px;height:8px;border-radius:50%;background:' + status.color + ';"></span>' +
+            '<span>' + status.label + '</span>' +
+            '</div>';
+    });
+    html += '</div>';
+    
+    dropdown.innerHTML = html;
+    document.body.appendChild(dropdown);
+    
+    // Close on click outside
+    setTimeout(function() {
+        document.addEventListener('click', function closeDropdown(e) {
+            if (!dropdown.contains(e.target)) {
+                dropdown.remove();
+                document.removeEventListener('click', closeDropdown);
+            }
+        });
+    }, 10);
+}
+
+// ===== STATUS CHANGE WITH LOGGING =====
+async function changeLeadStatus(leadId, newStatus) {
+    var statusInfo = CRM_STATUS_MAP[newStatus];
+    if (!statusInfo) return;
+    
+    // Check if reason is required
+    if (statusInfo.requiresReason) {
+        _leadsState.pendingStatusChange = { leadId: leadId, newStatus: newStatus };
+        showStatusReasonModal(newStatus, statusInfo);
+        return;
+    }
+    
+    await executeStatusChange(leadId, newStatus);
+}
+
+async function executeStatusChange(leadId, newStatus, reason, extraData) {
+    var sb = window._supabase;
+    if (!sb) return;
+    
+    var statusInfo = CRM_STATUS_MAP[newStatus];
+    var lead = (window._leadsCache || []).find(function(l) { return l.id === leadId; });
+    var oldStatus = lead ? lead.status : 'unknown';
+    
+    try {
+        // Update lead status
+        var updateData = { status: newStatus, updated_at: new Date().toISOString() };
+        
+        // Set date field if applicable
+        if (statusInfo.dateField) {
+            updateData[statusInfo.dateField] = new Date().toISOString().split('T')[0];
+        }
+        
+        // Add extra data
+        if (extraData) {
+            Object.assign(updateData, extraData);
+        }
+        
+        const { error } = await sb.from('leads').update(updateData).eq('id', leadId);
+        if (error) throw error;
+        
+        // Log status change
+        await sb.from('lead_status_logs').insert({
+            lead_id: leadId,
+            user_id: window.currentUserId,
+            from_status: oldStatus,
+            to_status: newStatus,
+            reason: reason || null,
+            created_at: new Date().toISOString()
+        });
+        
+        showToast('Status updated to ' + statusInfo.label, 'success');
+        
+        // Push to CRM if connected
+        if (lead && lead.crm_contact_id) {
+            pushStatusToCRM(lead, newStatus).catch(function(e) {
+                console.debug('CRM status push failed:', e.message);
+            });
+        }
+        
+        // Refresh leads
+        loadUserLeads();
+        
+        // Refresh detail panel if open
+        if (_leadsState.currentDetailLead === leadId) {
+            openLeadDetail(leadId);
+        }
+        
+    } catch (e) {
+        showToast('Error updating status: ' + e.message, 'error');
+    }
+}
+
+// ===== STATUS REASON MODAL =====
+function showStatusReasonModal(status, statusInfo) {
+    var modal = document.getElementById('status-reason-modal');
+    var title = document.getElementById('status-reason-title');
+    var extraFields = document.getElementById('status-extra-fields');
+    
+    title.textContent = statusInfo.label + ' - Reason Required';
+    
+    // Build extra fields
+    var extraHtml = '';
+    if (statusInfo.extraField) {
+        extraHtml += '<div style="margin-bottom: 12px;">' +
+            '<label style="display:block;font-size:9px;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-bottom:4px;">' + statusInfo.extraField.label + '</label>' +
+            '<input type="text" id="status-extra-field" class="status-reason-input" style="min-height: 36px;" placeholder="Enter ' + statusInfo.extraField.label.toLowerCase() + '...">' +
+            '</div>';
+    }
+    extraFields.innerHTML = extraHtml;
+    
+    modal.style.display = 'flex';
+}
+
+function closeStatusReasonModal() {
+    document.getElementById('status-reason-modal').style.display = 'none';
+    _leadsState.pendingStatusChange = null;
+}
+
+async function confirmStatusChangeWithReason() {
+    var reason = document.getElementById('status-reason-input').value;
+    var extraField = document.getElementById('status-extra-field');
+    
+    if (!reason.trim()) {
+        showToast('Please provide a reason', 'error');
+        return;
+    }
+    
+    var pending = _leadsState.pendingStatusChange;
+    if (!pending) return;
+    
+    var extraData = {};
+    if (extraField) {
+        var statusInfo = CRM_STATUS_MAP[pending.newStatus];
+        extraData[statusInfo.extraField.name] = extraField.value;
+    }
+    
+    await executeStatusChange(pending.leadId, pending.newStatus, reason, extraData);
+    closeStatusReasonModal();
+}
+
+// ===== LEAD DETAIL PANEL =====
+function toggleLeadDetail(leadId) {
+    if (_leadsState.currentDetailLead === leadId) {
+        closeLeadDetail();
+    } else {
+        openLeadDetail(leadId);
+    }
+}
+
+async function openLeadDetail(leadId) {
+    var lead = (window._leadsCache || []).find(function(l) { return l.id === leadId; });
+    if (!lead) return;
+    
+    _leadsState.currentDetailLead = leadId;
+    
+    var panel = document.getElementById('lead-detail-panel');
+    
+    // Populate basic info
+    var name = ((lead.first_name || '') + ' ' + (lead.last_name || '')).trim() || 'Unknown';
+    document.getElementById('detail-lead-name').textContent = name;
+    document.getElementById('detail-lead-phone').textContent = '📞 ' + (lead.phone || '—');
+    document.getElementById('detail-lead-email').textContent = '✉️ ' + (lead.email || '—');
+    
+    // Status badge
+    var statusInfo = CRM_STATUS_MAP[(lead.status || 'new').toLowerCase()] || { label: lead.status || 'New', color: '#6b7280' };
+    var statusEl = document.getElementById('detail-lead-status');
+    statusEl.textContent = statusInfo.label;
+    statusEl.className = 'status-badge status-' + (lead.status || 'new').toLowerCase().replace(/\s+/g, '_');
+    
+    // Date fields
+    document.getElementById('detail-quote-sent-date').value = lead.quote_sent_date || '';
+    document.getElementById('detail-rate-lock-date').value = lead.rate_lock_date || '';
+    document.getElementById('detail-lock-expiration').value = lead.lock_expiration_date || '';
+    document.getElementById('detail-funding-date').value = lead.funding_date || '';
+    document.getElementById('detail-follow-up-date').value = lead.follow_up_date || '';
+    document.getElementById('detail-last-contact').value = lead.last_contact_date || '';
+    document.getElementById('detail-next-action').value = lead.next_action_date || '';
+    document.getElementById('detail-created-date').value = lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '—';
+    
+    // Loan details
+    var meta = lead.metadata || {};
+    document.getElementById('detail-home-value').textContent = formatMoney(meta.home_value);
+    document.getElementById('detail-mortgage-balance').textContent = formatMoney(meta.mortgage_balance);
+    document.getElementById('detail-cash-out').textContent = formatMoney(meta.cash_out);
+    
+    var homeVal = parseFloat(meta.home_value) || 0;
+    var mortgage = parseFloat(meta.mortgage_balance) || 0;
+    var equity = Math.max(0, homeVal - mortgage);
+    document.getElementById('detail-equity').textContent = formatMoney(equity);
+    
+    document.getElementById('detail-credit-score').textContent = meta.credit_score || '—';
+    document.getElementById('detail-credit-score').style.color = getCreditScoreColor(meta.credit_score);
+    document.getElementById('detail-loan-type').textContent = meta.loan_type || '—';
+    document.getElementById('detail-property-type').textContent = meta.property_type || meta.occupancy || '—';
+    document.getElementById('detail-source').innerHTML = '<span style="background:' + getSourceColor(lead.source) + ';color:white;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);text-transform:uppercase;">' + (lead.source || 'manual') + '</span>';
+    
+    // CRM sync info
+    var crmSection = document.getElementById('crm-sync-section');
+    if (lead.external_id) {
+        crmSection.style.display = 'block';
+        document.getElementById('detail-external-id').textContent = lead.external_id;
+        document.getElementById('detail-crm-source').textContent = lead.crm_source || '—';
+        document.getElementById('detail-last-sync').textContent = lead.last_sync_at ? new Date(lead.last_sync_at).toLocaleString() : '—';
+        document.getElementById('detail-sync-status').innerHTML = '<span class="crm-sync-badge ' + (lead.sync_status || 'synced') + '">' + (lead.sync_status || 'synced') + '</span>';
+    } else {
+        crmSection.style.display = 'none';
+    }
+    
+    // Load timeline
+    await loadLeadTimeline(leadId);
+    
+    // Load quotes
+    await loadLeadQuotes(leadId);
+    
+    // Load communication log
+    await loadLeadCommLog(leadId);
+    
+    // Show panel
+    panel.classList.add('active');
+}
+
+function closeLeadDetail() {
+    document.getElementById('lead-detail-panel').classList.remove('active');
+    _leadsState.currentDetailLead = null;
+}
+
+async function loadLeadTimeline(leadId) {
+    var sb = window._supabase;
+    var container = document.getElementById('lead-timeline');
+    container.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:10px;">Loading...</div>';
+    
+    try {
+        var { data: logs } = await sb.from('lead_status_logs')
+            .select('*')
+            .eq('lead_id', leadId)
+            .order('created_at', { ascending: false });
+        
+        if (!logs || logs.length === 0) {
+            container.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:10px;">No activity yet</div>';
+            return;
+        }
+        
+        container.innerHTML = logs.map(function(log) {
+            var fromInfo = CRM_STATUS_MAP[log.from_status] || { label: log.from_status };
+            var toInfo = CRM_STATUS_MAP[log.to_status] || { label: log.to_status };
+            var date = new Date(log.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+            
+            return '<div class="timeline-item status-change">' +
+                '<div class="timeline-date">' + date + '</div>' +
+                '<div class="timeline-content">Status: ' + fromInfo.label + ' → ' + toInfo.label + '</div>' +
+                (log.reason ? '<div class="timeline-meta">Reason: ' + escapeHtml(log.reason) + '</div>' : '') +
+                '</div>';
+        }).join('');
+        
+    } catch (e) {
+        container.innerHTML = '<div style="color:#f87171;font-size:10px;">Error loading timeline</div>';
+    }
+}
+
+async function loadLeadQuotes(leadId) {
+    var container = document.getElementById('lead-quotes-list');
+    var lead = (window._leadsCache || []).find(function(l) { return l.id === leadId; });
+    
+    if (!lead || !lead.quotes_sent || lead.quotes_sent.length === 0) {
+        container.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:10px;">No quotes sent yet</div>';
+        return;
+    }
+    
+    container.innerHTML = lead.quotes_sent.map(function(quote) {
+        var date = new Date(quote.created_at).toLocaleDateString();
+        var data = quote.quote_data || {};
+        return '<div style="background:rgba(255,255,255,0.03);border-radius:6px;padding:10px;">' +
+            '<div style="display:flex;justify-content:space-between;">' +
+            '<span style="font-size:10px;color:white;font-weight:600;">Quote #' + quote.id.slice(0, 8) + '</span>' +
+            '<span style="font-size:9px;color:rgba(255,255,255,0.5);">' + date + '</span>' +
+            '</div>' +
+            '<div style="font-size:9px;color:rgba(255,255,255,0.6);margin-top:4px;">' +
+            'Amount: ' + formatMoney(data.loanAmount || data.cash_out) + ' | ' +
+            'Rate: ' + (data.interestRate || data.rate || '—') + '%' +
+            '</div>' +
+            '</div>';
+    }).join('');
+}
+
+async function loadLeadCommLog(leadId) {
+    var container = document.getElementById('lead-comm-log');
+    container.innerHTML = '<div style="color:rgba(255,255,255,0.4);font-size:10px;">No communications logged</div>';
+    // TODO: Implement communication log when table is available
+}
+
+// ===== DATE FIELD UPDATES =====
+async function updateLeadDateField(field, value) {
+    var sb = window._supabase;
+    if (!sb || !_leadsState.currentDetailLead) return;
+    
+    try {
+        var updateData = {};
+        updateData[field] = value;
+        updateData.updated_at = new Date().toISOString();
+        
+        const { error } = await sb.from('leads').update(updateData).eq('id', _leadsState.currentDetailLead);
+        if (error) throw error;
+        
+        showToast(field.replace(/_/g, ' ') + ' updated', 'success');
+        
+        // Update cache
+        var lead = window._leadsCache.find(function(l) { return l.id === _leadsState.currentDetailLead; });
+        if (lead) lead[field] = value;
+        
+    } catch (e) {
+        showToast('Error updating: ' + e.message, 'error');
+    }
+}
+
+// ===== FILTER FUNCTIONS =====
+function toggleAdvancedFilters() {
+    var bar = document.getElementById('advanced-filters-bar');
+    var btn = document.getElementById('advanced-filters-toggle');
+    if (bar.style.display === 'none') {
+        bar.style.display = 'flex';
+        btn.classList.add('active');
+    } else {
+        bar.style.display = 'none';
+        btn.classList.remove('active');
+    }
+}
+
+function toggleMultiSelect(type) {
+    var dropdown = document.getElementById(type + '-multi-dropdown');
+    dropdown.classList.toggle('active');
+}
+
+function toggleStatusFilter(status) {
+    var checkbox = document.getElementById('status-' + status);
+    checkbox.checked = !checkbox.checked;
+    
+    if (status === 'all') {
+        // Uncheck all others
+        document.querySelectorAll('#status-multi-dropdown input[type="checkbox"]').forEach(function(cb) {
+            if (cb.id !== 'status-all') cb.checked = false;
+        });
+        _leadsState.filters.status = ['all'];
+    } else {
+        // Uncheck 'all'
+        document.getElementById('status-all').checked = false;
+        
+        var idx = _leadsState.filters.status.indexOf(status);
+        if (idx > -1) {
+            _leadsState.filters.status.splice(idx, 1);
+        } else {
+            _leadsState.filters.status.push(status);
+        }
+        
+        // Remove 'all' if present
+        var allIdx = _leadsState.filters.status.indexOf('all');
+        if (allIdx > -1) _leadsState.filters.status.splice(allIdx, 1);
+        
+        if (_leadsState.filters.status.length === 0) {
+            _leadsState.filters.status = ['all'];
+            document.getElementById('status-all').checked = true;
+        }
+    }
+    
+    // Update label
+    var label = document.getElementById('status-multi-label');
+    if (_leadsState.filters.status.includes('all')) {
+        label.textContent = 'All Statuses';
+    } else if (_leadsState.filters.status.length === 1) {
+        var info = CRM_STATUS_MAP[_leadsState.filters.status[0]];
+        label.textContent = info ? info.label : _leadsState.filters.status[0];
+    } else {
+        label.textContent = _leadsState.filters.status.length + ' statuses';
+    }
+    
+    loadUserLeads();
+}
+
+function applyFilterPreset(preset) {
+    var today = new Date();
+    var from, to;
+    
+    switch(preset) {
+        case 'today':
+            from = to = today.toISOString().split('T')[0];
+            document.getElementById('leads-filter-date-type').value = 'created';
+            break;
+        case 'week':
+            var weekAgo = new Date(today);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            from = weekAgo.toISOString().split('T')[0];
+            to = today.toISOString().split('T')[0];
+            document.getElementById('leads-filter-date-type').value = 'created';
+            break;
+        case 'month':
+            var monthAgo = new Date(today);
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            from = monthAgo.toISOString().split('T')[0];
+            to = today.toISOString().split('T')[0];
+            document.getElementById('leads-filter-date-type').value = 'created';
+            break;
+        case 'follow_up_due':
+            document.getElementById('leads-filter-date-type').value = 'follow_up';
+            from = today.toISOString().split('T')[0];
+            to = today.toISOString().split('T')[0];
+            // Also filter by follow_up status
+            _leadsState.filters.status = ['follow_up'];
+            document.querySelectorAll('#status-multi-dropdown input').forEach(function(cb) { cb.checked = false; });
+            document.getElementById('status-follow_up').checked = true;
+            break;
+        case 'rate_lock_expiring':
+            document.getElementById('leads-filter-date-type').value = 'follow_up';
+            var threeDays = new Date(today);
+            threeDays.setDate(threeDays.getDate() + 3);
+            from = today.toISOString().split('T')[0];
+            to = threeDays.toISOString().split('T')[0];
+            _leadsState.filters.status = ['rate_locked'];
+            break;
+        case 'hot_leads':
+            _leadsState.filters.status = ['quoted', 'quote_sent', 'rate_locked', 'application_sent'];
+            document.getElementById('leads-filter-date-type').value = 'updated';
+            var twoDaysAgo = new Date(today);
+            twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+            from = twoDaysAgo.toISOString().split('T')[0];
+            to = today.toISOString().split('T')[0];
+            break;
+    }
+    
+    if (from) document.getElementById('leads-date-from').value = from;
+    if (to) document.getElementById('leads-date-to').value = to;
+    
+    _leadsState.filters.dateFrom = from;
+    _leadsState.filters.dateTo = to;
+    
+    loadUserLeads();
+}
+
+// ===== SORTING =====
+function sortLeads(field) {
+    if (_leadsState.sort.field === field) {
+        _leadsState.sort.direction = _leadsState.sort.direction === 'asc' ? 'desc' : 'asc';
+    } else {
+        _leadsState.sort.field = field;
+        _leadsState.sort.direction = 'asc';
+    }
+    
+    document.getElementById('leads-sort-field').value = field;
+    document.getElementById('leads-sort-direction').textContent = _leadsState.sort.direction === 'asc' ? '↑' : '↓';
+    
+    loadUserLeads();
+}
+
+function toggleSortDirection() {
+    _leadsState.sort.direction = _leadsState.sort.direction === 'asc' ? 'desc' : 'asc';
+    document.getElementById('leads-sort-direction').textContent = _leadsState.sort.direction === 'asc' ? '↑' : '↓';
+    loadUserLeads();
+}
+
+function saveSortPreference() {
+    localStorage.setItem('leads_sort_field', _leadsState.sort.field);
+    localStorage.setItem('leads_sort_direction', _leadsState.sort.direction);
+    showToast('Sort preference saved', 'success');
+}
+
+function loadSortPreference() {
+    var field = localStorage.getItem('leads_sort_field');
+    var direction = localStorage.getItem('leads_sort_direction');
+    if (field) _leadsState.sort.field = field;
+    if (direction) _leadsState.sort.direction = direction;
+    document.getElementById('leads-sort-field').value = _leadsState.sort.field;
+    document.getElementById('leads-sort-direction').textContent = _leadsState.sort.direction === 'asc' ? '↑' : '↓';
+}
+
+// ===== BULK ACTIONS =====
+function onLeadCheckboxChange() {
+    var checkboxes = document.querySelectorAll('.lead-checkbox[data-lead-id]');
+    var selected = [];
+    checkboxes.forEach(function(cb) {
+        if (cb.checked) selected.push(cb.dataset.leadId);
+    });
+    
+    _leadsState.selectedLeads = new Set(selected);
+    
+    var bulkBar = document.getElementById('leads-bulk-bar');
+    var countEl = document.getElementById('leads-selected-count');
+    
+    if (selected.length > 0) {
+        bulkBar.classList.add('visible');
+        countEl.textContent = selected.length;
+    } else {
+        bulkBar.classList.remove('visible');
+    }
+    
+    // Update select all checkbox
+    var selectAll = document.getElementById('leads-select-all');
+    selectAll.checked = selected.length === checkboxes.length && checkboxes.length > 0;
+    selectAll.indeterminate = selected.length > 0 && selected.length < checkboxes.length;
+}
+
+function toggleAllLeads(checked) {
+    var checkboxes = document.querySelectorAll('.lead-checkbox[data-lead-id]');
+    checkboxes.forEach(function(cb) { cb.checked = checked; });
+    onLeadCheckboxChange();
+}
+
+function clearLeadSelection() {
+    var checkboxes = document.querySelectorAll('.lead-checkbox');
+    checkboxes.forEach(function(cb) { cb.checked = false; });
+    _leadsState.selectedLeads.clear();
+    document.getElementById('leads-bulk-bar').classList.remove('visible');
+}
+
+async function bulkChangeStatus(newStatus) {
+    if (!newStatus) return;
+    
+    var ids = Array.from(_leadsState.selectedLeads);
+    if (ids.length === 0) return;
+    
+    var statusInfo = CRM_STATUS_MAP[newStatus];
+    if (!confirm('Change status to "' + statusInfo.label + '" for ' + ids.length + ' lead(s)?')) {
+        document.getElementById('bulk-status-select').value = '';
+        return;
+    }
+    
+    var sb = window._supabase;
+    if (!sb) return;
+    
+    try {
+        // Update all leads
+        var updateData = { status: newStatus, updated_at: new Date().toISOString() };
+        if (statusInfo.dateField) {
+            updateData[statusInfo.dateField] = new Date().toISOString().split('T')[0];
+        }
+        
+        const { error } = await sb.from('leads').update(updateData).in('id', ids);
+        if (error) throw error;
+        
+        // Log status changes
+        var logs = ids.map(function(id) {
+            return {
+                lead_id: id,
+                user_id: window.currentUserId,
+                from_status: 'bulk',
+                to_status: newStatus,
+                created_at: new Date().toISOString()
+            };
+        });
+        await sb.from('lead_status_logs').insert(logs);
+        
+        showToast('Status updated for ' + ids.length + ' lead(s)', 'success');
+        clearLeadSelection();
+        loadUserLeads();
+        
+    } catch (e) {
+        showToast('Error: ' + e.message, 'error');
+    }
+    
+    document.getElementById('bulk-status-select').value = '';
+}
+
+function bulkAssignLO() {
+    showToast('Assign LO feature coming soon', 'info');
+}
+
+function bulkAddTag() {
+    showToast('Add Tag feature coming soon', 'info');
+}
+
+function bulkSendEmail() {
+    showToast('Bulk email feature coming soon', 'info');
+}
+
+// ===== SAVED FILTERS =====
+function showSavedFilters() {
+    showToast('Saved filters feature coming soon', 'info');
+}
+
+function loadSavedFilters() {
+    // Load saved filters from localStorage or user preferences
+}
+
+// ===== HELPER FUNCTIONS =====
+function formatMoney(value) {
+    var n = Number(String(value).replace(/[$,]/g, ''));
+    return n ? '$' + n.toLocaleString() : '—';
+}
+
+function getCreditScoreColor(score) {
+    if (!score) return 'rgba(255,255,255,0.6)';
+    var s = Number(score);
+    if (s >= 740) return '#10b981';
+    if (s >= 680) return '#f59e0b';
+    return '#ef4444';
+}
+
+function getSourceColor(source) {
+    var colors = { bonzo: '#f59e0b', ghl: '#3b82f6', webhook: '#8b5cf6', csv: '#10b981', manual: '#6b7280', zapier: '#ff4a00', n8n: '#ef4444', leadmailbox: '#06b6d4' };
+    return colors[source] || '#6b7280';
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function escapeAttr(text) {
+    if (!text) return '';
+    return String(text).replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+// ===== QUICK ACTIONS FROM DETAIL PANEL =====
+function sendEmailToLead() {
+    var lead = window._leadsCache.find(function(l) { return l.id === _leadsState.currentDetailLead; });
+    if (lead && lead.email) {
+        window.location.href = 'mailto:' + lead.email;
+    } else {
+        showToast('No email address for this lead', 'error');
+    }
+}
+
+function sendSMSToLead() {
+    var lead = window._leadsCache.find(function(l) { return l.id === _leadsState.currentDetailLead; });
+    if (lead && lead.phone) {
+        window.location.href = 'sms:' + lead.phone.replace(/\D/g, '');
+    } else {
+        showToast('No phone number for this lead', 'error');
+    }
+}
+
+function scheduleCallWithLead() {
+    showToast('Calendar integration coming soon', 'info');
+}
+
+function createQuoteForLead() {
+    loadLeadIntoFormFromDetail();
+}
+
+function loadLeadIntoFormFromDetail() {
+    if (_leadsState.currentDetailLead) {
+        loadLeadIntoForm(_leadsState.currentDetailLead);
+        closeLeadDetail();
+    }
+}
+
+function viewLeadAnalytics() {
+    var lead = window._leadsCache.find(function(l) { return l.id === _leadsState.currentDetailLead; });
+    if (lead) {
+        showLeadAnalytics(lead.id, (lead.first_name || '') + ' ' + (lead.last_name || ''));
+    }
+}
+
+function updateBonzoSyncButton() {
+    var btn = document.getElementById('bonzo-sync-btn');
+    if (!btn) return;
+    
+    var hasKey = document.getElementById('bonzo-api-key')?.value || 
+                 document.getElementById('bonzo-api-key-2')?.value ||
+                 document.getElementById('keys-bonzo-api')?.value;
+    
+    if (hasKey) {
+        btn.style.display = '';
+    }
+}
+</script>

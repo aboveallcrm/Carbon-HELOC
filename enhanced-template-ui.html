@@ -1,0 +1,282 @@
+<!-- 
+================================================================================
+ENHANCED QUOTE TEMPLATES UI v2.0
+AboveAllCarbon HELOC - Diamond Tier Feature
+================================================================================
+
+Replace the existing quote-templates-section (around line 5494-5520) with this
+enhanced version that includes:
+- Description input when saving
+- Template details panel
+- Set as Default button
+- Duplicate button
+- Search/filter
+- Usage statistics
+- Export/Import functionality
+- Share via URL
+
+CSS classes referenced:
+- template-details, template-details-header, template-details-desc
+- template-details-tags, template-tag, template-default-badge
+- template-details-stats, template-details-actions
+- btn-template-action, btn-template-danger
+================================================================================
+-->
+
+<!-- Quote Templates (Diamond exclusive) - ENHANCED v2.0 -->
+<div id="quote-templates-section" class="control-section"
+    style="display:none; background: linear-gradient(135deg, rgba(6,182,212,0.1), rgba(8,145,178,0.1)); border-color: #06b6d4;">
+    
+    <!-- Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <h4 style="font-family: var(--font-heading); color: #06b6d4; margin:0; font-size: 11px;">📑
+                Quote Templates</h4>
+            <span
+                style="font-size: 7px; background: #06b6d4; color: #0f172a; padding: 2px 6px; border-radius: 8px; font-weight: 700;">DIAMOND</span>
+            <span style="font-size: 7px; color: rgba(255,255,255,0.4);">v2.0</span>
+        </div>
+        <button class="btn"
+            style="background: linear-gradient(135deg, #06b6d4, #0891b2); font-size: 9px; padding: 4px 12px;"
+            onclick="saveQuoteTemplateV2()">💾 Save Current</button>
+    </div>
+    
+    <!-- Search/Filter -->
+    <div style="margin-bottom:10px;">
+        <input type="text" id="template-search" placeholder="🔍 Search templates..." 
+            oninput="filterTemplates(this.value)"
+            style="width:100%; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(6,182,212,0.3); 
+                   border-radius: 4px; padding: 6px 10px; font-family: var(--font-heading); font-size: 10px;">
+    </div>
+    
+    <!-- Template Selection -->
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+        <select id="template-select-v2"
+            onchange="showTemplateDetails(this.value)"
+            style="flex:1; background: rgba(0,0,0,0.3); color: white; border: 1px solid rgba(6,182,212,0.3); 
+                   border-radius: 4px; padding: 6px 8px; font-family: var(--font-heading); font-size: 9px;">
+            <option value="">— Select a template —</option>
+        </select>
+        <button class="btn" style="background: #06b6d4; font-size: 9px; padding: 4px 12px;"
+            onclick="loadQuoteTemplateV2(document.getElementById('template-select-v2').value)">📂 Load</button>
+    </div>
+    
+    <!-- Template Details Panel -->
+    <div id="template-details-panel" 
+        style="background: rgba(0,0,0,0.2); border-radius: 6px; padding: 10px; margin-bottom: 10px; min-height: 60px;">
+        <p style="color: rgba(255,255,255,0.4); font-size: 10px; text-align: center; margin: 0;">
+            Select a template to view details
+        </p>
+    </div>
+    
+    <!-- Bulk Actions -->
+    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; padding-top:10px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <button class="btn" style="background: rgba(255,255,255,0.1); font-size: 8px; padding: 3px 10px;"
+            onclick="exportAllTemplates()">📥 Export All</button>
+        <label class="btn" style="background: rgba(255,255,255,0.1); font-size: 8px; padding: 3px 10px; cursor:pointer;">
+            📤 Import
+            <input type="file" accept=".json" style="display:none;" 
+                onchange="importTemplates(this.files[0]); this.value='';">
+        </label>
+        <button class="btn" style="background: rgba(255,255,255,0.1); font-size: 8px; padding: 3px 10px;"
+            onclick="generateTemplateShareUrl(document.getElementById('template-select-v2').value)">🔗 Share</button>
+    </div>
+    
+    <!-- Help Text -->
+    <p style="font-size: 7px; color: rgba(255,255,255,0.4); margin: 6px 0 0 0;">
+        Save complete rate configurations including presentation settings, white label, and client features. 
+        Templates include usage tracking and can be set as default for auto-load on startup.
+    </p>
+</div>
+
+<!-- 
+================================================================================
+STYLES FOR ENHANCED TEMPLATE UI
+Add these styles to the <style> section of the main HTML file
+================================================================================
+-->
+
+<style>
+/* Template Details Panel Styles */
+.template-details {
+    font-family: var(--font-body);
+}
+
+.template-details-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 11px;
+    color: white;
+}
+
+.template-details-desc {
+    font-size: 9px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.template-details-tags {
+    margin-bottom: 8px;
+}
+
+.template-tag {
+    display: inline-block;
+    background: rgba(6,182,212,0.2);
+    color: #22d3ee;
+    font-size: 8px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 4px;
+    margin-bottom: 4px;
+}
+
+.template-default-badge {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #0f172a;
+    font-size: 7px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+.template-details-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 8px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.template-details-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.btn-template-action {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-family: var(--font-heading);
+    font-size: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-template-action:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateY(-1px);
+}
+
+.btn-template-danger {
+    background: rgba(239,68,68,0.2);
+    color: #fca5a5;
+}
+
+.btn-template-danger:hover {
+    background: rgba(239,68,68,0.3);
+}
+
+/* Template Select Optgroup Styling */
+#template-select-v2 optgroup {
+    background: #1e293b;
+    color: #94a3b8;
+    font-family: var(--font-heading);
+    font-size: 9px;
+    font-weight: 600;
+}
+
+#template-select-v2 option {
+    background: #0f172a;
+    color: white;
+    padding: 4px;
+}
+</style>
+
+<!-- 
+================================================================================
+BACKWARDS COMPATIBILITY
+Keep the old template functions for any existing references, but redirect to v2
+================================================================================
+-->
+
+<script>
+// Redirect old template functions to v2
+function saveQuoteTemplate() {
+    if (typeof saveQuoteTemplateV2 === 'function') {
+        saveQuoteTemplateV2();
+    } else {
+        // Fallback to old implementation if v2 not loaded yet
+        var name = prompt('Template name (e.g., "Investment HELOC", "Debt Consolidation"):');
+        if (!name || !name.trim()) return;
+        var templates = JSON.parse(localStorage.getItem('heloc_quote_templates') || '[]');
+        templates.push({
+            name: name.trim(),
+            date: new Date().toISOString().slice(0, 10),
+            state: typeof _captureTemplateState === 'function' ? _captureTemplateState() : {}
+        });
+        localStorage.setItem('heloc_quote_templates', JSON.stringify(templates));
+        if (typeof _loadTemplateList === 'function') _loadTemplateList();
+        if (typeof showToast === 'function') showToast('Template "' + name.trim() + '" saved!', 'success');
+    }
+}
+
+function loadQuoteTemplate() {
+    if (typeof loadQuoteTemplateV2 === 'function') {
+        loadQuoteTemplateV2(document.getElementById('template-select-v2')?.value);
+    } else {
+        // Fallback to old implementation
+        var select = document.getElementById('template-select');
+        var idx = parseInt(select?.value);
+        if (isNaN(idx)) { if (typeof showToast === 'function') showToast('Select a template first', 'error'); return; }
+        var templates = JSON.parse(localStorage.getItem('heloc_quote_templates') || '[]');
+        if (!templates[idx]) { if (typeof showToast === 'function') showToast('Template not found', 'error'); return; }
+        if (typeof _applyTemplateState === 'function') _applyTemplateState(templates[idx].state);
+        if (typeof showToast === 'function') showToast('Template "' + templates[idx].name + '" loaded!', 'success');
+    }
+}
+
+function deleteQuoteTemplate() {
+    if (typeof deleteQuoteTemplateV2 === 'function') {
+        deleteQuoteTemplateV2(document.getElementById('template-select-v2')?.value);
+    } else {
+        // Fallback to old implementation
+        var select = document.getElementById('template-select');
+        var idx = parseInt(select?.value);
+        if (isNaN(idx)) { if (typeof showToast === 'function') showToast('Select a template first', 'error'); return; }
+        var templates = JSON.parse(localStorage.getItem('heloc_quote_templates') || '[]');
+        if (!templates[idx]) return;
+        if (!confirm('Delete template "' + templates[idx].name + '"?')) return;
+        templates.splice(idx, 1);
+        localStorage.setItem('heloc_quote_templates', JSON.stringify(templates));
+        if (typeof _loadTemplateList === 'function') _loadTemplateList();
+        if (typeof showToast === 'function') showToast('Template deleted', 'success');
+    }
+}
+
+// Override the old _loadTemplateList to use v2 if available
+function _loadTemplateList() {
+    if (typeof loadTemplateListV2 === 'function') {
+        loadTemplateListV2();
+    } else {
+        // Fallback to old implementation
+        var templates = JSON.parse(localStorage.getItem('heloc_quote_templates') || '[]');
+        var select = document.getElementById('template-select');
+        if (!select) return;
+        select.innerHTML = '<option value="">— Select a template —</option>';
+        templates.forEach(function (t, i) {
+            var opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = t.name + (t.date ? ' (' + t.date + ')' : '');
+            select.appendChild(opt);
+        });
+    }
+}
+</script>
