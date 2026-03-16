@@ -278,6 +278,51 @@ serve(async (req: Request) => {
       if (aiKey) keySource = "platform";
     }
 
+    // ── Token budget check (for generate/generate_cascade/analyze_image actions) ──
+    // RPC returns: budget_tokens_used, budget_tokens_limit, budget_tier (prefixed to avoid PL/pgSQL ambiguity)
+    let tokenBudget: { tokens_used: number; tokens_limit: number; tier: string } | null = null;
+    if (action === "generate" || action === "generate_cascade" || action === "analyze_image") {
+      const { data: budgetData } = await supabaseAdmin.rpc("get_or_create_token_budget", { p_user_id: userId });
+      if (budgetData && budgetData.length > 0) {
+        const b = budgetData[0];
+        tokenBudget = { tokens_used: b.budget_tokens_used, tokens_limit: b.budget_tokens_limit, tier: b.budget_tier };
+        // Check if budget exceeded (skip for unlimited = -1)
+        if (tokenBudget.tokens_limit !== -1 && tokenBudget.tokens_used >= tokenBudget.tokens_limit) {
+          return json({
+            error: "Monthly AI token budget exceeded",
+            tokens_used: tokenBudget.tokens_used,
+            tokens_limit: tokenBudget.tokens_limit,
+            tier: tokenBudget.tier,
+            upgrade_hint: "Upgrade your tier for more AI tokens",
+          }, 429);
+        }
+      }
+    }
+
+    // ── Obsidian+ custom system prompt injection ──
+    let finalSystemPrompt = aiSystemPrompt;
+    if (action !== "check_status" && action !== "test") {
+      try {
+        const { data: settingsRow } = await supabaseAdmin
+          .from("user_integrations")
+          .select("metadata")
+          .eq("user_id", userId)
+          .eq("provider", "heloc_settings")
+          .maybeSingle();
+        const customPrompt = settingsRow?.metadata?.ai?.customSystemPrompt;
+        // Look up tier
+        const { data: profileRow } = await supabaseAdmin
+          .from("profiles").select("tier").eq("id", userId).maybeSingle();
+        const userTier = profileRow?.tier || "carbon";
+        const tierLevel = { carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 }[userTier] || 0;
+        if (customPrompt && tierLevel >= 3) {
+          finalSystemPrompt = customPrompt + "\n\n" + finalSystemPrompt;
+        }
+      } catch (_e) {
+        // Non-blocking: if settings lookup fails, proceed with original prompt
+      }
+    }
+
     // ── check_status ──
     if (action === "check_status") {
       return json({
@@ -305,12 +350,14 @@ serve(async (req: Request) => {
     if (action === "generate") {
       if (!userMessage) return json({ error: "Missing userMessage for generate action" }, 400);
 
-      const result = await callProvider(aiProvider, aiModel, aiKey, aiMaxTokens, aiSystemPrompt, userMessage, aiEndpointUrl);
+      const result = await callProvider(aiProvider, aiModel, aiKey, aiMaxTokens, finalSystemPrompt, userMessage, aiEndpointUrl);
       if (!result.ok) {
         return json({ error: "AI provider returned an error", status: result.status, details: JSON.stringify(result.aiData || {}).substring(0, 500) }, 502);
       }
       await logUsage(supabaseAdmin, userId, result.provider, result.model, "generate", intent || "generate", result.usage);
-      return json({ success: true, text: result.text, provider: result.provider, model: result.model, usage: result.usage });
+      // Increment token budget
+      const budgetUpdate = await incrementBudget(supabaseAdmin, userId, result.usage.totalTokens);
+      return json({ success: true, text: result.text, provider: result.provider, model: result.model, usage: result.usage, ...budgetUpdate });
     }
 
     // ── generate_cascade (try cheapest providers first, exhaust all keys per provider) ──
@@ -332,10 +379,11 @@ serve(async (req: Request) => {
           const keyLabel = keys.length > 1 ? `${prov}[${ki + 1}/${keys.length}]` : prov;
           attempts.push(keyLabel);
 
-          const result = await callProvider(prov, provModel, keys[ki], aiMaxTokens, aiSystemPrompt, userMessage, "");
+          const result = await callProvider(prov, provModel, keys[ki], aiMaxTokens, finalSystemPrompt, userMessage, "");
           if (result.ok) {
             await logUsage(supabaseAdmin, userId, prov, provModel, "generate_cascade", intent || "generate", result.usage, { cascade_attempts: attempts, key_index: ki });
-            return json({ success: true, text: result.text, provider: prov, model: provModel, usage: result.usage, cascadeAttempts: attempts });
+            const budgetUpdate = await incrementBudget(supabaseAdmin, userId, result.usage.totalTokens);
+            return json({ success: true, text: result.text, provider: prov, model: provModel, usage: result.usage, cascadeAttempts: attempts, ...budgetUpdate });
           }
           // Key failed (rate limit, quota, error) — try next key for same provider
         }
@@ -364,10 +412,11 @@ serve(async (req: Request) => {
           const keyLabel = keys.length > 1 ? `${prov}[${ki + 1}/${keys.length}]` : prov;
           attempts.push(keyLabel);
 
-          const result = await callProvider(prov, provModel, keys[ki], aiMaxTokens, aiSystemPrompt, message, "", imageBase64, imageMimeType);
+          const result = await callProvider(prov, provModel, keys[ki], aiMaxTokens, finalSystemPrompt, message, "", imageBase64, imageMimeType);
           if (result.ok) {
             await logUsage(supabaseAdmin, userId, prov, provModel, "analyze_image", intent || "document_analysis", result.usage, { cascade_attempts: attempts, key_index: ki });
-            return json({ success: true, text: result.text, provider: prov, model: provModel, usage: result.usage, cascadeAttempts: attempts });
+            const budgetUpdate = await incrementBudget(supabaseAdmin, userId, result.usage.totalTokens);
+            return json({ success: true, text: result.text, provider: prov, model: provModel, usage: result.usage, cascadeAttempts: attempts, ...budgetUpdate });
           }
         }
       }
@@ -381,6 +430,22 @@ serve(async (req: Request) => {
     return json({ error: (err as Error)?.message || "Internal error" }, 500);
   }
 });
+
+// Increment token budget after a successful AI call (returns updated budget for client display)
+async function incrementBudget(
+  supabase: any, userId: string, totalTokens: number,
+): Promise<{ tokens_used?: number; tokens_limit?: number; tier?: string }> {
+  try {
+    // RPC returns budget_tokens_used, budget_tokens_limit, budget_tier (prefixed columns)
+    const { data } = await supabase.rpc("increment_token_usage", { p_user_id: userId, p_tokens: totalTokens });
+    if (data && data.length > 0) {
+      return { tokens_used: data[0].budget_tokens_used, tokens_limit: data[0].budget_tokens_limit, tier: data[0].budget_tier };
+    }
+  } catch (e) {
+    console.error("Failed to increment token budget:", e);
+  }
+  return {};
+}
 
 // Log AI usage to ai_usage_log table (fire-and-forget, don't block response)
 async function logUsage(

@@ -5442,7 +5442,7 @@
                             <label
                                 style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8);"><input
                                     type="checkbox" id="chk-link-expiry" checked style="margin-right: 6px;"
-                                    onchange="document.getElementById('link-expiry-days').disabled=!this.checked; document.getElementById('link-expiry-label').style.opacity=this.checked?'1':'0.4'"> Link
+                                    onchange="document.getElementById('link-expiry-days').disabled=!this.checked; document.getElementById('link-expiry-label').style.opacity=this.checked?'1':'0.4'; var presetEl=document.getElementById('link-style-preset'); if(presetEl) presetEl.value='custom';"> Link
                                 Expiration</label>
                             <select id="link-expiry-days"
                                 style="background: rgba(0,0,0,0.4); border: 1px solid rgba(139,92,246,0.3); color: #a78bfa; border-radius: 4px; padding: 2px 6px; font-size: 9px; font-family: var(--font-heading);">
@@ -5485,6 +5485,12 @@
                             style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8); margin-bottom: 6px;"><input
                                 type="checkbox" id="chk-pdf-ai-strategy" style="margin-right: 6px;"> Include AI
                             Strategy Text</label>
+                        <label
+                            style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8); margin-bottom: 6px;"><input
+                                type="checkbox" id="chk-pdf-rates-table" checked style="margin-right: 6px;"> Include Full Rates Table</label>
+                        <label
+                            style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8); margin-bottom: 6px;"><input
+                                type="checkbox" id="chk-pdf-logo" checked style="margin-right: 6px;"> Include Company Logo</label>
                     </div>
                 </div>
                 <p style="font-size: 7px; color: rgba(255,255,255,0.4); margin: 8px 0 0 0;">Check which optional
@@ -6647,6 +6653,104 @@ Best regards,
                         Email" must be verified in GHL.</p>
                     <button class="btn" style="background: #10b981; margin-top: 10px;" onclick="testGHLConnection()">🔗
                         Test Connection</button>
+                    
+                    <!-- GHL Native Integration Controls -->
+                    <div id="ghl-native-integration" style="margin-top: 16px; padding: 12px; background: rgba(16, 185, 129, 0.05); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                        <h6 style="font-family: var(--font-heading); font-size: 9px; color: #10b981; margin: 0 0 10px 0;">
+                            🔄 Native GHL Sync <span style="font-size: 7px; background: #10b981; color: white; padding: 1px 6px; border-radius: 8px; margin-left: 6px;">BETA</span>
+                        </h6>
+                        
+                        <!-- Sync Direction -->
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-size: 9px; color: rgba(255,255,255,0.7); display: block; margin-bottom: 6px;">Sync Direction</label>
+                            <div style="display: flex; gap: 8px;">
+                                <label style="display: flex; align-items: center; gap: 4px; font-size: 9px; color: rgba(255,255,255,0.8); cursor: pointer;">
+                                    <input type="radio" name="ghl-sync-direction" value="bidirectional" checked onchange="updateGHLSyncConfig()"> Bidirectional
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 4px; font-size: 9px; color: rgba(255,255,255,0.8); cursor: pointer;">
+                                    <input type="radio" name="ghl-sync-direction" value="outbound" onchange="updateGHLSyncConfig()"> Carbon → GHL Only
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 4px; font-size: 9px; color: rgba(255,255,255,0.8); cursor: pointer;">
+                                    <input type="radio" name="ghl-sync-direction" value="inbound" onchange="updateGHLSyncConfig()"> GHL → Carbon Only
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Field Mappings -->
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-size: 9px; color: rgba(255,255,255,0.7); display: block; margin-bottom: 6px;">Field Mappings</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <div>
+                                    <label style="font-size: 8px; color: rgba(255,255,255,0.5);">Credit Score Field ID</label>
+                                    <input type="text" id="ghl-field-credit-score" placeholder="credit_score" value="credit_score" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 4px 8px; font-size: 9px; color: white;" onchange="updateGHLSyncConfig()">
+                                </div>
+                                <div>
+                                    <label style="font-size: 8px; color: rgba(255,255,255,0.5);">Home Value Field ID</label>
+                                    <input type="text" id="ghl-field-home-value" placeholder="home_value" value="home_value" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 4px 8px; font-size: 9px; color: white;" onchange="updateGHLSyncConfig()">
+                                </div>
+                                <div>
+                                    <label style="font-size: 8px; color: rgba(255,255,255,0.5);">HELOC Status Field ID</label>
+                                    <input type="text" id="ghl-field-heloc-status" placeholder="heloc_status" value="heloc_status" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 4px 8px; font-size: 9px; color: white;" onchange="updateGHLSyncConfig()">
+                                </div>
+                                <div>
+                                    <label style="font-size: 8px; color: rgba(255,255,255,0.5);">Loan Amount Field ID</label>
+                                    <input type="text" id="ghl-field-loan-amount" placeholder="loan_amount" value="loan_amount" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 4px 8px; font-size: 9px; color: white;" onchange="updateGHLSyncConfig()">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Stage Mappings -->
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-size: 9px; color: rgba(255,255,255,0.7); display: block; margin-bottom: 6px;">Pipeline Stage Mappings</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 8px;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="color: rgba(255,255,255,0.6); width: 80px;">New →</span>
+                                    <input type="text" id="ghl-stage-new" placeholder="GHL Stage ID" style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 3px 6px; color: white;">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="color: rgba(255,255,255,0.6); width: 80px;">Quote Sent →</span>
+                                    <input type="text" id="ghl-stage-quoted" placeholder="GHL Stage ID" style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 3px 6px; color: white;">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="color: rgba(255,255,255,0.6); width: 80px;">Funded →</span>
+                                    <input type="text" id="ghl-stage-funded" placeholder="GHL Stage ID" style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 3px 6px; color: white;">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span style="color: rgba(255,255,255,0.6); width: 80px;">Lost →</span>
+                                    <input type="text" id="ghl-stage-lost" placeholder="GHL Stage ID" style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 3px 6px; color: white;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Webhook URL for GHL → Carbon -->
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-size: 9px; color: rgba(255,255,255,0.7); display: block; margin-bottom: 6px;">
+                                GHL → Carbon Webhook URL <span class="help-tip">?<span class="help-tip-text">Copy this URL into GHL → Settings → Webhooks to sync changes from GHL back to Carbon.</span></span>
+                            </label>
+                            <div style="display: flex; gap: 6px;">
+                                <input type="text" id="ghl-inbound-webhook-url" readonly style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 4px; padding: 6px 8px; font-size: 9px; color: #10b981; font-family: monospace;" value="https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/handle-ghl-webhook">
+                                <button class="btn" style="background: #10b981; font-size: 8px; padding: 4px 10px;" onclick="copyGHLWebhookUrl()">📋 Copy</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Sync Actions -->
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button class="btn" style="background: linear-gradient(135deg, #10b981, #059669); font-size: 9px; padding: 6px 14px;" onclick="saveGHLIntegration()">💾 Save Integration</button>
+                            <button class="btn" style="background: #3b82f6; font-size: 9px; padding: 6px 14px;" onclick="syncAllLeadsToGHL()">📤 Sync All Leads to GHL</button>
+                            <button class="btn" style="background: #8b5cf6; font-size: 9px; padding: 6px 14px;" onclick="syncGHLToCarbon()">📥 Import from GHL</button>
+                            <button class="btn" style="background: #6b7280; font-size: 9px; padding: 6px 14px;" onclick="viewGHLSyncLogs()">📋 View Sync Logs</button>
+                        </div>
+                        
+                        <!-- Sync Status -->
+                        <div id="ghl-sync-status" style="margin-top: 10px; padding: 8px; background: rgba(0,0,0,0.2); border-radius: 6px; font-size: 8px; color: rgba(255,255,255,0.6); display: none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Last sync: <span id="ghl-last-sync">Never</span></span>
+                                <span id="ghl-sync-indicator" style="display: flex; align-items: center; gap: 4px;">
+                                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #6b7280;"></span> Not configured
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id="int-n8n"
                     style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
@@ -12077,16 +12181,21 @@ Best regards,
                 const query = this.value.trim();
                 if (query.length < 3) { results.style.display = 'none'; return; }
                 debounceTimer = setTimeout(async () => {
-                    // Get Radar API key from integrations (if configured)
+                    // Address autocomplete via radar-proxy edge function (key stays server-side)
                     const radarKey = document.getElementById('radar-api-key') ? document.getElementById('radar-api-key').value : '';
                     if (!radarKey) {
-                        // No API key - just update output on blur/change
+                        // No API key configured - skip autocomplete
                         results.style.display = 'none';
                         return;
                     }
                     try {
-                        const response = await fetch('https://api.radar.io/v1/search/autocomplete?query=' + encodeURIComponent(query) + '&layers=address&country=US', {
-                            headers: { 'Authorization': radarKey }
+                        const session = await window._supabase.auth.getSession();
+                        const jwt = session?.data?.session?.access_token;
+                        if (!jwt) { results.style.display = 'none'; return; }
+                        const response = await fetch((typeof SUPABASE_FUNCTIONS_URL !== 'undefined' ? SUPABASE_FUNCTIONS_URL : 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1') + '/radar-proxy', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+                            body: JSON.stringify({ query: query })
                         });
                         const data = await response.json();
                         if (data.addresses && data.addresses.length) {
@@ -12181,6 +12290,25 @@ Best regards,
                 showTestimonials: document.getElementById('chk-show-testimonials')?.classList.contains('active') || false,
                 tierCompareMode: getVal('select-tier-compare-mode') || 'all',
                 loTestimonialsJson: getVal('lo-testimonials-json'),
+                // Presentation Output Controls - Link Features
+                linkStylePreset: getVal('link-style-preset') || 'enhanced',
+                linkLoInfo: document.getElementById('chk-link-lo-info')?.checked ?? true,
+                linkAiChat: document.getElementById('chk-link-ai-chat')?.checked ?? true,
+                linkApply: document.getElementById('chk-link-apply')?.checked ?? true,
+                linkVideo: document.getElementById('chk-link-video')?.checked ?? false,
+                linkVideoUrl: getVal('link-video-url'),
+                linkVoiceNoteUrl: getVal('link-voice-note-url'),
+                linkSalesPsych: document.getElementById('chk-link-sales-psych')?.checked ?? true,
+                linkExpiry: document.getElementById('chk-link-expiry')?.checked ?? true,
+                linkExpiryDays: getVal('link-expiry-days') || '7',
+                linkRateLock: document.getElementById('chk-rate-lock')?.checked ?? false,
+                linkRateLockDays: getVal('rate-lock-days') || '30',
+                // Presentation Output Controls - PDF Features
+                pdfLoInfo: document.getElementById('chk-pdf-lo-info')?.checked ?? true,
+                pdfDisclaimer: document.getElementById('chk-pdf-disclaimer')?.checked ?? true,
+                pdfAiStrategy: document.getElementById('chk-pdf-ai-strategy')?.checked ?? false,
+                pdfRatesTable: document.getElementById('chk-pdf-rates-table')?.checked ?? true,
+                pdfLogo: document.getElementById('chk-pdf-logo')?.checked ?? true,
             };
             localStorage.setItem('aboveAllCarbonHELOC', JSON.stringify(data));
             _debouncedCloudSync(); // Sync profile to Supabase in background
@@ -12429,6 +12557,90 @@ Best regards,
                     if (data.loTestimonialsJson) {
                         var el = document.getElementById('lo-testimonials-json');
                         if (el) el.value = data.loTestimonialsJson;
+                    }
+                    // Presentation Output Controls - Link Features
+                    if (data.linkStylePreset) {
+                        var el = document.getElementById('link-style-preset');
+                        if (el) el.value = data.linkStylePreset;
+                    }
+                    if (data.linkLoInfo !== undefined) {
+                        var el = document.getElementById('chk-link-lo-info');
+                        if (el) el.checked = data.linkLoInfo;
+                    }
+                    if (data.linkAiChat !== undefined) {
+                        var el = document.getElementById('chk-link-ai-chat');
+                        if (el) el.checked = data.linkAiChat;
+                    }
+                    if (data.linkApply !== undefined) {
+                        var el = document.getElementById('chk-link-apply');
+                        if (el) el.checked = data.linkApply;
+                    }
+                    if (data.linkVideo !== undefined) {
+                        var el = document.getElementById('chk-link-video');
+                        if (el) el.checked = data.linkVideo;
+                        // Show/hide video options wrapper
+                        var optWrap = document.getElementById('link-video-options-wrap');
+                        if (optWrap) optWrap.style.display = data.linkVideo ? 'block' : 'none';
+                    }
+                    if (data.linkVideoUrl) {
+                        var el = document.getElementById('link-video-url');
+                        if (el) el.value = data.linkVideoUrl;
+                    }
+                    if (data.linkVoiceNoteUrl) {
+                        var el = document.getElementById('link-voice-note-url');
+                        if (el) el.value = data.linkVoiceNoteUrl;
+                    }
+                    if (data.linkSalesPsych !== undefined) {
+                        var el = document.getElementById('chk-link-sales-psych');
+                        if (el) el.checked = data.linkSalesPsych;
+                    }
+                    if (data.linkExpiry !== undefined) {
+                        var el = document.getElementById('chk-link-expiry');
+                        if (el) el.checked = data.linkExpiry;
+                        var daysEl = document.getElementById('link-expiry-days');
+                        var labelEl = document.getElementById('link-expiry-label');
+                        if (daysEl) daysEl.disabled = !data.linkExpiry;
+                        if (labelEl) labelEl.style.opacity = data.linkExpiry ? '1' : '0.4';
+                    }
+                    if (data.linkExpiryDays) {
+                        var el = document.getElementById('link-expiry-days');
+                        if (el) el.value = data.linkExpiryDays;
+                    }
+                    if (data.linkRateLock !== undefined) {
+                        var el = document.getElementById('chk-rate-lock');
+                        if (el) el.checked = data.linkRateLock;
+                        var daysEl = document.getElementById('rate-lock-days');
+                        var labelEl = document.getElementById('rate-lock-label');
+                        if (daysEl) {
+                            daysEl.disabled = !data.linkRateLock;
+                            daysEl.style.opacity = data.linkRateLock ? '1' : '0.4';
+                        }
+                        if (labelEl) labelEl.style.opacity = data.linkRateLock ? '1' : '0.4';
+                    }
+                    if (data.linkRateLockDays) {
+                        var el = document.getElementById('rate-lock-days');
+                        if (el) el.value = data.linkRateLockDays;
+                    }
+                    // Presentation Output Controls - PDF Features
+                    if (data.pdfLoInfo !== undefined) {
+                        var el = document.getElementById('chk-pdf-lo-info');
+                        if (el) el.checked = data.pdfLoInfo;
+                    }
+                    if (data.pdfDisclaimer !== undefined) {
+                        var el = document.getElementById('chk-pdf-disclaimer');
+                        if (el) el.checked = data.pdfDisclaimer;
+                    }
+                    if (data.pdfAiStrategy !== undefined) {
+                        var el = document.getElementById('chk-pdf-ai-strategy');
+                        if (el) el.checked = data.pdfAiStrategy;
+                    }
+                    if (data.pdfRatesTable !== undefined) {
+                        var el = document.getElementById('chk-pdf-rates-table');
+                        if (el) el.checked = data.pdfRatesTable;
+                    }
+                    if (data.pdfLogo !== undefined) {
+                        var el = document.getElementById('chk-pdf-logo');
+                        if (el) el.checked = data.pdfLogo;
                     }
                     updateProfile();
                     applyWhiteLabel();
@@ -13082,21 +13294,52 @@ Best regards,
             return ctx;
         }
 
-        function saveCustomAIPrompt() {
+        async function saveCustomAIPrompt() {
             var prompt = (document.getElementById('custom-ai-system-prompt')?.value || '').trim();
-            if (prompt) {
-                localStorage.setItem('heloc_custom_ai_prompt', prompt);
-                showToast('Custom AI prompt saved!', 'success');
-            } else {
-                localStorage.removeItem('heloc_custom_ai_prompt');
-                showToast('AI prompt reset to default', 'success');
+            var sb = window._supabase;
+            if (!sb) { showToast('Not connected', 'error'); return; }
+            try {
+                var session = (await sb.auth.getSession()).data.session;
+                if (!session) return;
+                // Read existing metadata
+                var { data: existing } = await sb.from('user_integrations')
+                    .select('metadata')
+                    .eq('user_id', session.user.id)
+                    .eq('provider', 'heloc_settings')
+                    .maybeSingle();
+                var meta = existing?.metadata || {};
+                if (!meta.ai) meta.ai = {};
+                meta.ai.customSystemPrompt = prompt || '';
+                await sb.from('user_integrations').upsert({
+                    user_id: session.user.id,
+                    provider: 'heloc_settings',
+                    metadata: meta
+                }, { onConflict: 'user_id,provider' });
+                showToast(prompt ? 'Custom AI prompt saved!' : 'AI prompt reset to default', 'success');
+            } catch (e) {
+                console.error('Save custom prompt error:', e);
+                showToast('Failed to save prompt', 'error');
             }
         }
 
-        function _loadCustomAIPrompt() {
-            var saved = localStorage.getItem('heloc_custom_ai_prompt') || '';
+        async function _loadCustomAIPrompt() {
             var el = document.getElementById('custom-ai-system-prompt');
-            if (el && saved) el.value = saved;
+            if (!el) return;
+            var sb = window._supabase;
+            if (!sb) return;
+            try {
+                var session = (await sb.auth.getSession()).data.session;
+                if (!session) return;
+                var { data } = await sb.from('user_integrations')
+                    .select('metadata')
+                    .eq('user_id', session.user.id)
+                    .eq('provider', 'heloc_settings')
+                    .maybeSingle();
+                var saved = data?.metadata?.ai?.customSystemPrompt || '';
+                if (saved) el.value = saved;
+            } catch (e) {
+                console.debug('Load custom prompt skipped:', e.message);
+            }
         }
 
         // Rate Sheet Pre-Pricing Settings
@@ -14037,13 +14280,46 @@ Sent via Above All Carbon HELOC Tool`;
             // Character count on HeyGen script textarea
             var hgTA = document.getElementById('heygen-script-preview');
             if (hgTA) hgTA.addEventListener('input', updateHeyGenCharCount);
-            // Same for other checkboxes — switch to custom on manual change
-            ['chk-link-lo-info', 'chk-link-ai-chat', 'chk-link-apply', 'chk-link-sales-psych'].forEach(function(id) {
+            // Same for other checkboxes — switch to custom on manual change + autoSave
+            ['chk-link-lo-info', 'chk-link-ai-chat', 'chk-link-apply', 'chk-link-sales-psych', 'chk-link-expiry'].forEach(function(id) {
                 var el = document.getElementById(id);
                 if (el) el.addEventListener('change', function() {
                     var presetEl = document.getElementById('link-style-preset');
                     if (presetEl) presetEl.value = 'custom';
+                    autoSave();
                 });
+            });
+            // Dropdowns for expiry and rate-lock should also switch to custom
+            ['link-expiry-days', 'rate-lock-days'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.addEventListener('change', function() {
+                    var presetEl = document.getElementById('link-style-preset');
+                    if (presetEl) presetEl.value = 'custom';
+                    autoSave();
+                });
+            });
+            // Rate lock checkbox
+            var chkRateLock = document.getElementById('chk-rate-lock');
+            if (chkRateLock) {
+                chkRateLock.addEventListener('change', function() {
+                    var presetEl = document.getElementById('link-style-preset');
+                    if (presetEl) presetEl.value = 'custom';
+                    autoSave();
+                });
+            }
+            // PDF Output Features checkboxes - autoSave only (don't affect link preset)
+            ['chk-pdf-lo-info', 'chk-pdf-disclaimer', 'chk-pdf-ai-strategy', 'chk-pdf-rates-table', 'chk-pdf-logo'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.addEventListener('change', function() {
+                    autoSave();
+                });
+            });
+            // Video URL and voice note URL inputs - autoSave on change
+            ['link-video-url', 'link-voice-note-url'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.addEventListener('input', debounce(function() {
+                    autoSave();
+                }, 500));
             });
         });
 
@@ -14228,7 +14504,8 @@ Sent via Above All Carbon HELOC Tool`;
                 logo: g('lo-logo-url'),
                 applyLink: g('lo-apply-link') || g('wl-apply-link'),
                 calendarLink: g('lo-calendar-link') || g('ghl-calendar-link'),
-                googleRating: '5.0'
+                googleRating: '5.0',
+                tier: window.currentUserTier || 'carbon'
             };
 
             // Build preview URL with data encoded in query params
@@ -14443,7 +14720,8 @@ Sent via Above All Carbon HELOC Tool`;
                     user_id: userId,
                     lead_id: leadId,
                     quote_data: quoteData,
-                    lo_info: loInfo
+                    lo_info: loInfo,
+                    lo_tier: window.currentUserTier || 'carbon'
                 };
                 if (expiresAt) insertObj.expires_at = expiresAt;
 
@@ -14452,7 +14730,7 @@ Sent via Above All Carbon HELOC Tool`;
                 if (error) {
                     if (error.message && error.message.includes('unique')) {
                         code = Math.random().toString(36).substring(2, 10);
-                        var retryObj = { code: code, user_id: userId, lead_id: leadId, quote_data: quoteData, lo_info: loInfo };
+                        var retryObj = { code: code, user_id: userId, lead_id: leadId, quote_data: quoteData, lo_info: loInfo, lo_tier: window.currentUserTier || 'carbon' };
                         if (expiresAt) retryObj.expires_at = expiresAt;
                         var retry = await sb.from('quote_links').insert(retryObj);
                         if (retry.error) throw retry.error;
@@ -15666,6 +15944,14 @@ Sent via Above All Carbon HELOC Tool`;
                 const aiBlock = document.getElementById('ai-assistant-container');
                 if (aiBlock) { aiBlock.classList.add('print-exclude'); pdfHiddenEls.push(aiBlock); }
             }
+            if (document.getElementById('chk-pdf-rates-table') && !document.getElementById('chk-pdf-rates-table').checked) {
+                const ratesTable = document.getElementById('variable-matrix');
+                if (ratesTable) { ratesTable.classList.add('print-exclude'); pdfHiddenEls.push(ratesTable); }
+            }
+            if (document.getElementById('chk-pdf-logo') && !document.getElementById('chk-pdf-logo').checked) {
+                const logo = document.querySelector('.company-logo-footer');
+                if (logo) { logo.classList.add('print-exclude'); pdfHiddenEls.push(logo); }
+            }
 
             try {
                 const canvas = await captureProposal({ settle: 150 });
@@ -16008,6 +16294,236 @@ Sent via Above All Carbon HELOC Tool`;
                 const response = await fetch(webhookUrl, { method: 'POST', headers: headers, body: JSON.stringify({ test: true, timestamp: new Date().toISOString() }) });
                 if (response.ok) { showToast('n8n connection successful!', 'success'); } else { showToast('n8n returned an error.', 'warning'); }
             } catch (e) { showToast('n8n connection failed. Check URL and network.', 'error'); }
+        }
+
+        // ===== GHL NATIVE INTEGRATION FUNCTIONS =====
+        
+        function copyGHLWebhookUrl() {
+            const urlInput = document.getElementById('ghl-inbound-webhook-url');
+            if (urlInput) {
+                urlInput.select();
+                document.execCommand('copy');
+                showToast('Webhook URL copied to clipboard!', 'success');
+            }
+        }
+        
+        function updateGHLSyncConfig() {
+            // Auto-save when configuration changes
+            autoSave();
+        }
+        
+        async function saveGHLIntegration() {
+            const apiKey = document.getElementById('ghl-api-key')?.value;
+            const locationId = document.getElementById('ghl-location-id')?.value;
+            const pipelineId = document.getElementById('ghl-pipeline-id')?.value;
+            
+            if (!apiKey || !locationId) {
+                showToast('Please enter GHL API Key and Location ID first.', 'warning');
+                return;
+            }
+            
+            // Get sync direction
+            const syncDirection = document.querySelector('input[name="ghl-sync-direction"]:checked')?.value || 'bidirectional';
+            
+            // Get field mappings
+            const fieldMappings = {
+                credit_score: document.getElementById('ghl-field-credit-score')?.value || 'credit_score',
+                home_value: document.getElementById('ghl-field-home-value')?.value || 'home_value',
+                mortgage_balance: document.getElementById('ghl-field-mortgage-balance')?.value || 'mortgage_balance',
+                heloc_status: document.getElementById('ghl-field-heloc-status')?.value || 'heloc_status',
+                loan_amount: document.getElementById('ghl-field-loan-amount')?.value || 'loan_amount',
+                interest_rate: document.getElementById('ghl-field-interest-rate')?.value || 'interest_rate'
+            };
+            
+            // Get stage mappings
+            const stageMappings = {
+                new: document.getElementById('ghl-stage-new')?.value,
+                quoted: document.getElementById('ghl-stage-quoted')?.value,
+                funded: document.getElementById('ghl-stage-funded')?.value,
+                lost: document.getElementById('ghl-stage-lost')?.value
+            };
+            
+            const integrationData = {
+                crm_type: 'ghl',
+                is_active: true,
+                config: {
+                    api_key: apiKey,
+                    location_id: locationId,
+                    pipeline_id: pipelineId,
+                    stage_id: document.getElementById('ghl-stage-id')?.value,
+                    sync_direction: syncDirection,
+                    webhook_url: document.getElementById('ghl-inbound-webhook-url')?.value
+                },
+                field_mappings: fieldMappings,
+                stage_mappings: stageMappings,
+                sync_enabled: true,
+                sync_direction: syncDirection
+            };
+            
+            // Save to Supabase
+            const sb = window._supabase;
+            const userId = window.currentUserId;
+            
+            if (!sb || !userId) {
+                showToast('Not authenticated. Please log in.', 'error');
+                return;
+            }
+            
+            try {
+                const { error } = await sb
+                    .from('crm_integrations')
+                    .upsert({
+                        user_id: userId,
+                        crm_type: 'ghl',
+                        ...integrationData,
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'user_id,crm_type' });
+                
+                if (error) throw error;
+                
+                // Update UI
+                document.getElementById('ghl-sync-status').style.display = 'block';
+                document.getElementById('ghl-sync-indicator').innerHTML = 
+                    '<span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981;"></span> Active';
+                
+                showToast('GHL integration saved successfully!', 'success');
+                autoSave();
+            } catch (e) {
+                showToast('Error saving GHL integration: ' + e.message, 'error');
+            }
+        }
+        
+        async function syncAllLeadsToGHL() {
+            const apiKey = document.getElementById('ghl-api-key')?.value;
+            const locationId = document.getElementById('ghl-location-id')?.value;
+            
+            if (!apiKey || !locationId) {
+                showToast('Please configure GHL API Key and Location ID first.', 'warning');
+                return;
+            }
+            
+            const sb = window._supabase;
+            const userId = window.currentUserId;
+            
+            if (!sb || !userId) {
+                showToast('Not authenticated.', 'error');
+                return;
+            }
+            
+            showToast('Starting bulk sync to GHL...', 'info');
+            
+            try {
+                // Get all leads that need syncing
+                const { data: leads, error } = await sb
+                    .from('leads')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .or('sync_status.eq.pending,sync_status.eq.error,external_id.is.null');
+                
+                if (error) throw error;
+                
+                if (!leads || leads.length === 0) {
+                    showToast('No leads need syncing.', 'info');
+                    return;
+                }
+                
+                // Add to sync queue
+                const syncItems = leads.map(lead => ({
+                    lead_id: lead.id,
+                    crm_integration_id: null, // Will be looked up by edge function
+                    operation: lead.external_id ? 'update' : 'create',
+                    status: 'pending',
+                    priority: 5
+                }));
+                
+                const { error: queueError } = await sb
+                    .from('crm_sync_queue')
+                    .insert(syncItems);
+                
+                if (queueError) throw queueError;
+                
+                showToast(`Queued ${leads.length} leads for GHL sync. Processing in background...`, 'success');
+                
+                // Trigger immediate sync
+                fetch('/functions/v1/sync-ghl-outbound', { method: 'POST' }).catch(console.error);
+                
+            } catch (e) {
+                showToast('Error queueing leads for sync: ' + e.message, 'error');
+            }
+        }
+        
+        async function syncGHLToCarbon() {
+            showToast('Use the GHL webhook to sync from GHL to Carbon. Copy the webhook URL above and paste it in GHL → Settings → Webhooks.', 'info', 8000);
+        }
+        
+        async function viewGHLSyncLogs() {
+            const sb = window._supabase;
+            const userId = window.currentUserId;
+            
+            if (!sb || !userId) {
+                showToast('Not authenticated.', 'error');
+                return;
+            }
+            
+            try {
+                const { data: logs, error } = await sb
+                    .from('crm_sync_queue')
+                    .select(`
+                        *,
+                        lead:lead_id (name, email)
+                    `)
+                    .eq('integration.crm_type', 'ghl')
+                    .order('created_at', { ascending: false })
+                    .limit(20);
+                
+                if (error) throw error;
+                
+                // Build modal content
+                let html = '<div style="max-height: 400px; overflow-y: auto;">';
+                html += '<table style="width: 100%; font-size: 11px; border-collapse: collapse;">';
+                html += '<thead><tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">';
+                html += '<th style="text-align: left; padding: 8px;">Lead</th>';
+                html += '<th style="text-align: left; padding: 8px;">Operation</th>';
+                html += '<th style="text-align: left; padding: 8px;">Status</th>';
+                html += '<th style="text-align: left; padding: 8px;">Time</th>';
+                html += '</tr></thead><tbody>';
+                
+                (logs || []).forEach(log => {
+                    const statusColor = log.status === 'completed' ? '#10b981' : 
+                                       log.status === 'failed' ? '#ef4444' : '#f59e0b';
+                    html += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">`;
+                    html += `<td style="padding: 8px;">${log.lead?.name || 'Unknown'}</td>`;
+                    html += `<td style="padding: 8px;">${log.operation}</td>`;
+                    html += `<td style="padding: 8px; color: ${statusColor};">${log.status}</td>`;
+                    html += `<td style="padding: 8px;">${new Date(log.created_at).toLocaleString()}</td>`;
+                    html += `</tr>`;
+                });
+                
+                html += '</tbody></table></div>';
+                
+                // Show modal
+                showModal('GHL Sync Logs', html);
+            } catch (e) {
+                showToast('Error loading sync logs: ' + e.message, 'error');
+            }
+        }
+        
+        function showModal(title, content) {
+            // Simple modal implementation
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;';
+            modal.innerHTML = `
+                <div style="background: #1e293b; border-radius: 12px; max-width: 700px; width: 100%; max-height: 80vh; overflow: hidden;">
+                    <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0; font-family: var(--font-heading); font-size: 16px; color: white;">${title}</h3>
+                        <button onclick="this.closest('.ghl-modal').remove()" style="background: none; border: none; color: rgba(255,255,255,0.6); font-size: 20px; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="padding: 20px;">${content}</div>
+                </div>
+            `;
+            modal.className = 'ghl-modal';
+            document.body.appendChild(modal);
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
         }
 
         async function testAIConnection() {

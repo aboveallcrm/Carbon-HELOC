@@ -1,0 +1,218 @@
+// Edge Function: Handle GoHighLevel Webhooks
+// Receives webhooks from GHL and syncs to Carbon
+
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  try {
+    const payload = await req.json()
+    const signature = req.headers.get('X-GHL-Signature')
+    
+    // Verify webhook signature (if configured)
+    // const isValid = verifyGHLSignature(payload, signature)
+    // if (!isValid) throw new Error('Invalid webhook signature')
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Process based on event type
+    const eventType = payload.type || payload.event
+    
+    switch (eventType) {
+      case 'ContactCreate':
+      case 'ContactUpdate':
+        await handleContactUpsert(supabase, payload)
+        break
+      case 'ContactDelete':
+        await handleContactDelete(supabase, payload)
+        break
+      case 'OpportunityCreate':
+      case 'OpportunityUpdate':
+        await handleOpportunityUpdate(supabase, payload)
+        break
+      case 'OpportunityStatusUpdate':
+        await handleOpportunityStatusChange(supabase, payload)
+        break
+      default:
+        console.log('Unhandled event type:', eventType)
+    }
+
+    return new Response(
+      JSON.stringify({ success: true }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+
+  } catch (error) {
+    console.error('Webhook error:', error)
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+})
+
+async function handleContactUpsert(supabase: any, payload: any) {
+  const contact = payload.contact || payload
+  const locationId = contact.locationId || payload.locationId
+  
+  // Find the user with this GHL integration
+  const { data: integration, error: intError } = await supabase
+    .from('crm_integrations')
+    .select('user_id, field_mappings, config')
+    .eq('crm_type', 'ghl')
+    .eq('ghl_location_id', locationId)
+    .eq('is_active', true)
+    .single()
+
+  if (intError || !integration) {
+    console.log('No active GHL integration found for location:', locationId)
+    return
+  }
+
+  // Map GHL contact to Carbon lead format
+  const customFields = contact.customFields || {}
+  const fieldMappings = integration.field_mappings || {}
+  
+  const leadData = {
+    user_id: integration.user_id,
+    external_id: contact.id,
+    crm_source: 'ghl',
+    name: `${contact.firstName || ''} ${contact.lastName || ''}`.trim(),
+    email: contact.email,
+    phone: contact.phone,
+    address: contact.address1,
+    city: contact.city,
+    state: contact.state,
+    zip: contact.postalCode,
+    
+    // Map custom fields
+    credit_score: customFields[fieldMappings.credit_score || 'credit_score'],
+    home_value: parseFloat(customFields[fieldMappings.home_value || 'home_value']) || null,
+    mortgage_balance: parseFloat(customFields[fieldMappings.mortgage_balance || 'mortgage_balance']) || null,
+    loan_amount: parseFloat(customFields[fieldMappings.loan_amount || 'loan_amount']) || null,
+    interest_rate: parseFloat(customFields[fieldMappings.interest_rate || 'interest_rate']) || null,
+    
+    sync_status: 'synced',
+    last_sync_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+
+  // Check if lead already exists
+  const { data: existingLead } = await supabase
+    .from('leads')
+    .select('id')
+    .eq('external_id', contact.id)
+    .eq('crm_source', 'ghl')
+    .single()
+
+  if (existingLead) {
+    // Update existing lead
+    const { error } = await supabase
+      .from('leads')
+      .update(leadData)
+      .eq('id', existingLead.id)
+    
+    if (error) throw error
+    console.log('Updated lead from GHL:', existingLead.id)
+  } else {
+    // Create new lead
+    leadData.created_at = new Date().toISOString()
+    leadData.status = 'new'
+    
+    const { data: newLead, error } = await supabase
+      .from('leads')
+      .insert(leadData)
+      .select()
+      .single()
+    
+    if (error) throw error
+    console.log('Created new lead from GHL:', newLead.id)
+  }
+}
+
+async function handleContactDelete(supabase: any, payload: any) {
+  const contactId = payload.contactId || payload.id
+  
+  // Soft delete - mark as deleted in Carbon
+  const { error } = await supabase
+    .from('leads')
+    .update({
+      status: 'lost',
+      notes: 'Deleted in GHL',
+      sync_status: 'synced',
+      updated_at: new Date().toISOString()
+    })
+    .eq('external_id', contactId)
+    .eq('crm_source', 'ghl')
+
+  if (error) throw error
+  console.log('Soft-deleted lead (deleted in GHL):', contactId)
+}
+
+async function handleOpportunityUpdate(supabase: any, payload: any) {
+  const opportunity = payload.opportunity || payload
+  const contactId = opportunity.contactId || opportunity.contact_id
+  
+  if (!contactId) return
+
+  // Find the lead
+  const { data: lead, error: leadError } = await supabase
+    .from('leads')
+    .select('id, status')
+    .eq('external_id', contactId)
+    .eq('crm_source', 'ghl')
+    .single()
+
+  if (leadError || !lead) {
+    console.log('Lead not found for GHL opportunity:', contactId)
+    return
+  }
+
+  // Map GHL pipeline stage to Carbon status
+  const stageMapping: Record<string, string> = {
+    'new': 'new',
+    'contacted': 'contacted',
+    'quoted': 'quote_sent',
+    'application': 'application_sent',
+    'underwriting': 'in_underwriting',
+    'approved': 'approved',
+    'funded': 'funded',
+    'lost': 'lost'
+  }
+
+  const newStatus = stageMapping[opportunity.stage || opportunity.status] || lead.status
+
+  // Update lead status
+  const { error } = await supabase
+    .from('leads')
+    .update({
+      status: newStatus,
+      loan_amount: opportunity.value || opportunity.amount,
+      crm_pipeline_id: opportunity.pipelineId,
+      crm_stage_id: opportunity.stageId,
+      sync_status: 'synced',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', lead.id)
+
+  if (error) throw error
+  console.log('Updated lead status from GHL opportunity:', lead.id, '→', newStatus)
+}
+
+async function handleOpportunityStatusChange(supabase: any, payload: any) {
+  // Similar to handleOpportunityUpdate but specific to status changes
+  await handleOpportunityUpdate(supabase, payload)
+}

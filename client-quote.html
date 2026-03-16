@@ -7817,6 +7817,13 @@
                     // Render preview without tracking
                     renderQuote(previewData, previewLo, 'preview', null);
                     
+                    // Preview tier gating — use LO tier from loInfo (super_admin sees diamond)
+                    var pvTier = previewLo.tier || 'diamond'; // default diamond in preview for backwards compat
+                    var pvTierMap = { carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 };
+                    var pvTierLevel = pvTierMap[pvTier] || 4;
+                    window._loTier = pvTier;
+                    window._loTierLevel = pvTierLevel;
+
                     // Initialize visual enhancements
                     setTimeout(function () {
                         initScrollProgress();
@@ -7824,28 +7831,35 @@
                         initCounters();
                         initParticles();
                         initProgressStepper(previewData.linkOptions || {});
-                        if (!previewData.linkOptions || previewData.linkOptions.showAiChat !== false) {
-                            initEzraChat(previewData, previewLo || {}, 'preview');
+
+                        // Titanium+ calculators
+                        if (pvTierLevel >= 1) {
+                            try {
+                                initInteractiveSavings(previewData);
+                                initPaymentScenario(previewData);
+                                initWhatIfCalculator(previewData, previewData.linkOptions || {});
+                                initWhatIfBorrowPayback(previewData);
+                            } catch (e) { console.warn('Calculator init error:', e); }
+                            try {
+                                initPrequalChecklist(previewData.linkOptions || {});
+                                initDTICalculator(previewData.linkOptions || {});
+                                initDocUpload(previewData.linkOptions || {}, previewData);
+                                initTierComparison(previewData.linkOptions || {}, previewData);
+                            } catch (e) { console.warn('Titanium features init error:', e); }
                         }
-                        // Initialize calculators
-                        try {
-                            initInteractiveSavings(previewData);
-                            initPaymentScenario(previewData);
-                            initWhatIfCalculator(previewData, previewData.linkOptions || {});
-                            initWhatIfBorrowPayback(previewData);
-                        } catch (e) {
-                            console.warn('Calculator init error:', e);
-                        }
-                        
-                        // Initialize Titanium v5.9.3 features
-                        try {
-                            initPrequalChecklist(previewData.linkOptions || {});
-                            initDTICalculator(previewData.linkOptions || {});
-                            initDocUpload(previewData.linkOptions || {}, previewData);
-                            initTierComparison(previewData.linkOptions || {}, previewData);
-                            initTestimonials(previewData.linkOptions || {});
-                        } catch (e) {
-                            console.warn('Titanium v5.9.3 features init error:', e);
+
+                        // Platinum+ features
+                        if (pvTierLevel >= 2) {
+                            if (!previewData.linkOptions || previewData.linkOptions.showAiChat !== false) {
+                                initEzraChat(previewData, previewLo || {}, 'preview');
+                            }
+                            try { initTestimonials(previewData.linkOptions || {}); } catch (e) {}
+                        } else {
+                            // Hide Spanish toggle in preview for below-Platinum
+                            var langToggle = document.getElementById('languageToggle');
+                            if (langToggle) langToggle.style.display = 'none';
+                            var langBtnEn = document.getElementById('langBtnEn');
+                            if (langBtnEn) langBtnEn.parentElement.style.display = 'none';
                         }
                     }, 300);
                     
@@ -7904,6 +7918,14 @@
                 renderQuote(link.quote_data, link.lo_info || {}, link.user_id, link.lead_id);
                 trackEvent('quote_opened', { code: code });
 
+                // Determine LO tier for feature gating
+                var loTier = link.lo_tier || (link.lo_info && link.lo_info.tier) || 'carbon';
+                var tierLevelMap = { carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 };
+                var tierLevel = tierLevelMap[loTier] || 0;
+                window._loTier = loTier;
+                window._loTierLevel = tierLevel;
+                console.log('Client page tier gating:', loTier, '(level ' + tierLevel + ')');
+
                 // Initialize visual enhancements
                 setTimeout(function () {
                     try {
@@ -7915,51 +7937,94 @@
                     } catch (e) {
                         console.warn('Visual enhancement error:', e);
                     }
-                    
-                    // Initialize Ezra AI Chat (default on unless explicitly disabled)
-                    if (!link.quote_data.linkOptions || link.quote_data.linkOptions.showAiChat !== false) {
+
+                    // ── TITANIUM+ (level >= 1): Interactive calculators ──
+                    if (tierLevel >= 1) {
                         try {
-                            initEzraChat(link.quote_data, link.lo_info || {}, code);
+                            initInteractiveSavings(link.quote_data);
+                            initPaymentScenario(link.quote_data);
+                            initWhatIfCalculator(link.quote_data, link.quote_data.linkOptions || {});
+                            initWhatIfBorrowPayback(link.quote_data);
                         } catch (e) {
-                            console.warn('Ezra chat init error:', e);
+                            console.warn('Calculator init error:', e);
                         }
+                        try {
+                            initPrequalChecklist(link.quote_data.linkOptions || {});
+                            initDTICalculator(link.quote_data.linkOptions || {});
+                            initDocUpload(link.quote_data.linkOptions || {}, link.quote_data);
+                            initTierComparison(link.quote_data.linkOptions || {}, link.quote_data);
+                        } catch (e) {
+                            console.warn('Titanium features init error:', e);
+                        }
+                    } else {
+                        // Carbon: hide interactive sections
+                        var carbonHideSections = [
+                            'sec-interactive-savings', 'sec-payment-scenario', 'sec-what-if',
+                            'sec-what-if-borrow', 'sec-what-if-payback', 'sec-prequal',
+                            'sec-dti-calc', 'sec-doc-upload', 'sec-tier-compare'
+                        ];
+                        carbonHideSections.forEach(function (id) {
+                            var el = document.getElementById(id);
+                            if (el) el.style.display = 'none';
+                        });
                     }
-                    
-                    // Initialize interactive calculators
-                    try {
-                        initInteractiveSavings(link.quote_data);
-                        initPaymentScenario(link.quote_data);
-                        initWhatIfCalculator(link.quote_data, link.quote_data.linkOptions || {});
-                        initWhatIfBorrowPayback(link.quote_data);
-                    } catch (e) {
-                        console.warn('Calculator init error:', e);
+
+                    // ── PLATINUM+ (level >= 2): Sales psychology, Ezra AI, testimonials, proactive ──
+                    if (tierLevel >= 2) {
+                        // Ezra AI Chat (default on unless explicitly disabled)
+                        if (!link.quote_data.linkOptions || link.quote_data.linkOptions.showAiChat !== false) {
+                            try {
+                                initEzraChat(link.quote_data, link.lo_info || {}, code);
+                            } catch (e) {
+                                console.warn('Ezra chat init error:', e);
+                            }
+                        }
+                        try {
+                            initTestimonials(link.quote_data.linkOptions || {});
+                        } catch (e) {
+                            console.warn('Testimonials init error:', e);
+                        }
+                        try {
+                            initProactiveObjections(link.quote_data);
+                            initFollowupNudge(link.quote_data);
+                        } catch (e) {
+                            console.warn('Proactive features init error:', e);
+                        }
+                        // Detect language for Ezra (Spanish toggle)
+                        try {
+                            detectBrowserLanguage();
+                        } catch (e) {
+                            console.warn('Language detection error:', e);
+                        }
+                    } else {
+                        // Below Platinum: hide sales psychology, borrower strategy, testimonials, Ezra, funds carousel
+                        var platHideSections = [
+                            'sec-testimonials', 'sec-borrower-strategy', 'sec-funds-carousel'
+                        ];
+                        platHideSections.forEach(function (id) {
+                            var el = document.getElementById(id);
+                            if (el) el.style.display = 'none';
+                        });
+                        // Hide sales psychology elements
+                        var salesPsychEls = document.querySelectorAll('.sales-psychology, .sp-section, [data-sales-psych]');
+                        salesPsychEls.forEach(function (el) { el.style.display = 'none'; });
+                        // Hide Ezra chat widget
+                        var ezraWidget = document.getElementById('eq-widget');
+                        if (ezraWidget) ezraWidget.style.display = 'none';
+                        // Hide Spanish toggle (Platinum+ only)
+                        var langToggle = document.getElementById('languageToggle');
+                        if (langToggle) langToggle.style.display = 'none';
+                        var langBtnEn = document.getElementById('langBtnEn');
+                        var langBtnEs = document.getElementById('langBtnEs');
+                        if (langBtnEn) langBtnEn.parentElement.style.display = 'none';
                     }
-                    
-                    // Initialize Titanium v5.9.3 features
-                    try {
-                        initPrequalChecklist(link.quote_data.linkOptions || {});
-                        initDTICalculator(link.quote_data.linkOptions || {});
-                        initDocUpload(link.quote_data.linkOptions || {}, link.quote_data);
-                        initTierComparison(link.quote_data.linkOptions || {}, link.quote_data);
-                        initTestimonials(link.quote_data.linkOptions || {});
-                    } catch (e) {
-                        console.warn('Titanium v5.9.3 features init error:', e);
+
+                    // ── DIAMOND (level >= 4): HeyGen video (handled by renderQuote via linkOptions) ──
+                    if (tierLevel < 4) {
+                        var videoSec = document.getElementById('sec-personal-video');
+                        if (videoSec) videoSec.style.display = 'none';
                     }
-                    
-                    // Initialize proactive features
-                    try {
-                        initProactiveObjections(link.quote_data);
-                        initFollowupNudge(link.quote_data);
-                    } catch (e) {
-                        console.warn('Proactive features init error:', e);
-                    }
-                    
-                    // Detect language for Ezra
-                    try {
-                        detectBrowserLanguage();
-                    } catch (e) {
-                        console.warn('Language detection error:', e);
-                    }
+
                 }, 300);
 
                 // Track time on page

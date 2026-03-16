@@ -1195,6 +1195,9 @@ RESPONSE RULES
         user: null,
         dealRadarData: null,
         activeTab: 'chat', // 'chat' | 'deal-radar'
+        _upsellMode: false,
+        _upsellMsgIndex: 0,
+        _tokenBudget: null,
         _pendingComplianceCheck: false,
         pendingAttachment: null, // { file, base64, mimeType, previewUrl }
         rateSheetMatrix: null,   // Parsed rate sheet for auto-pricing
@@ -1226,13 +1229,13 @@ RESPONSE RULES
         // Pick up tier from app globals
         if (window.currentUserTier) EzraState.userTier = window.currentUserTier;
 
-        // Tier gate: Ezra available Titanium+ (level >= 1)
+        // Tier gate: Carbon users get upsell-only mode, Titanium+ gets full Ezra
         const tier = (EzraState.userTier || 'carbon').toLowerCase();
         const tierLevels = { carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 };
         const userLevel = tierLevels[tier] || 0;
         if (userLevel < 1 && window.currentUserRole !== 'super_admin') {
-            console.log('Ezra: Requires Titanium+ tier — widget hidden');
-            return;
+            EzraState._upsellMode = true;
+            console.log('Ezra: Carbon tier — upsell mode active');
         }
 
         // Create widget DOM first so elements exist
@@ -1291,6 +1294,9 @@ RESPONSE RULES
         
         // Check for new users and show onboarding
         setTimeout(showOnboardingIfNew, 1000);
+
+        // Fetch token budget for display (non-blocking)
+        setTimeout(fetchTokenBudget, 1500);
     }
 
     async function checkAuthState() {
@@ -1299,6 +1305,99 @@ RESPONSE RULES
             EzraState.user = session.user;
             loadOrCreateConversation();
         }
+    }
+
+    // ============================================
+    // UPSELL MODE (Carbon tier)
+    // ============================================
+    const UPSELL_MESSAGES = [
+        "I'm **Ezra**, your AI loan structuring co-pilot. I can build quotes in seconds, handle objections with smart counter-scripts, draft personalized messages, run compliance checks, and much more.\n\n**Upgrade to Titanium** to unlock me and start closing faster.",
+        "Here's what I can do for you:\n\n\u2726 **Quick Quote** — Build a full quote in seconds\n\u2726 **Smart Objections** — Counter scripts using real numbers\n\u2726 **Draft Messages** — SMS & email templates with client data\n\u2726 **Compliance Check** — Auto-review for TILA/RESPA\n\u2726 **Compare Scenarios** — Side-by-side 5/10/15/30yr analysis\n\nUpgrade to **Titanium** to unlock all features.",
+        "Loan officers using Ezra AI close **40% faster** with instant quote building, smart deal structuring, and automated follow-up coaching.\n\n**Titanium** gives you the full AI toolkit. **Platinum** adds lead briefings and follow-up timing intelligence.\n\nReady to upgrade?",
+        "I can predict your client's questions before they ask, narrate quotes in plain English for easy conversations, and generate ready-to-send SMS and email drafts.\n\nAll of this is waiting for you at **Titanium** tier and above.",
+    ];
+
+    const UPSELL_QUICK_COMMANDS = [
+        { label: 'Quick Quotes', icon: '\uD83D\uDE80', tier: 'Titanium', desc: 'Build quotes instantly with AI' },
+        { label: 'Smart Objections', icon: '\uD83D\uDEE1\uFE0F', tier: 'Titanium', desc: 'AI-powered counter scripts' },
+        { label: 'Draft Messages', icon: '\u2709\uFE0F', tier: 'Titanium', desc: 'SMS & email with client data' },
+        { label: 'Compliance Check', icon: '\u26A0\uFE0F', tier: 'Titanium', desc: 'Auto TILA/RESPA review' },
+        { label: 'Lead Briefings', icon: '\uD83D\uDCCB', tier: 'Platinum', desc: 'Daily lead priority digest' },
+        { label: 'Follow-Up Coach', icon: '\u23F0', tier: 'Platinum', desc: 'AI timing recommendations' },
+    ];
+
+    function getUpsellResponse() {
+        const msg = UPSELL_MESSAGES[EzraState._upsellMsgIndex % UPSELL_MESSAGES.length];
+        EzraState._upsellMsgIndex++;
+        return msg;
+    }
+
+    // Intent-to-tier mapping for granular feature gating
+    const INTENT_TIER_MAP = {
+        // Local (zero cost) — Titanium+
+        quote_narrator: 1,
+        draft_message: 1,
+        scenario_comparison: 1,
+        question_predictor: 1,
+        compliance_check: 1,
+        objection_handling: 1,
+        // API-calling — Titanium+
+        deal_architect: 1,
+        quote_creation: 1,
+        program_recommendation: 1,
+        simple_chat: 1,
+        // Async local (DB queries) — Platinum+
+        followup_coach: 2,
+        lead_briefing: 2,
+        // API-calling — Platinum+
+        sales_coach: 2,
+        complex_strategy: 2,
+    };
+    const TIER_NAMES = { 0: 'Carbon', 1: 'Titanium', 2: 'Platinum', 3: 'Obsidian', 4: 'Diamond' };
+
+    // Token budget display
+    async function fetchTokenBudget() {
+        if (EzraState._upsellMode || !EzraState.supabase || !window.currentUserId) return;
+        try {
+            const { data } = await EzraState.supabase.rpc('get_or_create_token_budget', { p_user_id: window.currentUserId });
+            if (data && data.length > 0) {
+                const b = data[0];
+                EzraState._tokenBudget = { tokens_used: b.budget_tokens_used, tokens_limit: b.budget_tokens_limit, tier: b.budget_tier };
+                updateTokenDisplay();
+            }
+        } catch (e) {
+            console.debug('Ezra: token budget fetch skipped', e.message);
+        }
+    }
+
+    function updateTokenDisplay() {
+        const el = document.getElementById('ezra-token-budget');
+        const b = EzraState._tokenBudget;
+        if (!el || !b) return;
+        if (b.tokens_limit === -1) {
+            el.textContent = '\u221E Unlimited tokens';
+            el.style.color = '#4ade80';
+            el.style.display = '';
+            return;
+        }
+        if (b.tokens_limit === 0) { el.style.display = 'none'; return; }
+        const pct = b.tokens_used / b.tokens_limit;
+        el.textContent = `${b.tokens_used.toLocaleString()}/${b.tokens_limit.toLocaleString()} tokens`;
+        el.style.color = pct < 0.5 ? '#4ade80' : pct < 0.8 ? '#facc15' : '#f87171';
+        el.style.display = '';
+    }
+
+    function getIntentUpgradeMessage(intent) {
+        const required = INTENT_TIER_MAP[intent] || 1;
+        const tierName = TIER_NAMES[required] || 'Titanium';
+        const descriptions = {
+            followup_coach: 'Follow-Up Coach analyzes your leads and suggests the best time and channel to reach out.',
+            lead_briefing: 'Lead Briefing gives you a daily digest of new, hot, and stale leads with action plans.',
+            sales_coach: 'Sales Coach provides advanced AI-driven deal strategy and coaching.',
+            complex_strategy: 'Complex Strategy handles multi-scenario deal structuring with deep analysis.',
+        };
+        const desc = descriptions[intent] || `This feature requires ${tierName}+ tier.`;
+        return `\uD83D\uDD12 **${tierName}+ Feature**\n\n${desc}\n\nUpgrade to **${tierName}** to unlock this and more.`;
     }
 
     // ============================================
@@ -1330,8 +1429,9 @@ RESPONSE RULES
                             <span class="ezra-title">EZRA</span>
                             <span class="ezra-status">
                                 <span class="ezra-status-dot"></span>
-                                <span class="ezra-status-text">Online</span>
+                                <span class="ezra-status-text">${EzraState._upsellMode ? 'Locked — Upgrade to Unlock' : 'Online'}</span>
                             </span>
+                            <span id="ezra-token-budget" class="ezra-token-budget" style="display:none;font-size:9px;color:#94a3b8;"></span>
                         </div>
                     </div>
                     <div class="ezra-header-actions">
@@ -1347,7 +1447,13 @@ RESPONSE RULES
 
                 <!-- Quick Commands -->
                 <div class="ezra-quick-commands">
-                    ${EZRA_CONFIG.quickCommands.map(cmd => `
+                    ${EzraState._upsellMode ? UPSELL_QUICK_COMMANDS.map(cmd => `
+                        <button class="ezra-quick-btn ezra-upsell-cmd" data-action="upsell" title="${cmd.desc}" style="opacity:0.7;position:relative;">
+                            <span>${cmd.icon}</span>
+                            <span>${cmd.label}</span>
+                            <span style="position:absolute;top:-4px;right:-4px;font-size:7px;background:rgba(167,139,250,0.9);color:white;padding:1px 4px;border-radius:6px;white-space:nowrap;">${cmd.tier}+</span>
+                        </button>
+                    `).join('') : EZRA_CONFIG.quickCommands.map(cmd => `
                         <button class="ezra-quick-btn" data-action="${cmd.action}" title="${cmd.label}">
                             <span>${cmd.icon}</span>
                             <span>${cmd.label}</span>
@@ -1358,14 +1464,22 @@ RESPONSE RULES
                 <!-- Messages Area -->
                 <div id="ezra-messages" class="ezra-messages">
                     <div class="ezra-welcome" id="ezra-welcome">
-                        <div class="ezra-welcome-icon">\u2726</div>
+                        <div class="ezra-welcome-icon">${EzraState._upsellMode ? '\uD83D\uDD12' : '\u2726'}</div>
                         <h3>Hello, I'm Ezra</h3>
-                        <p>Your AI loan structuring co-pilot.</p>
+                        <p>${EzraState._upsellMode ? 'Your AI co-pilot is ready — upgrade to unlock.' : 'Your AI loan structuring co-pilot.'}</p>
                         <div class="ezra-welcome-capabilities">
+                            ${EzraState._upsellMode ? `
+                            <div class="ezra-welcome-cap"><span>\uD83D\uDE80</span> Build quotes in seconds</div>
+                            <div class="ezra-welcome-cap"><span>\uD83D\uDEE1\uFE0F</span> Smart objection handling</div>
+                            <div class="ezra-welcome-cap"><span>\u2709\uFE0F</span> Auto-draft SMS & emails</div>
+                            <div class="ezra-welcome-cap"><span>\u26A0\uFE0F</span> Compliance auto-check</div>
+                            <div style="margin-top:8px;text-align:center;font-size:11px;color:#a78bfa;">Upgrade to Titanium to unlock all features</div>
+                            ` : `
                             <div class="ezra-welcome-cap"><span>\u2726</span> Build & auto-fill quotes</div>
                             <div class="ezra-welcome-cap"><span>\u2726</span> Structure deals instantly</div>
                             <div class="ezra-welcome-cap"><span>\u2726</span> Recommend best program</div>
                             <div class="ezra-welcome-cap"><span>\u2726</span> Client scripts & coaching</div>
+                            `}
                         </div>
                         <!-- Onboarding Section for First-Time Users -->
                         <div class="ezra-onboarding" id="ezra-onboarding" style="display:none;">
@@ -1396,8 +1510,9 @@ RESPONSE RULES
                         <textarea
                             id="ezra-input"
                             class="ezra-input"
-                            placeholder="${EZRA_CONFIG.placeholderText}"
+                            placeholder="${EzraState._upsellMode ? 'Upgrade to Titanium to unlock Ezra AI...' : EZRA_CONFIG.placeholderText}"
                             rows="1"
+                            ${EzraState._upsellMode ? '' : ''}
                         ></textarea>
                         <button id="ezra-paste-rates" class="ezra-action-btn" title="Paste lender rates (Ctrl+A from Figure)">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -3586,6 +3701,18 @@ Would you like me to fill in the quote form with these details?`, { model: 'loca
 
         if ((!message && !attachment) || EzraState.isTyping) return;
 
+        // Upsell mode: always return promotional response
+        if (EzraState._upsellMode) {
+            input.value = '';
+            input.style.height = 'auto';
+            addMessage('user', message || 'Tell me more');
+            showTypingIndicator();
+            await new Promise(r => setTimeout(r, 600));
+            hideTypingIndicator();
+            addMessage('assistant', getUpsellResponse(), { model: 'local', intent: 'upsell' });
+            return;
+        }
+
         // Clear input and attachment
         input.value = '';
         input.style.height = 'auto';
@@ -4616,6 +4743,15 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         // Fall back to AI service for non-command queries
         const intent = determineIntent(message);
 
+        // ── INTENT TIER GATING — check if user has access to this feature ──
+        const requiredLevel = INTENT_TIER_MAP[intent];
+        if (requiredLevel !== undefined && window.currentUserRole !== 'super_admin') {
+            const currentLevel = tierLevels[(EzraState.userTier || 'carbon').toLowerCase()] || 0;
+            if (currentLevel < requiredLevel) {
+                return { content: getIntentUpgradeMessage(intent), metadata: { model: 'local', intent: 'tier_gate' } };
+            }
+        }
+
         // ── LOCAL-ONLY INTELLIGENCE FEATURES (no API cost) ──
         const ctx = getFormContext();
         const localIntents = {
@@ -5082,12 +5218,29 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
             })
         });
 
+        if (response.status === 429) {
+            const err = await response.json().catch(() => ({}));
+            // Token budget exceeded — update display and return friendly message
+            if (err.tokens_used !== undefined) {
+                EzraState._tokenBudget = { tokens_used: err.tokens_used, tokens_limit: err.tokens_limit, tier: err.tier };
+                updateTokenDisplay();
+            }
+            const nextTier = { carbon: 'Titanium', titanium: 'Platinum', platinum: 'Obsidian', obsidian: 'Diamond' };
+            const upgrade = nextTier[err.tier] || 'a higher tier';
+            return `\u26A0\uFE0F **Monthly AI token limit reached** (${(err.tokens_used || 0).toLocaleString()}/${(err.tokens_limit || 0).toLocaleString()})\n\nYou can still use **free local features**: Narrate Quote, Compare Scenarios, Draft Messages, Compliance Check, and Predict Questions.\n\nUpgrade to **${upgrade}** for more AI capacity.`;
+        }
+
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
             throw new Error(err.error || `AI proxy ${response.status}`);
         }
 
         const data = await response.json();
+        // Update token budget display after successful AI call
+        if (data.tokens_used !== undefined) {
+            EzraState._tokenBudget = { tokens_used: data.tokens_used, tokens_limit: data.tokens_limit, tier: data.tier };
+            updateTokenDisplay();
+        }
         return data.text || null;
     }
 
