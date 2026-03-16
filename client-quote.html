@@ -1921,9 +1921,9 @@
 
         .eq-panel {
             position: fixed;
-            width: 560px;
+            width: 420px;
             max-width: calc(100vw - 32px);
-            height: 500px;
+            height: 460px;
             max-height: calc(100vh - 120px);
             background: linear-gradient(135deg, #1e293b, #0f172a);
             border-radius: 12px;
@@ -11653,8 +11653,8 @@
                     var tn = parseInt(tier.tier);
                     var isRec = (tn === recTierNum);
                     var meta = tierMeta[tn] || tierMeta[2];
-                    html += '<th style="padding: ' + (isRec ? '22px' : '14px') + ' 16px 14px; text-align: center; font-family: var(--font-heading); font-size: 13px; background: ' + (isRec ? 'linear-gradient(135deg, ' + meta.color + ', ' + meta.color + 'cc)' : 'var(--primary-color)') + '; color: white; border-bottom: 2px solid rgba(255,255,255,0.1);' + (isRec ? ' position: relative; overflow: visible;' : '') + '">';
-                    if (isRec) html += '<span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent-color);color:#0f172a;font-size:9px;font-weight:800;padding:2px 10px;border-radius:10px;white-space:nowrap;z-index:2;">&#9733; ' + (t.tierRecommended || 'Recommended') + '</span>';
+                    html += '<th style="padding: 14px 16px; text-align: center; font-family: var(--font-heading); font-size: 13px; background: ' + (isRec ? 'linear-gradient(135deg, ' + meta.color + ', ' + meta.color + 'cc)' : 'var(--primary-color)') + '; color: white; border-bottom: 2px solid rgba(255,255,255,0.1);">';
+                    if (isRec) html += '<div style="background:var(--accent-color);color:#0f172a;font-size:9px;font-weight:800;padding:2px 10px;border-radius:10px;display:inline-block;margin-bottom:4px;white-space:nowrap;">&#9733; ' + (t.tierRecommended || 'Recommended') + '</div><br>';
                     html += (lang === 'es' ? 'Nivel ' : 'Tier ') + tier.tier;
                     html += '</th>';
                 });
