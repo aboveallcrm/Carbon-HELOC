@@ -12711,7 +12711,7 @@
                     var pmtStr = quoteData.payment || (isSpanish ? 'su pago cotizado' : 'your quoted payment');
                     var termStr = quoteData.term || '15';
                     var homeStr = '$' + Number(quoteData.homeValue || 0).toLocaleString();
-                    var loN = loInfo.name || (isSpanish ? 'su oficial de préstamos' : 'your loan officer');
+                    var loN = (loInfo.name ? esc(loInfo.name) : null) || (isSpanish ? 'su oficial de préstamos' : 'your loan officer');
                     var loP = loInfo.phone ? (isSpanish ? ' al ' : ' at ') + loInfo.phone : '';
 
                     // Spanish responses
@@ -13050,7 +13050,7 @@
                         .then(function (data) {
                             hideTyping(); isSending = false;
                             if (data.error) {
-                                addMsg('assistant', "I apologize, but I encountered an issue. " + (data.error === 'Rate limited. Please try again later.' ? "You've reached the daily message limit." : data.error) + " Please contact " + esc(loName) + (loInfo.phone ? " at " + esc(loInfo.phone) : "") + " directly.");
+                                addMsg('assistant', "I apologize, but I encountered an issue. " + (data.error === 'Rate limited. Please try again later.' ? "You've reached the daily message limit." : esc(data.error)) + " Please contact " + esc(loName) + (loInfo.phone ? " at " + esc(loInfo.phone) : "") + " directly.");
                             } else {
                                 addMsg('assistant', data.text || 'I received your message but had trouble generating a response. Please try again.');
                                 if (data.remainingMessages !== undefined && data.remainingMessages <= 5) {

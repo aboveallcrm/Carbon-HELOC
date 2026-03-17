@@ -28,6 +28,8 @@ try {
     window.impersonateUser = impersonateUser;
     window.isImpersonatedReadOnly = effectiveUser.isReadOnly || false;
     window._supabase = supabase; // Expose for Super Admin panel
+    window.SUPABASE_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co';
+    window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6emFidmZ6dXhocGRjb3dndmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjgwNTYsImV4cCI6MjA4NDc0NDA1Nn0.tFliE-x2Tz9ET3A38R4y7eSo6bUu-bYY47XkWeX1xHY';
     window._resetQuoteId = resetQuoteId;
     window._setQuoteId = setQuoteId;
 
@@ -133,7 +135,12 @@ try {
             // Show session expired banner instead of hard redirect
             const banner = document.createElement('div');
             banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ef4444;color:white;padding:12px;text-align:center;z-index:99999;font-family:var(--font-heading);font-size:13px;';
-            banner.innerHTML = '⚠️ Your session has expired. <a href="login.html" style="color:white;text-decoration:underline;font-weight:bold;">Click here to log in again</a>';
+            banner.textContent = '\u26A0\uFE0F Your session has expired. ';
+            const link = document.createElement('a');
+            link.href = 'login.html';
+            link.style.cssText = 'color:white;text-decoration:underline;font-weight:bold;';
+            link.textContent = 'Click here to log in again';
+            banner.appendChild(link);
             document.body.appendChild(banner);
         } else if (event === 'TOKEN_REFRESHED') {
             // Clear cache so next API call picks up fresh token
