@@ -8978,7 +8978,7 @@
                     // After the critical path (recommendation → rates → strategy), collapse lower sections
                     (function initShowMoreDivider() {
                         var collapsibleIds = [
-                            'sec-tier-compare', 'sec-what-if-tabs', 'sec-what-if-borrow', 'sec-what-if-payback',
+                            'sec-tier-compare',
                             'sec-prequal', 'sec-dti-calc', 'sec-doc-upload', 'sec-testimonials'
                         ];
                         // Find the first visible collapsible section to insert divider before it
@@ -9012,8 +9012,6 @@
                         window.expandMoreSections = function() {
                             hiddenSections.forEach(function(el) {
                                 if (el.dataset.wasVisible === 'true') {
-                                    // Restore: borrow shows, payback stays hidden (managed by tabs)
-                                    if (el.id === 'sec-what-if-payback') return;
                                     el.style.display = '';
                                 }
                             });
