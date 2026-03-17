@@ -262,8 +262,6 @@
             .fb-more-btn { display: flex; }
             .fb-extra { display: none !important; }
             .floating-bar { overflow: visible; flex-wrap: nowrap; }
-            /* On mobile: hide secondary buttons from main bar — they live in overflow menu */
-            .floating-bar > button.secondary:not(.fb-more-btn) { display: none !important; }
         }
 
         /* Modal Styles */
@@ -7230,10 +7228,9 @@
         var overflow = document.getElementById('fb-overflow');
         if (!overflow) return;
         if (overflow.style.display !== 'none') { overflow.style.display = 'none'; return; }
-        // Clone all secondary buttons into overflow (Ask Ezra + fb-extra items)
+        // Clone fb-extra buttons into overflow (not Ask Ezra — it stays in the bar)
         overflow.innerHTML = '';
-        document.querySelectorAll('.floating-bar > button.secondary:not(.fb-more-btn)').forEach(function(btn) {
-            if (btn.style.display === 'none' && !btn.id) return; // skip hidden conditional buttons without id
+        document.querySelectorAll('.floating-bar .fb-extra').forEach(function(btn) {
             var clone = btn.cloneNode(true);
             clone.classList.remove('fb-extra');
             clone.style.display = '';
