@@ -2994,6 +2994,36 @@
         .section-search:focus { border-color: var(--accent-color); }
         .section-search::placeholder { color: rgba(255,255,255,0.3); }
 
+        /* ===== PIPELINE VIEW TABS ===== */
+        .pipeline-tab {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6);
+            font-family: var(--font-heading);
+            font-size: 9px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .pipeline-tab:hover { background: rgba(255,255,255,0.1); color: white; }
+        .pipeline-tab.active {
+            background: linear-gradient(135deg, var(--accent-color), #d4a000);
+            color: #0f172a;
+            border-color: var(--accent-color);
+            font-weight: 700;
+        }
+        .refi-ready-badge {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 7px;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
         /* ===== BULK ACTION BAR ===== */
         .bulk-action-bar {
             display: none;
@@ -5757,6 +5787,22 @@
             <div class="control-section">
                 <h4 style="font-family: var(--font-heading); color: white; margin: 0 0 10px 0; font-size: 11px;">👥 My
                     Leads</h4>
+                <!-- Pipeline View Tabs -->
+                <div id="pipeline-tabs" style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;">
+                    <button class="pipeline-tab active" data-view="all" onclick="setPipelineView('all')">All <span id="ptab-all" style="opacity:0.5;font-size:8px;"></span></button>
+                    <button class="pipeline-tab" data-view="quoted" onclick="setPipelineView('quoted')">Quote Sent <span id="ptab-quoted" style="opacity:0.5;font-size:8px;"></span></button>
+                    <button class="pipeline-tab" data-view="in_process" onclick="setPipelineView('in_process')">In Process <span id="ptab-in_process" style="opacity:0.5;font-size:8px;"></span></button>
+                    <button class="pipeline-tab" data-view="funded" onclick="setPipelineView('funded')">Funded Clients <span id="ptab-funded" style="opacity:0.5;font-size:8px;"></span></button>
+                    <button class="pipeline-tab" data-view="reactivation" onclick="setPipelineView('reactivation')">Reactivation <span id="ptab-reactivation" style="opacity:0.5;font-size:8px;"></span></button>
+                    <button class="pipeline-tab" data-view="lost" onclick="setPipelineView('lost')">Lost <span id="ptab-lost" style="opacity:0.5;font-size:8px;"></span></button>
+                </div>
+                <!-- Reactivation bar — visible only in Funded view -->
+                <div id="reactivation-bar" style="display:none;background:linear-gradient(135deg,rgba(249,115,22,0.1),rgba(239,68,68,0.1));border:1px solid rgba(249,115,22,0.3);border-radius:8px;padding:8px 12px;margin-bottom:10px;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span style="font-size:9px;color:#fb923c;font-family:var(--font-heading);">REACTIVATION</span>
+                    <span id="refi-ready-count" style="font-size:9px;color:rgba(255,255,255,0.6);">0 leads 180+ days since funded</span>
+                    <button class="btn" style="background:#f97316;font-size:9px;padding:4px 12px;margin-left:auto;" onclick="bulkReactivate()">🔄 Reactivate Selected</button>
+                    <button class="btn" style="background:rgba(249,115,22,0.3);font-size:9px;padding:4px 12px;color:#fb923c;" onclick="bulkReactivateAll()">Reactivate All Refi-Ready</button>
+                </div>
                 <div style="display: flex; gap: 8px; margin-bottom: 10px; align-items: center; flex-wrap: wrap;">
                     <button class="btn"
                         style="background: linear-gradient(135deg, #10b981, #059669); font-size: 9px; padding: 5px 12px;"
@@ -6989,6 +7035,44 @@ Best regards,
                             sync (push leads TO Bonzo) and the "Sync Bonzo" button in MY LEADS.</p>
                         <button class="btn" style="background: #fb923c; margin-top: 8px;"
                             onclick="testBonzoConnection()">🔗 Test Bonzo Connection</button>
+
+                        <!-- Bonzo Pipeline Mapping -->
+                        <div id="bonzo-pipeline-config" style="margin-top: 16px; padding: 12px; background: rgba(251,146,60,0.05); border-radius: 8px; border: 1px solid rgba(251,146,60,0.2);">
+                            <h6 style="font-family: var(--font-heading); font-size: 9px; color: #fb923c; margin: 0 0 10px 0;">
+                                🔀 Pipeline Stage Mapping <span style="font-size: 7px; background: #fb923c; color: white; padding: 1px 6px; border-radius: 8px; margin-left: 6px;">OPTIONAL</span>
+                            </h6>
+                            <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 0 0 8px 0;">Map Carbon statuses to Bonzo pipeline stages. When you change a lead's status, the prospect moves to the mapped stage in Bonzo automatically.</p>
+                            <div class="input-group">
+                                <div class="input-field" style="flex: 2;">
+                                    <label>Bonzo Pipeline <span class="help-tip">?<span class="help-tip-text">Select which Bonzo pipeline to sync status changes to. Click "Fetch" to load your pipelines from Bonzo.</span></span></label>
+                                    <select id="bonzo-pipeline-select" style="font-size: 9px; background: rgba(0,0,0,0.3); border: 1px solid rgba(251,146,60,0.3); color: #fb923c; padding: 4px 6px; border-radius: 4px; width: 100%;">
+                                        <option value="">-- Click Fetch Pipelines --</option>
+                                    </select>
+                                </div>
+                                <button class="btn" style="background: #fb923c; font-size: 9px; align-self: flex-end; margin-bottom: 2px; padding: 4px 10px;" onclick="fetchBonzoPipelines()">Fetch Pipelines</button>
+                            </div>
+                            <div id="bonzo-stage-mapping" style="margin-top: 10px; display: none;">
+                                <p style="font-size: 8px; color: rgba(255,255,255,0.6); margin: 0 0 6px 0;">Map each Carbon status to a Bonzo pipeline stage:</p>
+                                <div id="bonzo-stage-map-rows" style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 9px;">
+                                    <!-- Dynamically populated by fetchBonzoPipelineStages() -->
+                                </div>
+                                <button class="btn" style="background: #fb923c; font-size: 9px; margin-top: 8px; padding: 4px 12px;" onclick="saveBonzoPipelineConfig()">Save Pipeline Mapping</button>
+                                <span id="bonzo-pipeline-save-status" style="font-size: 8px; color: #10b981; margin-left: 8px; display: none;">Saved!</span>
+                            </div>
+
+                            <!-- Reactivation Campaign -->
+                            <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(251,146,60,0.15);">
+                                <label style="font-size: 9px; color: rgba(255,255,255,0.7); display: block; margin-bottom: 4px;">Reactivation Campaign <span class="help-tip">?<span class="help-tip-text">Select a Bonzo campaign to automatically enroll funded clients into when they're ready for refinance (180+ days since funding). Click "Fetch" to load your campaigns.</span></span></label>
+                                <div class="input-group">
+                                    <div class="input-field" style="flex: 2;">
+                                        <select id="bonzo-reactivation-campaign" style="font-size: 9px; background: rgba(0,0,0,0.3); border: 1px solid rgba(251,146,60,0.3); color: #fb923c; padding: 4px 6px; border-radius: 4px; width: 100%;">
+                                            <option value="">-- Click Fetch Campaigns --</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn" style="background: #fb923c; font-size: 9px; align-self: flex-end; margin-bottom: 2px; padding: 4px 10px;" onclick="fetchBonzoCampaigns()">Fetch Campaigns</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- FUB (Follow Up Boss) -->
@@ -7542,6 +7626,35 @@ Best regards,
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Competitor Rates Config (Super Admin) -->
+                <div style="background: rgba(0,0,0,0.4); border-radius: 8px; padding: 15px; margin-top: 15px; border: 1px solid rgba(16,185,129,0.3);">
+                    <h5 style="font-family: var(--font-heading); color: #10b981; margin: 0 0 12px 0; font-size: 11px;">
+                        Competitor Rates (Client Comparison Table)</h5>
+                    <p style="font-size: 9px; color: rgba(255,255,255,0.5); margin: 0 0 10px;">
+                        These rates appear in the Ezra comparison table on client quote pages. Update when market rates shift.</p>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px;">
+                        <div>
+                            <label style="font-size: 8px; color: rgba(255,255,255,0.6); text-transform: uppercase; font-family: var(--font-heading);">Cash-Out Refi %</label>
+                            <input type="number" id="sa-cr-refi" step="0.125" min="1" max="15" value="6.875"
+                                style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(16,185,129,0.3);border-radius:4px;color:white;font-size:12px;margin-top:4px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 8px; color: rgba(255,255,255,0.6); text-transform: uppercase; font-family: var(--font-heading);">Personal Loan %</label>
+                            <input type="number" id="sa-cr-pl" step="0.5" min="5" max="30" value="12"
+                                style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(16,185,129,0.3);border-radius:4px;color:white;font-size:12px;margin-top:4px;">
+                        </div>
+                        <div>
+                            <label style="font-size: 8px; color: rgba(255,255,255,0.6); text-transform: uppercase; font-family: var(--font-heading);">Credit Card %</label>
+                            <input type="number" id="sa-cr-cc" step="0.5" min="10" max="40" value="24"
+                                style="width:100%;padding:6px;background:rgba(0,0,0,0.4);border:1px solid rgba(16,185,129,0.3);border-radius:4px;color:white;font-size:12px;margin-top:4px;">
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <button class="btn" style="background: #10b981; font-size: 10px;" onclick="saveCompetitorRates()">Save Rates</button>
+                        <span id="sa-cr-status" style="font-size:9px;color:rgba(255,255,255,0.4);"></span>
                     </div>
                 </div>
 
@@ -11249,7 +11362,7 @@ Best regards,
             initQuoteViewNotifications();
             // Auto-load users only for the verified Super Admin account
             if (isTrueSuperAdmin()) {
-                setTimeout(() => loadAllUsers(), 500);
+                setTimeout(() => { loadAllUsers(); loadCompetitorRates(); }, 500);
             }
             // Initialize onboarding wizard first, then walkthrough tour
             OnboardingWizard.init().then(function () {
@@ -11265,6 +11378,39 @@ Best regards,
                 }
             });
         });
+
+        // ===== COMPETITOR RATES CONFIG =====
+        async function loadCompetitorRates() {
+            var sb = window._supabase;
+            if (!sb) return;
+            var res = await sb.from('app_settings').select('value').eq('key', 'competitor_rates').maybeSingle();
+            if (res.data && res.data.value) {
+                try {
+                    var rates = JSON.parse(res.data.value);
+                    if (rates.cash_out_refi) document.getElementById('sa-cr-refi').value = rates.cash_out_refi;
+                    if (rates.personal_loan) document.getElementById('sa-cr-pl').value = rates.personal_loan;
+                    if (rates.credit_card) document.getElementById('sa-cr-cc').value = rates.credit_card;
+                } catch (e) {}
+            }
+        }
+        async function saveCompetitorRates() {
+            var sb = window._supabase;
+            if (!sb || !isTrueSuperAdmin()) return;
+            var statusEl = document.getElementById('sa-cr-status');
+            var val = JSON.stringify({
+                cash_out_refi: parseFloat(document.getElementById('sa-cr-refi').value) || 6.875,
+                personal_loan: parseFloat(document.getElementById('sa-cr-pl').value) || 12,
+                credit_card: parseFloat(document.getElementById('sa-cr-cc').value) || 24
+            });
+            var res = await sb.from('app_settings').upsert({ key: 'competitor_rates', value: val, description: 'National average competitor rates for comparison tables.', updated_at: new Date().toISOString() }, { onConflict: 'key' });
+            if (res.error) {
+                statusEl.textContent = 'Error: ' + res.error.message;
+                statusEl.style.color = '#ef4444';
+            } else {
+                statusEl.textContent = 'Saved ' + new Date().toLocaleTimeString();
+                statusEl.style.color = '#10b981';
+            }
+        }
 
         // ===== SUPER ADMIN FUNCTIONS =====
         async function loadAllUsers() {
@@ -16746,6 +16892,149 @@ Sent via Above All Carbon HELOC Tool`;
             }
         }
 
+        // ── Bonzo Pipeline Configuration ──────────────────────────
+        async function fetchBonzoPipelines() {
+            try {
+                showToast('Fetching Bonzo pipelines...', 'info', 2000);
+                var result = await _bonzoProxy('list_pipelines', {});
+                var pipelines = result.data || result;
+                if (!Array.isArray(pipelines)) pipelines = pipelines.data || [];
+                var sel = document.getElementById('bonzo-pipeline-select');
+                sel.innerHTML = '<option value="">-- Select Pipeline --</option>';
+                pipelines.forEach(function(p) {
+                    var opt = document.createElement('option');
+                    opt.value = p.id || p.uuid;
+                    opt.textContent = p.name || p.title || ('Pipeline ' + (p.id || p.uuid));
+                    sel.appendChild(opt);
+                });
+                // If we have a saved pipeline, pre-select it
+                var saved = await _getBonzoPipelineConfig();
+                if (saved && saved.bonzo_pipeline_id) {
+                    sel.value = saved.bonzo_pipeline_id;
+                    if (sel.value) fetchBonzoPipelineStages(sel.value);
+                }
+                sel.onchange = function() { if (sel.value) fetchBonzoPipelineStages(sel.value); };
+                showToast('Found ' + pipelines.length + ' pipeline(s)', 'success', 2000);
+            } catch (e) {
+                showToast('Error fetching pipelines: ' + e.message, 'error');
+            }
+        }
+
+        async function fetchBonzoPipelineStages(pipelineId) {
+            try {
+                var result = await _bonzoProxy('get_pipeline', { pipelineId: pipelineId });
+                var pipeline = result.data || result;
+                var stages = pipeline.stages || pipeline.pipeline_stages || [];
+                if (!Array.isArray(stages)) stages = [];
+
+                var container = document.getElementById('bonzo-stage-map-rows');
+                var wrapper = document.getElementById('bonzo-stage-mapping');
+                wrapper.style.display = 'block';
+
+                // Get saved config for pre-selection
+                var saved = await _getBonzoPipelineConfig();
+                var savedMap = (saved && saved.bonzo_stage_map) || {};
+
+                var carbonStatuses = ['new', 'contacted', 'qualified', 'quoted', 'application_sent', 'in_underwriting', 'approved', 'docs_out', 'funded', 'reactivation', 'on_hold', 'lost'];
+                container.innerHTML = '';
+                carbonStatuses.forEach(function(status) {
+                    var label = (CRM_STATUS_MAP[status] || {}).label || status;
+                    var row = document.createElement('div');
+                    row.style.cssText = 'display:contents;';
+                    row.innerHTML = '<span style="color:rgba(255,255,255,0.7);padding:3px 0;font-size:9px;">' + label + '</span>' +
+                        '<select data-carbon-status="' + status + '" style="font-size:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(251,146,60,0.2);color:#fb923c;padding:2px 4px;border-radius:3px;">' +
+                        '<option value="">-- Skip --</option>' +
+                        stages.map(function(s) {
+                            var sid = s.id || s.uuid;
+                            var sname = s.name || s.title || sid;
+                            var selected = savedMap[status] === String(sid) ? ' selected' : '';
+                            return '<option value="' + sid + '"' + selected + '>' + sname + '</option>';
+                        }).join('') +
+                        '</select>';
+                    container.appendChild(row);
+                });
+            } catch (e) {
+                showToast('Error fetching pipeline stages: ' + e.message, 'error');
+            }
+        }
+
+        async function saveBonzoPipelineConfig() {
+            var pipelineId = document.getElementById('bonzo-pipeline-select').value;
+            if (!pipelineId) { showToast('Select a pipeline first', 'warning'); return; }
+
+            var stageMap = {};
+            document.querySelectorAll('#bonzo-stage-map-rows select[data-carbon-status]').forEach(function(sel) {
+                if (sel.value) stageMap[sel.dataset.carbonStatus] = sel.value;
+            });
+
+            var campaignId = document.getElementById('bonzo-reactivation-campaign').value || '';
+
+            try {
+                var sb = window._supabase;
+                var userId = window.currentUserId;
+                // Save into user_integrations metadata under bonzo key
+                var { data: existing } = await sb.from('user_integrations').select('id, metadata').eq('user_id', userId).eq('provider', 'heloc_settings').single();
+                var meta = (existing && existing.metadata) || {};
+                if (!meta.bonzo) meta.bonzo = {};
+                meta.bonzo.bonzo_pipeline_id = pipelineId;
+                meta.bonzo.bonzo_stage_map = stageMap;
+                if (campaignId) meta.bonzo.bonzo_reactivation_campaign_id = campaignId;
+
+                if (existing) {
+                    await sb.from('user_integrations').update({ metadata: meta }).eq('id', existing.id);
+                } else {
+                    await sb.from('user_integrations').insert({ user_id: userId, provider: 'heloc_settings', metadata: meta, is_active: true });
+                }
+
+                var badge = document.getElementById('bonzo-pipeline-save-status');
+                badge.style.display = 'inline';
+                setTimeout(function() { badge.style.display = 'none'; }, 3000);
+                showToast('Bonzo pipeline mapping saved!', 'success');
+            } catch (e) {
+                showToast('Error saving config: ' + e.message, 'error');
+            }
+        }
+
+        async function fetchBonzoCampaigns() {
+            try {
+                showToast('Fetching Bonzo campaigns...', 'info', 2000);
+                var result = await _bonzoProxy('list_campaigns', {});
+                var campaigns = result.data || result;
+                if (!Array.isArray(campaigns)) campaigns = campaigns.data || [];
+                var sel = document.getElementById('bonzo-reactivation-campaign');
+                sel.innerHTML = '<option value="">-- None (disabled) --</option>';
+                campaigns.forEach(function(c) {
+                    var opt = document.createElement('option');
+                    opt.value = c.id || c.uuid;
+                    opt.textContent = c.name || c.title || ('Campaign ' + (c.id || c.uuid));
+                    sel.appendChild(opt);
+                });
+                // Pre-select saved campaign
+                var saved = await _getBonzoPipelineConfig();
+                if (saved && saved.bonzo_reactivation_campaign_id) {
+                    sel.value = saved.bonzo_reactivation_campaign_id;
+                }
+                showToast('Found ' + campaigns.length + ' campaign(s)', 'success', 2000);
+            } catch (e) {
+                showToast('Error fetching campaigns: ' + e.message, 'error');
+            }
+        }
+
+        async function _getBonzoPipelineConfig() {
+            try {
+                var sb = window._supabase;
+                var userId = window.currentUserId;
+                if (!sb || !userId) return null;
+                var { data } = await sb.from('user_integrations').select('metadata').eq('user_id', userId).in('provider', ['heloc_keys', 'heloc_settings']);
+                var config = null;
+                (data || []).forEach(function(r) {
+                    var m = r.metadata || {};
+                    if (m.bonzo && (m.bonzo.bonzo_pipeline_id || m.bonzo.bonzo_stage_map)) config = m.bonzo;
+                });
+                return config;
+            } catch (e) { return null; }
+        }
+
         async function testFUBConnection() {
             const apiKey = document.getElementById('fub-api-key').value;
             if (!apiKey) { showToast('Enter your Follow Up Boss API Key first.', 'warning'); return; }
@@ -18002,6 +18291,43 @@ Sent via Above All Carbon HELOC Tool`;
 
         // ===== MY LEADS =====
 
+        // Pipeline view state
+        var _pipelineView = 'all';
+        function setPipelineView(view) {
+            _pipelineView = view;
+            // Update active tab styling
+            document.querySelectorAll('.pipeline-tab').forEach(function(t) {
+                t.classList.toggle('active', t.getAttribute('data-view') === view);
+            });
+            // Show reactivation bar only in funded view
+            var reBar = document.getElementById('reactivation-bar');
+            if (reBar) reBar.style.display = (view === 'funded') ? 'flex' : 'none';
+            loadUserLeads();
+        }
+
+        // Update pipeline tab counts from unfiltered lead data
+        function updatePipelineTabCounts(leads) {
+            var counts = {
+                all: leads.filter(function(l) { return (l.status || '').toLowerCase() !== 'archived'; }).length,
+                quoted: leads.filter(function(l) { return (l.status || '').toLowerCase() === 'quoted'; }).length,
+                in_process: leads.filter(function(l) { var s = (l.status || '').toLowerCase(); return s === 'application_sent' || s === 'in_underwriting' || s === 'approved' || s === 'docs_out'; }).length,
+                funded: leads.filter(function(l) { return (l.status || '').toLowerCase() === 'funded'; }).length,
+                reactivation: leads.filter(function(l) { return (l.status || '').toLowerCase() === 'reactivation'; }).length,
+                lost: leads.filter(function(l) { return (l.status || '').toLowerCase() === 'lost'; }).length
+            };
+            Object.keys(counts).forEach(function(k) {
+                var el = document.getElementById('ptab-' + k);
+                if (el) el.innerText = '(' + counts[k] + ')';
+            });
+            // Update refi-ready count for funded view
+            var refiReady = leads.filter(function(l) {
+                return (l.status || '').toLowerCase() === 'funded' && l.funded_at &&
+                    Math.floor((Date.now() - new Date(l.funded_at).getTime()) / 86400000) >= 180;
+            }).length;
+            var refiEl = document.getElementById('refi-ready-count');
+            if (refiEl) refiEl.textContent = refiReady + ' lead' + (refiReady !== 1 ? 's' : '') + ' 180+ days since funded';
+        }
+
         // CRM Status Mapping — unified pipeline stages across Bonzo, GHL, and local
         var CRM_STATUS_MAP = {
             // Local status → { bonzo tag/stage, ghl pipeline status }
@@ -18015,7 +18341,9 @@ Sent via Above All Carbon HELOC Tool`;
             docs_out:         { label: 'Docs Out',       bonzo: 'docs_out',        ghl: 'won',    color: '#2dd4bf' },
             funded:           { label: 'Funded',         bonzo: 'funded',          ghl: 'won',    color: '#10b981' },
             on_hold:          { label: 'On Hold',        bonzo: 'on_hold',         ghl: 'open',   color: '#6b7280' },
-            lost:             { label: 'Lost',           bonzo: 'lost',            ghl: 'lost',   color: '#ef4444' }
+            lost:             { label: 'Lost',           bonzo: 'lost',            ghl: 'lost',   color: '#ef4444' },
+            reactivation:     { label: 'Reactivation',   bonzo: 'reactivation',    ghl: 'open',   color: '#f97316' },
+            archived:         { label: 'Archived',       bonzo: null,              ghl: null,      color: '#4b5563' }
         };
 
         // Reverse maps: CRM tag → local status
@@ -18113,11 +18441,34 @@ Sent via Above All Carbon HELOC Tool`;
                     return Object.assign({}, lead, { isQuoted: isQuoted });
                 });
 
-                // Update dashboard with unfiltered data
-                updateDashboard(allEnriched, allEnriched.filter(function (l) { return l.isQuoted; }).length);
+                // Exclude archived leads from all counts/views (unless specifically viewing archived)
+                var nonArchived = allEnriched.filter(function(l) { return (l.status || '').toLowerCase() !== 'archived'; });
 
-                // 4. Apply filters (status + source)
+                // Update dashboard with unfiltered (non-archived) data
+                updateDashboard(nonArchived, nonArchived.filter(function (l) { return l.isQuoted; }).length);
+
+                // Update pipeline tab counts
+                updatePipelineTabCounts(allEnriched);
+
+                // 4. Apply pipeline view filter first
                 var enriched = allEnriched;
+                var pv = _pipelineView || 'all';
+                if (pv === 'quoted') {
+                    enriched = enriched.filter(function(l) { return (l.status || '').toLowerCase() === 'quoted'; });
+                } else if (pv === 'in_process') {
+                    enriched = enriched.filter(function(l) { var s = (l.status || '').toLowerCase(); return s === 'application_sent' || s === 'in_underwriting' || s === 'approved' || s === 'docs_out'; });
+                } else if (pv === 'funded') {
+                    enriched = enriched.filter(function(l) { return (l.status || '').toLowerCase() === 'funded'; });
+                } else if (pv === 'reactivation') {
+                    enriched = enriched.filter(function(l) { return (l.status || '').toLowerCase() === 'reactivation'; });
+                } else if (pv === 'lost') {
+                    enriched = enriched.filter(function(l) { return (l.status || '').toLowerCase() === 'lost'; });
+                } else {
+                    // 'all' view — exclude archived
+                    enriched = enriched.filter(function(l) { return (l.status || '').toLowerCase() !== 'archived'; });
+                }
+
+                // Then apply secondary filters (status dropdown + source)
                 if (filter === 'quoted') {
                     enriched = enriched.filter(function (l) { return l.isQuoted; });
                 } else if (filter === 'not_quoted') {
@@ -18185,7 +18536,28 @@ Sent via Above All Carbon HELOC Tool`;
                     var src = escapeAttr(l.source || 'webhook');
                     var st = l.status || 'New';
                     var srcColor = sourceColors[src] || '#6b7280';
-                    var date = l.created_at ? new Date(l.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+                    // Smart date: show most relevant lifecycle date
+                    var dateLabel = 'Created';
+                    var dateColor = 'rgba(255,255,255,0.5)';
+                    var dateVal = l.created_at;
+                    var daysSince = '';
+                    if (l.funded_at) {
+                        dateLabel = 'Funded';
+                        dateVal = l.funded_at;
+                        dateColor = '#10b981';
+                        var ds = Math.floor((Date.now() - new Date(l.funded_at).getTime()) / 86400000);
+                        daysSince = ds + 'd';
+                        if (ds >= 180) dateColor = '#ef4444'; // refi ready
+                        else if (ds >= 90) dateColor = '#f59e0b'; // warming
+                    } else if (l.quote_sent_at) {
+                        dateLabel = 'Quoted';
+                        dateVal = l.quote_sent_at;
+                        dateColor = '#06b6d4';
+                    }
+                    var date = dateVal ? new Date(dateVal).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+                    var isRefiReady = l.funded_at && Math.floor((Date.now() - new Date(l.funded_at).getTime()) / 86400000) >= 180;
+                    var refiReadyBadge = isRefiReady ? ' <span class="refi-ready-badge">REFI READY</span>' : '';
+                    var reactivateBtn = (isRefiReady && (l.status || '').toLowerCase() === 'funded') ? '<button onclick="event.stopPropagation();startReactivation(\'' + safeId + '\')" title="Start reactivation campaign" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;opacity:0.5;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">🔄</button>' : '';
                     var safeId = escapeAttr(l.id);
                     var quotedBadge = l.isQuoted
                         ? '<span style="background:#10b981;color:white;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);">YES</span>'
@@ -18232,7 +18604,9 @@ Sent via Above All Carbon HELOC Tool`;
                         { val: 'docs_out', label: 'Docs Out', color: '#2dd4bf' },
                         { val: 'funded', label: 'Funded', color: '#10b981' },
                         { val: 'on_hold', label: 'On Hold', color: '#6b7280' },
-                        { val: 'lost', label: 'Lost', color: '#ef4444' }
+                        { val: 'lost', label: 'Lost', color: '#ef4444' },
+                        { val: 'reactivation', label: 'Reactivation', color: '#f97316' },
+                        { val: 'archived', label: 'Archived', color: '#4b5563' }
                     ];
                     var statusDropdown = '<select onchange="updateLeadStatus(\'' + safeId + '\', this.value)" onclick="event.stopPropagation()" style="background:rgba(0,0,0,0.4);color:white;border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:2px 4px;font-family:var(--font-heading);font-size:8px;cursor:pointer;">';
                     statusOpts.forEach(function(o) {
@@ -18256,10 +18630,10 @@ Sent via Above All Carbon HELOC Tool`;
                         '<td><span style="background:' + srcColor + ';color:white;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);text-transform:uppercase;">' + src + '</span></td>' +
                         '<td>' + statusDropdown + '</td>' +
                         '<td style="text-align:center;">' + quotedBadge + '</td>' +
-                        '<td style="color:rgba(255,255,255,0.5);font-size:9px;">' + date + '</td>' +
+                        '<td style="font-size:9px;"><span style="display:block;font-size:7px;color:rgba(255,255,255,0.35);">' + dateLabel + '</span><span style="color:' + dateColor + ';">' + date + (daysSince ? ' <span style="font-size:7px;opacity:0.6;">(' + daysSince + ')</span>' : '') + '</span>' + refiReadyBadge + '</td>' +
                         '<td style="text-align:center;">' + viewsBadge + '</td>' +
                         '<td style="text-align:center;">' + dncBadge + '</td>' +
-                        '<td style="text-align:center;"><button onclick="event.stopPropagation();deleteLead(\'' + safeId + '\')" title="Delete lead" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;opacity:0.4;transition:opacity 0.2s;" onmouseover="this.style.opacity=1;this.style.color=\'#ef4444\'" onmouseout="this.style.opacity=0.4;this.style.color=\'\'">🗑</button></td>' +
+                        '<td style="text-align:center;white-space:nowrap;">' + reactivateBtn + '<button onclick="event.stopPropagation();deleteLead(\'' + safeId + '\')" title="Archive lead" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;opacity:0.4;transition:opacity 0.2s;" onmouseover="this.style.opacity=1;this.style.color=\'#ef4444\'" onmouseout="this.style.opacity=0.4;this.style.color=\'\'">🗑</button></td>' +
                         '</tr>';
                 }).join('');
 
@@ -18350,6 +18724,9 @@ Sent via Above All Carbon HELOC Tool`;
                         console.debug('CRM status push failed:', e.message);
                     });
                 }
+
+                // Refresh table to show updated dates and tab counts
+                loadUserLeads();
             } catch (e) {
                 showToast('Error updating status: ' + e.message, 'error');
             }
@@ -18365,45 +18742,170 @@ Sent via Above All Carbon HELOC Tool`;
             var src = (lead.source || lead.crm_source || '').toLowerCase();
 
             if (src === 'bonzo' && mapping.bonzo) {
-                // Add tag to Bonzo prospect via bonzo-proxy
                 try {
-                    var sbUrl = window._supabase.supabaseUrl || 'https://czzabvfzuxhpdcowgvam.supabase.co';
-                    var resp = await fetch(sbUrl + '/functions/v1/bonzo-proxy', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (await sb.auth.getSession()).data.session.access_token },
-                        body: JSON.stringify({ action: 'add_tag', prospectId: lead.crm_contact_id, tag: mapping.bonzo })
-                    });
-                    if (resp.ok) console.debug('Bonzo tag added:', mapping.bonzo);
-                } catch (e) { console.debug('Bonzo tag push skipped:', e.message); }
+                    // 1. Always add tag (backward compat)
+                    await _bonzoProxy('add_tag', { prospectId: lead.crm_contact_id, tag: mapping.bonzo }).catch(function() {});
+                    console.debug('Bonzo tag added:', mapping.bonzo);
+
+                    // 2. Move pipeline stage if configured
+                    var bonzoConfig = await _getBonzoPipelineConfig();
+                    if (bonzoConfig && bonzoConfig.bonzo_pipeline_id && bonzoConfig.bonzo_stage_map) {
+                        var bonzoStageId = bonzoConfig.bonzo_stage_map[newStatus];
+                        if (bonzoStageId) {
+                            await _bonzoProxy('move_pipeline_stage', { prospectId: lead.crm_contact_id, pipelineStageId: bonzoStageId });
+                            console.debug('Bonzo pipeline stage moved:', newStatus, '→', bonzoStageId);
+                        }
+                    }
+                } catch (e) { console.debug('Bonzo status push skipped:', e.message); }
             }
 
             if (src === 'ghl' && mapping.ghl) {
-                // Update GHL opportunity status if pipeline is configured
+                // Update GHL opportunity status via API
                 try {
-                    var sbUrl = window._supabase.supabaseUrl || 'https://czzabvfzuxhpdcowgvam.supabase.co';
-                    var { data: intData } = await sb.from('user_integrations').select('metadata').eq('user_id', userId).in('provider', ['heloc_keys', 'heloc_settings']).limit(1);
-                    var meta = intData?.[0]?.metadata || {};
-                    var ghlKeys = meta.ghl || {};
-                    if (ghlKeys.apiKey && ghlKeys.pipelineId) {
-                        console.debug('GHL status update would set opportunity to:', mapping.ghl);
-                        // GHL opportunity status update would go here via GHL API
+                    var { data: intData } = await sb.from('user_integrations').select('metadata').eq('user_id', userId).in('provider', ['heloc_keys', 'heloc_settings']);
+                    var ghlConfig = null;
+                    (intData || []).forEach(function(r) {
+                        var m = r.metadata || {};
+                        if (m.ghl && m.ghl.apiKey) ghlConfig = m.ghl;
+                    });
+                    if (ghlConfig && ghlConfig.apiKey && ghlConfig.ghl_pipeline_id && ghlConfig.ghl_stage_map) {
+                        var stageId = ghlConfig.ghl_stage_map[newStatus];
+                        if (stageId) {
+                            // Find or use the lead's existing opportunity ID
+                            var oppId = lead.crm_pipeline_id; // stored from inbound webhook
+                            if (oppId) {
+                                var ghlResp = await fetch('https://services.leadconnectorhq.com/opportunities/' + oppId, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': 'Bearer ' + ghlConfig.apiKey,
+                                        'Version': '2021-07-28'
+                                    },
+                                    body: JSON.stringify({
+                                        pipelineId: ghlConfig.ghl_pipeline_id,
+                                        pipelineStageId: stageId,
+                                        status: mapping.ghl
+                                    })
+                                });
+                                if (ghlResp.ok) console.debug('GHL opportunity updated:', mapping.ghl, '→ stage', stageId);
+                                else console.debug('GHL update failed:', ghlResp.status);
+                            }
+                        }
                     }
                 } catch (e) { console.debug('GHL status push skipped:', e.message); }
             }
         }
 
-        // Delete a single lead
+        // Archive a lead (soft-delete — does NOT remove from CRM)
         async function deleteLead(leadId) {
-            if (!confirm('Delete this lead? This cannot be undone.')) return;
+            if (!confirm('Archive this lead? It will be hidden from your pipeline but NOT removed from your CRM.')) return;
             var sb = window._supabase;
             if (!sb) return;
             try {
-                var { error } = await sb.from('leads').delete().eq('id', leadId);
+                var { error } = await sb.from('leads').update({ status: 'archived' }).eq('id', leadId);
                 if (error) throw error;
-                showToast('Lead deleted', 'success');
+                showToast('Lead archived (CRM contact unchanged)', 'success');
                 loadUserLeads();
             } catch (e) {
-                showToast('Error deleting lead: ' + e.message, 'error');
+                showToast('Error archiving lead: ' + e.message, 'error');
+            }
+        }
+
+        // ── Reactivation System ──────────────────────────
+        async function startReactivation(leadId) {
+            var sb = window._supabase;
+            if (!sb) return;
+            try {
+                // Get lead details
+                var { data: lead, error: lErr } = await sb.from('leads').select('*').eq('id', leadId).single();
+                if (lErr || !lead) { showToast('Lead not found', 'error'); return; }
+
+                // Check for Bonzo reactivation campaign config
+                var bonzoConfig = await _getBonzoPipelineConfig();
+                var campaignId = bonzoConfig && bonzoConfig.bonzo_reactivation_campaign_id;
+                var src = (lead.source || lead.crm_source || '').toLowerCase();
+
+                var msg = 'Start reactivation for ' + (lead.first_name || 'this lead') + '?';
+                if (campaignId && src === 'bonzo' && lead.crm_contact_id) {
+                    msg += '\n\nThis will also enroll them in your Bonzo reactivation campaign.';
+                }
+                if (!confirm(msg)) return;
+
+                // Update status to reactivation
+                var { error } = await sb.from('leads').update({
+                    status: 'reactivation',
+                    notes: (lead.notes ? lead.notes + '\n' : '') + '[' + new Date().toISOString().slice(0, 10) + '] Reactivation started — ' + Math.floor((Date.now() - new Date(lead.funded_at).getTime()) / 86400000) + ' days since funded'
+                }).eq('id', leadId);
+                if (error) throw error;
+
+                // Push to CRM
+                await pushStatusToCRM(lead, 'reactivation');
+
+                // Enroll in Bonzo reactivation campaign if configured
+                if (campaignId && src === 'bonzo' && lead.crm_contact_id) {
+                    try {
+                        await _bonzoProxy('move_to_campaign', { prospectId: lead.crm_contact_id, campaignId: campaignId });
+                        showToast('Reactivation started + enrolled in Bonzo campaign', 'success', 4000);
+                    } catch (ce) {
+                        showToast('Status updated but Bonzo campaign failed: ' + ce.message, 'warning', 5000);
+                    }
+                } else {
+                    showToast('Reactivation started for ' + (lead.first_name || 'lead'), 'success');
+                }
+                loadUserLeads();
+            } catch (e) {
+                showToast('Reactivation error: ' + e.message, 'error');
+            }
+        }
+
+        async function bulkReactivate() {
+            var checkboxes = document.querySelectorAll('.lead-checkbox:checked');
+            if (!checkboxes.length) { showToast('Select leads to reactivate first', 'warning'); return; }
+            var ids = Array.from(checkboxes).map(function(cb) { return cb.dataset.leadId; });
+            if (!confirm('Start reactivation for ' + ids.length + ' selected lead(s)?')) return;
+            var ok = 0, fail = 0;
+            for (var i = 0; i < ids.length; i++) {
+                try { await _reactivateSingle(ids[i]); ok++; } catch (e) { fail++; }
+            }
+            showToast('Reactivated: ' + ok + (fail ? ', failed: ' + fail : ''), ok ? 'success' : 'error');
+            loadUserLeads();
+        }
+
+        async function bulkReactivateAll() {
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) return;
+            // Find all funded leads 180+ days
+            var cutoff = new Date(Date.now() - 180 * 86400000).toISOString();
+            var { data: leads } = await sb.from('leads').select('id, first_name').eq('user_id', userId).eq('status', 'funded').lt('funded_at', cutoff);
+            if (!leads || !leads.length) { showToast('No refi-ready leads found', 'info'); return; }
+            if (!confirm('Start reactivation for ALL ' + leads.length + ' refi-ready lead(s)?')) return;
+            var ok = 0, fail = 0;
+            for (var i = 0; i < leads.length; i++) {
+                try { await _reactivateSingle(leads[i].id); ok++; } catch (e) { fail++; }
+            }
+            showToast('Reactivated: ' + ok + (fail ? ', failed: ' + fail : ''), ok ? 'success' : 'error');
+            loadUserLeads();
+        }
+
+        async function _reactivateSingle(leadId) {
+            var sb = window._supabase;
+            var { data: lead, error: lErr } = await sb.from('leads').select('*').eq('id', leadId).single();
+            if (lErr || !lead) throw new Error('Lead not found');
+
+            await sb.from('leads').update({
+                status: 'reactivation',
+                notes: (lead.notes ? lead.notes + '\n' : '') + '[' + new Date().toISOString().slice(0, 10) + '] Bulk reactivation — ' + Math.floor((Date.now() - new Date(lead.funded_at).getTime()) / 86400000) + ' days since funded'
+            }).eq('id', leadId);
+
+            await pushStatusToCRM(lead, 'reactivation');
+
+            // Bonzo campaign enrollment
+            var bonzoConfig = await _getBonzoPipelineConfig();
+            var campaignId = bonzoConfig && bonzoConfig.bonzo_reactivation_campaign_id;
+            var src = (lead.source || lead.crm_source || '').toLowerCase();
+            if (campaignId && src === 'bonzo' && lead.crm_contact_id) {
+                await _bonzoProxy('move_to_campaign', { prospectId: lead.crm_contact_id, campaignId: campaignId }).catch(function() {});
             }
         }
 

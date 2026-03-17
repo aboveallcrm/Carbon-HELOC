@@ -3982,23 +3982,23 @@
             }
 
             .header {
-                padding: max(40px, env(safe-area-inset-top, 0) + 20px) 16px 28px;
+                padding: max(32px, env(safe-area-inset-top, 0) + 16px) 12px 16px;
             }
 
             .header h1 {
-                font-size: clamp(14px, 5vw, 20px);
-                letter-spacing: 1px;
+                font-size: clamp(13px, 4.5vw, 18px);
+                letter-spacing: 0.5px;
                 padding: 0 8px;
             }
 
             .header h1.dynamic-lender-name {
-                font-size: clamp(12px, 4vw, 18px);
+                font-size: clamp(11px, 3.5vw, 16px);
                 letter-spacing: 0.5px;
             }
 
             .header .subtitle {
-                font-size: 11px;
-                letter-spacing: 2px;
+                font-size: 10px;
+                letter-spacing: 1.5px;
             }
 
             .body-content {
@@ -4166,6 +4166,14 @@
                 max-height: calc(100vh - 200px);
                 border-radius: 12px;
                 padding-bottom: env(safe-area-inset-bottom, 0);
+            }
+
+            /* Compact Ezra during guided tour on mobile */
+            .eq-panel.eq-tour-compact {
+                height: 200px;
+                max-height: 200px;
+                bottom: 70px;
+                transition: height 0.3s ease;
             }
 
             .eq-panel-content {
@@ -7620,7 +7628,7 @@
                     <p style="margin-bottom: 20px; color: var(--slate); font-size: 14px;" data-i18n="prequalSubtitle">Answer a few quick questions to see if you pre-qualify:</p>
                     <div class="prequal-items" id="prequal-items">
                         <div class="prequal-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(0,0,0,0.08);">
-                            <span data-i18n="prequalCredit">Credit score 680+</span>
+                            <span data-i18n="prequalCredit">Credit score 640+</span>
                             <div class="prequal-buttons" style="display: flex; gap: 8px;">
                                 <button class="prequal-btn" data-q="credit" data-a="yes" style="padding: 8px 20px; border-radius: 20px; border: 2px solid #10b981; background: transparent; color: #10b981; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;">Yes</button>
                                 <button class="prequal-btn" data-q="credit" data-a="no" style="padding: 8px 20px; border-radius: 20px; border: 2px solid #ef4444; background: transparent; color: #ef4444; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;">No</button>
@@ -7678,7 +7686,7 @@
                         </div>
                         <div class="dti-info" style="flex: 1; min-width: 200px;">
                             <div class="dti-status" id="dti-status" style="display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 12px; background: #10b981; color: white;">Excellent</div>
-                            <p id="dti-message" style="font-size: 14px; color: var(--slate); line-height: 1.5;" data-i18n="dtiCalcResult">Your DTI looks great! Lenders typically prefer DTI under 43%.</p>
+                            <p id="dti-message" style="font-size: 14px; color: var(--slate); line-height: 1.5;" data-i18n="dtiCalcResult">Your DTI looks great! Lenders typically allow DTI up to 50%.</p>
                         </div>
                     </div>
                 </div>
@@ -8506,12 +8514,12 @@
                 prequalSubtitle: 'Let\'s make sure you\'re ready to apply',
                 prequalIncome: 'Income Verification',
                 prequalIncomeDesc: 'Recent pay stubs, W-2s, or tax returns',
-                prequalCredit: 'Credit Score',
+                prequalCredit: 'Credit score 640+',
                 prequalCreditDesc: '720+ for best rates',
                 prequalEquity: 'Home Equity',
                 prequalEquityDesc: 'At least 15-20% equity in your home',
                 prequalDti: 'Debt-to-Income Ratio',
-                prequalDtiDesc: 'Generally under 43%',
+                prequalDtiDesc: 'Generally up to 50%',
                 docUploadTitle: 'Document Upload',
                 docUploadSubtitle: 'Securely upload your documents',
                 docUploadId: 'Photo ID',
@@ -8615,12 +8623,12 @@
                 prequalSubtitle: 'Aseguremonos de que este listo para aplicar',
                 prequalIncome: 'Verificacion de Ingresos',
                 prequalIncomeDesc: 'Talones de pago recientes, W-2s o declaraciones de impuestos',
-                prequalCredit: 'Puntuacion de Credito',
+                prequalCredit: 'Puntaje de credito 640+',
                 prequalCreditDesc: '720+ para las mejores tasas',
                 prequalEquity: 'Equidad de la Vivienda',
                 prequalEquityDesc: 'Al menos 15-20% de equidad en su hogar',
                 prequalDti: 'Relacion Deuda-Ingreso',
-                prequalDtiDesc: 'Generalmente menos del 43%',
+                prequalDtiDesc: 'Generalmente hasta el 50%',
                 docUploadTitle: 'Subida de Documentos',
                 docUploadSubtitle: 'Suba sus documentos de forma segura',
                 docUploadId: 'Identificacion con Foto',
@@ -8816,6 +8824,14 @@
             /* quote loading — debug removed for production */
 
             var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            // Fetch admin-configurable competitor rates for comparison tables
+            window._competitorRates = { cash_out_refi: 6.875, personal_loan: 12, credit_card: 24 };
+            sb.from('app_settings').select('value').eq('key', 'competitor_rates').maybeSingle().then(function (r) {
+                if (r.data && r.data.value) {
+                    try { var parsed = JSON.parse(r.data.value); Object.assign(window._competitorRates, parsed); } catch (e) {}
+                }
+            });
 
             sb.from('quote_links').select('*').eq('code', code).maybeSingle().then(function (res) {
                 if (res.error) {
@@ -9634,8 +9650,11 @@
                     var rateVal = parseFloat(data.rate) || 7;
 
                     // 1. Savings Comparison (anchoring against credit cards & personal loans)
-                    var ccMinPayment = Math.round(cashVal * 0.03); // ~3% minimum payment on credit cards at ~24% APR
-                    var plPayment = Math.round((cashVal * (0.12 / 12) * Math.pow(1 + 0.12 / 12, 60)) / (Math.pow(1 + 0.12 / 12, 60) - 1)); // 12% personal loan 5yr
+                    var _cr = window._competitorRates || {};
+                    var _plR = (_cr.personal_loan || 12) / 100;
+                    var _ccR = _cr.credit_card || 24;
+                    var ccMinPayment = Math.round(cashVal * 0.03); // ~3% minimum payment on credit cards
+                    var plPayment = Math.round((cashVal * (_plR / 12) * Math.pow(1 + _plR / 12, 60)) / (Math.pow(1 + _plR / 12, 60) - 1));
                     var monthSavingsCC = Math.max(0, ccMinPayment - payVal);
                     var monthSavingsPL = Math.max(0, plPayment - payVal);
                     var yearSavingsCC = monthSavingsCC * 12;
@@ -9653,7 +9672,7 @@
                             '<div class="sc-savings-box">' +
                             '<div class="sc-savings-item"><div class="sc-big">$' + monthSavingsCC.toLocaleString() + '</div><div class="sc-sub">saved per month vs credit cards</div></div>' +
                             '<div class="sc-savings-item"><div class="sc-big">$' + yearSavingsCC.toLocaleString() + '</div><div class="sc-sub">saved per year</div></div>' +
-                            '<div class="sc-savings-item"><div class="sc-big">' + rateVal + '%</div><div class="sc-sub">your rate vs 24%+ credit cards</div></div>' +
+                            '<div class="sc-savings-item"><div class="sc-big">' + rateVal + '%</div><div class="sc-sub">your rate vs ' + _ccR + '%+ credit cards</div></div>' +
                             '</div>';
                     }
 
@@ -11543,17 +11562,17 @@
                 // Update color based on DTI
                 var color = '#10b981'; // Green (excellent)
                 var status = currentLanguage === 'es' ? 'Excelente' : 'Excellent';
-                var message = currentLanguage === 'es' ? 'Su DTI se ve excelente! Los prestamistas generalmente prefieren DTI menor al 43%.' : 'Your DTI looks great! Lenders typically prefer DTI under 43%.';
-                
-                if (dti > 43) {
+                var message = currentLanguage === 'es' ? 'Su DTI se ve excelente! Los prestamistas generalmente permiten DTI hasta el 50%.' : 'Your DTI looks great! Lenders typically allow DTI up to 50%.';
+
+                if (dti > 50) {
                     color = '#ef4444'; // Red (high)
                     status = currentLanguage === 'es' ? 'Alto' : 'High';
                     message = currentLanguage === 'es' ? 'Su DTI es alto. Podemos explorar opciones para reducir sus pagos mensuales.' : 'Your DTI is high. We can explore options to reduce your monthly payments.';
-                } else if (dti > 36) {
+                } else if (dti > 43) {
                     color = '#f59e0b'; // Yellow (fair)
                     status = currentLanguage === 'es' ? 'Aceptable' : 'Fair';
-                    message = currentLanguage === 'es' ? 'Su DTI es aceptable. Hay espacio para mejorar.' : 'Your DTI is acceptable. There\'s room for improvement.';
-                } else if (dti > 28) {
+                    message = currentLanguage === 'es' ? 'Su DTI es aceptable pero todavia califica.' : 'Your DTI is acceptable. You still qualify within our guidelines.';
+                } else if (dti > 36) {
                     color = '#3b82f6'; // Blue (good)
                     status = currentLanguage === 'es' ? 'Bueno' : 'Good';
                     message = currentLanguage === 'es' ? 'Buen DTI. Esta en buena posicion para aprobacion.' : 'Good DTI. You\'re in a good position for approval.';
@@ -12626,7 +12645,7 @@
                 function calculateSavings() {
                     var ccDebt = parseInt(document.getElementById('slider-cc')?.value) || 25000;
                     var ccRate = parseFloat(document.getElementById('slider-cc-rate')?.value) || 22;
-                    var helocRate = 7.5; // Assume average HELOC rate
+                    var helocRate = parseFloat(quoteData.rate) || 7.5;
                     
                     // Monthly interest savings
                     var ccMonthlyInterest = ccDebt * (ccRate / 100 / 12);
@@ -13506,6 +13525,11 @@
                 // ===== GUIDED TOUR ENGINE =====
                 function startTour() {
                     tourActive = true; tourStep = 0;
+                    // Compact Ezra on mobile so tour content is visible
+                    if (window.innerWidth < 768) {
+                        var panel = document.querySelector('.eq-panel');
+                        if (panel) panel.classList.add('eq-tour-compact');
+                    }
                     addMsg('assistant', "Let's walk through your quote together! I'll highlight each section and explain what it means for you.\n\n**Step 1 of " + tourSteps.length + "**: " + tourSteps[0].label);
                     renderChips(['Next step', 'End tour']);
                     highlightSection(tourSteps[0].target);
@@ -13541,13 +13565,17 @@
                     tourActive = false; tourStep = 0;
                     var hl = document.getElementById('eq-tour-hl');
                     if (hl) hl.style.display = 'none';
+                    // Restore Ezra panel from compact tour mode
+                    var panel = document.querySelector('.eq-panel');
+                    if (panel) panel.classList.remove('eq-tour-compact');
                 }
 
                 function highlightSection(selector) {
                     var target = document.querySelector(selector);
                     var hl = document.getElementById('eq-tour-hl');
                     if (!target || !hl) return;
-                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    var scrollBlock = (window.innerWidth < 768 && tourActive) ? 'start' : 'center';
+                    target.scrollIntoView({ behavior: 'smooth', block: scrollBlock });
                     setTimeout(function () {
                         var rect = target.getBoundingClientRect();
                         hl.style.display = 'block';
@@ -13710,13 +13738,14 @@
                     var helocPay = parseFloat(String(quoteData.payment || '').replace(/[$,\/mo]/g, '')) || 0;
                     var termYrs = parseInt(quoteData.term) || 15;
 
-                    // Calculate comparison products
-                    var cashRefiRate = helocRate + 1.5; // Typically higher
+                    // Calculate comparison products (rates from admin-configurable app_settings)
+                    var cr = window._competitorRates || {};
+                    var cashRefiRate = cr.cash_out_refi || 6.875;
                     var cashRefiPay = Math.round((cashVal * (cashRefiRate / 100 / 12) * Math.pow(1 + cashRefiRate / 100 / 12, 360)) / (Math.pow(1 + cashRefiRate / 100 / 12, 360) - 1));
                     var cashRefiClose = Math.round(cashVal * 0.03); // ~3% closing costs
-                    var plRate = 12; // Avg personal loan rate
+                    var plRate = cr.personal_loan || 12;
                     var plPay = Math.round((cashVal * (plRate / 100 / 12) * Math.pow(1 + plRate / 100 / 12, 60)) / (Math.pow(1 + plRate / 100 / 12, 60) - 1));
-                    var ccRate = 24; // Avg credit card APR
+                    var ccRate = cr.credit_card || 24;
                     var ccPay = Math.round(cashVal * 0.03); // Min payment ~3%
 
                     var table = '<table class="eq-compare-table">' +

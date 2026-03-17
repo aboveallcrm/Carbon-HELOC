@@ -192,6 +192,96 @@ serve(async (req: Request) => {
                 break
             }
 
+            case 'add_tag': {
+                // POST /v3/prospects/{prospect}/tags
+                const prospectId = body.prospectId || contactId
+                if (!prospectId) return jsonResponse({ error: 'Missing prospectId for add_tag' }, 400)
+                const tag = body.tag
+                if (!tag) return jsonResponse({ error: 'Missing tag for add_tag' }, 400)
+                bonzoUrl = `${BONZO_API}/prospects/${prospectId}/tags`
+                bonzoResp = await timedFetch(bonzoUrl, {
+                    method: 'POST',
+                    headers: bonzoHeaders,
+                    body: JSON.stringify({ name: tag }),
+                })
+                break
+            }
+
+            case 'list_pipelines': {
+                // GET /v3/pipelines
+                bonzoUrl = `${BONZO_API}/pipelines`
+                bonzoResp = await timedFetch(bonzoUrl, {
+                    method: 'GET',
+                    headers: bonzoHeaders,
+                })
+                break
+            }
+
+            case 'get_pipeline': {
+                // GET /v3/pipelines/fetch/{pipeline} — returns pipeline with stages
+                const pipelineId = body.pipelineId
+                if (!pipelineId) return jsonResponse({ error: 'Missing pipelineId' }, 400)
+                bonzoUrl = `${BONZO_API}/pipelines/fetch/${pipelineId}`
+                bonzoResp = await timedFetch(bonzoUrl, {
+                    method: 'GET',
+                    headers: bonzoHeaders,
+                })
+                break
+            }
+
+            case 'move_pipeline_stage': {
+                // POST /v3/prospects/{prospect}/pipeline-stage/{pipelineStage}
+                const prospId = body.prospectId || contactId
+                const stageId = body.pipelineStageId
+                if (!prospId) return jsonResponse({ error: 'Missing prospectId for move_pipeline_stage' }, 400)
+                if (!stageId) return jsonResponse({ error: 'Missing pipelineStageId' }, 400)
+                bonzoUrl = `${BONZO_API}/prospects/${prospId}/pipeline-stage/${stageId}`
+                bonzoResp = await timedFetch(bonzoUrl, {
+                    method: 'POST',
+                    headers: bonzoHeaders,
+                    body: JSON.stringify({}),
+                })
+                break
+            }
+
+            case 'move_to_campaign': {
+                // POST /v3/prospects/{prospect}/campaign/{campaign}
+                const prospectForCampaign = body.prospectId || contactId
+                const campaignId = body.campaignId
+                if (!prospectForCampaign) return jsonResponse({ error: 'Missing prospectId for move_to_campaign' }, 400)
+                if (!campaignId) return jsonResponse({ error: 'Missing campaignId' }, 400)
+                bonzoUrl = `${BONZO_API}/prospects/${prospectForCampaign}/campaign/${campaignId}`
+                bonzoResp = await timedFetch(bonzoUrl, {
+                    method: 'POST',
+                    headers: bonzoHeaders,
+                    body: JSON.stringify({}),
+                })
+                break
+            }
+
+            case 'list_custom_statuses': {
+                // GET /v3/prospects/custom-status
+                bonzoUrl = `${BONZO_API}/prospects/custom-status`
+                bonzoResp = await timedFetch(bonzoUrl, {
+                    method: 'GET',
+                    headers: bonzoHeaders,
+                })
+                break
+            }
+
+            case 'set_custom_status': {
+                // POST /v3/prospects/{prospect}/status
+                const prospForStatus = body.prospectId || contactId
+                if (!prospForStatus) return jsonResponse({ error: 'Missing prospectId for set_custom_status' }, 400)
+                bonzoUrl = `${BONZO_API}/prospects/${prospForStatus}/status`
+                bonzoResp = await timedFetch(bonzoUrl, {
+                    method: 'POST',
+                    headers: bonzoHeaders,
+                    body: JSON.stringify(payload || { status: body.status }),
+                })
+                break
+            }
+
             default:
                 return jsonResponse({ error: 'Unknown action: ' + action }, 400)
         }

@@ -161,7 +161,7 @@ async function handleContactDelete(supabase: any, payload: any) {
       sync_status: 'synced',
       updated_at: new Date().toISOString()
     })
-    .eq('external_id', contactId)
+    .eq('crm_contact_id', contactId)
     .eq('crm_source', 'ghl')
 
   if (error) throw error
@@ -178,7 +178,7 @@ async function handleOpportunityUpdate(supabase: any, payload: any) {
   const { data: lead, error: leadError } = await supabase
     .from('leads')
     .select('id, status')
-    .eq('external_id', contactId)
+    .eq('crm_contact_id', contactId)
     .eq('crm_source', 'ghl')
     .single()
 
@@ -191,7 +191,7 @@ async function handleOpportunityUpdate(supabase: any, payload: any) {
   const stageMapping: Record<string, string> = {
     'new': 'new',
     'contacted': 'contacted',
-    'quoted': 'quote_sent',
+    'quoted': 'quoted',
     'application': 'application_sent',
     'underwriting': 'in_underwriting',
     'approved': 'approved',

@@ -115,7 +115,7 @@ serve(async (req: Request) => {
             new_lead: 'new', contacted: 'contacted', qualified: 'qualified', quoted: 'quoted',
             app_submitted: 'application_sent', in_underwriting: 'in_underwriting',
             approved: 'approved', docs_out: 'docs_out', funded: 'funded',
-            on_hold: 'on_hold', lost: 'lost'
+            on_hold: 'on_hold', lost: 'lost', reactivation: 'reactivation'
         }
         const bonzoTags: string[] = Array.isArray(payload.tags)
             ? payload.tags.map((t: any) => typeof t === 'string' ? t.toLowerCase() : (t?.name || '').toLowerCase())
@@ -128,6 +128,47 @@ serve(async (req: Request) => {
         }
         // Event-based override
         if (bonzoEvent === 'prospect.lost' || bonzoEvent === 'lost') derivedStatus = 'lost'
+
+        // Pipeline stage change event — try to reverse-map stage to Carbon status
+        if (bonzoEvent === 'prospects.pipeline_stages.updated' || bonzoEvent === 'pipeline_stages.updated') {
+            const stageId = rawPayload.pipeline_stage_id || rawPayload.pipelineStageId || payload.pipeline_stage_id
+            const stageName = (rawPayload.pipeline_stage_name || rawPayload.stageName || payload.pipeline_stage_name || '').toLowerCase()
+            if (stageId && user_id) {
+                // Look up user's stage mapping to reverse-resolve Carbon status
+                const { data: intRows } = await supabaseAdmin
+                    .from('user_integrations').select('metadata')
+                    .eq('user_id', user_id).in('provider', ['heloc_keys', 'heloc_settings'])
+                let stageMap: Record<string, string> = {}
+                for (const row of (intRows || [])) {
+                    const bm = row.metadata?.bonzo?.bonzo_stage_map
+                    if (bm) stageMap = bm
+                }
+                // Reverse lookup: find Carbon status whose mapped stage matches inbound stageId
+                for (const [carbonStatus, mappedStageId] of Object.entries(stageMap)) {
+                    if (String(mappedStageId) === String(stageId)) { derivedStatus = carbonStatus; break }
+                }
+                // Fallback: match by stage name against bonzoStatusMap keys
+                if (derivedStatus === 'new' && stageName) {
+                    const nameMatch = bonzoStatusMap[stageName] || bonzoStatusMap[stageName.replace(/[\s-]/g, '_')]
+                    if (nameMatch) derivedStatus = nameMatch
+                }
+            }
+        }
+        // Campaign change event — if moved to reactivation campaign, set status
+        if (bonzoEvent === 'prospects.campaigns.updated' || bonzoEvent === 'campaigns.updated') {
+            const campaignId = rawPayload.campaign_id || rawPayload.campaignId || payload.campaign_id
+            if (campaignId && user_id) {
+                const { data: intRows } = await supabaseAdmin
+                    .from('user_integrations').select('metadata')
+                    .eq('user_id', user_id).in('provider', ['heloc_keys', 'heloc_settings'])
+                for (const row of (intRows || [])) {
+                    const reactivationCampaignId = row.metadata?.bonzo?.bonzo_reactivation_campaign_id
+                    if (reactivationCampaignId && String(reactivationCampaignId) === String(campaignId)) {
+                        derivedStatus = 'reactivation'
+                    }
+                }
+            }
+        }
 
         // Validate crm_source against allowed values
         const validCrmSources = ['manual', 'ghl', 'bonzo', 'csv', 'webhook', 'leadmailbox', 'zapier', 'n8n']
