@@ -8717,8 +8717,10 @@
                 stratEl.innerText = (lang === 'es' && window._strategyTextEs) ? window._strategyTextEs : window._strategyTextEn;
             }
 
-            // Store preference
-            localStorage.setItem('preferredLanguage', lang);
+            // Store preference per-quote (not global — prevents leaking to other clients)
+            var qCode = new URLSearchParams(window.location.search).get('id') || new URLSearchParams(window.location.search).get('code') || '';
+            if (qCode) localStorage.setItem('lang_' + qCode, lang);
+            localStorage.setItem('preferredLanguage', lang); // keep for backward compat
 
             // Show toast confirmation
             if (typeof showToast === 'function') {
@@ -8726,13 +8728,10 @@
             }
         };
         
-        // Auto-detect language on load
-        (function() {
-            var saved = localStorage.getItem('preferredLanguage');
-            if (saved && saved !== 'en') {
-                window.setLanguage(saved);
-            }
-        })();
+        // Language preference is per-quote — don't leak one client's setting to another
+        // The global 'preferredLanguage' key is legacy; ignore it on client pages.
+        // Per-quote key is set in setLanguage() and read after quote code is known (see below).
+        // Default: always start in English.
 
         (function () {
             var SUPABASE_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co';
@@ -8860,6 +8859,12 @@
                 window._quoteExpiry = link.expires_at || null;
                 renderQuote(link.quote_data, link.lo_info || {}, link.user_id, link.lead_id);
                 trackEvent('quote_opened', { code: code });
+
+                // Restore per-quote language preference (not global — avoids leaking between clients)
+                var savedLang = localStorage.getItem('lang_' + code);
+                if (savedLang && savedLang !== 'en' && typeof window.setLanguage === 'function') {
+                    window.setLanguage(savedLang);
+                }
 
                 // Determine LO tier for feature gating
                 var loTier = link.lo_tier || (link.lo_info && link.lo_info.tier) || 'carbon';
@@ -11389,14 +11394,12 @@
             // ===== MULTI-LANGUAGE SUPPORT =====
             // Default is English - only switch to Spanish if explicitly set
             function detectBrowserLanguage() {
-                var lang = navigator.language || navigator.userLanguage;
-                var primaryLang = lang.split('-')[0];
-                
                 // Always default to English first
                 window._ezraLanguage = 'en';
-                
-                // Only switch to Spanish if user has explicitly set it before
-                var savedPreference = localStorage.getItem('preferredLanguage');
+
+                // Use per-quote language key (not global 'preferredLanguage' which leaks between clients)
+                var qCode = new URLSearchParams(window.location.search).get('id') || new URLSearchParams(window.location.search).get('code') || '';
+                var savedPreference = qCode ? localStorage.getItem('lang_' + qCode) : null;
                 if (savedPreference === 'es') {
                     window._ezraLanguage = 'es';
                     if (typeof window.setLanguage === 'function') {
