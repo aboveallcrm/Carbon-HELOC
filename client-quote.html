@@ -7696,28 +7696,17 @@
             <div class="section reveal" id="sec-doc-upload" style="display: none;">
                 <div class="section-title" data-icon="&#128193;"><span data-i18n="docUploadTitle">Document Checklist</span></div>
                 <div class="doc-upload-container" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.02)); border-radius: 16px; padding: 24px; border: 1px solid rgba(245, 158, 11, 0.2);">
-                    <p style="margin-bottom: 20px; color: var(--slate); font-size: 14px;" data-i18n="docUploadSubtitle">Upload these documents to speed up your application:</p>
+                    <p style="margin-bottom: 20px; color: var(--slate); font-size: 14px;" data-i18n="docUploadSubtitle">Have these ready to speed up your application:</p>
                     <div class="doc-upload-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
                         <div class="doc-upload-item" style="background: white; border-radius: 12px; padding: 20px; border: 2px dashed rgba(197, 160, 89, 0.3); text-align: center; cursor: pointer; transition: all 0.2s;" onmouseenter="this.style.borderColor='var(--accent-color)';this.style.background='rgba(197,160,89,0.05)'" onmouseleave="this.style.borderColor='rgba(197,160,89,0.3)';this.style.background='white'">
                             <div style="font-size: 32px; margin-bottom: 8px;">&#128100;</div>
-                            <div style="font-weight: 600; font-size: 14px; color: var(--primary-color); margin-bottom: 4px;" data-i18n="docUploadId">Valid ID</div>
-                            <div style="font-size: 12px; color: var(--slate);">Driver's License, Passport, or State ID</div>
-                            <div class="florida-note" style="font-size: 11px; color: #f59e0b; margin-top: 8px; font-style: italic; display: none;">&#127758; Passports work best in Florida</div>
+                            <div style="font-weight: 600; font-size: 14px; color: var(--primary-color); margin-bottom: 4px;" data-i18n="docUploadId">Driver's License</div>
+                            <div style="font-size: 12px; color: var(--slate);">Current, unexpired driver's license</div>
                         </div>
                         <div class="doc-upload-item" style="background: white; border-radius: 12px; padding: 20px; border: 2px dashed rgba(197, 160, 89, 0.3); text-align: center; cursor: pointer; transition: all 0.2s;" onmouseenter="this.style.borderColor='var(--accent-color)';this.style.background='rgba(197,160,89,0.05)'" onmouseleave="this.style.borderColor='rgba(197,160,89,0.3)';this.style.background='white'">
-                            <div style="font-size: 32px; margin-bottom: 8px;">&#128196;</div>
-                            <div style="font-weight: 600; font-size: 14px; color: var(--primary-color); margin-bottom: 4px;" data-i18n="docUploadIncome">Income Proof</div>
-                            <div style="font-size: 12px; color: var(--slate);">Pay stubs, W-2s, or tax returns</div>
-                        </div>
-                        <div class="doc-upload-item" style="background: white; border-radius: 12px; padding: 20px; border: 2px dashed rgba(197, 160, 89, 0.3); text-align: center; cursor: pointer; transition: all 0.2s;" onmouseenter="this.style.borderColor='var(--accent-color)';this.style.background='rgba(197,160,89,0.05)'" onmouseleave="this.style.borderColor='rgba(197,160,89,0.3)';this.style.background='white'">
-                            <div style="font-size: 32px; margin-bottom: 8px;">&#127968;</div>
-                            <div style="font-weight: 600; font-size: 14px; color: var(--primary-color); margin-bottom: 4px;" data-i18n="docUploadInsurance">Insurance</div>
-                            <div style="font-size: 12px; color: var(--slate);">Homeowner's insurance declaration</div>
-                        </div>
-                        <div class="doc-upload-item" style="background: white; border-radius: 12px; padding: 20px; border: 2px dashed rgba(197, 160, 89, 0.3); text-align: center; cursor: pointer; transition: all 0.2s;" onmouseenter="this.style.borderColor='var(--accent-color)';this.style.background='rgba(197,160,89,0.05)'" onmouseleave="this.style.borderColor='rgba(197,160,89,0.3)';this.style.background='white'">
-                            <div style="font-size: 32px; margin-bottom: 8px;">&#128178;</div>
-                            <div style="font-weight: 600; font-size: 14px; color: var(--primary-color); margin-bottom: 4px;" data-i18n="docUploadMortgage">Mortgage Statement</div>
-                            <div style="font-size: 12px; color: var(--slate);">Most recent statement</div>
+                            <div style="font-size: 32px; margin-bottom: 8px;">&#128220;</div>
+                            <div style="font-weight: 600; font-size: 14px; color: var(--primary-color); margin-bottom: 4px;" data-i18n="docUploadTrust">Trust Documents (if applicable)</div>
+                            <div style="font-size: 12px; color: var(--slate);">If your property is held in a trust, we'll need the trust certificate. Let us know if it's a revocable or irrevocable trust.</div>
                         </div>
                     </div>
                     <div class="doc-upload-note" style="margin-top: 16px; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 8px; font-size: 12px; color: var(--slate); text-align: center;">
@@ -8342,7 +8331,8 @@
                         <div class="faq-answer">
                             <p>We've simplified the process! Most borrowers only need:</p>
                             <ul>
-                                <li>&#9989; <strong>Valid Photo ID</strong> (Driver's License, State ID, or Passport)</li>
+                                <li>&#9989; <strong>Valid Driver's License</strong> (current, unexpired)</li>
+                                <li>&#9989; <strong>Trust Documents</strong> (only if your property is held in a trust — we'll need the trust certificate and whether it's revocable or irrevocable)</li>
                             </ul>
                             <p>That's it! No bank statements. No pay stubs. No tax returns.</p>
                             <p><strong>How do we verify income?</strong> We use <strong>Plaid</strong> - the same bank-level secure system trusted by Venmo, Experian Boost, and thousands of financial apps. You securely connect your bank account, we verify your income instantly. You control what's shared, and it's encrypted end-to-end.</p>
@@ -8520,12 +8510,10 @@
                 prequalEquityDesc: 'At least 15-20% equity in your home',
                 prequalDti: 'Debt-to-Income Ratio',
                 prequalDtiDesc: 'Generally up to 50%',
-                docUploadTitle: 'Document Upload',
-                docUploadSubtitle: 'Securely upload your documents',
-                docUploadId: 'Photo ID',
-                docUploadIncome: 'Income Documents',
-                docUploadInsurance: 'Homeowners Insurance',
-                docUploadMortgage: 'Current Mortgage Statement',
+                docUploadTitle: 'Document Checklist',
+                docUploadSubtitle: 'Have these ready to speed up your application',
+                docUploadId: 'Driver\'s License',
+                docUploadTrust: 'Trust Documents (if applicable)',
                 tierCompareTitle: 'Compare All Tiers',
                 tierCompareSubtitle: 'Side-by-side comparison of your options',
                 tierFeature: 'Feature',
@@ -8629,12 +8617,10 @@
                 prequalEquityDesc: 'Al menos 15-20% de equidad en su hogar',
                 prequalDti: 'Relacion Deuda-Ingreso',
                 prequalDtiDesc: 'Generalmente hasta el 50%',
-                docUploadTitle: 'Subida de Documentos',
-                docUploadSubtitle: 'Suba sus documentos de forma segura',
-                docUploadId: 'Identificacion con Foto',
-                docUploadIncome: 'Documentos de Ingresos',
-                docUploadInsurance: 'Seguro de Propietario',
-                docUploadMortgage: 'Estado de Hipoteca Actual',
+                docUploadTitle: 'Lista de Documentos',
+                docUploadSubtitle: 'Tenga estos listos para acelerar su solicitud',
+                docUploadId: 'Licencia de Conducir',
+                docUploadTrust: 'Documentos del Fideicomiso (si aplica)',
                 tierCompareTitle: 'Compare Todos los Niveles',
                 tierCompareSubtitle: 'Comparacion lado a lado de sus opciones',
                 tierFeature: 'Caracteristica',
@@ -12858,6 +12844,16 @@
                                 "Y " + loN + " siempre está disponible" + loP + " si desea discutir algo más. ¡Que tenga un gran día!";
                         }
 
+                        // Documentos / que necesito
+                        if (/documento|que.*necesit|papeles|tramite|fideicomiso|trust/i.test(lower)) {
+                            return "¡Excelente pregunta, " + cn + "! Hemos simplificado el proceso.\n\n" +
+                                "Solo necesita:\n" +
+                                "- **Licencia de conducir** — vigente\n" +
+                                "- **Documentos del fideicomiso** — solo si su propiedad está en un fideicomiso (necesitamos el certificado y si es revocable o irrevocable)\n\n" +
+                                "¡Eso es todo! **Sin estados de cuenta, sin talones de pago, sin declaraciones de impuestos.** Verificamos ingresos digitalmente a través de Plaid — el mismo sistema seguro usado por Venmo y las principales aplicaciones financieras.\n\n" +
+                                "¿Listo para comenzar? ¡Toque **Avancemos**!";
+                        }
+
                         // No match — return null to send to API
                         return null;
                     }
@@ -12994,6 +12990,16 @@
                         return "You're welcome, " + cn + "! I'm glad I could help.\n\n" +
                             "Remember, you've got **" + cashStr + " in accessible equity** and a great rate locked in. When you're ready, the **Move Forward** button is right there for you.\n\n" +
                             "And " + loN + " is always available" + loP + " if you'd like to discuss anything further. Have a great day!";
+                    }
+
+                    // Documents / what do I need
+                    if (/document|what.*need|paperwork|paper.*work|bring|submit|upload|trust/i.test(lower)) {
+                        return "Great question, " + cn + "! We've streamlined the process to make it super simple.\n\n" +
+                            "You'll only need:\n" +
+                            "- **Driver's License** — current, unexpired\n" +
+                            "- **Trust Documents** — only if your property is held in a trust (we'll need the trust certificate and whether it's revocable or irrevocable)\n\n" +
+                            "That's it! **No bank statements, no pay stubs, no tax returns.** We verify income digitally through Plaid — the same secure system used by Venmo and major financial apps.\n\n" +
+                            "Ready to get started? Tap **Move Forward**!";
                     }
 
                     // No match — return null to send to API

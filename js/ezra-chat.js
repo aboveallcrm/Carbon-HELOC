@@ -884,6 +884,10 @@
 
             // ═══ GUIDELINES ═══
             { category: 'heloc_guidelines', title: 'CLTV Calculation', content: 'CLTV = (First Mortgage + HELOC) / Property Value. Most programs up to 85% CLTV for primary residences.' },
+            { category: 'heloc_guidelines', title: 'Credit Score Minimum', content: 'Minimum credit score for HELOC qualification is 640. Most programs accept 640+. Higher scores (700+) typically get better rates. The pre-qualification on the client page checks for 640+ as the minimum threshold.' },
+            { category: 'heloc_guidelines', title: 'DTI Requirements', content: 'Maximum DTI (Debt-to-Income) ratio accepted is 50%. DTI = Total Monthly Debt Payments / Gross Monthly Income. Under 36% is excellent, 36-43% is good, 43-50% is acceptable. Above 50% typically does not qualify.' },
+            { category: 'heloc_guidelines', title: 'Required Documents', content: 'Only two documents needed: 1) Valid driver\'s license (current, unexpired). 2) Trust documents IF the property is held in a trust — need trust certificate and whether it is revocable or irrevocable. Income is verified digitally via Plaid — no bank statements, pay stubs, or tax returns needed.' },
+            { category: 'heloc_guidelines', title: 'Trust Property Guidelines', content: 'If a property is vested in a trust, borrower must provide trust certificate and specify whether it is a revocable trust or irrevocable trust. Revocable trusts are more straightforward. Irrevocable trusts may require additional review. Always ask the client if their property is in a trust.' },
             { category: 'heloc_guidelines', title: 'Knowledge Authority Order', content: 'Priority: 1) Internal KB. 2) Product rules. 3) LO inputs. 4) General mortgage knowledge. Internal overrides external. Never invent programs.' }
         ],
 
