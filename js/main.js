@@ -154,4 +154,9 @@ try {
 
 } catch (e) {
     console.error("Integration module error:", e);
+    // Show user-facing error so the page doesn't silently break
+    var errBanner = document.createElement('div');
+    errBanner.style.cssText = 'position:fixed;top:0;left:0;right:0;padding:14px;background:#dc2626;color:white;text-align:center;z-index:99999;font-weight:600;font-size:14px;';
+    errBanner.textContent = 'Unable to connect. Please check your internet connection and refresh the page.';
+    document.body.appendChild(errBanner);
 }
