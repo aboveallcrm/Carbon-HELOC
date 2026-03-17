@@ -1,18 +1,17 @@
 // @ts-nocheck - Deno URL imports are resolved at runtime by Supabase
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
-
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-}
+import { getCorsHeaders } from "../_shared/cors.ts"
 
 // 1x1 transparent PNG pixel (base64)
 const PIXEL_B64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
 const PIXEL_BYTES = Uint8Array.from(atob(PIXEL_B64), c => c.charCodeAt(0))
 
 serve(async (req: Request) => {
+    // track-quote-view is embedded as a tracking pixel/POST in client-facing quote pages
+    // served from our known domains. Use shared CORS.
+    const corsHeaders = getCorsHeaders(req)
+
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: corsHeaders })

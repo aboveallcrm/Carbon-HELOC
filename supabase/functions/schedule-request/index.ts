@@ -1,12 +1,7 @@
 // @ts-nocheck - Deno URL imports are resolved at runtime by Supabase
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
-
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
+import { getCorsHeaders } from "../_shared/cors.ts"
 
 // Simple HTML template for email notifications
 const EMAIL_TEMPLATE = (data: any) => `
@@ -67,6 +62,8 @@ const SMS_TEMPLATE = (data: any) =>
     `🏠 Above All CRM: ${data.clientName} wants to ${data.requestType === 'call_me_now' ? 'talk NOW' : 'schedule a call'}! 📞 ${data.clientPhone} | Quote: ${data.quoteCode}`
 
 serve(async (req: Request) => {
+    const corsHeaders = getCorsHeaders(req)
+
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: corsHeaders })

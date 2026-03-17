@@ -5,18 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 const GMAIL_TOKEN_URL = "https://oauth2.googleapis.com/token"
 const GMAIL_SEND_URL = "https://gmail.googleapis.com/gmail/v1/users/me/messages/send"
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
-function jsonResponse(body: any, status = 200) {
-    return new Response(JSON.stringify(body), {
-        status,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-}
+import { getCorsHeaders } from "../_shared/cors.ts"
 
 /** Exchange authorization code for tokens (first-time connect) */
 async function exchangeCode(code: string, redirectUri: string, clientId: string, clientSecret: string) {
@@ -93,6 +82,15 @@ function buildRawEmail(to: string, subject: string, htmlBody: string, fromName: 
 }
 
 serve(async (req: Request) => {
+    const corsHeaders = getCorsHeaders(req)
+
+    function jsonResponse(body: any, status = 200) {
+        return new Response(JSON.stringify(body), {
+            status,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+    }
+
     if (req.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: corsHeaders })
     }

@@ -5,13 +5,11 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders } from "../_shared/cors.ts"
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -28,16 +26,16 @@ serve(async (req) => {
 
     switch (action) {
       case 'check_prequal':
-        return checkPrequalification(supabaseClient, prequalData, quoteData)
-      
+        return checkPrequalification(supabaseClient, prequalData, quoteData, corsHeaders)
+
       case 'submit_to_lender':
-        return submitToLender(supabaseClient, userId, leadId, quoteData, prequalData)
-      
+        return submitToLender(supabaseClient, userId, leadId, quoteData, prequalData, corsHeaders)
+
       case 'get_prequal_status':
-        return getPrequalStatus(supabaseClient, leadId)
-      
+        return getPrequalStatus(supabaseClient, leadId, corsHeaders)
+
       case 'eligibility_check':
-        return eligibilityCheck(prequalData, quoteData)
+        return eligibilityCheck(prequalData, quoteData, corsHeaders)
       
       default:
         return new Response(
@@ -55,7 +53,7 @@ serve(async (req) => {
   }
 })
 
-async function checkPrequalification(supabaseClient: any, prequalData: any, quoteData: any) {
+async function checkPrequalification(supabaseClient: any, prequalData: any, quoteData: any, corsHeaders: Record<string, string>) {
   try {
     // Calculate eligibility score
     const eligibility = calculateEligibility(prequalData, quoteData)
@@ -230,7 +228,7 @@ function generatePrequalRecommendations(score: number, factors: any[]) {
   return recommendations
 }
 
-async function submitToLender(supabaseClient: any, userId: string, leadId: string, quoteData: any, prequalData: any) {
+async function submitToLender(supabaseClient: any, userId: string, leadId: string, quoteData: any, prequalData: any, corsHeaders: Record<string, string>) {
   try {
     // This would integrate with actual lender APIs
     // For now, we simulate the submission
@@ -287,7 +285,7 @@ async function submitToLender(supabaseClient: any, userId: string, leadId: strin
   }
 }
 
-async function getPrequalStatus(supabaseClient: any, leadId: string) {
+async function getPrequalStatus(supabaseClient: any, leadId: string, corsHeaders: Record<string, string>) {
   try {
     const { data, error } = await supabaseClient
       .from('prequal_checks')
@@ -312,7 +310,7 @@ async function getPrequalStatus(supabaseClient: any, leadId: string) {
   }
 }
 
-function eligibilityCheck(prequalData: any, quoteData: any) {
+function eligibilityCheck(prequalData: any, quoteData: any, corsHeaders: Record<string, string>) {
   // Quick eligibility check without storing
   const eligibility = calculateEligibility(prequalData, quoteData)
   

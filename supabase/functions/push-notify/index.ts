@@ -1,12 +1,7 @@
 // @ts-nocheck - Deno URL imports are resolved at runtime by Supabase
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
-
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
+import { getCorsHeaders } from "../_shared/cors.ts"
 
 // Web Push implementation using native crypto
 // Based on VAPID protocol for web push notifications
@@ -187,6 +182,8 @@ async function encryptPayload(payload: object, keys: { p256dh: string, auth: str
 }
 
 serve(async (req: Request) => {
+    const corsHeaders = getCorsHeaders(req)
+
     if (req.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: corsHeaders })
     }

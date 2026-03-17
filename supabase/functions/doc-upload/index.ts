@@ -1,12 +1,7 @@
 // @ts-nocheck - Deno URL imports are resolved at runtime by Supabase
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
-
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
+import { getCorsHeaders } from "../_shared/cors.ts"
 
 const DOC_TYPE_LABELS: Record<string, string> = {
     photo_id: 'Photo ID',
@@ -62,6 +57,8 @@ const EMAIL_TEMPLATE = (data: any) => `
 `
 
 serve(async (req: Request) => {
+    const corsHeaders = getCorsHeaders(req)
+
     if (req.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: corsHeaders })
     }

@@ -5,13 +5,11 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { getCorsHeaders } from "../_shared/cors.ts"
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req)
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -28,13 +26,13 @@ serve(async (req) => {
 
     switch (action) {
       case 'calculate_from_credit_report':
-        return calculateFromCreditReport(supabaseClient, creditReportData, monthlyIncome, helocPayment)
-      
+        return calculateFromCreditReport(supabaseClient, creditReportData, monthlyIncome, helocPayment, corsHeaders)
+
       case 'store_credit_report':
-        return storeCreditReport(supabaseClient, userId, leadId, creditReportData)
-      
+        return storeCreditReport(supabaseClient, userId, leadId, creditReportData, corsHeaders)
+
       case 'get_dti_calculation':
-        return getDTICalculation(supabaseClient, quoteId)
+        return getDTICalculation(supabaseClient, quoteId, corsHeaders)
       
       default:
         return new Response(
@@ -52,7 +50,7 @@ serve(async (req) => {
   }
 })
 
-async function calculateFromCreditReport(supabaseClient: any, creditReportData: any, monthlyIncome: number, helocPayment: number) {
+async function calculateFromCreditReport(supabaseClient: any, creditReportData: any, monthlyIncome: number, helocPayment: number, corsHeaders: Record<string, string>) {
   try {
     // Extract debts from credit report
     const debts = extractDebtsFromCreditReport(creditReportData)
@@ -190,7 +188,7 @@ function generateDTIRecommendations(dti: number, debts: any[]) {
   return recommendations
 }
 
-async function storeCreditReport(supabaseClient: any, userId: string, leadId: string, creditReportData: any) {
+async function storeCreditReport(supabaseClient: any, userId: string, leadId: string, creditReportData: any, corsHeaders: Record<string, string>) {
   try {
     const { data, error } = await supabaseClient
       .from('credit_reports')
@@ -220,7 +218,7 @@ async function storeCreditReport(supabaseClient: any, userId: string, leadId: st
   }
 }
 
-async function getDTICalculation(supabaseClient: any, quoteId: string) {
+async function getDTICalculation(supabaseClient: any, quoteId: string, corsHeaders: Record<string, string>) {
   try {
     const { data, error } = await supabaseClient
       .from('dti_calculations')

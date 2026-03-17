@@ -5,11 +5,7 @@ const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 const ALERT_TO_EMAIL = Deno.env.get("ALERT_TO_EMAIL") || "";
 const FROM_EMAIL = Deno.env.get("RESEND_FROM_EMAIL") || "alerts@notifications.aboveallcrm.com";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 // HTML-escape user input to prevent XSS in email templates
 function esc(s: string): string {
@@ -17,6 +13,8 @@ function esc(s: string): string {
 }
 
 serve(async (req: Request) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }

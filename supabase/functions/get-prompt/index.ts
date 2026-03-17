@@ -1,21 +1,20 @@
 // @ts-nocheck - Deno URL imports are resolved at runtime by Supabase
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-}
-
-function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  })
-}
+import { getCorsHeaders } from "../_shared/cors.ts"
 
 serve(async (req: Request) => {
+  // get-prompt is public-facing (called by n8n bots, external integrations).
+  // Use shared CORS which covers known app origins; external callers don't send Origin headers.
+  const corsHeaders = getCorsHeaders(req)
+
+  function json(data: unknown, status = 200) {
+    return new Response(JSON.stringify(data), {
+      status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    })
+  }
+
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders })
   }
