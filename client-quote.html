@@ -118,7 +118,7 @@
             color: var(--font-color);
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
-            padding: 40px 20px 80px;
+            padding: 52px 20px 100px;
             line-height: 1.5;
         }
 
@@ -707,8 +707,8 @@
         }
 
         .val-block:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(15, 43, 76, 0.1);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 32px rgba(15, 43, 76, 0.1), 0 0 20px var(--accent-glow);
         }
 
         .val-block .val-label {
@@ -738,21 +738,12 @@
         .val-block.highlight .val-value {
             color: var(--accent-color);
             font-size: 24px;
+            animation: cash-pulse 2.5s ease-in-out infinite;
+            will-change: transform, opacity;
         }
 
         .val-block.highlight:hover {
             box-shadow: 0 12px 36px rgba(197, 160, 89, 0.2);
-        }
-
-        /* Micro-Interactions */
-        .val-block:hover {
-            transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 12px 32px rgba(15, 43, 76, 0.1), 0 0 20px var(--accent-glow);
-        }
-
-        .val-block.highlight .val-value {
-            animation: cash-pulse 2.5s ease-in-out infinite;
-            will-change: transform, opacity;
         }
 
         @keyframes cash-pulse {
@@ -4081,7 +4072,7 @@
 
             .rate-table {
                 font-size: 12px;
-                min-width: 420px;
+                min-width: 100%;
             }
 
             .rate-table th {
@@ -5404,7 +5395,7 @@
 
         body.theme-dark .faq-answer p,
         body.theme-dark .faq-answer li {
-            color: #94a3b8;
+            color: #cbd5e1;
         }
 
         body.theme-dark .faq-answer strong {
@@ -7365,7 +7356,7 @@
 
     <!-- Ezra Tour Modal -->
     <div id="ezraTourModal" class="modal-overlay" style="display: none; z-index: 5000;">
-        <div class="modal-box" style="max-width: 500px; max-height: 80vh; overflow-y: auto; padding: 0;">
+        <div class="modal-box" style="max-width: 480px; max-height: 80vh; overflow-y: auto; padding: 0;">
             <div style="padding: 20px; border-bottom: 1px solid rgba(197, 160, 89, 0.2); display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, rgba(197, 160, 89, 0.1), rgba(197, 160, 89, 0.05));">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <span style="font-size: 24px;">&#127919;</span>
@@ -7406,7 +7397,7 @@
 
     <div id="content" class="quote-page entering" style="display:none;">
         <!-- Language Toggle -->
-        <div id="languageToggle" style="position: absolute; top: 20px; right: 80px; z-index: 100;">
+        <div id="languageToggle" style="position: absolute; top: 20px; right: 16px; z-index: 100;">
             <button onclick="setLanguage('en')" id="langBtnEn" style="padding: 8px 12px; background-color: var(--accent-color); color: var(--bg-dark); border: none; border-radius: 4px 0 0 4px; cursor: pointer; font-weight: 600; font-family: var(--font-heading);">EN</button>
             <button onclick="setLanguage('es')" id="langBtnEs" style="padding: 8px 12px; background-color: rgba(255,255,255,0.1); color: var(--text-light); border: none; border-radius: 0 4px 4px 0; cursor: pointer; font-weight: 600; font-family: var(--font-heading);">ES</button>
         </div>
@@ -8822,7 +8813,7 @@
                 return; 
             }
 
-            console.log('Loading quote with code:', code);
+            /* quote loading — debug removed for production */
 
             var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -8844,7 +8835,7 @@
                     return;
                 }
                 var link = res.data;
-                console.log('Quote loaded successfully:', link);
+                /* quote loaded — debug removed for production */
                 
                 if (link.expires_at && new Date(link.expires_at) < new Date()) {
                     console.error('Quote expired:', link.expires_at);
@@ -8872,7 +8863,7 @@
                 var tierLevel = tierLevelMap[loTier] || 0;
                 window._loTier = loTier;
                 window._loTierLevel = tierLevel;
-                console.log('Client page tier gating:', loTier, '(level ' + tierLevel + ')');
+                /* tier gating — debug removed for production */
 
                 // Initialize visual enhancements
                 setTimeout(function () {
@@ -13295,7 +13286,7 @@
                 function initVoiceRecognition() {
                     var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                     if (!SpeechRecognition) {
-                        console.log('[Ezra] Voice recognition not supported');
+                        /* voice recognition not supported — silent fallback */
                         // Hide voice button if not supported
                         var voiceBtn = document.getElementById('eq-voice-btn');
                         if (voiceBtn) voiceBtn.style.display = 'none';
@@ -13881,7 +13872,7 @@
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
                 registrations.forEach(function(registration) {
                     registration.unregister().then(function() {
-                        console.log('[PWA] Service Worker unregistered for client quote page');
+                        /* SW unregistered */
                     });
                 });
             });
@@ -13890,7 +13881,7 @@
                 caches.keys().then(function(names) {
                     names.forEach(function(name) {
                         caches.delete(name);
-                        console.log('[PWA] Deleted cache:', name);
+                        /* cache cleared */
                     });
                 });
             }
