@@ -5035,11 +5035,14 @@
             style="background:linear-gradient(135deg,#10b981,#059669);" id="btn-send-quote">📲 Send</button>
         <button class="toolbar-btn" id="btn-notif-bell" onclick="toggleNotifPanel()" title="Quote view alerts" style="position:relative; background: transparent; border: 1px solid rgba(255,255,255,0.15); font-size: 14px; padding: 5px 10px;">🔔<span id="notif-badge" style="display:none; position:absolute; top:-4px; right:-4px; background:#ef4444; color:white; font-size:9px; font-weight:800; min-width:16px; height:16px; border-radius:8px; display:none; align-items:center; justify-content:center; font-family:var(--font-heading);">0</span></button>
         <span class="autosave-indicator" id="autosave-status">✓ Saved</span>
-        <button class="toolbar-btn-help" onclick="WalkthroughTour.restart()" title="Restart guided tour">❓ Tour</button>
-        <button class="toolbar-btn-help" onclick="InteractiveDemo.start()" title="Watch interactive demo">🎬
-            Demo</button>
-        <button class="toolbar-btn-help" onclick="OnboardingWizard.reopen()" title="Re-run setup wizard"
-            id="btn-rerun-setup" style="display:none;">🚀 Setup</button>
+        <div style="position:relative;display:inline-block;" id="help-dropdown-wrapper">
+            <button class="toolbar-btn-help" onclick="document.getElementById('help-dropdown-menu').style.display=document.getElementById('help-dropdown-menu').style.display==='block'?'none':'block'" title="Help & Guides">❓ Help</button>
+            <div id="help-dropdown-menu" style="display:none;position:absolute;top:100%;right:0;margin-top:4px;background:var(--primary-color);border:1px solid rgba(197,160,89,0.3);border-radius:8px;min-width:170px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.4);overflow:hidden;">
+                <button onclick="WalkthroughTour.restart();document.getElementById('help-dropdown-menu').style.display='none'" style="display:block;width:100%;text-align:left;padding:10px 14px;background:none;border:none;color:white;font-size:12px;font-family:var(--font-heading);cursor:pointer;" onmouseover="this.style.background='rgba(197,160,89,0.15)'" onmouseout="this.style.background='none'">❓ Guided Tour</button>
+                <button onclick="InteractiveDemo.start();document.getElementById('help-dropdown-menu').style.display='none'" style="display:block;width:100%;text-align:left;padding:10px 14px;background:none;border:none;color:white;font-size:12px;font-family:var(--font-heading);cursor:pointer;" onmouseover="this.style.background='rgba(197,160,89,0.15)'" onmouseout="this.style.background='none'">🎬 Watch Demo</button>
+                <button onclick="OnboardingWizard.reopen();document.getElementById('help-dropdown-menu').style.display='none'" id="btn-rerun-setup" style="display:block;width:100%;text-align:left;padding:10px 14px;background:none;border:none;color:white;font-size:12px;font-family:var(--font-heading);cursor:pointer;" onmouseover="this.style.background='rgba(197,160,89,0.15)'" onmouseout="this.style.background='none'">🚀 Re-run Setup</button>
+            </div>
+        </div>
         <span id="toolbar-user-info"
             style="display:none; font-family: var(--font-heading); font-size: 9px; color: rgba(255,255,255,0.6); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
         <button class="toolbar-btn" id="btn-logout"
@@ -5247,7 +5250,7 @@
                             placeholder="740"></div>
                     <div class="input-field"
                         style="background: rgba(197,160,89,0.2); border-radius: 5px; padding: 4px;">
-                        <label style="color: var(--accent-color);">Cash Back to Client ($) <span class="help-tip">?<span class="help-tip-text">The net amount the client receives after fees. This is the main number clients care about — it drives the total loan amount calculation.</span></span></label>
+                        <label style="color: var(--accent-color);">HELOC Amount ($) <span class="help-tip">?<span class="help-tip-text">How much does the client want to borrow? This is the net amount the client receives — it drives the total loan amount calculation.</span></span></label>
                         <input type="number" id="in-net-cash" value="200000"
                             style="font-weight: 700; color: var(--accent-color); border-color: var(--accent-color);">
                     </div>
@@ -5285,15 +5288,15 @@
                     </div>
                     <div class="toggle-container">
                         <div class="toggle-switch active" id="toggle-show-recommendation" onclick="toggleSwitch(this)">
-                        </div><span class="toggle-label">Show Recommendation</span>
+                        </div><span class="toggle-label">Show Recommendation <span class="help-tip">?<span class="help-tip-text">Highlights your recommended tier on the client's quote page with a gold badge.</span></span></span>
                     </div>
                     <div class="toggle-container">
                         <div class="toggle-switch" id="toggle-show-fees" onclick="toggleSwitch(this)"></div><span
-                            class="toggle-label">Show Fees</span>
+                            class="toggle-label">Show Fees <span class="help-tip">?<span class="help-tip-text">Displays origination fees and closing costs in the rate table on the client's quote page.</span></span></span>
                     </div>
                     <div class="toggle-container" id="disclaimer-toggle-container" style="display:none;">
                         <div class="toggle-switch active" id="toggle-show-disclaimer" onclick="toggleSwitch(this)">
-                        </div><span class="toggle-label">Show Disclaimer</span>
+                        </div><span class="toggle-label">Show Disclaimer <span class="help-tip">?<span class="help-tip-text">Shows a legal disclaimer at the bottom of the client's quote page.</span></span></span>
                     </div>
                 </div>
             </div>
@@ -7651,7 +7654,7 @@ Best regards,
                         <div class="block-value" id="out-heloc-payoff">$0</div>
                     </div>
                     <div class="data-block highlight">
-                        <div class="block-label">Cash Back to Client</div>
+                        <div class="block-label">HELOC Amount</div>
                         <div class="block-value gold" id="out-net-cash">$200,000</div>
                     </div>
                     <div class="data-block">
@@ -7911,7 +7914,7 @@ Best regards,
                     <div class="snapshot-row" id="snap-payoff-row" style="display: none;"><span
                             class="snap-label">Existing HELOC Payoff</span><span class="snap-value"
                             id="snap-heloc-payoff">$0</span></div>
-                    <div class="snapshot-row"><span class="snap-label">Cash Back to Client</span><span
+                    <div class="snapshot-row"><span class="snap-label">HELOC Amount</span><span
                             class="snap-value" id="snap-net-cash">$200,000</span></div>
                     <div class="snapshot-row"><span class="snap-label">Origination Points</span><span
                             class="snap-value"><span id="snap-orig-perc">2.99</span>% (<span
@@ -10207,8 +10210,8 @@ Best regards,
                 },
                 {
                     target: '#in-net-cash',
-                    title: 'Cash Back to Client',
-                    text: 'This is the most important number. It sets the HELOC draw amount your client receives. All rates, payments, and fees are calculated from this value.',
+                    title: 'HELOC Amount',
+                    text: 'How much does the client want to borrow? This sets the draw amount — all rates, payments, and fees are calculated from this value.',
                     position: 'top',
                     beforeShow: function () {
                         var el = document.getElementById('in-net-cash');
@@ -10545,7 +10548,7 @@ Best regards,
                     }
                 },
                 {
-                    title: 'Set the Cash Back Amount',
+                    title: 'Set the HELOC Amount',
                     icon: '💰',
                     text: 'This is the HELOC draw your client receives after closing. Every rate, payment, and fee in the proposal is calculated from this number. It\'s the anchor of the entire quote.',
                     target: '#in-net-cash',
@@ -14062,7 +14065,7 @@ Generate the sales strategy and phone script now.`;
 
 💰 LOAN DETAILS
 • HELOC Payoff: $${helocPayoff.toLocaleString()}
-• Cash Back to Client: $${cashBack.toLocaleString()}
+• HELOC Amount: $${cashBack.toLocaleString()}
 • Total Loan Amount: ${totalLoan}
 • Interest Rate: ${rate}%
 • Loan Term: ${term} Years
@@ -19420,6 +19423,12 @@ Sent via Above All Carbon HELOC Tool`;
             var bell = document.getElementById('btn-notif-bell');
             if (panel && panel.style.display !== 'none' && !panel.contains(e.target) && !bell.contains(e.target)) {
                 panel.style.display = 'none';
+            }
+            // Close help dropdown when clicking outside
+            var helpMenu = document.getElementById('help-dropdown-menu');
+            var helpWrap = document.getElementById('help-dropdown-wrapper');
+            if (helpMenu && helpMenu.style.display === 'block' && helpWrap && !helpWrap.contains(e.target)) {
+                helpMenu.style.display = 'none';
             }
         });
 
