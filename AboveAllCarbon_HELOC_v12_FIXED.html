@@ -16805,8 +16805,16 @@ Sent via Above All Carbon HELOC Tool`;
                 headers: headers,
                 body: JSON.stringify({ action: action, ...(opts || {}) })
             });
-            var data = await resp.json();
-            if (!resp.ok) throw new Error(data.error || 'Bonzo proxy error (' + resp.status + ')');
+            var text = await resp.text();
+            var data;
+            try { data = JSON.parse(text); } catch (e) { data = { error: text }; }
+            if (!resp.ok) {
+                // Distinguish JWT auth failure from Bonzo API errors
+                if (resp.status === 401 && (!data.error || data.error === 'Invalid or expired token' || text.includes('Invalid JWT'))) {
+                    throw new Error('Auth session expired — please log out and back in');
+                }
+                throw new Error(data.error || 'Bonzo proxy error (' + resp.status + ')');
+            }
             return data.data || data;
         }
 
@@ -16903,6 +16911,8 @@ Sent via Above All Carbon HELOC Tool`;
                 var msg = err.message || String(err);
                 if (msg.includes('No Bonzo API key configured')) {
                     showToast('Keys not saved yet — click "Save All Integration Settings" first, then test again.', 'warning', 5000);
+                } else if (msg.includes('Auth session expired')) {
+                    showToast('Session expired — please log out and back in, then try again.', 'error', 5000);
                 } else if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('Invalid')) {
                     showToast('❌ Bonzo API key is invalid or expired. Check your key in Bonzo settings.', 'error', 5000);
                 } else {

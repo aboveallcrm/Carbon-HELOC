@@ -5601,12 +5601,29 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         return buildDynamicResponse(message, intent, ctx);
     }
 
+    // Get a fresh access token, auto-refreshing if near expiry
+    async function getFreshToken() {
+        if (!EzraState.supabase) return null;
+        try {
+            const { data: { session } } = await EzraState.supabase.auth.getSession();
+            if (!session || !session.access_token) return null;
+            // If token expires within 60s, force refresh
+            if (session.expires_at) {
+                const expiresIn = session.expires_at - Math.floor(Date.now() / 1000);
+                if (expiresIn < 60) {
+                    const { data: refreshData } = await EzraState.supabase.auth.refreshSession();
+                    if (refreshData?.session?.access_token) return refreshData.session.access_token;
+                }
+            }
+            return session.access_token;
+        } catch (e) { return null; }
+    }
+
     // Call the ai-proxy Edge Function with provider cascade (cheapest first)
     async function callAIProxy(message, model, intent, contextSummary) {
         if (!EzraState.supabase) return null;
 
-        const session = await EzraState.supabase.auth.getSession();
-        const token = session?.data?.session?.access_token;
+        const token = await getFreshToken();
         if (!token) return null;
 
         const supabaseUrl = EzraState.supabase.supabaseUrl ||
@@ -5660,8 +5677,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
     async function callAIVisionProxy(imageBase64, imageMimeType, userMessage, intent) {
         if (!EzraState.supabase) return null;
 
-        const session = await EzraState.supabase.auth.getSession();
-        const token = session?.data?.session?.access_token;
+        const token = await getFreshToken();
         if (!token) return null;
 
         const supabaseUrl = EzraState.supabase.supabaseUrl ||
