@@ -5601,21 +5601,16 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         return buildDynamicResponse(message, intent, ctx);
     }
 
-    // Get a fresh access token, auto-refreshing if near expiry
+    // Get a fresh access token — always refreshes to avoid stale JWT 401s
     async function getFreshToken() {
         if (!EzraState.supabase) return null;
         try {
-            const { data: { session } } = await EzraState.supabase.auth.getSession();
-            if (!session || !session.access_token) return null;
-            // If token expires within 60s, force refresh
-            if (session.expires_at) {
-                const expiresIn = session.expires_at - Math.floor(Date.now() / 1000);
-                if (expiresIn < 60) {
-                    const { data: refreshData } = await EzraState.supabase.auth.refreshSession();
-                    if (refreshData?.session?.access_token) return refreshData.session.access_token;
-                }
-            }
-            return session.access_token;
+            // refreshSession() exchanges refresh token for a fresh access token
+            const { data } = await EzraState.supabase.auth.refreshSession();
+            if (data?.session?.access_token) return data.session.access_token;
+            // Fallback to cached session if refresh fails
+            const cached = await EzraState.supabase.auth.getSession();
+            return cached?.data?.session?.access_token || null;
         } catch (e) { return null; }
     }
 
