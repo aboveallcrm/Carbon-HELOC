@@ -3,12 +3,9 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { getWebhookCorsHeaders } from '../_shared/cors.ts'
 
-// CORS: wildcard required — this endpoint receives inbound webhooks from GHL servers (unknown origin)
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+const corsHeaders = getWebhookCorsHeaders()
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -48,7 +45,7 @@ serve(async (req) => {
         await handleOpportunityStatusChange(supabase, payload)
         break
       default:
-        console.log('Unhandled event type:', eventType)
+        // Unhandled event type — ignored
     }
 
     return new Response(
@@ -82,7 +79,7 @@ async function handleContactUpsert(supabase: any, payload: any) {
   ) || (integrations && integrations.length === 1 ? integrations[0] : null)
 
   if (!integration) {
-    console.log('No active GHL integration found for location:', locationId)
+    // No active GHL integration for this location
     return
   }
 
@@ -135,7 +132,7 @@ async function handleContactUpsert(supabase: any, payload: any) {
       .eq('id', existingLead.id)
 
     if (error) throw error
-    console.log('Updated lead from GHL:', existingLead.id)
+    // Lead updated from GHL
   } else {
     // Create new lead
     const { data: newLead, error } = await supabase
@@ -145,7 +142,7 @@ async function handleContactUpsert(supabase: any, payload: any) {
       .single()
 
     if (error) throw error
-    console.log('Created new lead from GHL:', newLead?.id)
+    // New lead created from GHL
   }
 }
 
@@ -165,7 +162,7 @@ async function handleContactDelete(supabase: any, payload: any) {
     .eq('crm_source', 'ghl')
 
   if (error) throw error
-  console.log('Soft-deleted lead (deleted in GHL):', contactId)
+  // Lead soft-deleted (deleted in GHL)
 }
 
 async function handleOpportunityUpdate(supabase: any, payload: any) {
@@ -183,7 +180,7 @@ async function handleOpportunityUpdate(supabase: any, payload: any) {
     .single()
 
   if (leadError || !lead) {
-    console.log('Lead not found for GHL opportunity:', contactId)
+    // Lead not found for GHL opportunity
     return
   }
 
@@ -215,7 +212,7 @@ async function handleOpportunityUpdate(supabase: any, payload: any) {
     .eq('id', lead.id)
 
   if (error) throw error
-  console.log('Updated lead status from GHL opportunity:', lead.id, '→', newStatus)
+  // Lead status updated from GHL opportunity
 }
 
 async function handleOpportunityStatusChange(supabase: any, payload: any) {

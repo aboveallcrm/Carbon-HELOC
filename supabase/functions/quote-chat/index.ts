@@ -425,7 +425,7 @@ serve(async (req: Request) => {
         const data = await resp.json();
         if (resp.ok) {
           responseText = extractText("gemini", data);
-          console.log("✅ Gemini (free tier) succeeded");
+          // Gemini succeeded
         } else {
           lastError = "Gemini: " + JSON.stringify(data).substring(0, 200);
         }
@@ -453,7 +453,7 @@ serve(async (req: Request) => {
         const data = await resp.json();
         if (resp.ok) {
           responseText = extractText("kimi", data);
-          console.log("✅ Kimi 8k ($0.50/M) succeeded");
+          // Kimi succeeded
         } else {
           lastError = "Kimi: " + JSON.stringify(data).substring(0, 200);
         }
@@ -481,7 +481,7 @@ serve(async (req: Request) => {
         const data = await resp.json();
         if (resp.ok) {
           responseText = extractText("groq", data);
-          console.log("✅ Groq ($0.10/M) succeeded");
+          // Groq succeeded
         } else {
           lastError = "Groq: " + JSON.stringify(data).substring(0, 200);
         }
@@ -509,7 +509,7 @@ serve(async (req: Request) => {
         const data = await resp.json();
         if (resp.ok) {
           responseText = extractText("deepseek", data);
-          console.log("✅ DeepSeek ($0.50/M) succeeded");
+          // DeepSeek succeeded
         } else {
           lastError = "DeepSeek: " + JSON.stringify(data).substring(0, 200);
         }
@@ -537,7 +537,7 @@ serve(async (req: Request) => {
         const data = await resp.json();
         if (resp.ok) {
           responseText = extractText("openai", data);
-          console.log("✅ OpenAI GPT-4o-mini ($0.60/M) succeeded");
+          // OpenAI succeeded
         } else {
           lastError = "OpenAI: " + JSON.stringify(data).substring(0, 200);
         }

@@ -39,7 +39,14 @@ serve(async (req: Request) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        // Verify the webhook token matches the user's stored token (optional)
+        // Verify the webhook token matches the user's stored token (mandatory)
+        if (!token) {
+            return new Response(
+                JSON.stringify({ error: 'Missing webhook token. Provide via ?token= or x-webhook-token header', v: 2 }),
+                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
         const { data: integration, error: webhookConfigErr } = await supabaseAdmin
             .from('user_integrations')
             .select('metadata')
@@ -48,8 +55,13 @@ serve(async (req: Request) => {
             .maybeSingle()
 
         const storedToken = integration?.metadata?.webhook_token
-        // Reject if a token is configured but the request has wrong/missing token
-        if (storedToken && storedToken !== token) {
+        if (!storedToken) {
+            return new Response(
+                JSON.stringify({ error: 'No webhook token configured for this user. Set one in Settings > Integrations.', v: 2 }),
+                { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+        if (storedToken !== token) {
             return new Response(
                 JSON.stringify({ error: 'Invalid webhook token', v: 2 }),
                 { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

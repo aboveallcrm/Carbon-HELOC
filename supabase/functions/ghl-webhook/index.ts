@@ -1,11 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
+import { getWebhookCorsHeaders } from "../_shared/cors.ts"
 
-// CORS: wildcard required — this endpoint receives inbound webhooks from GHL servers (unknown origin)
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+const corsHeaders = getWebhookCorsHeaders()
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {

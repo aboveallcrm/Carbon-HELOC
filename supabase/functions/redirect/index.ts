@@ -1,13 +1,9 @@
 // @ts-nocheck - Deno URL imports are resolved at runtime by Supabase
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { getWebhookCorsHeaders } from "../_shared/cors.ts"
 
-// CORS: wildcard required — redirect links are opened directly by end-users in any browser/context
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-}
+const corsHeaders = getWebhookCorsHeaders()
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
