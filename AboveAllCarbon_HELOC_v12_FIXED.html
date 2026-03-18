@@ -6691,7 +6691,7 @@ Best regards,
                         🟢 GoHighLevel (GHL)</h5>
                     <div class="input-group">
                         <div class="input-field" style="flex: 2;"><label>API Key (Private Integration) <span class="help-tip">?<span class="help-tip-text">Found in GHL → Settings → Integrations → Private Integrations. Starts with "pit-". Needed to push leads and contacts to GHL.</span></span></label><input
-                                type="password" id="ghl-api-key" placeholder="pit-xxxxxxxx-xxxx-xxxx"></div>
+                                type="password" id="ghl-api-key" autocomplete="off" placeholder="pit-xxxxxxxx-xxxx-xxxx"></div>
                         <div class="input-field"><label>Location ID <span class="help-tip">?<span class="help-tip-text">Your GHL sub-account location ID. Found in the URL when inside your GHL sub-account (the long string after /location/).</span></span></label><input type="password" id="ghl-location-id"
                                 placeholder="xxxxxxxx"></div>
                     </div>
@@ -6829,7 +6829,7 @@ Best regards,
                     <div class="input-group">
                         <div class="input-field" style="flex: 2;"><label>Webhook URL <span class="help-tip">?<span class="help-tip-text">Your n8n webhook trigger URL. Create a Webhook node in n8n, copy the Production URL, and paste it here. Events like new quotes or leads will POST here.</span></span></label><input type="password"
                                 id="n8n-webhook-url" placeholder="https://your-n8n.com/webhook/..."></div>
-                        <div class="input-field"><label>Auth Header <span class="help-tip">?<span class="help-tip-text">Optional Bearer token or API key for securing your n8n webhook. Add the same value in your n8n Webhook node's Header Auth settings.</span></span></label><input type="password" id="n8n-auth"
+                        <div class="input-field"><label>Auth Header <span class="help-tip">?<span class="help-tip-text">Optional Bearer token or API key for securing your n8n webhook. Add the same value in your n8n Webhook node's Header Auth settings.</span></span></label><input type="password" id="n8n-auth" autocomplete="off"
                                 placeholder="Bearer token or API key"></div>
                     </div>
                     <button class="btn" style="background: #f97316; margin-top: 10px;" onclick="testN8NConnection()">🔗
@@ -6841,7 +6841,7 @@ Best regards,
                         📍 Radar.io Address Autocomplete (Optional)</h5>
                     <div class="input-group">
                         <div class="input-field" style="flex: 2;"><label>Radar API Key</label><input type="password"
-                                id="radar-api-key" placeholder="prj_live_pk_xxxxxxxx"></div>
+                                id="radar-api-key" autocomplete="off" placeholder="prj_live_pk_xxxxxxxx"></div>
                     </div>
                     <p style="font-size: 9px; color: rgba(255,255,255,0.5); margin: 8px 0 0 0;">Get a free key at <a
                             href="https://radar.com" target="_blank" style="color: #06b6d4;">radar.com</a> - enables
@@ -6925,7 +6925,7 @@ Best regards,
                         <div class="input-field" style="flex: 2;">
                             <label>HeyGen API Key <span class="help-tip">?<span class="help-tip-text">Your HeyGen API
                                         key from Settings → API Keys in the HeyGen dashboard.</span></span></label>
-                            <input type="password" id="heygen-api-key" placeholder="sk-heygen-xxxxxxxx">
+                            <input type="password" id="heygen-api-key" autocomplete="off" placeholder="sk-heygen-xxxxxxxx">
                         </div>
                     </div>
                     <div class="input-group" style="margin-top: 8px;">
@@ -7013,9 +7013,9 @@ Best regards,
                             🟠 Bonzo CRM (Two-Way Sync)</h6>
                         <div class="input-group">
                             <div class="input-field" style="flex: 2;"><label>Bonzo Xcode <span class="help-tip">?<span class="help-tip-text">Your Bonzo Xcode key. Found in Bonzo → Settings → API / Integrations → Xcode. This is NOT the same as the API Key — both are required.</span></span></label><input type="password"
-                                    id="bonzo-api-key" placeholder="Your Bonzo Xcode key"></div>
+                                    id="bonzo-api-key" autocomplete="off" placeholder="Your Bonzo Xcode key"></div>
                             <div class="input-field" style="flex: 2;"><label>Bonzo API Key <span class="help-tip">?<span class="help-tip-text">Your Bonzo API Key (separate from Xcode). Found on the same settings page but in a different section. Used for the "Sync Bonzo" bulk import in My Leads.</span></span></label><input type="password"
-                                    id="bonzo-api-key-2" placeholder="Your Bonzo API key (different from Xcode)">
+                                    id="bonzo-api-key-2" autocomplete="off" placeholder="Your Bonzo API key (different from Xcode)">
                             </div>
                         </div>
                         <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 4px 0 0 0;">Find your <b style="color:#fb923c;">Xcode</b> in Bonzo → Settings → API / Integrations → Xcode. The <b style="color:#fb923c;">API Key</b> is a separate key from the same page. Both are required for full sync.</p>
@@ -7083,7 +7083,7 @@ Best regards,
                             🔵 Follow Up Boss (Optional)</h6>
                         <div class="input-group">
                             <div class="input-field" style="flex: 2;"><label>FUB API Key <span class="help-tip">?<span class="help-tip-text">Your Follow Up Boss API key. Found in FUB → Admin → API. Enables two-way lead sync with Follow Up Boss CRM.</span></span></label><input type="password"
-                                    id="fub-api-key" placeholder="Your Follow Up Boss API key"></div>
+                                    id="fub-api-key" autocomplete="off" placeholder="Your Follow Up Boss API key"></div>
                         </div>
                         <button class="btn" style="background: #38bdf8; margin-top: 8px;"
                             onclick="testFUBConnection()">🔗 Test Connection</button>
@@ -8160,6 +8160,39 @@ Best regards,
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script defer src="./js/link-shortener-universal.js"></script>
     <script>
+        // ===== GLOBAL ERROR HANDLERS =====
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+            if (typeof showToast === 'function') {
+                showToast('Something went wrong. Please try again.', 'error');
+            }
+            event.preventDefault();
+        });
+        window.onerror = function(msg, url, line, col, error) {
+            console.error('Global error:', msg, 'at line', line);
+            if (typeof showToast === 'function') {
+                showToast('Something went wrong. Please try again.', 'error');
+            }
+            return true;
+        };
+
+        // ===== UTILITY HELPERS =====
+        // Safe auth header helper — validates session before returning
+        async function getAuthHeaders() {
+            if (!window._supabase) return null;
+            try {
+                const { data: { session } } = await window._supabase.auth.getSession();
+                if (!session || !session.access_token) return null;
+                return { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' };
+            } catch (e) { return null; }
+        }
+
+        // Safe JSON parse — never throws, returns fallback on error
+        function safeParse(str, fallback) {
+            if (!str) return fallback !== undefined ? fallback : null;
+            try { return JSON.parse(str); } catch (e) { return fallback !== undefined ? fallback : null; }
+        }
+
         // ===== GLOBALS =====
         let isInterestOnly = false;
         let manualRatesEnabled = false;
@@ -8474,18 +8507,15 @@ Best regards,
         }
 
         // ===== ROLE-BASED ACCESS CONTROL =====
-        // Super Admin is locked to this specific account — no other super_admin sees the panel
-        const SUPER_ADMIN_EMAIL = 'barraganmortgage@gmail.com';
-        const SUPER_ADMIN_UUID = '795aea13-6aba-45f2-97d4-04576f684557';
+        // Role is set from Supabase profiles table via auth.js → main.js
+        // Actual data security enforced by RLS policies on Supabase (not client-side checks)
 
         // Shared tier color palette (single source of truth)
         const TIER_COLORS = { carbon: '#6b7280', titanium: '#94a3b8', platinum: '#a78bfa', obsidian: '#334155', diamond: '#06b6d4' };
         const TIER_LABELS = { carbon: 'CARBON', titanium: 'TITANIUM', platinum: 'PLATINUM', obsidian: 'OBSIDIAN', diamond: 'DIAMOND' };
 
         function isTrueSuperAdmin() {
-            return window.currentUserRole === 'super_admin'
-                && window.currentUserEmail === SUPER_ADMIN_EMAIL
-                && window.currentUserId === SUPER_ADMIN_UUID;
+            return window.currentUserRole === 'super_admin';
         }
 
         function applyRoleAccess(role) {
@@ -12363,12 +12393,11 @@ Best regards,
                         return;
                     }
                     try {
-                        const session = await window._supabase.auth.getSession();
-                        const jwt = session?.data?.session?.access_token;
-                        if (!jwt) { results.style.display = 'none'; return; }
+                        const authHeaders = await getAuthHeaders();
+                        if (!authHeaders) { results.style.display = 'none'; return; }
                         const response = await fetch((typeof SUPABASE_FUNCTIONS_URL !== 'undefined' ? SUPABASE_FUNCTIONS_URL : 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1') + '/radar-proxy', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + jwt },
+                            headers: authHeaders,
                             body: JSON.stringify({ query: query })
                         });
                         const data = await response.json();
@@ -12583,7 +12612,7 @@ Best regards,
 
                 var cloud = data.metadata;
                 var localStr = localStorage.getItem('aboveAllCarbonHELOC');
-                var local = localStr ? JSON.parse(localStr) : {};
+                var local = safeParse(localStr, {});
 
                 // Use cloud data if local is empty OR cloud is newer
                 var localHasProfile = local.loName || local.loEmail || local.loCompany;
@@ -13488,20 +13517,20 @@ Best regards,
             var prompt = (document.getElementById('custom-ai-system-prompt')?.value || '').trim();
             var sb = window._supabase;
             if (!sb) { showToast('Not connected', 'error'); return; }
+            var userId = window.currentUserId;
+            if (!userId) { showToast('Please log in again.', 'error'); return; }
             try {
-                var session = (await sb.auth.getSession()).data.session;
-                if (!session) return;
                 // Read existing metadata
                 var { data: existing } = await sb.from('user_integrations')
                     .select('metadata')
-                    .eq('user_id', session.user.id)
+                    .eq('user_id', userId)
                     .eq('provider', 'heloc_settings')
                     .maybeSingle();
                 var meta = existing?.metadata || {};
                 if (!meta.ai) meta.ai = {};
                 meta.ai.customSystemPrompt = prompt || '';
                 await sb.from('user_integrations').upsert({
-                    user_id: session.user.id,
+                    user_id: userId,
                     provider: 'heloc_settings',
                     metadata: meta
                 }, { onConflict: 'user_id,provider' });
@@ -13517,12 +13546,12 @@ Best regards,
             if (!el) return;
             var sb = window._supabase;
             if (!sb) return;
+            var userId = window.currentUserId;
+            if (!userId) return;
             try {
-                var session = (await sb.auth.getSession()).data.session;
-                if (!session) return;
                 var { data } = await sb.from('user_integrations')
                     .select('metadata')
-                    .eq('user_id', session.user.id)
+                    .eq('user_id', userId)
                     .eq('provider', 'heloc_settings')
                     .maybeSingle();
                 var saved = data?.metadata?.ai?.customSystemPrompt || '';
@@ -13536,12 +13565,12 @@ Best regards,
         async function _loadRateSheetStatus() {
             var sb = window._supabase;
             if (!sb) return;
+            var userId = window.currentUserId;
+            if (!userId) return;
             try {
-                var session = (await sb.auth.getSession()).data.session;
-                if (!session) return;
                 var { data } = await sb.from('user_integrations')
                     .select('metadata')
-                    .eq('user_id', session.user.id)
+                    .eq('user_id', userId)
                     .eq('provider', 'heloc_settings')
                     .maybeSingle();
 
@@ -13573,12 +13602,12 @@ Best regards,
         async function _saveAutoPrePriceSetting(enabled) {
             var sb = window._supabase;
             if (!sb) return;
-            var session = (await sb.auth.getSession()).data.session;
-            if (!session) return;
+            var userId = window.currentUserId;
+            if (!userId) return;
 
             var { data: existing } = await sb.from('user_integrations')
                 .select('id, metadata')
-                .eq('user_id', session.user.id)
+                .eq('user_id', userId)
                 .eq('provider', 'heloc_settings')
                 .maybeSingle();
 
@@ -13588,7 +13617,7 @@ Best regards,
             if (existing) {
                 await sb.from('user_integrations').update({ metadata }).eq('id', existing.id);
             } else {
-                await sb.from('user_integrations').insert({ user_id: session.user.id, provider: 'heloc_settings', metadata });
+                await sb.from('user_integrations').insert({ user_id: userId, provider: 'heloc_settings', metadata });
             }
             showToast(enabled ? 'Auto-pricing enabled' : 'Auto-pricing disabled', 'success');
         }
@@ -13596,12 +13625,12 @@ Best regards,
         async function clearSavedRateSheet() {
             var sb = window._supabase;
             if (!sb) return;
-            var session = (await sb.auth.getSession()).data.session;
-            if (!session) return;
+            var userId = window.currentUserId;
+            if (!userId) return;
 
             var { data: existing } = await sb.from('user_integrations')
                 .select('id, metadata')
-                .eq('user_id', session.user.id)
+                .eq('user_id', userId)
                 .eq('provider', 'heloc_settings')
                 .maybeSingle();
 
@@ -13619,10 +13648,8 @@ Best regards,
         }
 
         async function generateCustomAIStrategy() {
-            const sb = window._supabase;
-            if (!sb) { return; }
-            const session = (await sb.auth.getSession()).data.session;
-            if (!session) { document.getElementById('ai-output-text').innerText = '⚠️ Not authenticated. Please log in.'; return; }
+            const headers = await getAuthHeaders();
+            if (!headers) { document.getElementById('ai-output-text').innerText = '⚠️ Not authenticated. Please log in.'; return; }
 
             // Gather comprehensive quote data from the live tool
             const ctx = _gatherFullQuoteContext();
@@ -13692,10 +13719,7 @@ Generate the sales strategy and phone script now.`;
             try {
                 const response = await fetch(SUPABASE_FUNCTIONS_URL + '/ai-proxy', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + session.access_token
-                    },
+                    headers: headers,
                     body: JSON.stringify({ action: 'generate', systemPrompt, userMessage })
                 });
                 const data = await response.json();
@@ -14517,9 +14541,8 @@ Sent via Above All Carbon HELOC Tool`;
         var SUPABASE_FUNCTIONS_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1';
 
         async function testHeyGenConnection() {
-            var sb = window._supabase;
-            var session = (await sb.auth.getSession()).data.session;
-            if (!session) { showToast('Not authenticated', 'error'); return; }
+            var headers = await getAuthHeaders();
+            if (!headers) { showToast('Not authenticated', 'error'); return; }
 
             var statusEl = document.getElementById('heygen-status');
             if (statusEl) statusEl.textContent = 'Testing...';
@@ -14528,10 +14551,7 @@ Sent via Above All Carbon HELOC Tool`;
             try {
                 var resp = await fetch(SUPABASE_FUNCTIONS_URL + '/generate-video', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + session.access_token
-                    },
+                    headers: headers,
                     body: JSON.stringify({ action: 'check_status' })
                 });
                 var result = await resp.json();
@@ -14880,10 +14900,11 @@ Sent via Above All Carbon HELOC Tool`;
                 if (output) output.placeholder = 'Generating AI video...';
 
                 try {
-                    var session = (await sb.auth.getSession()).data.session;
+                    var vidHeaders = await getAuthHeaders();
+                    if (!vidHeaders) { showToast('Not authenticated', 'error'); return; }
                     var genResp = await fetch(SUPABASE_FUNCTIONS_URL + '/generate-video', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+                        headers: vidHeaders,
                         body: JSON.stringify({
                             action: 'generate',
                             scriptText: scriptText,
@@ -14900,7 +14921,7 @@ Sent via Above All Carbon HELOC Tool`;
                             await new Promise(r => setTimeout(r, 10000));
                             var pollResp = await fetch(SUPABASE_FUNCTIONS_URL + '/generate-video', {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+                                headers: vidHeaders,
                                 body: JSON.stringify({ action: 'poll', videoId: genResult.videoId })
                             });
                             var pollResult = await pollResp.json();
@@ -16660,7 +16681,8 @@ Sent via Above All Carbon HELOC Tool`;
                 showToast(`Queued ${leads.length} leads for GHL sync. Processing in background...`, 'success');
                 
                 // Trigger immediate sync
-                fetch('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/sync-ghl-outbound', { method: 'POST', headers: { 'Authorization': 'Bearer ' + (await window._supabase.auth.getSession()).data.session?.access_token } }).catch(console.error);
+                var syncHeaders = await getAuthHeaders();
+                if (syncHeaders) fetch('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/sync-ghl-outbound', { method: 'POST', headers: syncHeaders }).catch(console.error);
                 
             } catch (e) {
                 showToast('Error queueing leads for sync: ' + e.message, 'error');
@@ -16724,16 +16746,16 @@ Sent via Above All Carbon HELOC Tool`;
         }
         
         function showModal(title, content) {
-            // Simple modal implementation
+            // Simple modal implementation — title is escaped, content is trusted HTML
             const modal = document.createElement('div');
             modal.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px;';
             modal.innerHTML = `
                 <div style="background: #1e293b; border-radius: 12px; max-width: 700px; width: 100%; max-height: 80vh; overflow: hidden;">
                     <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="margin: 0; font-family: var(--font-heading); font-size: 16px; color: white;">${title}</h3>
+                        <h3 style="margin: 0; font-family: var(--font-heading); font-size: 16px; color: white;">${escapeHtml(title)}</h3>
                         <button onclick="this.closest('.ghl-modal').remove()" style="background: none; border: none; color: rgba(255,255,255,0.6); font-size: 20px; cursor: pointer;">&times;</button>
                     </div>
-                    <div style="padding: 20px;">${content}</div>
+                    <div style="padding: 20px; overflow-y: auto; max-height: 60vh;">${content}</div>
                 </div>
             `;
             modal.className = 'ghl-modal';
@@ -16742,19 +16764,14 @@ Sent via Above All Carbon HELOC Tool`;
         }
 
         async function testAIConnection() {
-            const sb = window._supabase;
-            if (!sb) { showToast('Not initialized.', 'error'); return; }
-            const session = (await sb.auth.getSession()).data.session;
-            if (!session) { showToast('Not authenticated. Please log in.', 'error'); return; }
+            const headers = await getAuthHeaders();
+            if (!headers) { showToast('Not authenticated. Please log in.', 'error'); return; }
 
             try {
                 showToast('Testing AI connection via server proxy...', 'info');
                 const response = await fetch(SUPABASE_FUNCTIONS_URL + '/ai-proxy', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + session.access_token
-                    },
+                    headers: headers,
                     body: JSON.stringify({ action: 'test' })
                 });
                 const data = await response.json();
@@ -16773,13 +16790,11 @@ Sent via Above All Carbon HELOC Tool`;
 
         // ===== BONZO API PROXY (server-side — avoids CORS/DNS issues) =====
         async function _bonzoProxy(action, opts) {
-            var sb = window._supabase;
-            if (!sb) throw new Error('Not authenticated');
-            var session = (await sb.auth.getSession()).data.session;
-            if (!session?.access_token) throw new Error('Session expired — please log in again');
+            var headers = await getAuthHeaders();
+            if (!headers) throw new Error('Session expired — please log in again');
             var resp = await fetch(SUPABASE_FUNCTIONS_URL + '/bonzo-proxy', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+                headers: headers,
                 body: JSON.stringify({ action: action, ...(opts || {}) })
             });
             var data = await resp.json();
@@ -16790,13 +16805,10 @@ Sent via Above All Carbon HELOC Tool`;
         // Send failure alert email via Resend (Edge Function)
         async function sendFailureAlert(type, details) {
             try {
-                const session = window._supabase ? (await window._supabase.auth.getSession()).data.session : null;
+                const headers = await getAuthHeaders();
                 await fetch(SUPABASE_FUNCTIONS_URL + '/send-alert-email', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(session ? { 'Authorization': 'Bearer ' + session.access_token } : {})
-                    },
+                    headers: headers || { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type, details })
                 });
             } catch (e) {
@@ -17060,13 +17072,11 @@ Sent via Above All Carbon HELOC Tool`;
         var GMAIL_GOOGLE_CLIENT_ID = '';  // populated from _applyIntegrationData or env
 
         async function _callGmailSend(payload) {
-            var sb = window._supabase;
-            var session = await sb.auth.getSession();
-            var token = session?.data?.session?.access_token;
-            if (!token) throw new Error('Not authenticated');
+            var headers = await getAuthHeaders();
+            if (!headers) throw new Error('Not authenticated');
             var resp = await fetch('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/gmail-send', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                headers: headers,
                 body: JSON.stringify(payload)
             });
             var data = await resp.json();
@@ -17447,7 +17457,7 @@ Sent via Above All Carbon HELOC Tool`;
 
         // Strip sensitive API keys before caching to localStorage
         function _stripSensitiveKeys(data) {
-            var safe = JSON.parse(JSON.stringify(data));
+            var safe = safeParse(JSON.stringify(data), data);
             if (safe.ghl) safe.ghl.apiKey = '';
             if (safe.n8n) safe.n8n.auth = '';
             if (safe.radar) safe.radar.apiKey = '';
@@ -17583,18 +17593,13 @@ Sent via Above All Carbon HELOC Tool`;
 
         // ===== CHECK AI KEY STATUS via Edge Function test (key never leaves server) =====
         async function _checkUserAIKeyStatus() {
-            const sb = window._supabase;
-            if (!sb) return;
-            const session = (await sb.auth.getSession()).data.session;
-            if (!session) return;
+            const headers = await getAuthHeaders();
+            if (!headers) return;
             try {
                 // Status check only — no AI credits consumed
                 const response = await fetch(SUPABASE_FUNCTIONS_URL + '/ai-proxy', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + session.access_token
-                    },
+                    headers: headers,
                     body: JSON.stringify({ action: 'check_status' })
                 });
                 const data = await response.json();
@@ -17675,7 +17680,7 @@ Sent via Above All Carbon HELOC Tool`;
         }
 
         function _loadTemplateList() {
-            var templates = JSON.parse(localStorage.getItem('heloc_quote_templates') || '[]');
+            var templates = safeParse(localStorage.getItem('heloc_quote_templates'), []);
             var select = document.getElementById('template-select');
             if (!select) return;
             select.innerHTML = '<option value="">— Select a template —</option>';
@@ -17690,7 +17695,7 @@ Sent via Above All Carbon HELOC Tool`;
         function saveQuoteTemplate() {
             var name = prompt('Template name (e.g., "Investment HELOC", "Debt Consolidation"):');
             if (!name || !name.trim()) return;
-            var templates = JSON.parse(localStorage.getItem('heloc_quote_templates') || '[]');
+            var templates = safeParse(localStorage.getItem('heloc_quote_templates'), []);
             templates.push({
                 name: name.trim(),
                 date: new Date().toISOString().slice(0, 10),
@@ -17705,7 +17710,7 @@ Sent via Above All Carbon HELOC Tool`;
             var select = document.getElementById('template-select');
             var idx = parseInt(select?.value);
             if (isNaN(idx)) { showToast('Select a template first', 'error'); return; }
-            var templates = JSON.parse(localStorage.getItem('heloc_quote_templates') || '[]');
+            var templates = safeParse(localStorage.getItem('heloc_quote_templates'), []);
             if (!templates[idx]) { showToast('Template not found', 'error'); return; }
             _applyTemplateState(templates[idx].state);
             showToast('Template "' + templates[idx].name + '" loaded!', 'success');
@@ -17715,7 +17720,7 @@ Sent via Above All Carbon HELOC Tool`;
             var select = document.getElementById('template-select');
             var idx = parseInt(select?.value);
             if (isNaN(idx)) { showToast('Select a template first', 'error'); return; }
-            var templates = JSON.parse(localStorage.getItem('heloc_quote_templates') || '[]');
+            var templates = safeParse(localStorage.getItem('heloc_quote_templates'), []);
             if (!templates[idx]) return;
             if (!confirm('Delete template "' + templates[idx].name + '"?')) return;
             templates.splice(idx, 1);
@@ -19128,15 +19133,12 @@ Sent via Above All Carbon HELOC Tool`;
             if (btn) { btn.innerHTML = '⏳ Syncing' + (syncAll ? ' ALL' : ' ' + maxLeads) + '...'; btn.disabled = true; }
 
             try {
-                var session = (await sb.auth.getSession()).data.session;
-                if (!session?.access_token) { showToast('Session expired — please log in again.', 'error'); return; }
+                var syncHdrs = await getAuthHeaders();
+                if (!syncHdrs) { showToast('Session expired — please log in again.', 'error'); return; }
 
                 var resp = await fetch(SUPABASE_FUNCTIONS_URL + '/bonzo-sync', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + session.access_token,
-                    },
+                    headers: syncHdrs,
                     body: JSON.stringify({ sync_all: syncAll, max_leads: maxLeads }),
                 });
 

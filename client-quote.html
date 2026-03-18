@@ -9299,6 +9299,7 @@
                 }
                 if (lo.address) fHtml += esc(lo.address) + '<br>';
                 fHtml += 'Equal Housing Lender. All loan programs subject to credit approval. Rates, terms, and conditions are subject to change without notice. This is not a commitment to lend. Licensed by the California Department of Financial Protection and Innovation under the California Residential Mortgage Lending Act.';
+                fHtml += '<p style="margin-top:8px;font-size:11px;"><a href="#" style="color:#999;text-decoration:underline;" onclick="event.preventDefault();alert(\'Privacy Policy: We collect only the information necessary to process your HELOC quote. Your data is encrypted, never sold, and retained only as required by law. Contact your loan officer for questions.\');">Privacy Policy</a> &nbsp;|&nbsp; <a href="#" style="color:#999;text-decoration:underline;" onclick="event.preventDefault();alert(\'Terms of Use: This quote is for informational purposes only and does not constitute a commitment to lend. Rates, terms, and conditions are subject to change. Subject to credit approval.\');">Terms of Use</a></p>';
                 fHtml += '</div></div>';
                 fHtml += '<div class="proprietary-notice">PROPRIETARY TOOL NOTICE: This ' + esc(poweredBy) + ' HELOC Quote Tool is proprietary software owned by ' + esc(lo.company || poweredBy) + '. Unauthorized copying, distribution, modification, or reverse engineering is strictly prohibited. &copy; 2024-2026 ' + esc(poweredBy) + '. All rights reserved.</div>';
                 document.getElementById('sec-footer').innerHTML = fHtml;
@@ -12902,6 +12903,79 @@
                                 "¿Listo para comenzar? ¡Toque **Avancemos**!";
                         }
 
+                        // Investment / rental / oportunidad
+                        if (/inversi|rental|propiedad.*inversion|oportunidad|negocio/i.test(lower)) {
+                            return "¡Excelente pensamiento, " + cn + "! Muchos propietarios inteligentes usan su HELOC para impulsar inversiones.\n\n" +
+                                "Con " + cashStr + " en capital accesible al **" + rateStr + "%**, si su retorno supera esa tasa, está haciendo dinero con dinero que ya estaba sentado en sus paredes.\n\n" +
+                                "Usos comunes de inversión:\n" +
+                                "- **Enganche para propiedad de alquiler**\n" +
+                                "- **Oportunidad de negocio**\n" +
+                                "- **Consolidar deuda para liberar flujo de efectivo**\n\n" +
+                                "La clave: usted mantiene el control total de cuándo y cuánto usa. ¿Listo para explorar? ¡Toque **Avancemos**!";
+                        }
+
+                        // Impuestos / deducible
+                        if (/impuesto|deducible|tax|irs/i.test(lower)) {
+                            return cn + ", esta es una pregunta importante.\n\n" +
+                                "El interés de su HELOC **puede ser deducible de impuestos** si los fondos se usan para mejoras del hogar (comprar, construir o mejorar sustancialmente la propiedad que asegura el préstamo).\n\n" +
+                                "Sin embargo, **le recomiendo consultar con su asesor fiscal** para confirmar los detalles específicos de su situación. Cada caso es diferente.\n\n" +
+                                "Lo que sí puedo decirle: al **" + rateStr + "%**, su HELOC ya es significativamente más barato que las alternativas, ¡con o sin el beneficio fiscal!\n\n" +
+                                "¿Tiene más preguntas? ¡Estoy aquí para ayudar!";
+                        }
+
+                        // Emergencia / fondo de emergencia
+                        if (/emergencia|fondo.*emergencia|red.*seguridad|por.*si.*acaso/i.test(lower)) {
+                            return "¡Esa es una de las estrategias más inteligentes, " + cn + "!\n\n" +
+                                "Muchos de mis clientes configuran un HELOC simplemente para tenerlo disponible — como una **red de seguridad financiera**.\n\n" +
+                                "Con un HELOC variable, **no paga nada hasta que realmente use los fondos**. Y cuando lo haga, la tasa es mucho más baja que tarjetas de crédito o préstamos personales.\n\n" +
+                                "Con " + cashStr + " disponible, tiene tranquilidad sabiendo que puede acceder a fondos rápidamente si los necesita. Es como tener un plan de respaldo integrado en su hogar.\n\n" +
+                                "¿Le gustaría asegurar su red de seguridad? ¡Toque **Avancemos**!";
+                        }
+
+                        // Divorcio / separación
+                        if (/divorcio|separaci|ex.*esposo|ex.*esposa/i.test(lower)) {
+                            return cn + ", entiendo que esta puede ser una situación delicada.\n\n" +
+                                "Un HELOC puede ser una herramienta útil en situaciones de divorcio — por ejemplo, para comprar la parte de capital de la otra persona o para consolidar deudas compartidas.\n\n" +
+                                "Típicamente necesitamos que el decreto de divorcio esté finalizado y que la titulación de la propiedad esté actualizada. Cada situación es única.\n\n" +
+                                "Lo mejor sería discutir los detalles con " + loN + loP + " para que puedan guiarlo según su situación específica. ¡Están aquí para ayudar!";
+                        }
+
+                        // Esposo / pareja / juntos
+                        if (/esposo|esposa|pareja|juntos|los dos|ambos/i.test(lower)) {
+                            return "¡Claro que sí, " + cn + "! Esta es una decisión que deben tomar juntos.\n\n" +
+                                "Le envié este enlace para que **ambos puedan revisarlo** cuando les sea conveniente. Tómense su tiempo para ver los números.\n\n" +
+                                "Si lo prefieren, " + loN + " puede programar una llamada rápida de 10 minutos con ambos para repasar las opciones juntos" + loP + ".\n\n" +
+                                "Tienen **" + cashStr + "** en capital disponible — ¡es una gran oportunidad para revisar en pareja!";
+                        }
+
+                        // Ya tengo un HELOC
+                        if (/ya.*tengo.*heloc|heloc.*existente|otro.*heloc|segundo.*heloc/i.test(lower)) {
+                            return "¡Excelente, " + cn + "! El hecho de que ya tenga un HELOC significa que ya entiende el producto.\n\n" +
+                                "La pregunta es: ¿está obteniendo la mejor tasa y términos? Los programas y tasas cambian, y muchos clientes se sorprenden al ver opciones mejores.\n\n" +
+                                "Su cotización actual muestra **" + rateStr + "%** — compare eso con lo que tiene ahora. Si es mejor, podría ahorrar significativamente cada mes.\n\n" +
+                                "Su HELOC anterior generalmente se paga al cierre del nuevo. ¿Le gustaría comparar? ¡Toque **Avancemos**!";
+                        }
+
+                        // Valor de la casa incorrecto
+                        if (/valor.*incorrecto|casa.*vale.*mas|no.*esta.*bien.*valor|valor.*equivocado/i.test(lower)) {
+                            return "Entiendo su preocupación, " + cn + ". El valor mostrado de **" + homeStr + "** se basa en un AVM (Modelo de Valoración Automatizado) que usa datos de ventas comparables y registros públicos.\n\n" +
+                                "Si cree que su hogar vale más, hay opciones:\n" +
+                                "- Se puede solicitar una **evaluación tradicional** para determinar un valor más preciso\n" +
+                                "- " + loN + " puede revisar los datos y discutir las opciones" + loP + "\n\n" +
+                                "Un valor más alto significaría **más capital accesible** — ¡así que vale la pena explorarlo!";
+                        }
+
+                        // Nervioso / preocupado / inseguro
+                        if (/nervioso|preocupado|miedo|inseguro|no.*estoy.*seguro|dudas/i.test(lower)) {
+                            return "Es completamente normal sentirse así, " + cn + " — tomar decisiones financieras importantes merece cuidado y reflexión.\n\n" +
+                                "Quiero que sepa:\n" +
+                                "- **Sin obligación** — ver sus opciones no le compromete a nada\n" +
+                                "- **Sin impacto crediticio** — la verificación inicial es suave, sin efecto en su puntaje\n" +
+                                "- **Sin presión** — puede tomarse todo el tiempo que necesite\n" +
+                                "- **Apoyo personal** — " + loN + " está aquí para responder cualquier pregunta" + loP + "\n\n" +
+                                "Tiene **" + cashStr + "** en capital que es suyo — solo estamos ayudándole a entender sus opciones. ¿Hay algo específico que le preocupe?";
+                        }
+
                         // No match — return null to send to API
                         return null;
                     }
@@ -13048,6 +13122,150 @@
                             "- **Trust Documents** — only if your property is held in a trust (we'll need the trust certificate and whether it's revocable or irrevocable)\n\n" +
                             "That's it! **No bank statements, no pay stubs, no tax returns.** We verify income digitally through Plaid — the same secure system used by Venmo and major financial apps.\n\n" +
                             "Ready to get started? Tap **Move Forward**!";
+                    }
+
+                    // Investment / rental / business opportunity
+                    if (/invest|rental|business.*opportun|down.*payment|stock|property.*invest/i.test(lower)) {
+                        return "Great thinking, " + cn + "! Many savvy homeowners use their HELOC to fuel investments.\n\n" +
+                            "With " + cashStr + " in accessible equity at **" + rateStr + "%**, if your return exceeds that rate, you're making money with money that was sitting in your walls.\n\n" +
+                            "Common investment uses:\n" +
+                            "- **Down payment on a rental property**\n" +
+                            "- **Business opportunity funding**\n" +
+                            "- **Debt consolidation to free up cash flow for investing**\n\n" +
+                            "The key: you maintain full control of when and how much you use. I can't give specific investment advice, but I can tell you — this is what many successful clients do.\n\n" +
+                            "Ready to explore your options? Tap **Move Forward**!";
+                    }
+
+                    // Tax deductibility
+                    if (/tax.*deduct|write.*off|irs|tax.*benefit|deduction/i.test(lower)) {
+                        return cn + ", great question — this comes up a lot.\n\n" +
+                            "HELOC interest **may be tax-deductible** if the funds are used for home improvements (buying, building, or substantially improving the home that secures the loan).\n\n" +
+                            "However, I'd **strongly recommend checking with your tax advisor** to confirm the specifics for your situation — everyone's tax picture is different.\n\n" +
+                            "What I can tell you: at **" + rateStr + "%**, your HELOC is already significantly cheaper than the alternatives, with or without the tax benefit!\n\n" +
+                            "Have more questions? I'm here to help!";
+                    }
+
+                    // Emergency fund / safety net
+                    if (/emergency|safety.*net|just.*in.*case|rainy.*day|backup|peace.*mind/i.test(lower)) {
+                        return "That's one of the smartest financial moves, " + cn + "!\n\n" +
+                            "Many of my clients set up a HELOC as a **financial safety net** — you don't pay anything until you actually use the funds.\n\n" +
+                            "With a variable HELOC, you only pay interest on what you draw. So if you have a " + cashStr + " line but only use $10,000, you only pay interest on the $10,000.\n\n" +
+                            "It's like having a backup plan built into your home — available when you need it, costing nothing when you don't. And the rate is far lower than credit cards or personal loans if an emergency does come up.\n\n" +
+                            "Want to secure your safety net? Tap **Move Forward**!";
+                    }
+
+                    // College / education / tuition
+                    if (/college|tuition|education|student.*loan|university|school|kid|child/i.test(lower)) {
+                        return "Smart thinking, " + cn + "! Many parents are using HELOCs to fund education.\n\n" +
+                            "Here's why: Parent PLUS loans are at **9%+** right now. A HELOC at **" + rateStr + "%** could save you thousands over the course of your child's education.\n\n" +
+                            "Plus:\n" +
+                            "- **Structured payoff** instead of decades of student loan payments\n" +
+                            "- **No prepayment penalty** — pay it off faster if you want\n" +
+                            "- **Lower rate** than virtually any education financing option\n\n" +
+                            "It's equity you've already built — why not put it to work for your family?\n\n" +
+                            "Tap **Move Forward** to explore this option!";
+                    }
+
+                    // Divorce / separation
+                    if (/divorce|separat|ex.*husband|ex.*wife|ex.*spouse|buyout/i.test(lower)) {
+                        return cn + ", I understand this may be a sensitive situation.\n\n" +
+                            "A HELOC can be a helpful tool during divorce — for example, to buy out a former spouse's equity share, or to consolidate shared debts as part of a settlement.\n\n" +
+                            "Typically, the divorce decree needs to be finalized and the property title updated. Each situation is unique.\n\n" +
+                            "The best next step would be to discuss the details with " + loN + loP + " so they can guide you based on your specific situation. They're here to help!\n\n" +
+                            "Tap **Move Forward** when you're ready, or reach out to your loan officer directly.";
+                    }
+
+                    // Income / qualification / do I qualify
+                    if (/qualify|qualif|income|how much.*can.*get|eligible|approved|do i qualify|can i get/i.test(lower)) {
+                        return "Great question, " + cn + "! Based on your property, here's what we're looking at:\n\n" +
+                            "Your home is valued at **" + homeStr + "** with **" + cashStr + "** in accessible equity. Your quoted rate is **" + rateStr + "%**.\n\n" +
+                            "Key factors in qualification:\n" +
+                            "- **Credit score**: 640+ required (higher = better rates)\n" +
+                            "- **DTI**: Total monthly debts below 50% of gross income\n" +
+                            "- **Equity**: Enough to stay under 85% combined loan-to-value\n\n" +
+                            "The best part? The initial check is a **soft pull with zero impact on your credit**. You'll see your actual offers without any risk.\n\n" +
+                            "Tap **Move Forward** to see what you qualify for — it takes about 2 minutes!";
+                    }
+
+                    // How is equity calculated / how much equity
+                    if (/equity.*calculat|how much equity|what.*equity|cltv|loan.*to.*value/i.test(lower)) {
+                        var mortBal = quoteData.mortgageBalance ? '$' + Number(quoteData.mortgageBalance).toLocaleString() : 'your current mortgage';
+                        return "Good question, " + cn + "! Here's how your equity breaks down:\n\n" +
+                            "**Home Value:** " + homeStr + "\n" +
+                            "**Minus Current Mortgage:** " + mortBal + "\n" +
+                            "**= Your Equity:** " + cashStr + " accessible\n\n" +
+                            "We use something called CLTV (Combined Loan-to-Value) to determine how much you can access. Most programs allow up to **85% CLTV** for primary residences.\n\n" +
+                            "Think of it this way: your home has been quietly building wealth for you over the years. A HELOC lets you tap into that wealth at a fraction of what other borrowing options cost.\n\n" +
+                            "Want to see your full options? Tap **Move Forward**!";
+                    }
+
+                    // Variable rate / rate change / what if rates go up
+                    if (/variable.*rate|rate.*change|rate.*go.*up|rate.*increase|fixed.*vs.*variable|adjustable/i.test(lower)) {
+                        return "That's an important consideration, " + cn + ".\n\n" +
+                            "There are two main types of HELOC rates:\n\n" +
+                            "**Fixed Rate** — Your rate stays the same for the entire loan term. Your payment of " + pmtStr + " never changes. Most clients prefer this for predictability.\n\n" +
+                            "**Variable Rate** — Lower starting rate, but it can adjust over time based on market conditions. Best for short-term needs or if you plan to pay it off quickly.\n\n" +
+                            "Your quoted rate of **" + rateStr + "%** is locked once you accept your offer. If rates go up during processing, you keep YOUR rate.\n\n" +
+                            "Most clients choose fixed because they like knowing exactly what they'll pay every month. Want to lock yours in? Tap **Move Forward**!";
+                    }
+
+                    // Closing / how long to close / rescission
+                    if (/clos(e|ing)|fund(ing|ed)|when.*get.*money|how.*long.*after|rescission|cancel/i.test(lower)) {
+                        return "Here's the timeline after you apply, " + cn + ":\n\n" +
+                            "**1. Application** — Takes about 2 minutes online\n" +
+                            "**2. Review & Approval** — AI-assisted underwriting, often same day\n" +
+                            "**3. Closing Documents** — Review and sign (e-sign available)\n" +
+                            "**4. Rescission Period** — 3 business days (federal protection, you can cancel with no penalty)\n" +
+                            "**5. Funds Disbursed** — Money in your account!\n\n" +
+                            "Total: some loans fund in **as little as 5 days**. The 3-day rescission period is a federal consumer protection — think of it as a built-in safety net.\n\n" +
+                            "Ready to start the clock? Tap **Move Forward**!";
+                    }
+
+                    // Spouse / partner / together
+                    if (/spouse|partner|husband|wife|together|both of us|my other half/i.test(lower)) {
+                        return "Absolutely, " + cn + " — this is a decision you should make together!\n\n" +
+                            "I sent you this link so **both of you can review it** whenever it's convenient. Take your time looking at the numbers.\n\n" +
+                            "If you'd prefer, " + loN + " can schedule a quick 10-minute call with both of you to walk through the options together" + loP + ".\n\n" +
+                            "You've got **" + cashStr + "** in available equity — it's a great opportunity to review as a couple!";
+                    }
+
+                    // Already have a HELOC / existing HELOC
+                    if (/already.*heloc|existing.*heloc|have.*heloc|current.*heloc|second.*heloc|another.*heloc/i.test(lower)) {
+                        return "That's actually great, " + cn + " — you already understand the product!\n\n" +
+                            "The question is: are you getting the best rate and terms? Programs and rates change, and many clients are surprised at how much better their new options look.\n\n" +
+                            "Your current quote shows **" + rateStr + "%** — compare that to what you have now. If it's better, you could save significantly every month.\n\n" +
+                            "Your old HELOC is typically paid off at closing of the new one. Want to compare? Tap **Move Forward**!";
+                    }
+
+                    // Home value dispute / think home is worth more
+                    if (/home.*worth.*more|value.*wrong|disagree.*value|actual.*value|undervalued|value.*low/i.test(lower)) {
+                        return "I understand your concern, " + cn + ". The value shown of **" + homeStr + "** is based on an AVM (Automated Valuation Model) that uses comparable sales data and public records.\n\n" +
+                            "If you believe your home is worth more, there are options:\n" +
+                            "- A **traditional appraisal** can be requested to determine a more precise value\n" +
+                            "- " + loN + " can review the data and discuss your options" + loP + "\n\n" +
+                            "A higher value would mean **more accessible equity** for you — so it's definitely worth exploring!";
+                    }
+
+                    // Scared / nervous / worried / hesitant
+                    if (/scared|nervous|worried|anxious|afraid|hesitant|unsure|not sure|uncertain|overwhelm/i.test(lower)) {
+                        return "It's completely normal to feel that way, " + cn + " — making important financial decisions deserves careful thought.\n\n" +
+                            "Here's what I want you to know:\n" +
+                            "- **No obligation** — seeing your options doesn't commit you to anything\n" +
+                            "- **No credit impact** — the initial check is a soft pull, zero effect on your score\n" +
+                            "- **No pressure** — take all the time you need\n" +
+                            "- **Personal support** — " + loN + " is here to answer any questions" + loP + "\n\n" +
+                            "You have **" + cashStr + "** in equity that belongs to you — we're just helping you understand your options. Is there anything specific that's on your mind?";
+                    }
+
+                    // Second home / vacation / multiple properties
+                    if (/second.*home|vacation.*home|other.*property|rental.*property|multiple.*propert/i.test(lower)) {
+                        return "Great question, " + cn + "! This quote is for your **primary residence** HELOC.\n\n" +
+                            "HELOCs are also available for investment and vacation properties, though with slightly different terms:\n" +
+                            "- **Investment properties**: Max CLTV typically 75-80% (vs 85% primary)\n" +
+                            "- **Rates**: Usually 0.5-1.5% higher than primary residence\n" +
+                            "- **Rental income**: Can be used to help qualify\n\n" +
+                            "For details about a HELOC on a different property, " + loN + " can run those numbers for you" + loP + ".\n\n" +
+                            "For your primary residence, you're looking at **" + cashStr + "** in accessible equity. Tap **Move Forward** to explore!";
                     }
 
                     // No match — return null to send to API

@@ -392,6 +392,7 @@ serve(async (req: Request) => {
       switch (provider) {
         case "gemini":
           return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        case "kimi":
         case "openai":
         case "groq":
         case "deepseek":

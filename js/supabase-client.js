@@ -14,7 +14,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // TTL: 5 minutes — ensures role/tier changes propagate within a reasonable window
 let _cachedUser = null;
 let _cacheTime = 0;
-const CACHE_TTL_MS = 5 * 60 * 1000;
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds — ensures role/tier changes propagate quickly for SaaS
 
 export async function getCurrentUser() {
     if (_cachedUser && (Date.now() - _cacheTime) < CACHE_TTL_MS) return _cachedUser;
