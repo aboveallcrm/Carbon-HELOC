@@ -1592,8 +1592,6 @@
         body.theme-dark {
             --text-light: #f1f5f9;
             --text-muted: #94a3b8;
-            --white: #1e293b;
-            --slate: #cbd5e1;
         }
 
         body.theme-dark .quote-page {
@@ -1837,6 +1835,34 @@
 
         body.theme-dark .pvf-trust-item {
             color: #94a3b8;
+        }
+
+        body.theme-dark .quote-footer {
+            background-color: #0f172a;
+        }
+
+        body.theme-dark .tier-compare-container {
+            background: #1e293b !important;
+            border-color: rgba(255,255,255,0.08) !important;
+        }
+
+        body.theme-dark .testimonial-card {
+            background: rgba(255,255,255,0.05) !important;
+        }
+
+        body.theme-dark .doc-upload-item {
+            background: rgba(255,255,255,0.05) !important;
+            color: #cbd5e1;
+        }
+
+        body.theme-dark .doc-upload-note {
+            background: rgba(255,255,255,0.05) !important;
+            color: #94a3b8 !important;
+        }
+
+        body.theme-dark .borrower-strategy-box {
+            background: linear-gradient(135deg, rgba(6,182,212,0.08), rgba(6,182,212,0.03)) !important;
+            color: #cbd5e1 !important;
         }
 
         /* --- Particle Canvas --- */
@@ -7412,7 +7438,7 @@
 
     <div id="content" class="quote-page entering" style="display:none;">
         <!-- Language Toggle -->
-        <div id="languageToggle" style="position: absolute; top: 20px; right: 16px; z-index: 100;">
+        <div id="languageToggle" style="position: absolute; top: 20px; right: 70px; z-index: 100;">
             <button onclick="setLanguage('en')" id="langBtnEn" style="padding: 8px 12px; background-color: var(--accent-color); color: var(--bg-dark); border: none; border-radius: 4px 0 0 4px; cursor: pointer; font-weight: 600; font-family: var(--font-heading);">EN</button>
             <button onclick="setLanguage('es')" id="langBtnEs" style="padding: 8px 12px; background-color: rgba(255,255,255,0.1); color: var(--text-light); border: none; border-radius: 0 4px 4px 0; cursor: pointer; font-weight: 600; font-family: var(--font-heading);">ES</button>
         </div>
@@ -7632,7 +7658,7 @@
             <div class="section reveal" id="sec-prequal" style="display: none;">
                 <div class="section-title" data-icon="&#9989;"><span data-i18n="prequalTitle">Quick Pre-Qualification Check</span></div>
                 <div class="prequal-container" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.02)); border-radius: 16px; padding: 24px; border: 1px solid rgba(16, 185, 129, 0.2);">
-                    <p style="margin-bottom: 20px; color: var(--slate); font-size: 14px;" data-i18n="prequalSubtitle">Answer a few quick questions to see if you pre-qualify:</p>
+                    <p style="margin-bottom: 20px; color: var(--text-muted, #64748b); font-size: 14px;" data-i18n="prequalSubtitle">Answer a few quick questions to see if you pre-qualify:</p>
                     <div class="prequal-items" id="prequal-items">
                         <div class="prequal-item" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(0,0,0,0.08);">
                             <span data-i18n="prequalCredit">Credit score 640+</span>
@@ -7675,11 +7701,11 @@
                 <div class="dti-container" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0.02)); border-radius: 16px; padding: 24px; border: 1px solid rgba(99, 102, 241, 0.2);">
                     <div class="dti-inputs" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
                         <div>
-                            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--slate); margin-bottom: 6px;" data-i18n="dtiCalcMonthlyIncome">Monthly Income (before taxes)</label>
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted, #64748b); margin-bottom: 6px;" data-i18n="dtiCalcMonthlyIncome">Monthly Income (before taxes)</label>
                             <input type="text" id="dti-income" placeholder="$8,000" style="width: 100%; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 14px; font-family: var(--font-body);" oninput="updateDTI()">
                         </div>
                         <div>
-                            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--slate); margin-bottom: 6px;" data-i18n="dtiCalcMonthlyDebts">Monthly Debt Payments</label>
+                            <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-muted, #64748b); margin-bottom: 6px;" data-i18n="dtiCalcMonthlyDebts">Monthly Debt Payments</label>
                             <input type="text" id="dti-debts" placeholder="$2,000" style="width: 100%; padding: 12px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 14px; font-family: var(--font-body);" oninput="updateDTI()">
                         </div>
                     </div>
@@ -7689,11 +7715,11 @@
                                 <circle cx="50" cy="50" r="45" fill="none" stroke="#e2e8f0" stroke-width="10"/>
                                 <circle id="dti-gauge-fill" cx="50" cy="50" r="45" fill="none" stroke="#10b981" stroke-width="10" stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="round" style="transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease;"/>
                             </svg>
-                            <div class="dti-value" id="dti-value" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; font-weight: 700; color: var(--primary-color);">0%</div>
+                            <div class="dti-value" id="dti-value" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; font-weight: 700; color: var(--accent-color);">0%</div>
                         </div>
                         <div class="dti-info" style="flex: 1; min-width: 200px;">
                             <div class="dti-status" id="dti-status" style="display: inline-block; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 12px; background: #10b981; color: white;">Excellent</div>
-                            <p id="dti-message" style="font-size: 14px; color: var(--slate); line-height: 1.5;" data-i18n="dtiCalcResult">Your DTI looks great! Lenders typically allow DTI up to 50%.</p>
+                            <p id="dti-message" style="font-size: 14px; color: var(--text-muted, #64748b); line-height: 1.5;" data-i18n="dtiCalcResult">Your DTI looks great! Lenders typically allow DTI up to 50%.</p>
                         </div>
                     </div>
                 </div>
@@ -7703,16 +7729,16 @@
             <div class="section reveal" id="sec-doc-upload" style="display: none;">
                 <div class="section-title" data-icon="&#128193;"><span data-i18n="docUploadTitle">Document Checklist</span></div>
                 <div class="doc-upload-container" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(245, 158, 11, 0.02)); border-radius: 16px; padding: 24px; border: 1px solid rgba(245, 158, 11, 0.2);">
-                    <p style="margin-bottom: 20px; color: var(--slate); font-size: 14px;" data-i18n="docUploadSubtitle">Have these ready to speed up your application:</p>
+                    <p style="margin-bottom: 20px; color: var(--text-muted, #64748b); font-size: 14px;" data-i18n="docUploadSubtitle">Have these ready to speed up your application:</p>
                     <div class="doc-upload-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
                         <div class="doc-upload-item" style="background: white; border-radius: 12px; padding: 20px; border: 2px dashed rgba(197, 160, 89, 0.3); text-align: center; cursor: pointer; transition: all 0.2s;" onmouseenter="this.style.borderColor='var(--accent-color)';this.style.background='rgba(197,160,89,0.05)'" onmouseleave="this.style.borderColor='rgba(197,160,89,0.3)';this.style.background='white'">
                             <div style="font-size: 32px; margin-bottom: 8px;">&#128100;</div>
-                            <div style="font-weight: 600; font-size: 14px; color: var(--primary-color); margin-bottom: 4px;" data-i18n="docUploadId">Driver's License</div>
+                            <div style="font-weight: 600; font-size: 14px; color: var(--accent-color); margin-bottom: 4px;" data-i18n="docUploadId">Driver's License</div>
                             <div style="font-size: 12px; color: var(--slate);">Current, unexpired driver's license</div>
                         </div>
                         <div class="doc-upload-item" style="background: white; border-radius: 12px; padding: 20px; border: 2px dashed rgba(197, 160, 89, 0.3); text-align: center; cursor: pointer; transition: all 0.2s;" onmouseenter="this.style.borderColor='var(--accent-color)';this.style.background='rgba(197,160,89,0.05)'" onmouseleave="this.style.borderColor='rgba(197,160,89,0.3)';this.style.background='white'">
                             <div style="font-size: 32px; margin-bottom: 8px;">&#128220;</div>
-                            <div style="font-weight: 600; font-size: 14px; color: var(--primary-color); margin-bottom: 4px;" data-i18n="docUploadTrust">Trust Documents (if applicable)</div>
+                            <div style="font-weight: 600; font-size: 14px; color: var(--accent-color); margin-bottom: 4px;" data-i18n="docUploadTrust">Trust Documents (if applicable)</div>
                             <div style="font-size: 12px; color: var(--slate);">If your property is held in a trust, we'll need the trust certificate. Let us know if it's a revocable or irrevocable trust.</div>
                         </div>
                     </div>
@@ -7728,8 +7754,8 @@
                     <span data-i18n="tierCompareTitle">Compare Other Options</span>
                     <span class="collapse-arrow" style="float:right;font-size:14px;transition:transform 0.3s;margin-left:8px;">&#9660;</span>
                 </div>
-                <div class="tier-compare-collapsible" style="max-height:0;overflow:hidden;opacity:0;transition:max-height 0.4s ease,opacity 0.3s ease;">
-                    <div class="tier-compare-container" id="tier-compare-container" style="background: white; border-radius: 16px; padding: 24px; padding-top: 32px; border: 1px solid rgba(0,0,0,0.08); overflow: visible;">
+                <div class="tier-compare-collapsible" style="max-height:0;overflow:hidden;opacity:0;transition:max-height 0.2s ease,opacity 0.2s ease;">
+                    <div class="tier-compare-container" id="tier-compare-container" style="background: white; border-radius: 16px; padding: 24px; padding-top: 32px; border: 1px solid rgba(128,128,128,0.15); overflow: visible;">
                         <!-- Tier comparison table will be rendered here -->
                     </div>
                 </div>
@@ -7750,7 +7776,7 @@
                     <!-- Star summary -->
                     <div style="text-align:center;margin-bottom:20px;">
                         <div id="review-stars" style="font-size: 32px; color: #f59e0b; letter-spacing: 4px;">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                        <div style="font-size: 18px; font-weight: 700; margin: 4px 0; color: var(--primary-color);">
+                        <div style="font-size: 18px; font-weight: 700; margin: 4px 0; color: var(--accent-color);">
                             <span id="review-rating-value">5.0</span>/5 from verified clients
                         </div>
                     </div>
@@ -7764,7 +7790,7 @@
                                   font-family:var(--font-heading);box-shadow:0 4px 14px rgba(245,158,11,0.3);transition:all 0.2s;">
                             See All Reviews &amp; Leave Yours &#8599;
                         </a>
-                        <p style="margin-top: 12px; font-size: 13px; color: var(--slate);">
+                        <p style="margin-top: 12px; font-size: 13px; color: var(--text-muted, #64748b);">
                             See what clients say about working with <strong id="review-lo-name">your loan officer</strong>
                         </p>
                     </div>
@@ -7795,7 +7821,7 @@
             <!-- Borrower Strategy (Personalized Message) -->
             <div class="section reveal" id="sec-borrower-strategy" style="display: none;">
                 <div class="section-title" data-icon="&#128172;"><span data-i18n="strategyTitle">Why This Works For You</span></div>
-                <div class="borrower-strategy-box" id="borrower-strategy-text" style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 14px; padding: 20px 24px; font-family: var(--font-body); font-size: 15px; line-height: 1.7; color: var(--slate);">
+                <div class="borrower-strategy-box" id="borrower-strategy-text" style="background: linear-gradient(135deg, rgba(6,182,212,0.08), rgba(6,182,212,0.03)); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 14px; padding: 20px 24px; font-family: var(--font-body); font-size: 15px; line-height: 1.7; color: var(--text-muted, #1e293b);">
                     <!-- Strategy text will be inserted here -->
                 </div>
             </div>
@@ -7968,12 +7994,12 @@
                         style="width: 100%; height: 8px; border-radius: 5px; background: var(--border-color); outline: none; -webkit-appearance: none; cursor: pointer;"
                         oninput="updateWhatIfBorrowScenario(this.value)">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 12px; color: var(--text-muted);">
-                        <span>$50k</span>
+                        <span id="whatIfBorrowMinLabel">$50k</span>
                         <span style="display:flex;align-items:center;gap:4px;">
                             <span id="whatIfBorrowCurrent" style="cursor:pointer;" title="Click to type exact amount" onclick="document.getElementById('whatIfBorrowInput').style.display='inline-block';document.getElementById('whatIfBorrowCurrent').style.display='none';document.getElementById('whatIfBorrowInput').focus();">$278,810</span>
                             <input type="text" id="whatIfBorrowInput" inputmode="numeric" style="display:none;width:110px;text-align:center;font-size:13px;font-weight:600;padding:4px 8px;border:2px solid var(--accent-color);border-radius:6px;background:var(--bg-dark);color:var(--text-light);outline:none;" placeholder="$250,000" onblur="applyBorrowInput(this)" onkeydown="if(event.key==='Enter'){applyBorrowInput(this);event.preventDefault();}">
                         </span>
-                        <span>$750k</span>
+                        <span id="whatIfBorrowMaxLabel">$750k</span>
                     </div>
                     <!-- Quick-pick amount buttons -->
                     <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; justify-content:center;">
@@ -8024,7 +8050,7 @@
                 </div>
 
                 <!-- Key Takeaways -->
-                <div style="background: rgba(255, 248, 232, 0.5); padding: 20px; border-radius: 12px; border-left: 4px solid var(--accent-color);">
+                <div style="background: rgba(197, 160, 89, 0.12); padding: 20px; border-radius: 12px; border-left: 4px solid var(--accent-color);">
                     <p style="margin: 0; color: var(--text-light); font-size: 14px; line-height: 1.7;">
                         <strong style="color: var(--accent-color);">&#128161; Key Insights:</strong><br/>
                         &#10003; You can always put this back in your credit line and use as needed<br/>
@@ -9636,7 +9662,7 @@
                         reviews.slice(0, 3).forEach(function(r) {
                             var stars = '';
                             for (var ri = 0; ri < 5; ri++) stars += ri < (r.rating || 5) ? '&#9733;' : '&#9734;';
-                            rHtml += '<div style="background:var(--white, white);border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid rgba(255,255,255,0.08);">';
+                            rHtml += '<div class="testimonial-card" style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid rgba(128,128,128,0.1);">';
                             rHtml += '<div style="color:#f59e0b;font-size:14px;margin-bottom:8px;">' + stars + '</div>';
                             rHtml += '<p style="font-size:13px;line-height:1.6;color:var(--text-muted, var(--slate));font-style:italic;margin:0 0 8px;">&ldquo;' + esc(r.text) + '&rdquo;</p>';
                             rHtml += '<div style="font-weight:600;font-size:12px;color:var(--accent-color);">&mdash; ' + esc(r.name) + '</div>';
@@ -10919,6 +10945,11 @@
                     borrowSlider.value = totalLoan;
                     borrowSlider.step = 5000;
                 }
+                // Update slider range labels to match actual min/max
+                var minLabel = document.getElementById('whatIfBorrowMinLabel');
+                if (minLabel) minLabel.textContent = '$' + Math.round(minHeloc / 1000) + 'k';
+                var maxLabel = document.getElementById('whatIfBorrowMaxLabel');
+                if (maxLabel) maxLabel.textContent = '$' + Math.round(maxHeloc / 1000) + 'k';
                 // Update static "Your Current Quote" card
                 var curAmtEl = document.getElementById('currentBorrowAmount');
                 if (curAmtEl) curAmtEl.textContent = '$' + Math.round(payment).toLocaleString();
@@ -11884,9 +11915,9 @@
                     for (var i = 0; i < 5; i++) {
                         stars += i < (t.rating || 5) ? '&#9733;' : '&#9734;';
                     }
-                    html += '<div class="testimonial-card" style="background: var(--white, white); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">';
+                    html += '<div class="testimonial-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">';
                     html += '<div class="testimonial-stars" style="color: #f59e0b; font-size: 16px; margin-bottom: 12px;">' + stars + '</div>';
-                    html += '<div class="testimonial-text" style="font-size: 14px; line-height: 1.6; color: var(--slate); margin-bottom: 12px; font-style: italic;">"' + esc(t.text) + '"</div>';
+                    html += '<div class="testimonial-text" style="font-size: 14px; line-height: 1.6; color: var(--text-muted, #64748b); margin-bottom: 12px; font-style: italic;">"' + esc(t.text) + '"</div>';
                     html += '<div class="testimonial-name" style="font-weight: 600; font-size: 13px; color: var(--accent-color);">— ' + esc(t.name) + '</div>';
                     html += '</div>';
                 });
