@@ -183,9 +183,11 @@ serve(async (req: Request) => {
 
             if (!listResp.ok) {
                 const errText = await listResp.text().catch(() => '')
-                bonzoError = `Bonzo API ${listResp.status}`
-                console.error(`Bonzo API error detail: ${errText.substring(0, 500)}`)
+                let errDetail = ''
+                try { errDetail = JSON.parse(errText)?.message || JSON.parse(errText)?.error || '' } catch {}
+                bonzoError = `Bonzo API ${listResp.status}${errDetail ? ': ' + errDetail : ''}`
                 logs.push(`ERROR: ${bonzoError}`)
+                logs.push(`Response: ${errText.substring(0, 300)}`)
                 break
             }
 
@@ -258,8 +260,7 @@ serve(async (req: Request) => {
         }
 
         if (bonzoError && contacts.length === 0) {
-            console.error('bonzo-sync 502:', bonzoError, logs)
-            return jsonResp({ error: 'Bonzo API connection failed. Check your API key.' }, 502)
+            return jsonResp({ error: bonzoError, logs }, 502)
         }
 
         // 5. Pre-fetch all existing leads for in-memory dedup (avoids N+1 queries)

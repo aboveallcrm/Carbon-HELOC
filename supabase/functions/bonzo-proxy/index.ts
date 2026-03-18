@@ -287,14 +287,25 @@ serve(async (req: Request) => {
         }
 
         // 5. Return Bonzo's response
-        const bonzoData = await bonzoResp.json().catch(() => ({}))
+        const bonzoText = await bonzoResp.text().catch(() => '')
+        let bonzoData: any = {}
+        try { bonzoData = JSON.parse(bonzoText) } catch { bonzoData = { raw: bonzoText.substring(0, 500) } }
         const bonzoStatus = bonzoResp.status
 
+        if (!bonzoResp.ok) {
+            const errMsg = bonzoData.message || bonzoData.error || bonzoData.raw || `Bonzo API returned ${bonzoStatus}`
+            return jsonResponse({
+                error: `Bonzo API error (${bonzoStatus}): ${errMsg}`,
+                bonzo_status: bonzoStatus,
+                data: bonzoData,
+            }, 502)
+        }
+
         return jsonResponse({
-            success: bonzoResp.ok,
+            success: true,
             status: bonzoStatus,
             data: bonzoData,
-        }, bonzoResp.ok ? 200 : 502)
+        })
 
     } catch (err) {
         if ((err as Error).name === 'AbortError') {
