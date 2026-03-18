@@ -561,7 +561,7 @@
             border-bottom: 1px solid rgba(197, 160, 89, 0.12);
             font-family: var(--font-heading);
             animation: greetSlideDown 0.6s 0.5s ease both;
-            overflow: hidden;
+            overflow: visible;
         }
 
         .greeting-banner .greeting-text {
@@ -587,7 +587,7 @@
 
             to {
                 opacity: 1;
-                max-height: 100px;
+                max-height: 200px;
                 padding: 18px 28px;
             }
         }
@@ -1589,6 +1589,13 @@
         }
 
         /* Full-Dark Theme */
+        body.theme-dark {
+            --text-light: #f1f5f9;
+            --text-muted: #94a3b8;
+            --white: #1e293b;
+            --slate: #cbd5e1;
+        }
+
         body.theme-dark .quote-page {
             background: #1e293b;
             color: #e2e8f0;
@@ -1664,12 +1671,12 @@
         }
 
         body.theme-dark .rate-table th {
-            color: #94a3b8;
+            color: #cbd5e1;
             border-color: rgba(255, 255, 255, 0.06);
         }
 
         body.theme-dark .rate-table td {
-            color: #cbd5e1;
+            color: #f1f5f9;
             border-color: rgba(255, 255, 255, 0.04);
         }
 
@@ -9063,7 +9070,7 @@
                 
                 // Template mode: simple, standard, enhanced
                 var linkOpts = data.linkOptions || {};
-                var templateMode = linkOpts.templateMode || 'enhanced'; // default to enhanced
+                var templateMode = linkOpts.preset || linkOpts.templateMode || 'enhanced'; // default to enhanced
 
                 var loadingEl = document.getElementById('loading');
                 if (loadingEl) loadingEl.style.display = 'none';
@@ -9294,8 +9301,9 @@
                     };
                     
                     switch(mode) {
+                        case 'minimal':
                         case 'simple':
-                            // Simple: Just the basics - rates, recommendation, disclaimer
+                            // Minimal/Simple: Just the basics - rates, recommendation, disclaimer
                             if (sections.video) sections.video.style.display = 'none';
                             if (sections.socialProof) sections.socialProof.style.display = 'none';
                             if (sections.whatIf) sections.whatIf.style.display = 'none';
@@ -9309,26 +9317,35 @@
                             var ezraOrb = document.getElementById('eq-orb');
                             if (ezraOrb) ezraOrb.style.display = 'none';
                             break;
-                            
+
+                        case 'original':
                         case 'standard':
-                            // Standard: Basics + What If + FAQ, no video/psychology
+                            // Original/Standard: Clean rates view — no AI, no psychology, no video
                             if (sections.video) sections.video.style.display = 'none';
                             if (sections.socialProof) sections.socialProof.style.display = 'none';
                             if (sections.interactiveSavings) sections.interactiveSavings.style.display = 'none';
                             if (sections.savingsCompare) sections.savingsCompare.style.display = 'none';
                             if (sections.fundsCarousel) sections.fundsCarousel.style.display = 'none';
+                            // Hide Ezra for original preset
+                            var ezraOrbOrig = document.getElementById('eq-orb');
+                            if (ezraOrbOrig) ezraOrbOrig.style.display = 'none';
                             // Keep: whatIf, paymentScenario, faq, equityChart
                             break;
-                            
+
                         case 'enhanced':
+                        case 'custom':
                         default:
-                            // Enhanced: Everything (default behavior)
-                            // All sections visible by default
-                            // Respect individual linkOptions
+                            // Enhanced/Custom: Everything visible, respect individual linkOptions
                             if (opts.showVideo === false && sections.video) sections.video.style.display = 'none';
                             if (opts.showWhatIf === false && sections.whatIf) sections.whatIf.style.display = 'none';
                             if (opts.showFaq === false && sections.faq) sections.faq.style.display = 'none';
                             break;
+                    }
+                    // Respect individual linkOptions flags regardless of mode
+                    if (opts.showSalesPsych === false && sections.socialProof) sections.socialProof.style.display = 'none';
+                    if (opts.showAiChat === false) {
+                        var ezraOrbFlag = document.getElementById('eq-orb');
+                        if (ezraOrbFlag) ezraOrbFlag.style.display = 'none';
                     }
                 }
 
@@ -9498,8 +9515,8 @@
                         var thirdPartyCosts = Math.round(800 + loanAmt * 0.004);
                         var estTotalCosts = origDollars + thirdPartyCosts;
                         tiersHtml += '<div style="background:rgba(245,158,11,0.06);border-radius:8px;padding:10px 14px;margin:10px 0 4px;font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;">';
-                        tiersHtml += '<span style="color:var(--slate);">Origination: <strong style="color:var(--primary-color);">$' + origDollars.toLocaleString() + '</strong> <span style="opacity:0.6;">(financed)</span></span>';
-                        tiersHtml += '<span style="color:var(--slate);">Est. Total Costs: <strong style="color:var(--primary-color);">$' + estTotalCosts.toLocaleString() + '</strong></span>';
+                        tiersHtml += '<span style="color:var(--text-muted, var(--slate));">Origination: <strong style="color:var(--accent-color);">$' + origDollars.toLocaleString() + '</strong> <span style="opacity:0.6;">(financed)</span></span>';
+                        tiersHtml += '<span style="color:var(--text-muted, var(--slate));">Est. Total Costs: <strong style="color:var(--accent-color);">$' + estTotalCosts.toLocaleString() + '</strong></span>';
                         tiersHtml += '</div>';
                         tiersHtml += '</div>';
                     });
@@ -9619,10 +9636,10 @@
                         reviews.slice(0, 3).forEach(function(r) {
                             var stars = '';
                             for (var ri = 0; ri < 5; ri++) stars += ri < (r.rating || 5) ? '&#9733;' : '&#9734;';
-                            rHtml += '<div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.06);">';
+                            rHtml += '<div style="background:var(--white, white);border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);border:1px solid rgba(255,255,255,0.08);">';
                             rHtml += '<div style="color:#f59e0b;font-size:14px;margin-bottom:8px;">' + stars + '</div>';
-                            rHtml += '<p style="font-size:13px;line-height:1.6;color:var(--slate);font-style:italic;margin:0 0 8px;">&ldquo;' + esc(r.text) + '&rdquo;</p>';
-                            rHtml += '<div style="font-weight:600;font-size:12px;color:var(--primary-color);">&mdash; ' + esc(r.name) + '</div>';
+                            rHtml += '<p style="font-size:13px;line-height:1.6;color:var(--text-muted, var(--slate));font-style:italic;margin:0 0 8px;">&ldquo;' + esc(r.text) + '&rdquo;</p>';
+                            rHtml += '<div style="font-weight:600;font-size:12px;color:var(--accent-color);">&mdash; ' + esc(r.name) + '</div>';
                             rHtml += '</div>';
                         });
                         reviewGrid.innerHTML = rHtml;
@@ -11867,10 +11884,10 @@
                     for (var i = 0; i < 5; i++) {
                         stars += i < (t.rating || 5) ? '&#9733;' : '&#9734;';
                     }
-                    html += '<div class="testimonial-card" style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">';
+                    html += '<div class="testimonial-card" style="background: var(--white, white); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">';
                     html += '<div class="testimonial-stars" style="color: #f59e0b; font-size: 16px; margin-bottom: 12px;">' + stars + '</div>';
                     html += '<div class="testimonial-text" style="font-size: 14px; line-height: 1.6; color: var(--slate); margin-bottom: 12px; font-style: italic;">"' + esc(t.text) + '"</div>';
-                    html += '<div class="testimonial-name" style="font-weight: 600; font-size: 13px; color: var(--primary-color);">— ' + esc(t.name) + '</div>';
+                    html += '<div class="testimonial-name" style="font-weight: 600; font-size: 13px; color: var(--accent-color);">— ' + esc(t.name) + '</div>';
                     html += '</div>';
                 });
                 html += '</div>';
