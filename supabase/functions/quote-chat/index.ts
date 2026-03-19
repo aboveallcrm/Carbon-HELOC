@@ -235,7 +235,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { quoteCode, message, conversationHistory } = await req.json();
+    const { quoteCode, message, conversationHistory, quoteContext } = await req.json();
 
     // 1. Validate input
     if (!quoteCode || !message) {
@@ -317,8 +317,19 @@ serve(async (req: Request) => {
       return json({ error: "AI chat requires Titanium tier or above" }, 403);
     }
 
-    // 8. Build system prompt
-    const systemPrompt = buildClientSystemPrompt(link.quote_data, link.lo_info);
+    // 8. Build system prompt with real-time context from client page
+    let systemPrompt = buildClientSystemPrompt(link.quote_data, link.lo_info);
+
+    if (quoteContext) {
+      const rtCtx = [];
+      if (quoteContext.isReturnVisitor) rtCtx.push("This client is a RETURN VISITOR (viewed " + (quoteContext.viewCount || 2) + " times). They're clearly interested but haven't applied yet. Shift to gentle objection-handling: 'I can see you've been giving this some thought — what questions can I help answer?'");
+      if (quoteContext.debtCount > 0) rtCtx.push("Client has " + quoteContext.debtCount + " debts shown on their quote" + (quoteContext.monthlySavings > 0 ? " with potential monthly savings of $" + Math.round(quoteContext.monthlySavings) + "/mo by consolidating" : "") + ". Weave debt consolidation benefits into responses naturally.");
+      if (quoteContext.dailyCost) rtCtx.push("Daily cost breakdown: " + quoteContext.dailyCost + "/day — use this to make the payment feel small and manageable.");
+      if (rtCtx.length > 0) {
+        systemPrompt += "\n\nREAL-TIME CLIENT CONTEXT (from their current session):\n" + rtCtx.join("\n");
+      }
+      systemPrompt += "\n\nEMOTIONAL INTELLIGENCE DIRECTIVES:\n- You are warm, empathetic, and confident. Validate feelings before educating.\n- Never pressure — empower. Speak like a knowledgeable friend who genuinely wants to help.\n- Use the client's name in your first sentence.\n- Reference their specific numbers (not generic amounts).\n- Pattern: Validate → Educate → Empower → Soft CTA.\n- Never say 'as an AI'. Never use corporate jargon. Never rush the client. Never dismiss concerns.\n- When market urgency is appropriate: rates are volatile and lenders change guidelines frequently.";
+    }
 
     // 9. Build messages array
     const messages: Array<{ role: string; content: string }> = [];

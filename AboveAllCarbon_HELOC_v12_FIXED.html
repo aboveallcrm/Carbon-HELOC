@@ -14444,6 +14444,18 @@ Sent via Above All Carbon HELOC Tool`;
             var chkVideo = document.getElementById('chk-link-video');
             var chkSales = document.getElementById('chk-link-sales-psych');
             var chkExpiry = document.getElementById('chk-link-expiry');
+            // Titanium feature toggle switches (use .active class, not .checked)
+            var togTierCompare = document.getElementById('chk-show-tier-compare');
+            var togDtiCalc = document.getElementById('chk-show-dti-calc');
+            var togWhatIf = document.getElementById('chk-show-whatif-payoff');
+            var togTestimonials = document.getElementById('chk-show-testimonials');
+
+            function setToggle(el, on) {
+                if (!el) return;
+                if (on && !el.classList.contains('active')) el.classList.add('active');
+                if (!on && el.classList.contains('active')) el.classList.remove('active');
+            }
+
             if (preset === 'custom') return; // user sets their own
             if (preset === 'enhanced') {
                 if (chkLo) chkLo.checked = true;
@@ -14452,6 +14464,10 @@ Sent via Above All Carbon HELOC Tool`;
                 if (chkVideo) chkVideo.checked = false;
                 if (chkSales) chkSales.checked = true;
                 if (chkExpiry) chkExpiry.checked = true;
+                setToggle(togTierCompare, true);
+                setToggle(togDtiCalc, true);
+                setToggle(togWhatIf, true);
+                setToggle(togTestimonials, true);
             } else if (preset === 'original') {
                 if (chkLo) chkLo.checked = true;
                 if (chkAi) chkAi.checked = false;
@@ -14459,6 +14475,10 @@ Sent via Above All Carbon HELOC Tool`;
                 if (chkVideo) chkVideo.checked = false;
                 if (chkSales) chkSales.checked = false;
                 if (chkExpiry) chkExpiry.checked = true;
+                setToggle(togTierCompare, false);
+                setToggle(togDtiCalc, false);
+                setToggle(togWhatIf, false);
+                setToggle(togTestimonials, false);
             } else if (preset === 'minimal') {
                 if (chkLo) chkLo.checked = false;
                 if (chkAi) chkAi.checked = false;
@@ -14466,6 +14486,10 @@ Sent via Above All Carbon HELOC Tool`;
                 if (chkVideo) chkVideo.checked = false;
                 if (chkSales) chkSales.checked = false;
                 if (chkExpiry) chkExpiry.checked = false;
+                setToggle(togTierCompare, false);
+                setToggle(togDtiCalc, false);
+                setToggle(togWhatIf, false);
+                setToggle(togTestimonials, false);
             }
             // Toggle video options wrapper visibility
             var optWrap = document.getElementById('link-video-options-wrap');
@@ -14695,6 +14719,19 @@ Sent via Above All Carbon HELOC Tool`;
                 });
                 if (Object.keys(tier.rates).length > 0 || Object.keys(tier.varRates).length > 0) quoteData.tiers.push(tier);
             }
+
+            // Collect debt consolidation entries for client page
+            quoteData.debts = [];
+            document.querySelectorAll('#debt-input-container .debt-input-row').forEach(function(row) {
+                var creditor = (row.querySelector('.debt-name')?.value || '').trim();
+                var balance = (row.querySelector('.debt-bal')?.value || '').trim();
+                var apr = (row.querySelector('.debt-apr')?.value || '').trim();
+                var payment = (row.querySelector('.debt-pmt')?.value || '').trim();
+                if (balance && parseFloat(balance) > 0) {
+                    quoteData.debts.push({ creditor: creditor, balance: balance, apr: apr, payment: payment });
+                }
+            });
+            quoteData.showDebts = document.getElementById('chk-show-debt')?.checked || false;
 
             // Generate borrower-focused strategy for the client quote
             var strategyCtx = {

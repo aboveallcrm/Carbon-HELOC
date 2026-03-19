@@ -3,6 +3,7 @@ const ALLOWED_ORIGINS = [
   "https://carbon-heloc-updated.vercel.app",
   "https://aboveallcrm.com",
   "https://www.aboveallcrm.com",
+  "https://heloc.aboveallcrm.com",
 ];
 
 export function getCorsHeaders(req: Request): Record<string, string> {
