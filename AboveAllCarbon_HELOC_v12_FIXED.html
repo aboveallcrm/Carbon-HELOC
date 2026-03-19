@@ -8178,17 +8178,21 @@ Best regards,
 
         // ===== UTILITY HELPERS =====
         // Safe auth header helper — always gets a fresh token via refreshSession
+        var _authRefreshPromise = null;
         async function getAuthHeaders() {
             if (!window._supabase) return null;
             try {
-                // refreshSession() exchanges the refresh token for a fresh access token
-                // This is more reliable than getSession() which can return stale cached tokens
-                var { data, error } = await window._supabase.auth.refreshSession();
-                var session = data?.session;
-                // If refresh fails (e.g. refresh token expired), fall back to cached session
-                if (!session) {
-                    var cached = await window._supabase.auth.getSession();
-                    session = cached?.data?.session;
+                var { data: { session } } = await window._supabase.auth.getSession();
+                // If token expires within 60s, refresh — but deduplicate concurrent calls
+                if (session && session.expires_at) {
+                    var expiresIn = session.expires_at - Math.floor(Date.now() / 1000);
+                    if (expiresIn < 60) {
+                        if (!_authRefreshPromise) {
+                            _authRefreshPromise = window._supabase.auth.refreshSession().finally(function() { _authRefreshPromise = null; });
+                        }
+                        var { data: refreshData } = await _authRefreshPromise;
+                        if (refreshData?.session) session = refreshData.session;
+                    }
                 }
                 if (!session || !session.access_token) return null;
                 return { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' };
