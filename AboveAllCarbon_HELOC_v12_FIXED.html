@@ -11742,8 +11742,17 @@ Best regards,
                 return;
             }
 
-            // Use Supabase admin signup (works because super_admin has RLS bypass)
-            const { data, error } = await sb.auth.signUp({ email, password });
+            // Use Supabase admin signup with email pre-confirmed so user can login immediately
+            const { data, error } = await sb.auth.signUp({
+                email,
+                password,
+                options: { data: { email_confirmed: true } }
+            });
+
+            // Auto-confirm the email via RPC so user doesn't need to click confirmation link
+            if (data?.user) {
+                await sb.rpc('admin_confirm_user', { target_user_id: data.user.id }).catch(() => {});
+            }
 
             if (error) {
                 result.style.display = 'block';
