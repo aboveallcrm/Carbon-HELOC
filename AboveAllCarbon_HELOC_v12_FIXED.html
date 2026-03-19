@@ -16944,13 +16944,10 @@ Sent via Above All Carbon HELOC Tool`;
                 var msg = err.message || String(err);
                 if (msg.includes('No Bonzo API key configured')) {
                     showToast('Keys not saved yet — click "Save All Integration Settings" first, then test again.', 'warning', 5000);
-                } else if (msg.includes('Auth session expired')) {
+                } else if (msg.includes('Session expired') || msg.includes('please log in')) {
                     showToast('Session expired — please log out and back in, then try again.', 'error', 5000);
-                } else if (msg.includes('401') || msg.includes('Unauthorized') || msg.includes('Invalid')) {
-                    showToast('❌ Bonzo API key is invalid or expired. Check your key in Bonzo settings.', 'error', 5000);
                 } else {
-                    // Any other error from Bonzo is still a successful connection
-                    showToast('✅ Bonzo connection works! (Server responded)', 'success', 4000);
+                    showToast('❌ Bonzo error: ' + msg, 'error', 8000);
                 }
             }
         }
