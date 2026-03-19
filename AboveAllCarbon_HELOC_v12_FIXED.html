@@ -11750,20 +11750,16 @@ Best regards,
             }
 
             if (data?.user) {
-                // Create profile
-                const { error: profileError } = await sb.from('profiles').insert({
-                    id: data.user.id,
-                    email: email,
-                    role: role,
-                    tier: tier,
-                    subscription_status: 'trialing'
-                });
+                // Update profile with chosen role/tier (trigger already created it with defaults)
+                const { error: profileError } = await sb.from('profiles')
+                    .update({ role: role, tier: tier, subscription_status: 'trialing' })
+                    .eq('id', data.user.id);
 
                 if (profileError) {
                     result.style.display = 'block';
                     result.style.background = 'rgba(239,68,68,0.2)';
                     result.style.color = '#ef4444';
-                    result.innerText = 'Account created but profile insert failed: ' + profileError.message;
+                    result.innerText = 'Account created but profile update failed: ' + profileError.message;
                     return;
                 }
 
