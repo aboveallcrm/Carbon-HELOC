@@ -80,6 +80,12 @@ __pycache__/
 optimize.py
 .vercel
 
+# Temporary browser profiles and scripts
+.tmp-chrome-profile/
+.tmp-edge-profile/
+.tmp_run_server.ps1
+temp_*.ps1
+
 # Temp/demo files
 temp.txt
 search_results.txt
