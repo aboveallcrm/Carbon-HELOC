@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthProvider';
 
@@ -13,18 +13,7 @@ export const IntegrationsSettings: React.FC = () => {
     const [saving, setSaving] = useState(false);
     const [webhookUrl, setWebhookUrl] = useState('');
 
-    useEffect(() => {
-        if (user) {
-            // eslint-disable-next-line
-            loadIntegrations();
-            const functionUrl = import.meta.env.VITE_SUPABASE_URL
-                ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bonzo-webhook?user_id=${user.id}`
-                : `https://[PROJECT_REF].supabase.co/functions/v1/bonzo-webhook?user_id=${user.id}`;
-            setWebhookUrl(functionUrl);
-        }
-    }, [user]);
-
-    const loadIntegrations = async () => {
+    const loadIntegrations = useCallback(async () => {
         if (!user) return;
         try {
             const { data, error } = await supabase
@@ -51,7 +40,17 @@ export const IntegrationsSettings: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]);
+
+    useEffect(() => {
+        if (user) {
+            loadIntegrations();
+            const functionUrl = import.meta.env.VITE_SUPABASE_URL
+                ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bonzo-webhook?user_id=${user.id}`
+                : `https://[PROJECT_REF].supabase.co/functions/v1/bonzo-webhook?user_id=${user.id}`;
+            setWebhookUrl(functionUrl);
+        }
+    }, [loadIntegrations, user]);
 
     const handleSave = async () => {
         if (!user) return;

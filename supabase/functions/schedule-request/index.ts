@@ -3,6 +3,34 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { getCorsHeaders } from "../_shared/cors.ts"
 
+const QUOTE_CODE_RE = /^[a-z0-9]{6,12}$/i
+const VALID_REQUEST_TYPES = new Set(['schedule_call', 'call_me_now'])
+const MAX_REQUESTS_PER_QUOTE_PER_HOUR = 5
+const MAX_PHONE_ATTEMPTS_PER_10_MIN = 2
+
+function normalizeText(value: unknown, maxLength = 160): string {
+    return String(value || '')
+        .replace(/[<>"'`]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, maxLength)
+}
+
+function normalizePhone(value: unknown): string {
+    const digits = String(value || '').replace(/\D/g, '')
+    if (digits.length === 11 && digits.startsWith('1')) return digits.slice(1)
+    return digits
+}
+
+function isValidEmail(value: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+}
+
+function sanitizeHttpsUrl(value: unknown): string {
+    const url = String(value || '').trim()
+    return /^https:\/\//i.test(url) ? url : ''
+}
+
 // Simple HTML template for email notifications
 const EMAIL_TEMPLATE = (data: any) => `
 <!DOCTYPE html>
@@ -95,6 +123,44 @@ serve(async (req: Request) => {
                 { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
         }
+        if (!QUOTE_CODE_RE.test(quoteCode)) {
+            return new Response(
+                JSON.stringify({ error: 'Invalid quote code' }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+        if (!VALID_REQUEST_TYPES.has(requestType)) {
+            return new Response(
+                JSON.stringify({ error: 'Invalid request type' }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        const normalizedPhone = normalizePhone(clientPhone)
+        if (normalizedPhone.length < 10 || normalizedPhone.length > 15) {
+            return new Response(
+                JSON.stringify({ error: 'Invalid phone number' }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        const normalizedEmail = normalizeText(clientEmail || '', 160).toLowerCase()
+        if (normalizedEmail && !isValidEmail(normalizedEmail)) {
+            return new Response(
+                JSON.stringify({ error: 'Invalid email address' }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        const safeClientName = normalizeText(clientName || '', 120)
+        const safePreferredTime = normalizeText(preferredTime || 'asap', 120)
+        const metadataJson = JSON.stringify(metadata || {})
+        if (metadataJson.length > 5000) {
+            return new Response(
+                JSON.stringify({ error: 'Metadata payload too large' }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
 
         // Initialize Supabase Admin Client
         const supabaseAdmin = createClient(
@@ -116,6 +182,35 @@ serve(async (req: Request) => {
             )
         }
 
+        const hourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+        const { count: recentQuoteCount } = await supabaseAdmin
+            .from('schedule_requests')
+            .select('id', { count: 'exact', head: true })
+            .eq('quote_code', quoteCode)
+            .gte('created_at', hourAgo)
+
+        if ((recentQuoteCount || 0) >= MAX_REQUESTS_PER_QUOTE_PER_HOUR) {
+            return new Response(
+                JSON.stringify({ error: 'Too many requests for this quote. Please try again later.' }),
+                { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        const { count: recentPhoneCount } = await supabaseAdmin
+            .from('schedule_requests')
+            .select('id', { count: 'exact', head: true })
+            .eq('quote_code', quoteCode)
+            .eq('client_phone', normalizedPhone)
+            .gte('created_at', tenMinutesAgo)
+
+        if ((recentPhoneCount || 0) >= MAX_PHONE_ATTEMPTS_PER_10_MIN) {
+            return new Response(
+                JSON.stringify({ error: 'Please wait a few minutes before sending another request.' }),
+                { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
         // 2. Get LO profile with notification preferences
         const { data: profile, error: profileError } = await supabaseAdmin
             .from('profiles')
@@ -127,10 +222,10 @@ serve(async (req: Request) => {
             console.error('Profile lookup error:', profileError)
         }
 
-        const loName = profile?.full_name || 'Loan Officer'
+        const loName = normalizeText(profile?.full_name || 'Loan Officer', 120)
         const loPhone = profile?.notification_phone || ''
         const loEmail = profile?.notification_email || ''
-        const calendarLink = link.lo_info?.calendarLink || profile?.calendar_link || ''
+        const calendarLink = sanitizeHttpsUrl(link.lo_info?.calendarLink || profile?.calendar_link || '')
 
         // 3. Create schedule request in database
         const { data: request, error: requestError } = await supabaseAdmin
@@ -138,11 +233,11 @@ serve(async (req: Request) => {
                 p_user_id: link.user_id,
                 p_lead_id: link.lead_id,
                 p_quote_code: quoteCode,
-                p_client_name: clientName || '',
-                p_client_phone: clientPhone,
-                p_client_email: clientEmail || '',
+                p_client_name: safeClientName,
+                p_client_phone: normalizedPhone,
+                p_client_email: normalizedEmail,
                 p_request_type: requestType,
-                p_preferred_time: preferredTime,
+                p_preferred_time: safePreferredTime,
                 p_metadata: metadata
             })
 
@@ -159,12 +254,12 @@ serve(async (req: Request) => {
         // 4. Prepare notification data
         const notificationData = {
             loName,
-            clientName: clientName || 'A client',
-            clientPhone,
-            clientEmail,
+            clientName: safeClientName || 'A client',
+            clientPhone: normalizedPhone,
+            clientEmail: normalizedEmail,
             quoteCode,
             requestType,
-            preferredTime: preferredTime === 'asap' ? 'As soon as possible' : preferredTime,
+            preferredTime: safePreferredTime === 'asap' ? 'As soon as possible' : safePreferredTime,
             requestTime: new Date().toLocaleString(),
             calendarLink
         }
@@ -235,11 +330,11 @@ serve(async (req: Request) => {
                     data: {
                         requestId,
                         quoteCode,
-                        clientName,
-                        clientPhone,
-                        clientEmail,
+                        clientName: safeClientName,
+                        clientPhone: normalizedPhone,
+                        clientEmail: normalizedEmail,
                         requestType,
-                        preferredTime,
+                        preferredTime: safePreferredTime,
                         loInfo: {
                             id: link.user_id,
                             name: loName,

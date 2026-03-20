@@ -1,12 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3"
 import { getWebhookCorsHeaders } from "../_shared/cors.ts"
+import { verifyGhlWebhookSignature } from "../_shared/ghl-signature.ts"
 
 const corsHeaders = getWebhookCorsHeaders()
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
+  }
+
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 405,
+    })
   }
 
   try {
@@ -16,10 +24,27 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const userId = url.searchParams.get('user_id');
+    if (!userId) {
+      return new Response(JSON.stringify({ error: 'Missing user_id query parameter' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      })
+    }
+
+    const rawBody = await req.text()
+    const signature = req.headers.get('X-GHL-Signature')
+    const legacySignature = req.headers.get('X-WH-Signature')
+    const isValid = await verifyGhlWebhookSignature(rawBody, signature, legacySignature)
+    if (!isValid) {
+      return new Response(JSON.stringify({ error: 'Invalid webhook signature' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      })
+    }
 
     let payload;
     try {
-      payload = await req.json()
+      payload = rawBody ? JSON.parse(rawBody) : {}
     } catch(e) {
       payload = {}
     }
@@ -51,9 +76,7 @@ serve(async (req) => {
       ghl_contact_id: contactId
     };
 
-    if (userId) {
-      row.user_id = userId;
-    }
+    row.user_id = userId;
     
     let existingRecord = null;
     if (contactId) {

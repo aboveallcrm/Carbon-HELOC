@@ -30,6 +30,29 @@ serve(async (req: Request) => {
     }
 
     const sb = createClient(SB_URL, SB_KEY)
+    const internalSecret = Deno.env.get("CLICK_NOTIFY_SECRET") || ""
+    const providedSecret = req.headers.get("x-click-notify-secret") || ""
+    const authHeader = req.headers.get("Authorization") || ""
+
+    let isAuthorized = false
+    if (internalSecret && providedSecret && providedSecret === internalSecret) {
+      isAuthorized = true
+    } else if (authHeader.startsWith("Bearer ")) {
+      const token = authHeader.replace("Bearer ", "")
+      const { data: { user }, error: authError } = await sb.auth.getUser(token)
+      if (!authError && user) {
+        const { data: profile } = await sb
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .maybeSingle()
+        isAuthorized = profile?.role === "admin" || profile?.role === "super_admin"
+      }
+    }
+
+    if (!isAuthorized) {
+      return json({ error: "Unauthorized" }, 401)
+    }
 
     // Fetch pending notifications (batch of 50)
     const { data: pending, error: fetchErr } = await sb

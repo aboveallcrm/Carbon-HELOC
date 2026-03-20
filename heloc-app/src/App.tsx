@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { RateMatrix } from './components/RateMatrix';
@@ -19,6 +19,35 @@ import { BillingSettings } from './components/BillingSettings';
 import { TierGate } from './components/TierGate';
 import { useTier } from './hooks/useTier';
 import { ExportPanel } from './components/ExportPanel';
+
+function getClientViewConfig() {
+  const defaultSections = {
+    rateMatrix: true,
+    recommendation: true,
+    analysis: true,
+  };
+
+  if (typeof window === 'undefined') {
+    return { inputs: DEFAULT_INPUTS, sections: defaultSections, isClientView: false };
+  }
+
+  const q = new URLSearchParams(window.location.search).get('q');
+  if (!q) {
+    return { inputs: DEFAULT_INPUTS, sections: defaultSections, isClientView: false };
+  }
+
+  try {
+    const payload = JSON.parse(atob(q));
+    return {
+      inputs: payload.i ? { ...DEFAULT_INPUTS, ...payload.i } : DEFAULT_INPUTS,
+      sections: payload.s ? { ...defaultSections, ...payload.s } : defaultSections,
+      isClientView: true,
+    };
+  } catch {
+    console.error("Failed to parse client link");
+    return { inputs: DEFAULT_INPUTS, sections: defaultSections, isClientView: false };
+  }
+}
 
 function SettingsTabs() {
   const [activeTab, setActiveTab] = useState<'profile' | 'bonzo' | 'billing'>('profile');
@@ -50,32 +79,13 @@ function SettingsTabs() {
 function AppContent() {
   const { session, role, signOut, loading, realTier, setDemoTier } = useAuth();
   const { tier, hasTier } = useTier();
+  const [clientViewConfig] = useState(getClientViewConfig);
   const [currentView, setCurrentView] = useState('quote');
-  const [inputs, setInputs] = useState<LoanInputs>(DEFAULT_INPUTS);
+  const [inputs, setInputs] = useState<LoanInputs>(clientViewConfig.inputs);
   const [rates] = useState<RatesData>(DEFAULT_RATES);
   const [leadBody, setLeadBody] = useState('');
-
-  const [isClientView, setIsClientView] = useState(false);
-  const [sections, setSections] = useState({
-    rateMatrix: true,
-    recommendation: true,
-    analysis: true,
-  });
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const q = searchParams.get('q');
-    if (q) {
-      try {
-        const payload = JSON.parse(atob(q));
-        if (payload.i) setInputs(payload.i);
-        if (payload.s) setSections(payload.s);
-        setIsClientView(true);
-      } catch (e) {
-        console.error("Failed to parse client link");
-      }
-    }
-  }, []);
+  const [isClientView] = useState(clientViewConfig.isClientView);
+  const [sections, setSections] = useState(clientViewConfig.sections);
 
   // Custom hooks
   const quoteResult = useQuoteCalculator(inputs, rates);

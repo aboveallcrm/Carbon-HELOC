@@ -10,13 +10,16 @@
 (function() {
     'use strict';
 
+    const DEFAULT_WAKE_WORD = 'hey ezra';
+    const DEFAULT_VOICE_LANG = 'en-US';
+
     // ==================== CONFIGURATION ====================
     const CONFIG = {
         version: '3.0',
         debug: false,
         maxHistory: 50,
         predictionCount: 3,
-        voiceLang: 'en-US',
+        voiceLang: getStoredVoiceLang(),
         autoSaveInterval: 30000, // 30 seconds
     };
 
@@ -25,6 +28,60 @@
     let voiceStatus = null;
     let voiceEnabled = localStorage.getItem('carbon_voice_enabled') === 'true';
     let voiceAlwaysListening = localStorage.getItem('carbon_voice_always_listening') === 'true';
+    let activeWakeWords = getStoredWakeWords();
+
+    function getStoredWakeWord() {
+        return (localStorage.getItem('carbon_wake_word') || DEFAULT_WAKE_WORD).toLowerCase();
+    }
+
+    function getStoredWakeWords() {
+        return [getStoredWakeWord()];
+    }
+
+    function getStoredVoiceLang() {
+        return localStorage.getItem('carbon_voice_lang') || DEFAULT_VOICE_LANG;
+    }
+
+    function formatWakeWord(wakeWord) {
+        return (wakeWord || DEFAULT_WAKE_WORD).replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
+    function getWakeWordPrompt(prefix = 'Say') {
+        return `${prefix} "${formatWakeWord(activeWakeWords[0])}"`;
+    }
+
+    function getVoiceSettings() {
+        return {
+            enabled: voiceEnabled,
+            wakeWord: activeWakeWords[0] || DEFAULT_WAKE_WORD,
+            voiceLang: CONFIG.voiceLang,
+        };
+    }
+
+    function recordVoiceTelemetry(eventType, data = {}) {
+        const payload = {
+            eventType,
+            createdAt: new Date().toISOString(),
+            userId: window.currentUserId || null,
+            settings: getVoiceSettings(),
+            data,
+        };
+
+        try {
+            const storageKey = `carbon_voice_telemetry_${window.currentUserId || 'anon'}`;
+            const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            existing.push(payload);
+            localStorage.setItem(storageKey, JSON.stringify(existing.slice(-50)));
+        } catch (e) {
+            // Ignore localStorage issues; telemetry should never break voice UX.
+        }
+
+        window.dispatchEvent(new CustomEvent('carbon:voice-telemetry', { detail: payload }));
+
+        if (CONFIG.debug) {
+            console.debug('[Carbon Voice Telemetry]', payload);
+        }
+    }
 
     // ==================== COMMAND REGISTRY (v2.0 + New) ====================
     const COMMANDS = {
@@ -349,8 +406,6 @@
                 <line x1="8" y1="23" x2="16" y2="23"></line>
             </svg>
         `;
-        voiceOrb.title = voiceEnabled ? 'Voice is ON - Click to turn off' : 'Voice is OFF - Click to turn on';
-        voiceOrb.style.display = voiceEnabled ? 'flex' : 'none';
         voiceOrb.addEventListener('click', toggleVoiceOrb);
         document.body.appendChild(voiceOrb);
         
@@ -358,16 +413,100 @@
         voiceStatus = document.createElement('div');
         voiceStatus.id = 'carbon-voice-status';
         voiceStatus.className = 'carbon-voice-status';
-        voiceStatus.textContent = 'Say "Hey Ezra"';
+        voiceStatus.textContent = getWakeWordPrompt();
         document.body.appendChild(voiceStatus);
+        syncVoiceUI();
         
         // Show status briefly on load if voice is enabled
         if (voiceEnabled) {
-            showVoiceStatus('Voice active - Say "Hey Ezra"');
+            showVoiceStatus(`Voice active - ${getWakeWordPrompt()}`);
         }
     }
     
+    function syncVoiceUI() {
+        if (voiceOrb) {
+            voiceOrb.style.display = voiceEnabled ? 'flex' : 'none';
+            voiceOrb.title = voiceEnabled ? 'Voice is ON - Click to turn off' : 'Voice is OFF - Enable it in Settings to turn on';
+            voiceOrb.classList.toggle('carbon-voice-active', voiceEnabled);
+            if (!voiceEnabled) {
+                voiceOrb.classList.remove('carbon-voice-listening');
+            }
+        }
+        if (voiceStatus) {
+            voiceStatus.textContent = getWakeWordPrompt();
+        }
+    }
+
+    function applyVoiceSettings(settings = {}, options = {}) {
+        const previousSettings = getVoiceSettings();
+        if (typeof settings.enabled === 'boolean') {
+            voiceEnabled = settings.enabled;
+            localStorage.setItem('carbon_voice_enabled', voiceEnabled ? 'true' : 'false');
+        } else {
+            voiceEnabled = localStorage.getItem('carbon_voice_enabled') === 'true';
+        }
+
+        if (typeof settings.wakeWord === 'string' && settings.wakeWord.trim()) {
+            localStorage.setItem('carbon_wake_word', settings.wakeWord.trim().toLowerCase());
+        }
+
+        if (typeof settings.voiceLang === 'string' && settings.voiceLang.trim()) {
+            localStorage.setItem('carbon_voice_lang', settings.voiceLang.trim());
+        }
+
+        activeWakeWords = getStoredWakeWords();
+        CONFIG.voiceLang = getStoredVoiceLang();
+
+        if (recognition) {
+            recognition.lang = CONFIG.voiceLang;
+        }
+
+        syncVoiceUI();
+
+        if (voiceEnabled) {
+            startWakeWordListening();
+            showVoiceStatus(`Voice active - ${getWakeWordPrompt()}`);
+        } else {
+            wakeWordDetected = false;
+            if (recognition) {
+                try { recognition.stop(); } catch (e) { }
+            }
+            voiceListening = false;
+            hideVoiceStatus();
+        }
+
+        const updatedSettings = getVoiceSettings();
+        const changedKeys = Object.keys(updatedSettings).filter((key) => updatedSettings[key] !== previousSettings[key]);
+
+        if (options.notify && typeof showToast === 'function') {
+            const toastMessage = voiceEnabled ? 'Voice recognition ON' : 'Voice recognition OFF';
+            showToast(toastMessage, voiceEnabled ? 'success' : 'info');
+            if (changedKeys.length) {
+                recordVoiceTelemetry('settings_changed', { changedKeys });
+            }
+            return updatedSettings;
+            /*
+            showToast(
+                voiceEnabled ? 'ðŸŽ¤ Voice recognition ON' : 'ðŸŽ¤ Voice recognition OFF',
+                voiceEnabled ? 'success' : 'info'
+            );
+            */
+        }
+
+        if (changedKeys.length) {
+            recordVoiceTelemetry('settings_changed', { changedKeys });
+        }
+
+        return updatedSettings;
+    }
+
+    function setVoiceEnabled(enabled, options = {}) {
+        return applyVoiceSettings({ enabled }, options);
+    }
+
     function toggleVoiceOrb() {
+        return setVoiceEnabled(!voiceEnabled, { notify: true });
+        /*
         voiceEnabled = !voiceEnabled;
         localStorage.setItem('carbon_voice_enabled', voiceEnabled);
         
@@ -387,8 +526,8 @@
             hideVoiceStatus();
             showToast('🎤 Voice recognition OFF', 'info');
         }
+        */
     }
-    
     function showVoiceStatus(text, isListening = false) {
         if (!voiceStatus) return;
         voiceStatus.textContent = text;
@@ -412,7 +551,7 @@
             showVoiceStatus('Listening...', true);
         } else {
             voiceOrb.classList.remove('carbon-voice-listening');
-            showVoiceStatus('Say "Hey Ezra"');
+            showVoiceStatus(getWakeWordPrompt());
         }
     }
 
@@ -1118,17 +1257,17 @@
     let recognition = null;
     let voiceListening = false;
     let wakeWordDetected = false;
-    const WAKE_WORDS = ['hey ezra', 'hey carbon', 'hey assistant', 'ok ezra', 'ok carbon'];
-    
     function initVoiceRecognition() {
         // Check for browser support
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
+            recordVoiceTelemetry('unsupported_browser');
             console.log('🎤 Voice recognition not supported in this browser');
             return;
         }
         
         recognition = new SpeechRecognition();
+        recordVoiceTelemetry('supported_browser_ready');
         recognition.continuous = true;
         recognition.interimResults = true;
         recognition.lang = CONFIG.voiceLang;
@@ -1137,20 +1276,21 @@
         recognition.onerror = handleVoiceError;
         recognition.onend = handleVoiceEnd;
         
-        // Start listening for wake word
+        // Start listening for wake word when voice is enabled
         startWakeWordListening();
         
         console.log('🎤 Voice recognition initialized. Say "Hey Ezra" or "Hey Carbon" to activate');
     }
     
     function startWakeWordListening() {
-        if (!recognition || voiceListening) return;
+        if (!recognition || voiceListening || !voiceEnabled) return;
         
         try {
             recognition.start();
             voiceListening = true;
             wakeWordDetected = false;
         } catch (e) {
+            recordVoiceTelemetry('wake_listener_start_failed', { message: e?.message || 'unknown_error' });
             console.log('Voice recognition start error:', e);
         }
     }
@@ -1166,9 +1306,10 @@
         if (lastResult.isFinal) {
             if (!wakeWordDetected) {
                 // Check for wake word
-                const detectedWakeWord = WAKE_WORDS.find(wake => transcript.includes(wake));
+                const detectedWakeWord = activeWakeWords.find(wake => transcript.includes(wake));
                 if (detectedWakeWord) {
                     wakeWordDetected = true;
+                    recordVoiceTelemetry('wake_word_detected', { wakeWord: detectedWakeWord });
                     showToast('🎤 Yes, I\'m listening...', 'success');
                     
                     // Visual feedback via orb
@@ -1202,10 +1343,15 @@
     function processVoiceCommand(transcript) {
         // Remove wake words from transcript
         let command = transcript;
-        WAKE_WORDS.forEach(wake => {
+        activeWakeWords.forEach(wake => {
             command = command.replace(wake, '');
         });
         command = command.trim();
+        if (!command) {
+            recordVoiceTelemetry('wake_word_without_command');
+        } else {
+            recordVoiceTelemetry('command_captured', { length: command.length });
+        }
         
         if (!command) {
             showToast('🎤 I heard the wake word but no command. Try: "Create quote for John"', 'info');
@@ -1238,6 +1384,7 @@
             // Normal - no speech detected
             return;
         }
+        recordVoiceTelemetry('error', { error: event.error || 'unknown_error' });
         if (event.error === 'audio-capture') {
             console.log('No microphone found or microphone not working');
         } else if (event.error === 'not-allowed') {
@@ -1249,9 +1396,10 @@
     
     function handleVoiceEnd() {
         voiceListening = false;
+        if (!voiceEnabled) return;
         // Restart listening after a short delay
         setTimeout(() => {
-            if (!voiceListening) {
+            if (!voiceListening && voiceEnabled) {
                 startWakeWordListening();
             }
         }, 500);
@@ -1453,6 +1601,10 @@
             executeCommand(cmd, ...args);
         },
         toggleVoice,
+        toggleVoiceOrb,
+        setVoiceEnabled,
+        syncVoiceSettings: applyVoiceSettings,
+        getVoiceSettings,
         record: startRecording,
         stop: stopRecording,
         run: runWorkflow,

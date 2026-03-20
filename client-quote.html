@@ -11336,6 +11336,9 @@
             var currentTourSlide = 0;
 
             window.openEzraTour = function() {
+                if (typeof window.eqLaunchGuidedTour === 'function' && window.eqLaunchGuidedTour({ source: 'client_tour_button' })) {
+                    return;
+                }
                 currentTourSlide = 0;
                 // Refresh slides based on current language
                 ezraTourSlides = getEzraTourSlides();
@@ -12247,6 +12250,7 @@
             // ===== EZRA AI CHAT WIDGET =====
             function initEzraChat(quoteData, loInfo, quoteCode) {
                 var chatHistory = [], isOpen = false, isSending = false, tourActive = false, tourStep = 0;
+                var skipWelcomeMessage = false;
                 var engagementCount = 0, nudgeShown = false, nudgeTimer = null, lastActivityTime = Date.now();
                 var voiceAudio = null, voiceIsPlaying = false;
                 var loName = loInfo.name || 'your loan officer';
@@ -12320,6 +12324,13 @@
                         lastStep.target = '#sec-rates'; // Fallback if footer is hidden
                     }
                 }
+
+                tourSteps = tourSteps.filter(function(step) {
+                    var target = document.querySelector(step.target);
+                    if (!target) return false;
+                    var style = window.getComputedStyle(target);
+                    return style.display !== 'none' && style.visibility !== 'hidden';
+                });
 
                 // ===== PAGE CONTEXT — Real quote data for personalized responses =====
                 function getPageContext() {
@@ -12845,7 +12856,7 @@
                     isOpen = !isOpen;
                     if (isOpen) {
                         panel.classList.add('open');
-                        if (chatHistory.length === 0) {
+                        if (chatHistory.length === 0 && !skipWelcomeMessage) {
                             var welcomeMsg = window._ezraLanguage === 'es'
                                 ? "\u00a1Hola " + esc(quoteData.clientName || 'amigo') + "! Soy **Ezra**, su asesor personal de HELOC. Estoy aqu\u00ed para guiarlo a trav\u00e9s de su cotizaci\u00f3n y responder cualquier pregunta.\n\nTiene **$" + num(quoteData.cashBack) + "** en equity disponible — \u00a1d\u00e9jeme ayudarle a entender sus opciones! Puedo darle un **tour guiado** de su cotizaci\u00f3n, o simplemente preg\u00fanteme lo que sea."
                                 : "Hi " + esc(quoteData.clientName || 'there') + "! I'm **Ezra**, your personal HELOC advisor. I'm here to walk you through your quote and answer any questions you have.\n\nYou've got **$" + num(quoteData.cashBack) + "** in available equity — let me help you understand your options! I can give you a **guided tour** of your quote, or just ask me anything.";
@@ -14592,6 +14603,34 @@
                     setTimeout(function () { addMsg('assistant', tourSteps[0].text); }, 600);
                     trackEvent('guided_tour_started', { code: quoteCode });
                 }
+
+                window.eqLaunchGuidedTour = function(options) {
+                    options = options || {};
+                    if (!tourSteps.length) return false;
+                    trackEvent('guided_tour_requested', {
+                        code: quoteCode,
+                        source: options.source || 'unknown'
+                    });
+
+                    if (tourActive) {
+                        var activeStep = tourSteps[Math.min(tourStep, tourSteps.length - 1)];
+                        if (activeStep) highlightSection(activeStep.target);
+                        return true;
+                    }
+
+                    var launchDelay = isOpen ? 50 : 450;
+                    if (!isOpen) {
+                        skipWelcomeMessage = true;
+                        window.eqToggle();
+                    }
+
+                    setTimeout(function () {
+                        skipWelcomeMessage = false;
+                        if (!tourActive) startTour();
+                    }, launchDelay);
+
+                    return true;
+                };
 
                 function advanceTour() {
                     tourStep++;

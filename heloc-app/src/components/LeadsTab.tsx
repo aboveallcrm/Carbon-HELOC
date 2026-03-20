@@ -23,48 +23,49 @@ interface Lead {
 export const LeadsTab: React.FC = () => {
     const { user } = useAuth();
     const [leads, setLeads] = useState<Lead[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    const fetchLeads = React.useCallback(async () => {
-        if (!user) return;
-        setLoading(true);
-        const { data, error } = await supabase
-            .from('leads')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false })
-            .limit(50);
-
-        if (error) {
-            console.error('Error fetching leads:', error);
-        } else {
-            setLeads((data as unknown as Lead[]) || []);
-        }
-        setLoading(false);
-    }, [user]);
+    const [loading, setLoading] = useState(() => !!user);
 
     useEffect(() => {
-        if (user) {
-            // eslint-disable-next-line
-            fetchLeads();
+        if (!user) return;
 
-            // Subscribe to new leads on leads table for this user
-            const subscription = supabase
-                .channel('leads_channel')
-                .on('postgres_changes', {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'leads',
-                    filter: `user_id=eq.${user.id}`
-                }, payload => {
-                    setLeads(prev => [payload.new as unknown as Lead, ...prev]);
-                })
-                .subscribe();
+        let isActive = true;
 
-            return () => {
-                subscription.unsubscribe();
-            };
-        }
+        const loadLeads = async () => {
+            const { data, error } = await supabase
+                .from('leads')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(50);
+
+            if (!isActive) return;
+
+            if (error) {
+                console.error('Error fetching leads:', error);
+            } else {
+                setLeads((data as unknown as Lead[]) || []);
+            }
+            setLoading(false);
+        };
+
+        void loadLeads();
+
+        const subscription = supabase
+            .channel('leads_channel')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'leads',
+                filter: `user_id=eq.${user.id}`
+            }, payload => {
+                setLeads(prev => [payload.new as unknown as Lead, ...prev]);
+            })
+            .subscribe();
+
+        return () => {
+            isActive = false;
+            subscription.unsubscribe();
+        };
     }, [user]);
 
     if (loading) return <div className="p-4 text-center text-gray-500">Loading leads...</div>;

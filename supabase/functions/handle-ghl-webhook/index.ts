@@ -4,6 +4,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getWebhookCorsHeaders } from '../_shared/cors.ts'
+import { verifyGhlWebhookSignature } from '../_shared/ghl-signature.ts'
 
 const corsHeaders = getWebhookCorsHeaders()
 
@@ -13,13 +14,26 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  if (req.method !== 'POST') {
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed' }),
+      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
   try {
-    const payload = await req.json()
+    const rawBody = await req.text()
     const signature = req.headers.get('X-GHL-Signature')
-    
-    // Verify webhook signature (if configured)
-    // const isValid = verifyGHLSignature(payload, signature)
-    // if (!isValid) throw new Error('Invalid webhook signature')
+    const legacySignature = req.headers.get('X-WH-Signature')
+    const isValid = await verifyGhlWebhookSignature(rawBody, signature, legacySignature)
+    if (!isValid) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid webhook signature' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const payload = rawBody ? JSON.parse(rawBody) : {}
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',

@@ -205,6 +205,14 @@ serve(async (req: Request) => {
             )
         }
 
+        const authHeader = req.headers.get('Authorization')
+        if (!authHeader) {
+            return new Response(
+                JSON.stringify({ error: 'Missing authorization header' }),
+                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
         // Get VAPID keys from environment
         const vapidPublicKey = Deno.env.get('VAPID_PUBLIC_KEY')
         const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY')
@@ -222,6 +230,34 @@ serve(async (req: Request) => {
             Deno.env.get('SUPABASE_URL') ?? '',
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
+
+        const token = authHeader.replace('Bearer ', '')
+        const { data: authData, error: authError } = await supabaseAdmin.auth.getUser(token)
+        if (authError || !authData.user) {
+            return new Response(
+                JSON.stringify({ error: 'Invalid or expired token' }),
+                { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        const requesterId = authData.user.id
+        const { data: requesterProfile } = await supabaseAdmin
+            .from('profiles')
+            .select('role')
+            .eq('id', requesterId)
+            .maybeSingle()
+
+        const requesterRole = requesterProfile?.role || 'user'
+        const canSendForOtherUsers = requesterRole === 'admin' || requesterRole === 'super_admin'
+        if (requesterId !== userId && !canSendForOtherUsers) {
+            return new Response(
+                JSON.stringify({ error: 'Forbidden' }),
+                { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        const safeTitle = String(title).trim().slice(0, 120)
+        const safeBody = String(body || '').trim().slice(0, 300)
 
         // Get user's push subscriptions
         const { data: subscriptions, error: subError } = await supabaseAdmin
@@ -243,8 +279,8 @@ serve(async (req: Request) => {
 
         // Prepare notification payload
         const notificationPayload = {
-            title: title,
-            body: body || '',
+            title: safeTitle,
+            body: safeBody,
             icon: './favicon-192x192.png',
             badge: './favicon-64x64.png',
             tag: type || 'default',
@@ -281,8 +317,8 @@ serve(async (req: Request) => {
                             user_id: userId,
                             subscription_id: sub.id,
                             notification_type: type || 'general',
-                            title: title,
-                            body: body,
+                            title: safeTitle,
+                            body: safeBody,
                             data: data,
                             status: 'delivered',
                             sent_at: new Date().toISOString(),
@@ -305,8 +341,8 @@ serve(async (req: Request) => {
                         user_id: userId,
                         subscription_id: sub.id,
                         notification_type: type || 'general',
-                        title: title,
-                        body: body,
+                        title: safeTitle,
+                        body: safeBody,
                         data: data,
                         status: 'failed',
                         provider_response: { error: pushError.message }

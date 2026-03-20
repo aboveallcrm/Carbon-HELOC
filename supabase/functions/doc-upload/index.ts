@@ -3,11 +3,36 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { getCorsHeaders } from "../_shared/cors.ts"
 
+const QUOTE_CODE_RE = /^[a-z0-9]{6,12}$/i
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024
+const MAX_UPLOADS_PER_QUOTE = 20
+const ALLOWED_DOC_TYPES = new Set(['photo_id', 'income', 'insurance', 'mortgage_statement'])
+const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf'])
+
 const DOC_TYPE_LABELS: Record<string, string> = {
     photo_id: 'Photo ID',
     income: 'Income Documents',
     insurance: 'Homeowners Insurance',
     mortgage_statement: 'Mortgage Statement',
+}
+
+function escapeHtml(value: unknown): string {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+}
+
+function normalizeText(value: unknown, maxLength = 120): string {
+    return String(value || '').replace(/\s+/g, ' ').trim().slice(0, maxLength)
+}
+
+function sanitizeExtension(fileName: string): string {
+    const raw = fileName.split('.').pop() || 'bin'
+    const clean = raw.replace(/[^a-z0-9]/gi, '').toLowerCase()
+    return clean || 'bin'
 }
 
 const EMAIL_TEMPLATE = (data: any) => `
@@ -27,22 +52,22 @@ const EMAIL_TEMPLATE = (data: any) => `
 <body>
     <div class="container">
         <div class="header">
-            <h1>📎 Document Uploaded</h1>
-            <p>${data.docTypeLabel}</p>
+            <h1>Document Uploaded</h1>
+            <p>${escapeHtml(data.docTypeLabel)}</p>
         </div>
         <div class="content">
-            <p>Hi ${data.loName},</p>
-            <p><strong>${data.clientName}</strong> has uploaded a document for their HELOC quote.</p>
+            <p>Hi ${escapeHtml(data.loName)},</p>
+            <p><strong>${escapeHtml(data.clientName)}</strong> has uploaded a document for their HELOC quote.</p>
 
             <div class="doc-info">
                 <h3>Document Details</h3>
-                <p><strong>Type:</strong> ${data.docTypeLabel}</p>
-                <p><strong>File:</strong> ${data.fileName}</p>
-                <p><strong>Quote Code:</strong> ${data.quoteCode}</p>
-                <p><strong>Uploaded:</strong> ${data.uploadTime}</p>
+                <p><strong>Type:</strong> ${escapeHtml(data.docTypeLabel)}</p>
+                <p><strong>File:</strong> ${escapeHtml(data.fileName)}</p>
+                <p><strong>Quote Code:</strong> ${escapeHtml(data.quoteCode)}</p>
+                <p><strong>Uploaded:</strong> ${escapeHtml(data.uploadTime)}</p>
             </div>
 
-            ${data.downloadUrl ? `<a href="${data.downloadUrl}" class="button">📥 Download Document</a>` : '<p>The document has been saved to your secure storage.</p>'}
+            ${data.downloadUrl ? `<a href="${data.downloadUrl}" class="button">Download Document</a>` : '<p>The document has been saved to your secure storage.</p>'}
 
             <p style="margin-top: 20px; font-size: 14px; color: #666;">
                 This document was uploaded securely through the client quote page.
@@ -74,14 +99,10 @@ serve(async (req: Request) => {
         const body = await req.json()
         const {
             quoteCode,
-            userId,
             docType,
             fileName,
             mimeType,
             fileBase64,
-            loEmail,
-            loName,
-            clientName,
         } = body
 
         if (!quoteCode || !docType || !fileBase64) {
@@ -91,9 +112,36 @@ serve(async (req: Request) => {
             )
         }
 
-        // Validate file size (base64 is ~33% larger than binary)
+        if (!QUOTE_CODE_RE.test(quoteCode)) {
+            return new Response(
+                JSON.stringify({ error: 'Invalid quote code' }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        if (!ALLOWED_DOC_TYPES.has(docType)) {
+            return new Response(
+                JSON.stringify({ error: 'Unsupported document type' }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        if (!ALLOWED_MIME_TYPES.has(mimeType || '')) {
+            return new Response(
+                JSON.stringify({ error: 'Unsupported file type' }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        if (!/^[A-Za-z0-9+/=]+$/.test(fileBase64)) {
+            return new Response(
+                JSON.stringify({ error: 'Invalid file payload' }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
         const estimatedSize = (fileBase64.length * 3) / 4
-        if (estimatedSize > 10 * 1024 * 1024) {
+        if (estimatedSize > MAX_FILE_SIZE_BYTES) {
             return new Response(
                 JSON.stringify({ error: 'File too large. Maximum size is 10MB.' }),
                 { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -105,30 +153,56 @@ serve(async (req: Request) => {
             Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         )
 
-        // Look up the quote link to get the LO's user_id
-        let loUserId = userId
-        if (quoteCode) {
-            const { data: link } = await supabaseAdmin
-                .from('quote_links')
-                .select('user_id')
-                .eq('code', quoteCode)
-                .maybeSingle()
-            if (link) loUserId = link.user_id
+        const { data: link, error: linkError } = await supabaseAdmin
+            .from('quote_links')
+            .select('user_id, quote_data, lo_info')
+            .eq('code', quoteCode)
+            .maybeSingle()
+
+        if (linkError || !link?.user_id) {
+            return new Response(
+                JSON.stringify({ error: 'Quote not found' }),
+                { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
         }
 
-        // Decode base64 to binary
+        if (link.quote_data?.linkOptions?.showDocUpload === false) {
+            return new Response(
+                JSON.stringify({ error: 'Document uploads are disabled for this quote' }),
+                { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        const loUserId = link.user_id
+        const { data: existingFiles } = await supabaseAdmin
+            .storage
+            .from('doc-uploads')
+            .list(`${loUserId}/${quoteCode.toLowerCase()}`, { limit: MAX_UPLOADS_PER_QUOTE + 1 })
+
+        if ((existingFiles || []).length >= MAX_UPLOADS_PER_QUOTE) {
+            return new Response(
+                JSON.stringify({ error: 'Upload limit reached for this quote' }),
+                { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('full_name, notification_email, email')
+            .eq('id', loUserId)
+            .maybeSingle()
+
         const binaryString = atob(fileBase64)
         const bytes = new Uint8Array(binaryString.length)
         for (let i = 0; i < binaryString.length; i++) {
             bytes[i] = binaryString.charCodeAt(i)
         }
 
-        // Determine file extension
-        const ext = fileName ? fileName.split('.').pop() || 'bin' : 'bin'
+        const safeFileName = normalizeText(fileName || 'document', 120)
+        const ext = sanitizeExtension(safeFileName)
         const timestamp = Date.now()
-        const storagePath = `${loUserId || 'unknown'}/${quoteCode}/${docType}_${timestamp}.${ext}`
+        const storagePath = `${loUserId}/${quoteCode.toLowerCase()}/${docType}_${timestamp}.${ext}`
 
-        // Upload to Supabase Storage
         const { data: uploadData, error: uploadError } = await supabaseAdmin
             .storage
             .from('doc-uploads')
@@ -139,11 +213,7 @@ serve(async (req: Request) => {
 
         if (uploadError) {
             console.error('Storage upload error:', uploadError)
-            // If bucket doesn't exist, try creating it
-            if (uploadError.message?.includes('not found') || uploadError.statusCode === '404') {
-                // Fallback: log the upload without storage
-                console.warn('doc-uploads bucket not found, logging without storage')
-            } else {
+            if (!uploadError.message?.includes('not found') && uploadError.statusCode !== '404') {
                 return new Response(
                     JSON.stringify({ error: 'Failed to upload file: ' + uploadError.message }),
                     { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -151,29 +221,28 @@ serve(async (req: Request) => {
             }
         }
 
-        // Generate a signed download URL (7 days)
         let downloadUrl = ''
         if (uploadData) {
             const { data: signedUrl } = await supabaseAdmin
                 .storage
                 .from('doc-uploads')
-                .createSignedUrl(storagePath, 7 * 24 * 60 * 60) // 7 days
+                .createSignedUrl(storagePath, 7 * 24 * 60 * 60)
             downloadUrl = signedUrl?.signedUrl || ''
         }
 
         const docTypeLabel = DOC_TYPE_LABELS[docType] || docType
-
-        // Send email notification to LO via Resend
         const resendKey = Deno.env.get('RESEND_API_KEY')
-        const targetEmail = loEmail || Deno.env.get('ALERT_TO_EMAIL') || ''
+        const targetEmail = profile?.notification_email || profile?.email || Deno.env.get('ALERT_TO_EMAIL') || ''
+        const loName = normalizeText(profile?.full_name || link.lo_info?.name || 'Loan Officer')
+        const clientName = normalizeText(link.quote_data?.clientName || 'A client')
 
         if (resendKey && targetEmail) {
             try {
                 const emailHtml = EMAIL_TEMPLATE({
-                    loName: loName || 'Loan Officer',
-                    clientName: clientName || 'A client',
+                    loName,
+                    clientName,
                     docTypeLabel,
-                    fileName: fileName || 'document',
+                    fileName: safeFileName || 'document',
                     quoteCode,
                     uploadTime: new Date().toLocaleString(),
                     downloadUrl,
@@ -188,7 +257,7 @@ serve(async (req: Request) => {
                     body: JSON.stringify({
                         from: Deno.env.get('RESEND_FROM_EMAIL') || 'notifications@notifications.aboveallcrm.com',
                         to: targetEmail,
-                        subject: `📎 ${clientName || 'Client'} uploaded ${docTypeLabel} — Quote ${quoteCode}`,
+                        subject: `${clientName || 'Client'} uploaded ${docTypeLabel} - Quote ${quoteCode}`,
                         html: emailHtml,
                     }),
                 })
@@ -201,7 +270,6 @@ serve(async (req: Request) => {
             }
         }
 
-        // Log to notification_logs if table exists
         try {
             await supabaseAdmin
                 .from('notification_logs')
@@ -210,7 +278,7 @@ serve(async (req: Request) => {
                     notification_type: 'doc_upload',
                     recipient: targetEmail,
                     subject: `Document uploaded: ${docTypeLabel}`,
-                    content: JSON.stringify({ docType, fileName, quoteCode, storagePath, downloadUrl }),
+                    content: JSON.stringify({ docType, fileName: safeFileName, quoteCode, storagePath, downloadUrl }),
                     status: 'sent',
                 })
         } catch (logErr) {
