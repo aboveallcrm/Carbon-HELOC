@@ -6475,9 +6475,9 @@
                 </h4>
                 <div class="input-group">
                     <div class="input-field" style="flex: 1;">
-                        <label>Paste Lender Rate Sheet / Info</label>
-                        <textarea id="lender-info-input" rows="5"
-                            placeholder="Paste lender rate sheets, pricing info, or wholesale data here..."
+                        <label>Paste Lender Prequal / Rate Sheet</label>
+                        <textarea id="lender-info-input" rows="8"
+                            placeholder="Paste prequal results from NFTYDoor, Figure, or any lender portal.&#10;&#10;For Figure: paste all 3 origination fee pages back to back.&#10;Auto-detects format and populates your quote builder instantly."
                             style="width: 100%; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2); padding: 8px; font-family: var(--font-body); font-size: 11px; background: #1e293b; color: white; resize: vertical;"></textarea>
                     </div>
                 </div>
@@ -7192,7 +7192,7 @@ Best regards,
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding: 15px; background: rgba(139, 92, 246, 0.1); border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.3);">
                     <div>
                         <div style="font-weight: 700; color: white; margin-bottom: 4px;">Enable Voice Recognition</div>
-                        <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Turn on to use voice commands with "Hey Ezra"</div>
+                        <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Turn on wake-word commands and Ezra AI voice input</div>
                     </div>
                     <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 26px;">
                         <input type="checkbox" id="voice-enable-toggle" onchange="toggleVoiceSetting()" style="opacity: 0; width: 0; height: 0;">
@@ -7207,7 +7207,7 @@ Best regards,
                         <div style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; animation: pulse 2s infinite;"></div>
                         <span style="color: #10b981; font-weight: 600;">Voice is Active</span>
                     </div>
-                    <div style="margin-top: 8px; font-size: 11px; color: rgba(255,255,255,0.6);">Say "Hey Ezra" or "Hey Carbon" to activate</div>
+                    <div id="voice-status-hint" style="margin-top: 8px; font-size: 11px; color: rgba(255,255,255,0.6);">Say "Hey Ezra" to activate</div>
                 </div>
                 
                 <!-- Wake Word Selection -->
@@ -8428,8 +8428,81 @@ Best regards,
         }
 
         // ===== VOICE SETTINGS =====
+        function formatVoiceWakeWord(value) {
+            return (value || 'hey ezra').replace(/\b\w/g, function(char) { return char.toUpperCase(); });
+        }
+
+        function getVoiceSettingsState() {
+            const wakeSelect = document.getElementById('voice-wake-word');
+            const langSelect = document.getElementById('voice-language');
+            const toggle = document.getElementById('voice-enable-toggle');
+
+            return {
+                voiceEnabled: toggle ? !!toggle.checked : localStorage.getItem('carbon_voice_enabled') === 'true',
+                wakeWord: wakeSelect ? wakeSelect.value : (localStorage.getItem('carbon_wake_word') || 'hey ezra'),
+                voiceLang: langSelect ? langSelect.value : (localStorage.getItem('carbon_voice_lang') || 'en-US')
+            };
+        }
+
+        function syncVoiceStatusHint() {
+            const hint = document.getElementById('voice-status-hint');
+            const state = getVoiceSettingsState();
+            if (hint) hint.textContent = 'Say "' + formatVoiceWakeWord(state.wakeWord) + '" to activate';
+        }
+
+        function applyVoiceToggleUi(enabled) {
+            const slider = document.getElementById('voice-toggle-slider');
+            const status = document.getElementById('voice-status-display');
+
+            if (slider) {
+                slider.style.transform = enabled ? 'translateX(24px)' : 'translateX(0)';
+                slider.parentElement.querySelector('span:first-of-type').style.backgroundColor = enabled ? '#8b5cf6' : 'rgba(255,255,255,0.2)';
+            }
+
+            if (status) {
+                status.style.display = enabled ? 'block' : 'none';
+            }
+        }
+
+        function broadcastVoiceSettings() {
+            const state = getVoiceSettingsState();
+
+            localStorage.setItem('carbon_voice_enabled', state.voiceEnabled ? 'true' : 'false');
+            localStorage.setItem('ezra_voice_enabled', state.voiceEnabled ? 'true' : 'false');
+            localStorage.setItem('carbon_wake_word', state.wakeWord);
+            localStorage.setItem('carbon_voice_lang', state.voiceLang);
+
+            syncVoiceStatusHint();
+
+            if (typeof CarbonCommands !== 'undefined' && typeof CarbonCommands.syncVoiceSettings === 'function') {
+                CarbonCommands.syncVoiceSettings({
+                    enabled: state.voiceEnabled,
+                    wakeWord: state.wakeWord,
+                    voiceLang: state.voiceLang
+                });
+            }
+
+            window.dispatchEvent(new CustomEvent('carbon:voice-settings-changed', {
+                detail: {
+                    enabled: state.voiceEnabled,
+                    wakeWord: state.wakeWord,
+                    voiceLang: state.voiceLang
+                }
+            }));
+
+            return state;
+        }
+
         function toggleVoiceSetting() {
             const toggle = document.getElementById('voice-enable-toggle');
+            const enabled = !!(toggle && toggle.checked);
+            applyVoiceToggleUi(enabled);
+            broadcastVoiceSettings();
+            const toastMessage = enabled ? 'Voice recognition enabled' : 'Voice recognition disabled';
+            showToast(toastMessage, enabled ? 'success' : 'info');
+            /*
+            showToast(enabled ? 'ðŸŽ¤ Voice recognition enabled' : 'ðŸŽ¤ Voice recognition disabled', enabled ? 'success' : 'info');
+            return;
             const slider = document.getElementById('voice-toggle-slider');
             const status = document.getElementById('voice-status-display');
             
@@ -8455,15 +8528,19 @@ Best regards,
             }
         }
         
+        */
+        }
         function changeWakeWord() {
             const wakeWord = document.getElementById('voice-wake-word').value;
             localStorage.setItem('carbon_wake_word', wakeWord);
+            broadcastVoiceSettings();
             showToast('Wake word updated to: "' + wakeWord + '"', 'success');
         }
         
         function changeVoiceLanguage() {
             const lang = document.getElementById('voice-language').value;
             localStorage.setItem('carbon_voice_lang', lang);
+            broadcastVoiceSettings();
             showToast('Voice language updated', 'success');
         }
         
@@ -8487,17 +8564,11 @@ Best regards,
         function initVoiceSettings() {
             const voiceEnabled = localStorage.getItem('carbon_voice_enabled') === 'true';
             const toggle = document.getElementById('voice-enable-toggle');
-            const slider = document.getElementById('voice-toggle-slider');
-            const status = document.getElementById('voice-status-display');
             
             if (toggle) {
                 toggle.checked = voiceEnabled;
-                if (voiceEnabled) {
-                    slider.style.transform = 'translateX(24px)';
-                    slider.parentElement.querySelector('span:first-of-type').style.backgroundColor = '#8b5cf6';
-                    if (status) status.style.display = 'block';
-                }
             }
+            applyVoiceToggleUi(voiceEnabled);
             
             const wakeWord = localStorage.getItem('carbon_wake_word') || 'hey ezra';
             const wakeSelect = document.getElementById('voice-wake-word');
@@ -8506,6 +8577,8 @@ Best regards,
             const voiceLang = localStorage.getItem('carbon_voice_lang') || 'en-US';
             const langSelect = document.getElementById('voice-language');
             if (langSelect) langSelect.value = voiceLang;
+
+            broadcastVoiceSettings();
         }
         
         // Call init on page load
@@ -13874,13 +13947,287 @@ Generate the sales strategy and phone script now.`;
         }
 
         function parseLenderInfo() {
-            const lenderBody = document.getElementById('lender-info-input').value;
-            if (!lenderBody.trim()) { showToast('Please paste lender information first.', 'warning'); return; }
-            const ratePatterns = [/(\d+)\s*(?:year|yr).*?(\d+\.?\d*)%/gi, /tier\s*\d+.*?(\d+\.?\d*)%/gi, /fixed.*?(\d+\.?\d*)%/gi];
-            let foundRates = [];
-            ratePatterns.forEach(function (pattern) { let match; while ((match = pattern.exec(lenderBody)) !== null) foundRates.push(match[0]); });
-            const resultDiv = document.getElementById('lender-parse-result');
-            let summary = 'Found ' + foundRates.length + ' potential rate entries.<br>';
+            var body = document.getElementById('lender-info-input').value;
+            if (!body.trim()) { showToast('Please paste lender information first.', 'warning'); return; }
+
+            // Detect format
+            if (/NFTYDoor|PreQual Offer|CLTV.*Min Offer/i.test(body)) {
+                parseNFTYDoor(body);
+            } else if (/Powered by Figure|Figure.*Origination Fee|Initial Draw Amount/i.test(body)) {
+                parseFigure(body);
+            } else {
+                parseGeneric(body);
+            }
+        }
+
+        // ---- Helper: set field value and trigger recalc ----
+        function _setField(id, val) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.value = val;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        // ---- Helper: enable manual rates if not already ----
+        function _ensureManualRates() {
+            var toggle = document.getElementById('toggle-manual-rates');
+            if (toggle && !toggle.classList.contains('active')) {
+                toggleManualRates(toggle);
+            }
+        }
+
+        // ---- Helper: extract number from currency string ----
+        function _parseCurrency(str) {
+            if (!str) return 0;
+            return parseFloat(String(str).replace(/[$,\s]/g, '')) || 0;
+        }
+
+        // ===== NFTYDoor Parser =====
+        function parseNFTYDoor(body) {
+            var results = {};
+            // Home Value — take last dollar amount on the line (prequal value)
+            var hvMatch = body.match(/Home\s*Value[^\n]*?\$([\d,.]+)[^\n]*?\$([\d,.]+)/i);
+            results.homeValue = hvMatch ? _parseCurrency(hvMatch[2]) : 0;
+            results.homeValueStated = hvMatch ? _parseCurrency(hvMatch[1]) : 0;
+
+            // Loan Balance — take last dollar amount (prequal)
+            var lbMatch = body.match(/Loan\s*Balance[^\n]*?\$([\d,.]+)[^\n]*?\$([\d,.]+)/i);
+            results.loanBalance = lbMatch ? _parseCurrency(lbMatch[2]) : 0;
+            results.loanBalanceStated = lbMatch ? _parseCurrency(lbMatch[1]) : 0;
+
+            // Loan Amount
+            var laMatch = body.match(/Loan\s*Amount[^\n]*?\$([\d,.]+)/i);
+            results.loanAmount = laMatch ? _parseCurrency(laMatch[1]) : 0;
+
+            // Interest Rate — take last percentage (final rate after adjustments)
+            var rateMatches = body.match(/(?:interest|Int)\s*(?:rate|Rate)[^\n]*?([\d.]+)%/gi);
+            if (rateMatches && rateMatches.length > 0) {
+                var lastRate = rateMatches[rateMatches.length - 1].match(/([\d.]+)%/);
+                results.rate = lastRate ? parseFloat(lastRate[1]) : 0;
+            }
+
+            // FICO — take rightmost 3-digit number on the FICO line
+            var ficoMatch = body.match(/FICO[^\n]*?(\d{3})\s*$/im);
+            results.fico = ficoMatch ? ficoMatch[1] : '';
+
+            // DTI
+            var dtiMatch = body.match(/DTI[:\s]*([\d.]+)%/i);
+            results.dti = dtiMatch ? dtiMatch[1] : '';
+
+            // CLTV
+            var cltvMatch = body.match(/CLTV[:\s]*([\d.]+)%/i);
+            results.cltv = cltvMatch ? cltvMatch[1] : '';
+
+            // Max Offer
+            var maxMatch = body.match(/Max\s*Offer[:\s]*\$([\d,.]+)/i);
+            results.maxOffer = maxMatch ? _parseCurrency(maxMatch[1]) : 0;
+
+            // Monthly Payment — last dollar on NFTYDoor Payment line
+            var pmtMatch = body.match(/NFTYDoor\s*Payment[^\n]*?\$([\d,.]+)[^\n]*?\$([\d,.]+)/i);
+            results.payment = pmtMatch ? _parseCurrency(pmtMatch[2]) : 0;
+
+            // Populate builder fields
+            if (results.homeValue) _setField('in-home-value', results.homeValue);
+            if (results.loanBalance) _setField('in-mortgage-balance', results.loanBalance);
+            if (results.loanAmount) _setField('in-net-cash', results.loanAmount);
+            if (results.fico) _setField('in-client-credit', results.fico);
+
+            // If we got a rate, put it in all 3 tiers at 30yr (NFTYDoor is single-rate, variable)
+            if (results.rate) {
+                _ensureManualRates();
+                ['t1', 't2', 't3'].forEach(function(t) {
+                    _setField(t + '-30-var-manual', results.rate);
+                    _setField(t + '-20-var-manual', results.rate);
+                    _setField(t + '-15-var-manual', results.rate);
+                    _setField(t + '-10-var-manual', results.rate);
+                });
+            }
+
+            updateQuote();
+
+            // Build summary HTML
+            var summary = '<div style="font-weight:700;color:#34d399;margin-bottom:8px;">📋 NFTYDoor Prequal Detected</div>';
+            summary += '<table style="width:100%;font-size:10px;border-collapse:collapse;">';
+            summary += '<tr><td style="padding:3px 6px;color:rgba(255,255,255,0.6);">Home Value</td><td style="padding:3px 6px;color:white;font-weight:600;">$' + (results.homeValue || 0).toLocaleString() + '</td>';
+            if (results.homeValueStated && results.homeValueStated !== results.homeValue) {
+                summary += '<td style="padding:3px 6px;color:#fbbf24;font-size:9px;">Stated: $' + results.homeValueStated.toLocaleString() + ' <a href="#" onclick="event.preventDefault();_setField(\'in-home-value\',' + results.homeValueStated + ');updateQuote();showToast(\'Using stated home value\',\'success\')" style="color:#60a5fa;text-decoration:underline;cursor:pointer;">use stated</a></td>';
+            }
+            summary += '</tr>';
+            summary += '<tr><td style="padding:3px 6px;color:rgba(255,255,255,0.6);">Loan Balance</td><td style="padding:3px 6px;color:white;font-weight:600;">$' + (results.loanBalance || 0).toLocaleString() + '</td>';
+            if (results.loanBalanceStated && results.loanBalanceStated !== results.loanBalance) {
+                summary += '<td style="padding:3px 6px;color:#fbbf24;font-size:9px;">Stated: $' + results.loanBalanceStated.toLocaleString() + ' <a href="#" onclick="event.preventDefault();_setField(\'in-mortgage-balance\',' + results.loanBalanceStated + ');updateQuote();showToast(\'Using stated balance\',\'success\')" style="color:#60a5fa;text-decoration:underline;cursor:pointer;">use stated</a></td>';
+            }
+            summary += '</tr>';
+            summary += '<tr><td style="padding:3px 6px;color:rgba(255,255,255,0.6);">Loan Amount</td><td style="padding:3px 6px;color:white;font-weight:600;">$' + (results.loanAmount || 0).toLocaleString() + '</td></tr>';
+            summary += '<tr><td style="padding:3px 6px;color:rgba(255,255,255,0.6);">Rate</td><td style="padding:3px 6px;color:#f87171;font-weight:600;">' + (results.rate || '—') + '% (variable)</td></tr>';
+            summary += '<tr><td style="padding:3px 6px;color:rgba(255,255,255,0.6);">FICO</td><td style="padding:3px 6px;color:white;">' + (results.fico || '—') + '</td></tr>';
+            summary += '<tr><td style="padding:3px 6px;color:rgba(255,255,255,0.6);">DTI / CLTV</td><td style="padding:3px 6px;color:white;">' + (results.dti || '—') + '% / ' + (results.cltv || '—') + '%</td></tr>';
+            summary += '<tr><td style="padding:3px 6px;color:rgba(255,255,255,0.6);">Max Offer</td><td style="padding:3px 6px;color:#34d399;font-weight:600;">$' + (results.maxOffer || 0).toLocaleString() + '</td></tr>';
+            summary += '</table>';
+
+            document.getElementById('lender-parse-summary').innerHTML = summary;
+            document.getElementById('lender-parse-result').style.display = 'block';
+            showToast('NFTYDoor prequal imported — fields populated!', 'success');
+        }
+
+        // ===== Figure Parser (multi-paste: 3 origination fee tiers) =====
+        function parseFigure(body) {
+            // Split into blocks by detecting repeated "Origination Fee" or "Fixed Rate" sections
+            var blocks = body.split(/(?=(?:Powered by Figure|New\s+(?:HELOC\s+)?Inquiry|Select the amount of cash))/i).filter(function(b) { return b.trim().length > 100; });
+            if (blocks.length < 1) blocks = [body];
+
+            // Extract common fields from first block
+            var cashMatch = body.match(/Cash\s*Amount\s*\$?([\d,.]+)/i);
+            var cashAmount = cashMatch ? _parseCurrency(cashMatch[1]) : 0;
+
+            var debtMatch = body.match(/Debt\s*payoff[^\n]*?\$?([\d,.]+)/i);
+            var debtPayoff = debtMatch ? _parseCurrency(debtMatch[1]) : 0;
+
+            var drawMatch = body.match(/Initial\s*Draw\s*Amount\s*\$?([\d,.]+)/i);
+            var initialDraw = drawMatch ? _parseCurrency(drawMatch[1]) : 0;
+
+            // For each block, find the selected origination fee and rates
+            var tiers = [];
+            blocks.forEach(function(block) {
+                // Find all origination fee options in this block
+                var ofeeMatches = [];
+                var ofeeRegex = /([\d.]+)%\s*\$?([\d,.]+)/g;
+                var ofeeSection = block.match(/Origination\s*Fee[\s\S]*?(?=Select|Fixed\s*Rate)/i);
+                if (ofeeSection) {
+                    var m;
+                    while ((m = ofeeRegex.exec(ofeeSection[0])) !== null) {
+                        var pct = parseFloat(m[1]);
+                        if (pct > 0 && pct < 10) ofeeMatches.push({ pct: pct, amt: _parseCurrency(m[2]) });
+                    }
+                }
+
+                // Extract fixed rates: $X,XXX/month at Y.YY% for ZZyr
+                var fixedRates = {};
+                var fixedRegex = /\$([\d,.]+)\/month\s*([\d.]+)%\s*(\d+)yr\s*fixed/gi;
+                var fm;
+                while ((fm = fixedRegex.exec(block)) !== null) {
+                    fixedRates[fm[3]] = { payment: _parseCurrency(fm[1]), rate: parseFloat(fm[2]) };
+                }
+
+                // Extract variable rates
+                var varRates = {};
+                var varRegex = /\$([\d,.]+)\/month\s*(?:Starting\s*at\s*)?([\d.]+)%\s*(\d+)yr\s*variable/gi;
+                var vm;
+                while ((vm = varRegex.exec(block)) !== null) {
+                    varRates[vm[3]] = { payment: _parseCurrency(vm[1]), rate: parseFloat(vm[2]) };
+                }
+
+                if (Object.keys(fixedRates).length > 0 || ofeeMatches.length > 0) {
+                    tiers.push({ ofees: ofeeMatches, fixed: fixedRates, variable: varRates });
+                }
+            });
+
+            // Deduplicate: if all blocks are identical, check if each has 3 ofee options
+            // Figure shows 3 ofee options per page — user picks one per paste
+            // Strategy: look at rates to determine which ofee was selected per block
+            // Different ofee = different fixed rates, so group by unique rate signatures
+            var uniqueTiers = [];
+            var seenRates = {};
+            tiers.forEach(function(t) {
+                var sig = JSON.stringify(t.fixed);
+                if (!seenRates[sig]) {
+                    seenRates[sig] = true;
+                    uniqueTiers.push(t);
+                }
+            });
+
+            // If only 1 unique tier found (single paste), try to use the 3 ofee options as 3 tiers
+            if (uniqueTiers.length === 1 && uniqueTiers[0].ofees.length >= 3) {
+                // Single paste — can't determine rates per ofee without separate pastes
+                // Map the single set of rates to the first matching ofee
+            }
+
+            // Sort tiers: highest ofee first (= Tier 1 = lowest rate)
+            uniqueTiers.sort(function(a, b) {
+                var aOFee = a.ofees.length > 0 ? Math.max.apply(null, a.ofees.map(function(o) { return o.pct; })) : 0;
+                var bOFee = b.ofees.length > 0 ? Math.max.apply(null, b.ofees.map(function(o) { return o.pct; })) : 0;
+                return bOFee - aOFee;
+            });
+
+            // Populate fields
+            if (cashAmount) _setField('in-net-cash', cashAmount);
+            if (initialDraw) {
+                // Initial draw = cash + debt payoff; home value and balance need LO input
+            }
+
+            _ensureManualRates();
+
+            var tierPrefixes = ['t1', 't2', 't3'];
+            var summaryRows = [];
+
+            uniqueTiers.slice(0, 3).forEach(function(tier, idx) {
+                var prefix = tierPrefixes[idx];
+                // Set origination fee — use the highest ofee in this tier's options
+                // (each paste shows 3 options but only one set of rates matches the selected ofee)
+                var selectedOFee = tier.ofees.length > 0 ? tier.ofees.reduce(function(max, o) { return o.pct > max.pct ? o : max; }, tier.ofees[0]) : null;
+                // If we have 3 unique tiers, each likely had a different ofee selected
+                // Use the first ofee that appears most relevant
+                if (selectedOFee) _setField(prefix + '-orig', selectedOFee.pct);
+
+                // Set fixed rates per term
+                ['30', '20', '15', '10'].forEach(function(term) {
+                    if (tier.fixed[term]) _setField(prefix + '-' + term + '-rate-manual', tier.fixed[term].rate);
+                    if (tier.variable[term]) _setField(prefix + '-' + term + '-var-manual', tier.variable[term].rate);
+                });
+
+                var r30 = tier.fixed['30'] || tier.variable['30'] || {};
+                summaryRows.push({
+                    tier: idx + 1,
+                    ofee: selectedOFee ? selectedOFee.pct + '%' : '—',
+                    rate: r30.rate ? r30.rate + '%' : '—',
+                    payment: r30.payment ? '$' + r30.payment.toLocaleString() : '—'
+                });
+            });
+
+            // If Figure paste included debt, populate debt rows
+            if (debtPayoff > 0) {
+                // Add a single debt row for the total payoff
+                var container = document.getElementById('debt-input-container');
+                if (container && container.children.length === 0) {
+                    addDebtRow();
+                    var row = container.lastElementChild;
+                    if (row) {
+                        var nameInput = row.querySelector('.debt-name');
+                        var balInput = row.querySelector('.debt-bal');
+                        if (nameInput) nameInput.value = 'Debt Payoff (Figure)';
+                        if (balInput) { balInput.value = debtPayoff; balInput.dispatchEvent(new Event('input', { bubbles: true })); }
+                    }
+                }
+            }
+
+            updateQuote();
+
+            // Build summary
+            var summary = '<div style="font-weight:700;color:#34d399;margin-bottom:8px;">📋 Figure HELOC Detected — ' + uniqueTiers.length + ' Tier' + (uniqueTiers.length > 1 ? 's' : '') + ' Imported</div>';
+            if (cashAmount) summary += '<div style="font-size:10px;color:rgba(255,255,255,0.7);margin-bottom:6px;">Cash: $' + cashAmount.toLocaleString() + (debtPayoff ? ' + Debt Payoff: $' + debtPayoff.toLocaleString() : '') + ' = Draw: $' + initialDraw.toLocaleString() + '</div>';
+            summary += '<table style="width:100%;font-size:10px;border-collapse:collapse;">';
+            summary += '<tr style="border-bottom:1px solid rgba(255,255,255,0.2);"><th style="padding:4px 6px;text-align:left;color:rgba(255,255,255,0.5);">Tier</th><th style="padding:4px 6px;color:rgba(255,255,255,0.5);">O-Fee</th><th style="padding:4px 6px;color:rgba(255,255,255,0.5);">30yr Rate</th><th style="padding:4px 6px;color:rgba(255,255,255,0.5);">Payment</th></tr>';
+            summaryRows.forEach(function(r) {
+                summary += '<tr><td style="padding:3px 6px;color:white;font-weight:600;">Tier ' + r.tier + '</td><td style="padding:3px 6px;color:#fbbf24;">' + r.ofee + '</td><td style="padding:3px 6px;color:#34d399;">' + r.rate + '</td><td style="padding:3px 6px;color:white;">' + r.payment + '</td></tr>';
+            });
+            summary += '</table>';
+            if (uniqueTiers.length < 3) {
+                summary += '<div style="margin-top:8px;font-size:9px;color:#fbbf24;">💡 Paste all 3 origination fee pages back to back for all 3 tiers.</div>';
+            }
+
+            document.getElementById('lender-parse-summary').innerHTML = summary;
+            document.getElementById('lender-parse-result').style.display = 'block';
+            showToast('Figure HELOC imported — ' + uniqueTiers.length + ' tier(s) populated!', 'success');
+        }
+
+        // ===== Generic Fallback =====
+        function parseGeneric(body) {
+            var ratePatterns = [/(\d+)\s*(?:year|yr).*?(\d+\.?\d*)%/gi, /tier\s*\d+.*?(\d+\.?\d*)%/gi, /fixed.*?(\d+\.?\d*)%/gi];
+            var foundRates = [];
+            ratePatterns.forEach(function(pattern) { var match; while ((match = pattern.exec(body)) !== null) foundRates.push(match[0]); });
+            var resultDiv = document.getElementById('lender-parse-result');
+            var summary = '<div style="font-weight:700;color:#fbbf24;margin-bottom:5px;">📋 Generic Format</div>';
+            summary += 'Found ' + foundRates.length + ' potential rate entries.<br>';
             if (foundRates.length > 0) summary += '<br>Detected: ' + foundRates.slice(0, 5).join(', ') + (foundRates.length > 5 ? '...' : '');
             summary += '<br><br><em>Review and manually update rates in the Rates tab.</em>';
             document.getElementById('lender-parse-summary').innerHTML = summary;
@@ -14323,7 +14670,8 @@ Sent via Above All Carbon HELOC Tool`;
                             .ilike('email', contactEmail.toLowerCase().trim())
                             .limit(1).maybeSingle();
                         if (matchedLead) {
-                            trackingPixelUrl = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/track-quote-view?lead_id=' + matchedLead.id + '&user_id=' + window.currentUserId + '&event=quote_opened';
+                            var trackingCode = window._lastGeneratedQuoteCode || '';
+                            trackingPixelUrl = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/track-quote-view?lead_id=' + matchedLead.id + '&user_id=' + window.currentUserId + '&event=quote_opened' + (trackingCode ? '&code=' + encodeURIComponent(trackingCode) : '');
                         }
                     } catch (tpErr) { console.debug('Tracking pixel lookup skipped:', tpErr.message); }
                 }
@@ -15085,6 +15433,7 @@ Sent via Above All Carbon HELOC Tool`;
 
                 // Store for SMS-ready copy
                 window._lastGeneratedQuoteLink = shortUrl;
+                window._lastGeneratedQuoteCode = code;
                 window._lastGeneratedQuoteData = quoteData;
 
                 // Show SMS-ready section
@@ -19635,9 +19984,14 @@ Sent via Above All Carbon HELOC Tool`;
         
         async function testPushNotification() {
             try {
+                const authHeaders = await getAuthHeaders();
+                if (!authHeaders) {
+                    showToast('Please log in again before testing push notifications.', 'warning');
+                    return;
+                }
                 const response = await fetch('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/push-notify', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: authHeaders,
                     body: JSON.stringify({
                         userId: window.currentUserId,
                         title: '🔔 Test Notification',

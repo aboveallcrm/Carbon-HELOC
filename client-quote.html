@@ -9305,6 +9305,10 @@
                 }
             }
 
+            function trackEzraVoiceTelemetry(type, data) {
+                trackEvent(type, Object.assign({ source: 'ezra_voice' }, data || {}));
+            }
+
             // ===== RENDERING =====
             function renderQuote(data, lo, userId, leadId) {
                 _userId = userId;
@@ -12699,6 +12703,16 @@
                 
                 // Initialize drag functionality
                 initEzraDrag();
+                syncEzraVoiceUi();
+                var ezraLangSelect = document.getElementById('ezra-lang');
+                if (ezraLangSelect) ezraLangSelect.value = window._ezraLanguage || 'en';
+                var ezraVoiceToggle = document.getElementById('ezra-voice');
+                if (ezraVoiceToggle) {
+                    ezraVoiceToggle.checked = isEzraVoiceEnabled();
+                    ezraVoiceToggle.addEventListener('change', function () {
+                        setEzraVoiceEnabled(this.checked);
+                    });
+                }
 
                 renderChips(['Take a guided tour'].concat(defaultChips));
 
@@ -13194,9 +13208,66 @@
                     showToast('Reminder feature coming soon!', 'info');
                 };
 
+                function getEzraVoicePreferenceKey() {
+                    return 'ezra_voice_enabled_' + (quoteCode || 'preview');
+                }
+
+                function isEzraVoiceEnabled() {
+                    try {
+                        var stored = localStorage.getItem(getEzraVoicePreferenceKey());
+                        return stored !== 'false';
+                    } catch (e) {
+                        return true;
+                    }
+                }
+
+                function getEzraVoiceRecognitionLang() {
+                    return window._ezraLanguage === 'es' ? 'es-US' : 'en-US';
+                }
+
+                function syncEzraVoiceUi() {
+                    var enabled = isEzraVoiceEnabled();
+                    var toggle = document.getElementById('ezra-voice');
+                    var voiceBtn = document.getElementById('eq-voice-btn');
+
+                    if (toggle) toggle.checked = enabled;
+                    if (voiceBtn) {
+                        voiceBtn.style.opacity = enabled ? '1' : '0.45';
+                        voiceBtn.title = enabled ? 'Voice input' : 'Voice input disabled in Ezra settings';
+                        voiceBtn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+                    }
+                }
+
+                function setEzraVoiceEnabled(enabled, silent) {
+                    try {
+                        localStorage.setItem(getEzraVoicePreferenceKey(), enabled ? 'true' : 'false');
+                    } catch (e) { /* localStorage unavailable */ }
+
+                    if (!enabled && voiceRecognition && isRecording) {
+                        try { voiceRecognition.stop(); } catch (err) { }
+                    }
+
+                    if (voiceRecognition) {
+                        voiceRecognition.lang = getEzraVoiceRecognitionLang();
+                    }
+
+                    syncEzraVoiceUi();
+                    trackEzraVoiceTelemetry('ezra_voice_setting_changed', {
+                        enabled: !!enabled,
+                        lang: getEzraVoiceRecognitionLang()
+                    });
+
+                    if (!silent && typeof showToast === 'function') {
+                        showToast(enabled ? 'Ezra voice input enabled' : 'Ezra voice input disabled', enabled ? 'success' : 'info');
+                    }
+                }
+
                 window.setEzraLanguage = function(lang) {
                     window._ezraLanguage = lang;
                     localStorage.setItem('ezraLanguage', lang);
+                    if (voiceRecognition) voiceRecognition.lang = getEzraVoiceRecognitionLang();
+                    syncEzraVoiceUi();
+                    trackEzraVoiceTelemetry('ezra_voice_language_changed', { lang: getEzraVoiceRecognitionLang() });
                     showToast('Language updated to ' + (lang === 'es' ? 'Español' : 'English'), 'success');
                 };
 
@@ -13872,6 +13943,59 @@
                             "What would you like to know? I can explain your options, compare tiers, walk through the process, or anything else!";
                     }
 
+                    // Figure / online lender / fintech comparison
+                    if (/figure|online.*lender|fintech|digital.*heloc|better\.com|sofi.*heloc/i.test(lower)) {
+                        return "Great question, " + cn + "! I'm familiar with online HELOC lenders like Figure. Here's how your quote compares:\n\n" +
+                            "**Your HELOC (West Capital Lending):**\n" +
+                            "- **10-year draw period** — access funds anytime for a full decade\n" +
+                            "- **Interest-only during draw** — keeps payments low when you need flexibility\n" +
+                            "- Your actual rate: **" + rateStr + "%**\n" +
+                            "- Payment: **" + pmtStr + "**\n\n" +
+                            "**Figure's typical structure:**\n" +
+                            "- Full amount drawn upfront — you get it all at once, not a revolving line\n" +
+                            "- Origination fees: 0–4.99% (can be significant on larger amounts)\n" +
+                            "- Rates: 6.65–14.60% range (advertised 'as low as' — actual rate depends on credit/equity)\n" +
+                            "- Limited redraw window (2–5 years depending on term)\n\n" +
+                            "**The biggest difference?** With your HELOC, you **only draw what you need** and only pay interest on what you use. Figure makes you take the full amount upfront. If you only need $50K now but want $100K available later, your revolving HELOC gives you that flexibility.\n\n" +
+                            "Want to lock in your rate? Tap **Move Forward**!" + expiryNote;
+                    }
+
+                    // Draw period / how long access / revolving
+                    if (/draw.*period|how.*long.*access|revolving|when.*expire|access.*fund|how.*long.*line/i.test(lower)) {
+                        return cn + ", your HELOC has a **10-year draw period** — that's a full decade of flexible access to your equity.\n\n" +
+                            "During those 10 years:\n" +
+                            "- **Draw as much or as little** as you need, anytime\n" +
+                            "- **Interest-only payments** on what you've drawn — keeps payments low\n" +
+                            "- **Repay and re-borrow** as needed — it's a revolving line\n" +
+                            "- **Unused funds cost you nothing** — zero interest on undrawn amounts\n\n" +
+                            "After the draw period, it transitions to a **20-year repayment** phase where you pay down the balance with principal + interest payments.\n\n" +
+                            "Think of it as having a financial safety net built into your home for the next 10 years. The money is there when you need it, and you only pay for what you use.\n\n" +
+                            "Questions about how this works? I'm here to help!";
+                    }
+
+                    // Interest only / payment during draw / IO
+                    if (/interest.only|io\b|just.*interest|minimum.*payment|payment.*during.*draw/i.test(lower)) {
+                        return "Great question, " + cn + "! During the **10-year draw period**, your minimum payment is **interest only** on the amount you've actually drawn.\n\n" +
+                            "Here's what that means in real numbers:\n" +
+                            "- If you draw **$50,000** at " + rateStr + "%, your IO payment is about **$" + Math.round(50000 * (parseFloat(rateStr) || 8) / 100 / 12).toLocaleString() + "/month**\n" +
+                            "- If you draw the full **" + cashStr + "**, your IO payment is about **" + pmtStr + "**\n" +
+                            "- If you draw **nothing**, you pay **$0/month**\n\n" +
+                            "You can always pay **more** than the minimum to pay down principal faster — there's no prepayment penalty.\n\n" +
+                            "After the 10-year draw period ends, the remaining balance converts to a **20-year fully amortizing** payment (principal + interest).\n\n" +
+                            "This structure gives you maximum flexibility when you need it most!";
+                    }
+
+                    // Lump sum / full amount / all at once
+                    if (/lump.*sum|full.*amount|all.*at.*once|take.*everything|draw.*everything/i.test(lower)) {
+                        return cn + ", you absolutely can draw the full amount at once — but one of the biggest advantages of your HELOC is that **you don't have to**.\n\n" +
+                            "Unlike some online lenders that require a full upfront draw, your HELOC is a **true revolving line of credit**:\n" +
+                            "- Draw only what you need today\n" +
+                            "- Pay interest only on what you've drawn\n" +
+                            "- Come back for more anytime during the 10-year draw period\n\n" +
+                            "For example: if you need $50K for home improvements now and might need $30K next year for something else, you can do exactly that — without reapplying or paying interest on the $30K until you use it.\n\n" +
+                            "It's the most flexible way to access your equity!";
+                    }
+
                     // No match — return null to send to API
                     return null;
                 }
@@ -14202,6 +14326,7 @@
                 function initVoiceRecognition() {
                     var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                     if (!SpeechRecognition) {
+                        trackEzraVoiceTelemetry('ezra_voice_unsupported', { lang: getEzraVoiceRecognitionLang() });
                         /* voice recognition not supported — silent fallback */
                         // Hide voice button if not supported
                         var voiceBtn = document.getElementById('eq-voice-btn');
@@ -14212,10 +14337,11 @@
                     voiceRecognition = new SpeechRecognition();
                     voiceRecognition.continuous = false;
                     voiceRecognition.interimResults = true;
-                    voiceRecognition.lang = 'en-US';
+                    voiceRecognition.lang = getEzraVoiceRecognitionLang();
                     
                     voiceRecognition.onstart = function() {
                         isRecording = true;
+                        trackEzraVoiceTelemetry('ezra_voice_started', { lang: getEzraVoiceRecognitionLang() });
                         var voiceBtn = document.getElementById('eq-voice-btn');
                         if (voiceBtn) voiceBtn.classList.add('recording');
                         addMsg('assistant', '<span style="color:#a78bfa;">🎤 Listening... Speak now</span>');
@@ -14233,6 +14359,7 @@
                         }
                         
                         if (isFinal && transcript.trim()) {
+                            trackEzraVoiceTelemetry('ezra_voice_transcript_captured', { length: transcript.trim().length });
                             // Set the input value
                             var inputEl = document.getElementById('eq-input');
                             var sendBtn = document.getElementById('eq-send');
@@ -14246,6 +14373,7 @@
                     
                     voiceRecognition.onerror = function(event) {
                         console.error('[Ezra] Voice recognition error:', event.error);
+                        trackEzraVoiceTelemetry('ezra_voice_error', { error: event.error || 'unknown_error' });
                         isRecording = false;
                         var voiceBtn = document.getElementById('eq-voice-btn');
                         if (voiceBtn) voiceBtn.classList.remove('recording');
@@ -14259,6 +14387,10 @@
                         isRecording = false;
                         var voiceBtn = document.getElementById('eq-voice-btn');
                         if (voiceBtn) voiceBtn.classList.remove('recording');
+                        syncEzraVoiceUi();
+                        trackEzraVoiceTelemetry('ezra_voice_completed', {
+                            chars: (document.getElementById('eq-input')?.value || '').trim().length
+                        });
                         
                         // Auto-send if we have text
                         var inputEl = document.getElementById('eq-input');
@@ -14272,11 +14404,18 @@
                 
                 // Start voice input
                 window.eqStartVoiceInput = function() {
+                    if (!isEzraVoiceEnabled()) {
+                        trackEzraVoiceTelemetry('ezra_voice_blocked_disabled');
+                        addMsg('assistant', 'Voice input is turned off right now. Open Ezra Settings and switch Voice Input back on.');
+                        return;
+                    }
+
                     if (!voiceRecognition) {
                         initVoiceRecognition();
                     }
                     
                     if (!voiceRecognition) {
+                        trackEzraVoiceTelemetry('ezra_voice_unavailable');
                         addMsg('assistant', 'Voice input is not supported on your device. Please type your message.');
                         return;
                     }
@@ -14289,8 +14428,10 @@
                         // Start recording
                         try {
                             voiceRecognition.start();
+                            trackEzraVoiceTelemetry('ezra_voice_start_requested');
                         } catch (e) {
                             console.error('[Ezra] Voice start error:', e);
+                            trackEzraVoiceTelemetry('ezra_voice_start_failed', { message: e?.message || 'unknown_error' });
                             addMsg('assistant', 'Could not start voice input. Please check microphone permissions.');
                         }
                     }

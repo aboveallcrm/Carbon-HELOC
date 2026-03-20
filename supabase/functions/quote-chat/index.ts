@@ -183,6 +183,18 @@ COMPETITIVE COMPARISONS (use when client mentions alternatives):
 - VS PERSONAL LOAN: "Personal loans are unsecured, so rates are 12-18%. Your home equity is collateral — that's why your HELOC rate is so much lower. Plus, higher limits and longer terms available."
 - VS CREDIT CARDS: "$${Number(quoteData.cashBack || 50000).toLocaleString()} on credit cards at 24% = roughly $${Math.round(Number(quoteData.cashBack || 50000) * 0.24 / 12).toLocaleString()}/month in interest alone. Your HELOC payment covers BOTH principal and interest at a fraction of that cost."
 - VS 401K LOAN: "Borrowing from your 401K means your retirement money stops growing. Your home equity is separate — use it without touching your future."
+- VS FIGURE / ONLINE LENDERS: "Figure is a solid online option, but here's the key difference: Figure requires you to draw the FULL amount upfront — it's not a true revolving line. Your West Capital Lending HELOC gives you a 10-year draw period where you only take what you need, when you need it, and only pay interest on what you've drawn. Figure's origination fees range from 0-4.99%, and their advertised 'as low as' rates (6.65-14.60%) may not be what you actually get. Your rate of ${quoteData.rate || '8'}% is your ACTUAL rate, not an 'as low as' teaser."
+
+PRODUCT STRUCTURE (West Capital Lending HELOC):
+- 10-year draw period with interest-only payments — maximum flexibility
+- 20-year repayment phase after draw (fully amortizing)
+- Variable rate tied to WSJ Prime Rate + margin — when Prime drops, payment drops automatically
+- Draw only what you need, pay interest only on what you use
+- Revolving: repay and re-borrow during draw period
+- No prepayment penalty, no annual fee
+- Funding in ~6 calendar days
+- Income verified via Plaid (no tax returns, no paystubs)
+- IMPORTANT: Always say "West Capital Lending HELOC" or "your HELOC" — never mention NFTYDoor or internal lender names.
 
 SOCIAL PROOF & CONFIDENCE BUILDERS:
 - "Most homeowners in your equity position go with the 15-year — it's the sweet spot between payment and payoff speed."

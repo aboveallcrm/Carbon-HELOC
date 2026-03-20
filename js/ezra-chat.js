@@ -859,6 +859,10 @@
             { category: 'competitive', title: 'HELOC vs Personal Loan', content: 'HELOC wins: Much lower rate (HELOC 6-9% vs personal loans 12-18%). Higher limits ($50K-$500K+ vs $15-50K). Interest may be tax-deductible (consult tax advisor). Longer terms available. No prepayment penalty. Frame: "A personal loan is unsecured, so you pay a premium for that. Your home equity is collateral — that\'s why the rate is so much lower."' },
             { category: 'competitive', title: 'HELOC vs Credit Cards', content: 'HELOC wins: Fraction of the rate (HELOC 6-9% vs credit cards 22-29%). Structured payoff schedule vs revolving minimum payments. $100K at 24% CC = ~$2,000/mo minimum, takes 30+ years. Same $100K HELOC at 7.5% for 15yr = ~$927/mo, paid in 15 years. Total savings: Over $100,000+ in interest. Frame: "You\'re already paying for this equity — why pay 24% when you could pay 7-8%?"' },
             { category: 'competitive', title: 'HELOC vs 401K Loan', content: 'HELOC wins: No tax penalties for withdrawal. Retirement funds keep growing. No repayment requirement if you leave your job. Lower effective cost when factoring lost market returns. Frame: "Borrowing from your 401K means your retirement money stops working for you. Your home equity is separate — use it without touching your future."' },
+            { category: 'competitive', title: 'West Capital Lending HELOC Product Knowledge', content: 'Product structure: 10-year draw period (interest-only payments) + 20-year repayment (fully amortizing). Variable rate tied to WSJ Prime Rate + margin. Typical rates 8-11% depending on FICO/CLTV. Loan amounts $25K-$500K. Funding in ~6 calendar days (as little as 1 day for investment properties). Income verified via Plaid bank statement analysis — no tax returns, no paystubs. Pre-qualification is a soft pull (no credit impact, instant). Application takes ~2 minutes online. No prepayment penalty. All 50 states, primary/second home/investment. IMPORTANT: Never say NFTYDoor to clients — always say West Capital Lending HELOC or your HELOC.' },
+            { category: 'competitive', title: 'HELOC vs Figure (Online Lender)', content: 'Key differences: Figure requires FULL draw at origination — borrower gets entire amount upfront, not a revolving line. Origination fees 0-4.99%. Advertised rates 6.65-14.60% (as low as — actual rates vary by credit/equity). Limited redraw window (2-5 years depending on term). Our West Capital Lending HELOC advantage: True revolving line — draw only what you need, pay interest only on what you use. 10-year draw period for flexible access. If client only needs $50K now but wants $100K available later, our HELOC provides that flexibility without paying interest on idle funds. Frame: "Figure makes you take everything upfront. With your HELOC, you draw what you need when you need it — and you only pay interest on what you actually use." Never badmouth Figure — acknowledge them as a solid option, then highlight our structural advantages.' },
+            { category: 'competitive', title: 'Draw Period Advantage (10-Year)', content: 'The 10-year interest-only draw period is a major advantage. During draw, payments are interest-only on the amount drawn — keeps payments low when flexibility matters most. After 10 years, transitions to 20-year fully amortizing repayment. Compare: Figure has 5-year max draw with full upfront disbursement. Cash-out refi has no draw period at all (lump sum, payments start immediately on full amount). Frame: "Think of the draw period like having a financial safety net for the next decade. The money is there when you need it, but you are not paying for it until you use it."' },
+            { category: 'competitive', title: 'Variable Rate Positioning (WSJ Prime)', content: 'Variable rates are tied to the Wall Street Journal Prime Rate (currently ~8.5%), NOT the 10-year Treasury that purchase mortgages use. When Prime drops, your payment drops automatically — no refinancing needed. Historical context: Prime moved from 3.25% (2020) to 8.5% (2024-2025), and is expected to trend down as Fed cuts rates. Frame for clients concerned about variable: "Your rate adjusts with the market. When rates come down — and the market expects them to — your payment drops automatically. You do not have to refinance or do anything. It just adjusts." For clients who want certainty, acknowledge fixed-rate HELOCs exist but position variable as potentially more advantageous in a declining-rate environment.' },
 
             // ═══ SALES PSYCHOLOGY ═══
             { category: 'sales_psychology', title: 'Pain Point Discovery Questions', content: 'Ask these to uncover motivation: "What would you do with $X in your hands right now?" "How much are you paying in credit card interest every month?" "Have you been putting off any home improvements?" "What\'s your biggest financial stress right now?" "If you could consolidate everything into one lower payment, what would that free up for you?" Key: Let them sell themselves. Once they verbalize the pain, the HELOC becomes the obvious solution.' },
@@ -1399,6 +1403,7 @@ RESPONSE RULES
             if (voiceBtn) {
                 voiceBtn.title = 'Voice Input — Platinum feature (click to learn more)';
                 voiceBtn.style.position = 'relative';
+                voiceBtn.dataset.locked = 'true';
                 const lock = document.createElement('span');
                 lock.style.cssText = 'position:absolute;top:-4px;right:-4px;font-size:8px;background:rgba(167,139,250,0.9);color:white;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;';
                 lock.textContent = '\uD83D\uDD12';
@@ -1407,6 +1412,8 @@ RESPONSE RULES
         }
 
         // Check auth state (async — loads conversation)
+        bindVoiceSettingsListener();
+        syncEzraVoiceSettings();
         checkAuthState();
 
         // Load user preferences
@@ -3652,6 +3659,83 @@ RESPONSE RULES
         }
     }
 
+    function isEzraVoiceEnabled() {
+        return localStorage.getItem('ezra_voice_enabled') !== 'false';
+    }
+
+    function getEzraVoiceLang() {
+        return localStorage.getItem('carbon_voice_lang') || 'en-US';
+    }
+
+    function recordEzraVoiceTelemetry(eventType, data = {}) {
+        const payload = {
+            eventType,
+            createdAt: new Date().toISOString(),
+            userId: window.currentUserId || null,
+            voiceEnabled: isEzraVoiceEnabled(),
+            voiceLang: getEzraVoiceLang(),
+            data,
+        };
+
+        try {
+            const storageKey = `ezra_voice_telemetry_${window.currentUserId || 'anon'}`;
+            const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            existing.push(payload);
+            localStorage.setItem(storageKey, JSON.stringify(existing.slice(-50)));
+        } catch (e) {
+            // Ignore storage issues; telemetry is best-effort only.
+        }
+
+        window.dispatchEvent(new CustomEvent('ezra:voice-telemetry', { detail: payload }));
+    }
+
+    function syncEzraVoiceButtonState() {
+        const voiceBtn = document.getElementById('ezra-voice');
+        if (!voiceBtn || voiceBtn.dataset.locked === 'true') return;
+
+        const enabled = isEzraVoiceEnabled();
+        voiceBtn.style.opacity = enabled ? '' : '0.55';
+        voiceBtn.style.filter = enabled ? '' : 'grayscale(0.2)';
+        voiceBtn.title = enabled ? 'Voice input' : 'Voice input disabled in Settings > Voice';
+        voiceBtn.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+    }
+
+    function syncEzraVoiceSettings(settings = {}) {
+        const changedKeys = [];
+        if (typeof settings.enabled === 'boolean') {
+            localStorage.setItem('ezra_voice_enabled', settings.enabled ? 'true' : 'false');
+            changedKeys.push('enabled');
+        }
+
+        if (typeof settings.voiceLang === 'string' && settings.voiceLang.trim()) {
+            localStorage.setItem('carbon_voice_lang', settings.voiceLang.trim());
+            changedKeys.push('voiceLang');
+        }
+
+        if (_voiceRecognition) {
+            if (!isEzraVoiceEnabled()) {
+                stopVoiceInput();
+            } else {
+                _voiceRecognition.lang = getEzraVoiceLang();
+            }
+        }
+
+        syncEzraVoiceButtonState();
+
+        if (changedKeys.length) {
+            recordEzraVoiceTelemetry('settings_changed', { changedKeys });
+        }
+    }
+
+    let _voiceSettingsListenerBound = false;
+    function bindVoiceSettingsListener() {
+        if (_voiceSettingsListenerBound) return;
+        window.addEventListener('carbon:voice-settings-changed', (event) => {
+            syncEzraVoiceSettings(event.detail || {});
+        });
+        _voiceSettingsListenerBound = true;
+    }
+
     // ============================================
     // VOICE INPUT (Web Speech API)
     // ============================================
@@ -3665,10 +3749,18 @@ RESPONSE RULES
         }
 
         if (!requirePlatinum('Voice Input')) return;
+        if (!isEzraVoiceEnabled()) {
+            recordEzraVoiceTelemetry('blocked_disabled');
+            if (typeof showToast === 'function') {
+                showToast('Voice input is disabled in Settings > Voice.', 'info');
+            }
+            return;
+        }
 
         // Check browser support
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
+            recordEzraVoiceTelemetry('unsupported_browser');
             if (typeof showToast === 'function') {
                 showToast('Voice input not supported in this browser. Try Chrome.', 'error');
             }
@@ -3680,7 +3772,7 @@ RESPONSE RULES
         const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
         _voiceRecognition.continuous = !isTouchDevice; // false on mobile, true on desktop
         _voiceRecognition.interimResults = true;
-        _voiceRecognition.lang = 'en-US';
+        _voiceRecognition.lang = getEzraVoiceLang();
         _voiceRecognition.maxAlternatives = 1;
 
         const voiceBtn = document.getElementById('ezra-voice');
@@ -3692,6 +3784,7 @@ RESPONSE RULES
 
         _voiceRecognition.onstart = () => {
             _isRecording = true;
+            recordEzraVoiceTelemetry('started', { isTouchDevice });
             if (voiceBtn) {
                 voiceBtn.classList.add('recording');
                 // Mobile: add pulsing animation for better visibility
@@ -3722,6 +3815,7 @@ RESPONSE RULES
                     newFinalText += (newFinalText ? ' ' : '') + transcript;
                     finalTranscript += (finalTranscript.length > startLength ? ' ' : '') + transcript;
                     hasSpeech = true;
+                    recordEzraVoiceTelemetry('transcript_captured', { length: transcript.trim().length });
                     
                     // Check for voice-to-quote command
                     if (window.processVoiceToQuote && window.processVoiceToQuote(transcript)) {
@@ -3751,6 +3845,7 @@ RESPONSE RULES
 
         _voiceRecognition.onerror = (event) => {
             console.warn('Voice input error:', event.error);
+            recordEzraVoiceTelemetry('error', { error: event.error || 'unknown_error' });
             stopVoiceInput();
             if (event.error === 'not-allowed') {
                 if (typeof showToast === 'function') showToast('Microphone access denied. Check browser permissions.', 'error');
@@ -3759,6 +3854,10 @@ RESPONSE RULES
 
         _voiceRecognition.onend = () => {
             stopVoiceInput();
+            recordEzraVoiceTelemetry('completed', {
+                chars: input && input.value ? input.value.trim().length : 0,
+                autoEnabled: !!(input && input.value.trim().length > 10)
+            });
             // Auto-send if we got substantial text
             if (input && input.value.trim().length > 10) {
                 const sendBtn = document.getElementById('ezra-send');
@@ -3766,7 +3865,16 @@ RESPONSE RULES
             }
         };
 
-        _voiceRecognition.start();
+        try {
+            _voiceRecognition.start();
+            recordEzraVoiceTelemetry('start_requested');
+        } catch (error) {
+            recordEzraVoiceTelemetry('start_failed', { message: error?.message || 'unknown_error' });
+            stopVoiceInput();
+            if (typeof showToast === 'function') {
+                showToast('Could not start voice input. Please check microphone permissions.', 'error');
+            }
+        }
     }
 
     function stopVoiceInput() {
@@ -3788,6 +3896,8 @@ RESPONSE RULES
             clearTimeout(window._silenceTimer);
             window._silenceTimer = null;
         }
+
+        syncEzraVoiceButtonState();
     }
 
     // ============================================
@@ -6875,6 +6985,7 @@ What would you like to do?`;
         open: () => { if (!EzraState.isOpen) toggleWidget(); },
         close: closeWidget,
         clearChat: clearChat,
+        syncVoiceSettings: syncEzraVoiceSettings,
         sendMessage: (msg) => {
             document.getElementById('ezra-input').value = msg;
             sendMessage();
