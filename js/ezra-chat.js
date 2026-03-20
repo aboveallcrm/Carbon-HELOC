@@ -1379,7 +1379,7 @@ RESPONSE RULES
         const userLevel = TIER_LEVELS[tier] || 0;
         if (userLevel < 1 && window.currentUserRole !== 'super_admin') {
             EzraState._upsellMode = true;
-            console.log('Ezra: Carbon tier — upsell mode active');
+            console.debug('Ezra: Carbon tier — upsell mode active');
         }
 
         // Create widget DOM first so elements exist
@@ -1437,7 +1437,7 @@ RESPONSE RULES
             }
         });
 
-        console.log('Ezra: Initialized successfully');
+        console.debug('Ezra: Initialized successfully');
         
         // Check for new users and show onboarding
         setTimeout(showOnboardingIfNew, 1000);
@@ -6748,7 +6748,7 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
         if (typeof window.showToast === 'function') {
             window.showToast(message, type);
         } else {
-            console.log(`[${type}] ${message}`);
+            console.debug(`[${type}] ${message}`);
         }
     }
 
@@ -6785,7 +6785,7 @@ ${hasData && ctx.helocAmount > 0 ? 'Your form has data — try **"Structure Deal
                 </div>`;
         }
 
-        console.log('Ezra: Chat cleared');
+        console.debug('Ezra: Chat cleared');
     }
 
     // ============================================
@@ -7220,7 +7220,7 @@ Which sequence would you like to set up?`, { model: 'local' });
                     field.addEventListener('blur', () => this.analyzeContext());
                 }
             });
-            console.log('[Ezra] Quote Context Watcher initialized');
+            console.debug('[Ezra] Quote Context Watcher initialized');
         },
         
         analyzeContext() {
@@ -7632,7 +7632,7 @@ Which sequence would you like to set up?`, { model: 'local' });
             for (const [command, pattern] of Object.entries(this.patterns)) {
                 const match = transcript.match(pattern);
                 if (match) {
-                    console.log('[Ezra] Voice command detected:', command);
+                    console.debug('[Ezra] Voice command detected:', command);
                     return this.handlers[command](match);
                 }
             }
@@ -8135,7 +8135,7 @@ Which sequence would you like to set up?`, { model: 'local' });
             
             try {
                 const result = await handler(data);
-                console.log('[Ezra] Automation triggered:', triggerName, result);
+                console.debug('[Ezra] Automation triggered:', triggerName, result);
                 return result;
             } catch (e) {
                 console.error('[Ezra] Automation error:', e);
@@ -8220,6 +8220,6 @@ Which sequence would you like to set up?`, { model: 'local' });
     // Enhance voice recognition with command processing
     const originalVoiceOnResult = _voiceRecognition?.onresult;
     
-    console.log('[Ezra] Enhancement Suite loaded - Phases 1-5 active');
+    console.debug('[Ezra] Enhancement Suite loaded - Phases 1-5 active');
 
 })();

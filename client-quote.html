@@ -8657,6 +8657,18 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
+        // ===== INFO MODAL (replaces alert() for policy popups) =====
+        function showInfoModal(title, content) {
+            var overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;';
+            overlay.onclick = function(e) { if (e.target === overlay) document.body.removeChild(overlay); };
+            var box = document.createElement('div');
+            box.style.cssText = 'background:#1e293b;color:#e2e8f0;border-radius:12px;padding:24px;max-width:500px;width:90%;max-height:70vh;overflow-y:auto;';
+            box.innerHTML = '<h3 style="margin:0 0 12px;color:#22d3ee;">' + title + '</h3><div style="font-size:14px;line-height:1.6;">' + content + '</div><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="margin-top:16px;background:#22d3ee;color:#0f172a;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:600;">Close</button>';
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
+        }
+
         // ===== TOAST NOTIFICATION SYSTEM =====
         function showToast(message, type, duration) {
             type = type || 'info';
@@ -9567,7 +9579,7 @@
                 }
                 if (lo.address) fHtml += esc(lo.address) + '<br>';
                 fHtml += 'Equal Housing Lender. All loan programs subject to credit approval. Rates, terms, and conditions are subject to change without notice. This is not a commitment to lend. Licensed by the California Department of Financial Protection and Innovation under the California Residential Mortgage Lending Act.';
-                fHtml += '<p style="margin-top:8px;font-size:11px;"><a href="#" style="color:#999;text-decoration:underline;" onclick="event.preventDefault();alert(\'Privacy Policy: We collect only the information necessary to process your HELOC quote. Your data is encrypted, never sold, and retained only as required by law. Contact your loan officer for questions.\');">Privacy Policy</a> &nbsp;|&nbsp; <a href="#" style="color:#999;text-decoration:underline;" onclick="event.preventDefault();alert(\'Terms of Use: This quote is for informational purposes only and does not constitute a commitment to lend. Rates, terms, and conditions are subject to change. Subject to credit approval.\');">Terms of Use</a></p>';
+                fHtml += '<p style="margin-top:8px;font-size:11px;"><a href="#" style="color:#999;text-decoration:underline;" onclick="event.preventDefault();showInfoModal(\'Privacy Policy\', \'We collect only the information necessary to process your HELOC quote. Your data is encrypted, never sold, and retained only as required by law. Contact your loan officer for questions.\');">Privacy Policy</a> &nbsp;|&nbsp; <a href="#" style="color:#999;text-decoration:underline;" onclick="event.preventDefault();showInfoModal(\'Terms of Use\', \'This quote is for informational purposes only and does not constitute a commitment to lend. Rates, terms, and conditions are subject to change. Subject to credit approval.\');">Terms of Use</a></p>';
                 fHtml += '</div></div>';
                 fHtml += '<div class="proprietary-notice">PROPRIETARY TOOL NOTICE: This ' + esc(poweredBy) + ' HELOC Quote Tool is proprietary software owned by ' + esc(lo.company || poweredBy) + '. Unauthorized copying, distribution, modification, or reverse engineering is strictly prohibited. &copy; 2024-2026 ' + esc(poweredBy) + '. All rights reserved.</div>';
                 document.getElementById('sec-footer').innerHTML = fHtml;
