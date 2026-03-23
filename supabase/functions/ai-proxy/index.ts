@@ -19,6 +19,7 @@ const COST_PER_1M: Record<string, { input: number; output: number }> = {
   grok:      { input: 5.00,  output: 15.00 },
   anthropic: { input: 3.00,  output: 15.00 },
   perplexity:{ input: 1.00,  output: 1.00 },
+  kimi:      { input: 0.30,  output: 1.20 },
 };
 
 function estimateCost(provider: string, inputTokens: number, outputTokens: number): number {
@@ -35,7 +36,7 @@ function extractUsage(provider: string, aiData: any): { inputTokens: number; out
     inputTokens = aiData.usage?.input_tokens || 0;
     outputTokens = aiData.usage?.output_tokens || 0;
   } else {
-    // OpenAI-compatible: openai, groq, deepseek, grok
+    // OpenAI-compatible: openai, groq, deepseek, grok, kimi, perplexity
     inputTokens = aiData.usage?.prompt_tokens || 0;
     outputTokens = aiData.usage?.completion_tokens || 0;
   }
@@ -61,6 +62,7 @@ const ENV_KEY_MAP: Record<string, string> = {
   groq: "GROQ_API_KEY",
   grok: "GROK_API_KEY",
   perplexity: "PERPLEXITY_API_KEY",
+  kimi: "KIMI_API_KEY",
 };
 
 const DEFAULT_MODELS: Record<string, string> = {
@@ -70,6 +72,7 @@ const DEFAULT_MODELS: Record<string, string> = {
   deepseek: "deepseek-chat",
   groq: "llama-3.3-70b-versatile",
   grok: "grok-2-latest",
+  kimi: "moonshot-v1-8k",
 };
 
 const DEFAULT_URLS: Record<string, string> = {
@@ -77,6 +80,8 @@ const DEFAULT_URLS: Record<string, string> = {
   deepseek: "https://api.deepseek.com/v1/chat/completions",
   groq: "https://api.groq.com/openai/v1/chat/completions",
   grok: "https://api.x.ai/v1/chat/completions",
+  kimi: "https://api.moonshot.cn/v1/chat/completions",
+  perplexity: "https://api.perplexity.ai/chat/completions",
 };
 
 // Get a single key (first available) for a provider
@@ -179,7 +184,7 @@ async function callProvider(
     });
 
   } else {
-    // OpenAI-compatible: openai, groq, deepseek, grok
+    // OpenAI-compatible: openai, groq, deepseek, grok, kimi, perplexity
     actualUrl = endpointUrl || DEFAULT_URLS[provider] || "https://api.openai.com/v1/chat/completions";
     aiHeaders = {
       "Content-Type": "application/json",
@@ -368,7 +373,7 @@ serve(async (req: Request) => {
       if (!userMessage) return json({ error: "Missing userMessage for generate_cascade action" }, 400);
 
       // Order: cheapest first — exhaust ALL Gemini keys, then ALL Groq keys, before OpenAI/Anthropic
-      const cascadeOrder = ["gemini", "groq", "openai", "anthropic"];
+      const cascadeOrder = ["gemini", "groq", "kimi", "perplexity", "grok", "openai", "anthropic"];
       const attempts: string[] = [];
 
       for (const prov of cascadeOrder) {
@@ -400,9 +405,9 @@ serve(async (req: Request) => {
       if (!imageBase64 || !imageMimeType) return json({ error: "Missing imageBase64 or imageMimeType" }, 400);
       const message = userMessage || "Analyze this image and describe what you see in detail.";
 
-      // Vision cascade: Gemini → OpenAI → Anthropic (Groq has no vision)
+      // Vision cascade: Gemini → Grok → OpenAI → Anthropic (Groq/Kimi/Perplexity have no vision)
       // Exhaust all keys per provider before moving to the next
-      const visionCascade = ["gemini", "openai", "anthropic"];
+      const visionCascade = ["gemini", "grok", "openai", "anthropic"];
       const attempts: string[] = [];
 
       for (const prov of visionCascade) {

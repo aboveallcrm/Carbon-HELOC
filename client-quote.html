@@ -8386,9 +8386,9 @@
                     <div class="fee-card" style="background: linear-gradient(135deg, rgba(197, 160, 89, 0.1), rgba(197, 160, 89, 0.05)); border: 1px solid var(--accent-color); border-radius: 12px; padding: 20px;">
                         <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-color); font-weight: 700; margin-bottom: 8px;">1.50% Origination Fee</div>
                         <div style="font-size: 24px; font-weight: 700; color: var(--accent-color); margin-bottom: 12px;">~7.50% APR</div>
-                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;"><strong>Best for:</strong> "I want the lowest possible rate" — You prioritize long-term savings over upfront cost.</p>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;"><strong>Best for:</strong> "I want to minimize fees" — Lower origination, higher rate. Best if you plan to pay off early or want less financed.</p>
                         <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;"><strong>Example:</strong> $250,000 HELOC &#8594; $3,750 fee financed over 20 years.</p>
-                        <p style="color: var(--accent-color); font-weight: 600; font-size: 12px;">&#10003; Lowest APR | Highest Monthly Payment</p>
+                        <p style="color: var(--accent-color); font-weight: 600; font-size: 12px;">&#10003; Lowest Fee | Highest Rate</p>
                     </div>
 
                     <!-- Tier 2 -->
@@ -8405,9 +8405,9 @@
                     <div class="fee-card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05)); border: 1px solid #3b82f6; border-radius: 12px; padding: 20px;">
                         <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #3b82f6; font-weight: 700; margin-bottom: 8px;">4.99% Origination Fee</div>
                         <div style="font-size: 24px; font-weight: 700; color: #3b82f6; margin-bottom: 12px;">~7.00% APR</div>
-                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;"><strong>Best for:</strong> "I want the lowest monthly payment now" — You need maximum monthly cash flow today, happy to accept a slightly higher rate.</p>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;"><strong>Best for:</strong> "I want the lowest possible rate" — Finance more upfront to buy down your rate for long-term savings.</p>
                         <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;"><strong>Example:</strong> $250,000 HELOC &#8594; $12,475 fee financed over 20 years.</p>
-                        <p style="color: #3b82f6; font-weight: 600; font-size: 12px;">&#10003; Lowest Monthly Payment | Lowest Rate (margin)</p>
+                        <p style="color: #3b82f6; font-weight: 600; font-size: 12px;">&#10003; Lowest Rate | Highest Fee Financed</p>
                     </div>
 
                 </div>
@@ -8740,9 +8740,9 @@
                 origFeeAllFinanced: 'All fees are financed into your payment',
                 origFeeAllFinancedDesc: 'nothing paid out of pocket. Move the slider above to see how each fee impacts YOUR specific scenario.',
                 origFeeMostPopular: 'Most Popular',
-                origFee1Desc: '"I want the lowest possible rate" — You prioritize long-term savings over upfront cost.',
+                origFee1Desc: '"I want to minimize fees" — Lower origination, higher rate. Best if you plan to pay off early or want less financed.',
                 origFee2Desc: '"I want balance" — Sweet spot between rate and payment. Most borrowers choose this.',
-                origFee3Desc: '"I want the lowest monthly payment now" — You need maximum monthly cash flow today.',
+                origFee3Desc: '"I want the lowest possible rate" — Finance more upfront to buy down your rate for long-term savings.',
                 whatIfBorrowTitle: 'What If You Borrowed More?',
                 whatIfPaybackTitle: 'What If You Paid This Back?',
                 exitTitle: 'Hold on — one question.',
@@ -12126,9 +12126,9 @@
 
                 // Tier colors and "Best For" labels
                 var tierMeta = {
-                    1: { color: '#c5a059', bestForEn: 'Best Rate', bestForEs: 'Mejor Tasa', icon: '&#127942;', descEn: 'Lowest APR — best for long-term savings. Pay more upfront, save more over time.', descEs: 'Menor APR — ideal para ahorros a largo plazo. Pague mas por adelantado, ahorre mas con el tiempo.' },
+                    1: { color: '#c5a059', bestForEn: 'Lowest Fee', bestForEs: 'Menor Costo', icon: '&#128176;', descEn: 'Lowest origination fee, higher rate. Best if you plan to pay off early.', descEs: 'Menor tarifa de originacion, tasa mas alta. Ideal si planea pagar rapidamente.' },
                     2: { color: '#10b981', bestForEn: 'Best Balance', bestForEs: 'Mejor Equilibrio', icon: '&#9878;', descEn: 'Sweet spot between rate and payment. Most popular choice for a reason.', descEs: 'Punto ideal entre tasa y pago. La opcion mas popular por una razon.' },
-                    3: { color: '#3b82f6', bestForEn: 'Lowest Upfront', bestForEs: 'Menor Costo Inicial', icon: '&#128176;', descEn: 'Lowest upfront cost, higher rate. Best if you plan to pay off quickly.', descEs: 'Menor costo inicial, tasa mas alta. Ideal si planea pagar rapidamente.' }
+                    3: { color: '#3b82f6', bestForEn: 'Best Rate', bestForEs: 'Mejor Tasa', icon: '&#127942;', descEn: 'Highest fee buys down the rate. Best for long-term savings.', descEs: 'Mayor tarifa reduce la tasa. Ideal para ahorros a largo plazo.' }
                 };
 
                 var html = '<div class="tier-compare-table" style="overflow-x: auto; overflow-y: visible;">';
@@ -12276,10 +12276,12 @@
                     'What happens after I apply?'
                 ];
 
+                var _equity = (parseFloat(String(quoteData.homeValue || 0).replace(/[$,]/g, '')) || 0)
+                            - (parseFloat(String(quoteData.mortgageBalance || 0).replace(/[$,]/g, '')) || 0);
                 var tourSteps = [
                     {
                         target: '#sec-client', label: 'Your Personalized Quote',
-                        text: "Hi **" + esc(quoteData.clientName || 'there') + "**! I've prepared this HELOC quote specifically for you. Based on your credit profile and home equity of **$" + num(quoteData.cashBack) + "**, you have excellent options available. Let me walk you through what this means for you."
+                        text: "Hi **" + esc(quoteData.clientName || 'there') + "**! I've prepared this HELOC quote specifically for you. Based on your credit profile and home equity of **$" + _equity.toLocaleString() + "**, you have excellent options available. Let me walk you through what this means for you."
                     },
                     {
                         target: '#sec-prequal', label: 'You Pre-Qualify!',

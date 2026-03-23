@@ -6982,6 +6982,44 @@ Best regards,
                             onclick="regenerateWebhookToken()">🔄 Regenerate Token</button>
                     </div>
 
+                    <!-- Your Webhook URLs (static reference) -->
+                    <div id="webhook-urls-section"
+                        style="background: rgba(197,160,89,0.08); border-radius: 6px; padding: 10px; margin-bottom: 12px; border: 1px solid rgba(197,160,89,0.25);">
+                        <h6 style="font-family: var(--font-heading); font-size: 9px; color: var(--accent-color); margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                            🔗 Your Webhook URLs</h6>
+                        <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 0 0 10px 0;">Paste these into Bonzo, GHL, and your lead sources.</p>
+
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Bonzo Inbound Webhook</label>
+                            <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
+                                <input type="text" readonly value="https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/bonzo-webhook"
+                                    style="flex: 1; font-size: 9px; background: rgba(0,0,0,0.3); border: 1px solid rgba(197,160,89,0.3); color: #c5a059; padding: 6px 8px; border-radius: 4px; font-family: 'Courier New', monospace; cursor: text;">
+                                <button class="btn" style="background: rgba(197,160,89,0.3); border: 1px solid var(--accent-color); font-size: 8px; white-space: nowrap; padding: 4px 8px;"
+                                    onclick="copyStaticWebhookUrl('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/bonzo-webhook', this)">📋 Copy</button>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 10px;">
+                            <label style="font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">GHL Inbound Webhook</label>
+                            <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
+                                <input type="text" readonly value="https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/handle-ghl-webhook"
+                                    style="flex: 1; font-size: 9px; background: rgba(0,0,0,0.3); border: 1px solid rgba(197,160,89,0.3); color: #c5a059; padding: 6px 8px; border-radius: 4px; font-family: 'Courier New', monospace; cursor: text;">
+                                <button class="btn" style="background: rgba(197,160,89,0.3); border: 1px solid var(--accent-color); font-size: 8px; white-space: nowrap; padding: 4px 8px;"
+                                    onclick="copyStaticWebhookUrl('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/handle-ghl-webhook', this)">📋 Copy</button>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 4px;">
+                            <label style="font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Lead Source / LeadMailbox Inbound</label>
+                            <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
+                                <input type="text" readonly value="https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/inbound-lead"
+                                    style="flex: 1; font-size: 9px; background: rgba(0,0,0,0.3); border: 1px solid rgba(197,160,89,0.3); color: #c5a059; padding: 6px 8px; border-radius: 4px; font-family: 'Courier New', monospace; cursor: text;">
+                                <button class="btn" style="background: rgba(197,160,89,0.3); border: 1px solid var(--accent-color); font-size: 8px; white-space: nowrap; padding: 4px 8px;"
+                                    onclick="copyStaticWebhookUrl('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/inbound-lead', this)">📋 Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Gmail OAuth Direct Send -->
                     <div id="int-gmail"
                         style="background: rgba(0,0,0,0.15); border-radius: 6px; padding: 10px; margin-bottom: 10px;">
@@ -7464,6 +7502,16 @@ Best regards,
                         <div class="input-field" style="margin-top: 8px;"><label>System Prompt
                                 (optional)</label><textarea id="keys-ai-system-prompt" rows="2"
                                 placeholder="Custom system prompt for this user..." style="font-size: 9px;"></textarea>
+                        </div>
+                        <!-- Cascade Fallback API Keys -->
+                        <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(139,92,246,0.2);">
+                            <h6 style="font-family: var(--font-heading); font-size: 9px; color: #a78bfa; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">
+                                AI Cascade Fallback Keys (optional — server tries cheapest first)</h6>
+                            <div class="input-group">
+                                <div class="input-field"><label>Kimi API Key <span class="help-tip">?<span class="help-tip-text">Get from platform.moonshot.cn — 3rd fallback in AI cascade.</span></span></label><input type="password" id="keys-kimi-api-key" placeholder="sk-..."></div>
+                                <div class="input-field"><label>Perplexity API Key <span class="help-tip">?<span class="help-tip-text">Get from perplexity.ai/api — 4th fallback in AI cascade.</span></span></label><input type="password" id="keys-perplexity-api-key" placeholder="pplx-..."></div>
+                                <div class="input-field"><label>Grok API Key <span class="help-tip">?<span class="help-tip-text">Get from console.x.ai — 5th fallback in AI cascade.</span></span></label><input type="password" id="keys-grok-api-key" placeholder="xai-..."></div>
+                            </div>
                         </div>
                     </div>
 
@@ -11736,6 +11784,10 @@ Best regards,
             document.getElementById('keys-ai-model').value = meta.ai_model || '';
             document.getElementById('keys-ai-max-tokens').value = meta.ai_max_tokens || '';
             document.getElementById('keys-ai-system-prompt').value = meta.ai_system_prompt || '';
+            // Cascade fallback keys
+            document.getElementById('keys-kimi-api-key').value = meta.kimi_api_key || '';
+            document.getElementById('keys-perplexity-api-key').value = meta.perplexity_api_key || '';
+            document.getElementById('keys-grok-api-key').value = meta.grok_api_key || '';
         }
 
         async function saveUserKeys() {
@@ -11757,7 +11809,11 @@ Best regards,
                 ai_endpoint_url: document.getElementById('keys-ai-endpoint').value,
                 ai_model: document.getElementById('keys-ai-model').value,
                 ai_max_tokens: parseInt(document.getElementById('keys-ai-max-tokens').value) || null,
-                ai_system_prompt: document.getElementById('keys-ai-system-prompt').value
+                ai_system_prompt: document.getElementById('keys-ai-system-prompt').value,
+                // Cascade fallback keys
+                kimi_api_key: document.getElementById('keys-kimi-api-key').value,
+                perplexity_api_key: document.getElementById('keys-perplexity-api-key').value,
+                grok_api_key: document.getElementById('keys-grok-api-key').value
             };
 
             // Check if row exists already
@@ -15019,10 +15075,12 @@ Sent via Above All Carbon HELOC Tool`;
                 cltv: g('out-cltv'),
                 totalLoan: g('snap-total-loan'),
                 rate: g('snap-rate'),
-                term: g('snap-term'),
+                term: document.getElementById('rec-term-select')?.value || g('snap-term'),
                 payment: g('snap-payment'),
                 origination: g('snap-orig-perc'),
                 recType: document.getElementById('rec-type-select').value || 'fixed',
+                recTier: (document.getElementById('rec-tier-select')?.value || '').replace('t', ''),
+                recTerm: document.getElementById('rec-term-select')?.value || '',
                 date: new Date().toLocaleDateString(),
                 linkOptions: {
                     showLoInfo: document.getElementById('chk-link-lo-info')?.checked ?? true,
@@ -15165,11 +15223,11 @@ Sent via Above All Carbon HELOC Tool`;
                 cltv: g('out-cltv'),
                 totalLoan: g('snap-total-loan'),
                 rate: g('snap-rate'),
-                term: g('snap-term'),
+                term: document.getElementById('rec-term-select')?.value || g('snap-term'),
                 payment: g('snap-payment'),
                 origination: g('snap-orig-perc'),
                 recType: document.getElementById('rec-type-select').value || 'fixed',
-                recTier: document.getElementById('rec-tier-select')?.value || '',
+                recTier: (document.getElementById('rec-tier-select')?.value || '').replace('t', ''),
                 recTerm: document.getElementById('rec-term-select')?.value || '',
                 date: new Date().toLocaleDateString(),
                 linkOptions: {
@@ -17284,6 +17342,15 @@ Sent via Above All Carbon HELOC Tool`;
             navigator.clipboard.writeText(el.value).then(() => {
                 showToast('Webhook URL copied to clipboard!', 'success', 2000);
             }).catch(() => { el.select(); document.execCommand('copy'); showToast('Copied!', 'success', 2000); });
+        }
+
+        function copyStaticWebhookUrl(url, btn) {
+            navigator.clipboard.writeText(url).then(function() {
+                var orig = btn.innerHTML;
+                btn.innerHTML = '✅ Copied!';
+                btn.style.color = '#10b981';
+                setTimeout(function() { btn.innerHTML = orig; btn.style.color = ''; }, 2000);
+            }).catch(function() { showToast('Copy failed — select and copy manually', 'error'); });
         }
 
         function copyBonzoWebhookUrl() {
