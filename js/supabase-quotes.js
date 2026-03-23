@@ -15,7 +15,7 @@ export async function saveQuote(quoteData) {
     try {
         const user = await getCurrentUser();
         if (!user) {
-            console.warn("User not logged in, cannot save quote.");
+            console.debug("Quote save skipped — not authenticated");
             return { ok: false, reason: 'not_authenticated' };
         }
 

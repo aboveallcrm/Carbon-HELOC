@@ -14142,6 +14142,20 @@ Generate the sales strategy and phone script now.`;
             var drawMatch = body.match(/Initial\s*Draw\s*Amount\s*\$?([\d,.]+)/i);
             var initialDraw = drawMatch ? _parseCurrency(drawMatch[1]) : 0;
 
+            // === FIX: Determine correct HELOC amount (never use max credit line or total loan) ===
+            // Priority 1: Initial Draw Amount (most reliable — exactly what borrower selected)
+            // Priority 2: If cash = $0, use debt payoff (pure refi scenario)
+            // Priority 3: Cash Amount (cash-out scenario)
+            // NEVER use: "Total loan amount" (includes origination fee), max credit line ceiling
+            var helocAmount = 0;
+            if (initialDraw > 0) {
+                helocAmount = initialDraw;
+            } else if (cashAmount === 0 && debtPayoff > 0) {
+                helocAmount = debtPayoff; // Pure refi — payoff IS the draw
+            } else {
+                helocAmount = cashAmount + debtPayoff; // Cash-out + optional debt payoff
+            }
+
             // For each block, find the selected origination fee and rates
             var tiers = [];
             blocks.forEach(function(block) {
@@ -14205,10 +14219,25 @@ Generate the sales strategy and phone script now.`;
                 return bOFee - aOFee;
             });
 
-            // Populate fields
-            if (cashAmount) _setField('in-net-cash', cashAmount);
-            if (initialDraw) {
-                // Initial draw = cash + debt payoff; home value and balance need LO input
+            // Populate fields — use corrected helocAmount, NOT max credit line
+            if (helocAmount > 0) _setField('in-net-cash', helocAmount);
+
+            // If debt payoff present, populate existing HELOC payoff section
+            if (debtPayoff > 0) {
+                _setField('in-refi-balance', debtPayoff);
+                // Enable the refi comparison section
+                var refiChk = document.getElementById('chk-show-refi');
+                if (refiChk && !refiChk.checked) {
+                    refiChk.checked = true;
+                    refiChk.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+
+            // Detect refi-only vs cash-out and notify LO
+            if (cashAmount === 0 && debtPayoff > 0) {
+                showToast('Refi-only scenario detected — no cash out. HELOC amount set to payoff balance ($' + debtPayoff.toLocaleString() + ').', 'info', 5000);
+            } else if (cashAmount > 0) {
+                showToast('Cash-out scenario detected — HELOC amount set to initial draw ($' + helocAmount.toLocaleString() + ').', 'info', 4000);
             }
 
             _ensureManualRates();
@@ -14260,7 +14289,7 @@ Generate the sales strategy and phone script now.`;
 
             // Build summary
             var summary = '<div style="font-weight:700;color:#34d399;margin-bottom:8px;">📋 Figure HELOC Detected — ' + uniqueTiers.length + ' Tier' + (uniqueTiers.length > 1 ? 's' : '') + ' Imported</div>';
-            if (cashAmount) summary += '<div style="font-size:10px;color:rgba(255,255,255,0.7);margin-bottom:6px;">Cash: $' + cashAmount.toLocaleString() + (debtPayoff ? ' + Debt Payoff: $' + debtPayoff.toLocaleString() : '') + ' = Draw: $' + initialDraw.toLocaleString() + '</div>';
+            if (helocAmount) summary += '<div style="font-size:10px;color:rgba(255,255,255,0.7);margin-bottom:6px;">' + (cashAmount === 0 && debtPayoff > 0 ? 'Refi-Only — Payoff: $' + debtPayoff.toLocaleString() : 'Cash: $' + cashAmount.toLocaleString() + (debtPayoff ? ' + Debt Payoff: $' + debtPayoff.toLocaleString() : '')) + ' = HELOC: $' + helocAmount.toLocaleString() + '</div>';
             summary += '<table style="width:100%;font-size:10px;border-collapse:collapse;">';
             summary += '<tr style="border-bottom:1px solid rgba(255,255,255,0.2);"><th style="padding:4px 6px;text-align:left;color:rgba(255,255,255,0.5);">Tier</th><th style="padding:4px 6px;color:rgba(255,255,255,0.5);">O-Fee</th><th style="padding:4px 6px;color:rgba(255,255,255,0.5);">30yr Rate</th><th style="padding:4px 6px;color:rgba(255,255,255,0.5);">Payment</th></tr>';
             summaryRows.forEach(function(r) {
@@ -17557,6 +17586,9 @@ Sent via Above All Carbon HELOC Tool`;
                 body: JSON.stringify(payload)
             });
             var data = await resp.json();
+            if (resp.status === 401) {
+                throw new Error('Gmail connection expired — reconnect in Settings → Integrations');
+            }
             if (!resp.ok) throw new Error(data.error || 'Gmail send error');
             return data;
         }
