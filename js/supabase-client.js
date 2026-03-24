@@ -7,13 +7,13 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const PUBLIC_CONFIG = window.__PUBLIC_CONFIG__ || {};
 
-export const SUPABASE_URL = PUBLIC_CONFIG.supabaseUrl || '';
-export const SUPABASE_ANON_KEY = PUBLIC_CONFIG.supabaseAnonKey || '';
-export const SUPABASE_FUNCTIONS_URL = PUBLIC_CONFIG.supabaseFunctionsUrl || (SUPABASE_URL ? (SUPABASE_URL.replace(/\/$/, '') + '/functions/v1') : '');
+// Hardcoded fallback — ensures auth works even if /api/public-config.js fails to load
+const FALLBACK_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co';
+const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6emFidmZ6dXhocGRjb3dndmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjgwNTYsImV4cCI6MjA4NDc0NDA1Nn0.tFliE-x2Tz9ET3A38R4y7eSo6bUu-bYY47XkWeX1xHY';
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    throw new Error((PUBLIC_CONFIG && PUBLIC_CONFIG.error) || 'Missing public Supabase runtime configuration. Load /api/public-config.js before app scripts.');
-}
+export const SUPABASE_URL = PUBLIC_CONFIG.supabaseUrl || FALLBACK_URL;
+export const SUPABASE_ANON_KEY = PUBLIC_CONFIG.supabaseAnonKey || FALLBACK_KEY;
+export const SUPABASE_FUNCTIONS_URL = PUBLIC_CONFIG.supabaseFunctionsUrl || (SUPABASE_URL.replace(/\/$/, '') + '/functions/v1');
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
