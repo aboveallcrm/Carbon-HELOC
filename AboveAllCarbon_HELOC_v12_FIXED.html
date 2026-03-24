@@ -5371,13 +5371,13 @@
                 style="background: linear-gradient(135deg, rgba(197,160,89,0.2), rgba(166,133,67,0.2)); border-color: var(--accent-color);">
                 <div class="input-group" style="align-items: center;">
                     <div class="input-field"><label style="color: var(--accent-color);">Rec. Tier <span class="help-tip">?<span class="help-tip-text">Your recommended pricing tier. The quote highlights this tier in gold so the client sees which option you suggest.</span></span></label><select
-                            id="rec-tier-select" style="border-color: var(--accent-color);">
+                            id="rec-tier-select" style="border-color: var(--accent-color);" onchange="updateQuote()">
                             <option value="1">Tier 1</option>
                             <option value="2" selected>Tier 2</option>
                             <option value="3">Tier 3</option>
                         </select></div>
                     <div class="input-field"><label style="color: var(--accent-color);">Rec. Term <span class="help-tip">?<span class="help-tip-text">Your recommended loan term. Shorter terms = lower rate but higher payment. The quote highlights this term for the client.</span></span></label><select
-                            id="rec-term-select" style="border-color: var(--accent-color);">
+                            id="rec-term-select" style="border-color: var(--accent-color);" onchange="updateQuote()">
                             <option value="30">30-Year</option>
                             <option value="20" selected>20-Year</option>
                             <option value="15">15-Year</option>
