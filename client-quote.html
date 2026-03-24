@@ -9851,6 +9851,8 @@
                 // Rate Tiers with expandable rows
                 var recPayment = parseFloat((data.payment || '').replace(/[$,\/mo]/g, '')) || 0;
                 var loanAmt = parseFloat((data.totalLoan || data.cashBack || '').toString().replace(/[$,]/g, '')) || 0;
+                // Net cash (before fees) — origination fee is calculated on this, NOT on totalLoan
+                var netCash = parseFloat((data.cashBack || data.totalLoan || '').toString().replace(/[$,]/g, '')) || loanAmt;
                 var hasVarRates = data.tiers && data.tiers.some(function (t) { return t.varRates && Object.keys(t.varRates).length > 0; });
                 var recType = data.recType || 'fixed';
                 var isVarRec = recType === 'variable';
@@ -9861,16 +9863,13 @@
                 var tiersHtml = '';
                 var recFound = false; // only highlight first match
                 if (data.tiers && data.tiers.length > 0) {
-                    // Sort: recommended tier first, then by origination fee ascending
+                    // Sort tiers by tier number (1, 2, 3) for consistent display
                     var displayTiers = data.tiers.slice().sort(function(a, b) {
-                        var aIsRec = parseInt(a.tier) === recTierNum;
-                        var bIsRec = parseInt(b.tier) === recTierNum;
-                        if (aIsRec && !bIsRec) return -1;
-                        if (!aIsRec && bIsRec) return 1;
-                        return parseFloat(a.origPts) - parseFloat(b.origPts);
+                        return parseInt(a.tier) - parseInt(b.tier);
                     });
                     displayTiers.forEach(function (tier) {
-                        var origDollars = Math.round((parseFloat(tier.origPts) / 100) * loanAmt);
+                        // Fee calculated on net cash (before fees), NOT on totalLoan
+                        var origDollars = Math.round((parseFloat(tier.origPts) / 100) * netCash);
                         tiersHtml += '<div class="tier"><div class="tier-header"><span>Tier ' + tier.tier + '</span><span class="pts">' + esc(tier.origPts) + '% ($' + origDollars.toLocaleString() + ')</span></div>';
                         tiersHtml += '<table class="rate-table"><thead><tr><th>Term</th><th>' + (hasVarRates ? 'Fixed Rate' : 'Rate') + '</th><th>' + (hasVarRates ? 'Fixed Pmt' : 'Payment') + '</th>';
                         if (hasVarRates) tiersHtml += '<th class="var-col">Var Rate</th><th class="var-col">Var Pmt</th>';
