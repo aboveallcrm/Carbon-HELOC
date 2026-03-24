@@ -16701,6 +16701,13 @@ Sent via Above All Carbon HELOC Tool`;
                         eqOrbs.forEach(function(el) { el.style.display = 'none'; });
                         // Hide all video/canvas elements — html2canvas crashes on 0-size video/canvas
                         clonedDoc.querySelectorAll('video, canvas').forEach(function(el) { el.style.display = 'none'; });
+                        // Replace empty-src images with 1px transparent PNG to prevent createPattern crash
+                        var blankPng = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+                        clonedDoc.querySelectorAll('img').forEach(function(img) {
+                            if (!img.getAttribute('src') || img.getAttribute('src') === '' || img.naturalWidth === 0) {
+                                img.src = blankPng;
+                            }
+                        });
                     }
                 });
                 container.style.width = origWidth;
