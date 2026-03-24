@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
 // TODO: Confirm the production project env contains the provider keys used by the cascade:
-// OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, GROQ_API_KEY, KIMI_API_KEY, PERPLEXITY_API_KEY, and GROK_API_KEY.
+// OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, DEEPSEEK_API_KEY, GROQ_API_KEY, KIMI_API_KEY, PERPLEXITY_API_KEY, and GROK_API_KEY.
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
