@@ -5709,6 +5709,24 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
             contextSummary += localKbContext;
         }
 
+        // ── SUPER ADMIN: Direct Claude access (bypass proxy) ──
+        if (window.currentUserRole === 'super_admin') {
+            const claudeKey = window._userKeys?.ai_api_key;
+            const claudeProvider = window._userKeys?.ai_provider;
+            if (claudeKey && claudeProvider === 'anthropic') {
+                try {
+                    const aiResponse = await callClaudeDirect(message, contextSummary, claudeKey);
+                    if (aiResponse) {
+                        const autoFillData = extractAutoFillFields(aiResponse);
+                        return { content: aiResponse, autoFillFields: autoFillData, metadata: { provider: 'claude-direct', model: 'claude-3-5-sonnet' } };
+                    }
+                } catch (e) {
+                    console.warn('Ezra: Direct Claude call failed, falling back to proxy', e.message);
+                    // Fall through to proxy
+                }
+            }
+        }
+
         // ── Try real AI backend first ──
         try {
             const aiResponse = await callAIProxy(message, model, intent, contextSummary);
@@ -5722,6 +5740,36 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
 
         // ── Fallback: dynamic templates using REAL form data ──
         return buildDynamicResponse(message, intent, ctx);
+    }
+
+    // Call Claude API directly (Super Admin only)
+    async function callClaudeDirect(message, contextSummary, apiKey) {
+        const systemPrompt = EZRA_KNOWLEDGE.buildSystemPrompt() + contextSummary;
+        
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+                model: 'claude-3-5-sonnet-20241022',
+                max_tokens: 1500,
+                system: systemPrompt,
+                messages: [
+                    { role: 'user', content: message }
+                ]
+            })
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error?.message || `Claude API ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.content?.[0]?.text || null;
     }
 
     // Get a fresh access token — always refreshes to avoid stale JWT 401s
