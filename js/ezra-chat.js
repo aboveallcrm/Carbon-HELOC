@@ -3976,6 +3976,11 @@ RESPONSE RULES
             }
         }
         
+        // Handle "paid off", "no mortgage", "free and clear" scenarios
+        if (/paid\s*off|no\s*mortgage|free\s+and\s+clear|no\s+balance|zero\s+balance|home\s+is\s+paid/i.test(transcript)) {
+            result.mortgageBalance = 0;
+        }
+        
         // HELOC/cash amount patterns
         const cashPatterns = [
             /(?:wants?|needs?|looking for|requesting|cash|equity|heloc|draw)\s+(?:of\s+)?\$?([\d,.]+)\s*(k|K|m|M)?/i,
@@ -6900,12 +6905,13 @@ Now let's add your lender rates. You can:
                     const missing = [];
                     if (!data.clientName) missing.push("client name");
                     if (data.homeValue <= 0) missing.push("property value");
-                    if (data.mortgageBalance <= 0) missing.push("mortgage balance");
+                    // Check if mortgageBalance is null/undefined (not provided) vs explicitly 0 (paid off)
+                    if (data.mortgageBalance === null || data.mortgageBalance === undefined || data.mortgageBalance < 0) missing.push("mortgage balance (or say 'paid off' if no mortgage)");
                     if (data.helocAmount <= 0) missing.push("cash needed");
                     
                     return `Thanks! I have some information. To continue, I still need: **${missing.join(', ')}**.
 
-Just tell me what you know, like "property is worth $750k" or "they owe $350k on their mortgage".`;
+Just tell me what you know, like "property is worth $750k" or "they owe $350k on their mortgage". If the home is paid off, just say "paid off".`;
                 }
                 
             case 3:
