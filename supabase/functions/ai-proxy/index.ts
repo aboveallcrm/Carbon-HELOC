@@ -395,6 +395,52 @@ serve(async (req: Request) => {
       return json({ success: true, text: result.text, provider: result.provider, model: result.model, usage: result.usage, ...budgetUpdate });
     }
 
+    // ── generate_claude (Super Admin only — direct Claude access, skips cascade) ──
+    if (action === "generate_claude") {
+      if (!userMessage) return json({ error: "Missing userMessage for generate_claude action" }, 400);
+      
+      // Verify user is super admin
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("role")
+        .eq("id", userId)
+        .single();
+      
+      if (profile?.role !== "super_admin") {
+        return json({ error: "Unauthorized — generate_claude is Super Admin only" }, 403);
+      }
+      
+      const rateLimit = await checkAiProxyRateLimit(supabaseAdmin, userId);
+      if (!rateLimit.allowed) {
+        return json({ error: "AI temporarily unavailable — please try again in a moment", retry_after_sec: rateLimit.retryAfterSec }, 429);
+      }
+
+      // Use platform's Anthropic key (not user's key)
+      const anthropicKey = getProviderKey("anthropic", "");
+      if (!anthropicKey) {
+        return json({ error: "No Anthropic API key configured on platform" }, 500);
+      }
+
+      const claudeModel = "claude-3-5-sonnet-20241022";
+      const result = await callProvider("anthropic", claudeModel, anthropicKey, aiMaxTokens, finalSystemPrompt, userMessage, "");
+      
+      if (!result.ok) {
+        return json({ error: "Claude API error", status: result.status, details: JSON.stringify(result.aiData || {}).substring(0, 500) }, 502);
+      }
+      
+      await logUsage(supabaseAdmin, userId, "anthropic", claudeModel, "generate_claude", intent || "generate", result.usage, { super_admin: true });
+      await logUsageEvent(supabaseAdmin, userId, "ai_call", {
+        provider: "anthropic",
+        model: claudeModel,
+        action: "generate_claude",
+        intent: intent || "generate",
+        total_tokens: result.usage.totalTokens,
+        super_admin: true,
+      });
+      const budgetUpdate = await incrementBudget(supabaseAdmin, userId, result.usage.totalTokens);
+      return json({ success: true, text: result.text, provider: "anthropic", model: claudeModel, usage: result.usage, superAdmin: true, ...budgetUpdate });
+    }
+
     // ── generate_cascade (try cheapest providers first, exhaust all keys per provider) ──
     if (action === "generate_cascade") {
       if (!userMessage) return json({ error: "Missing userMessage for generate_cascade action" }, 400);
