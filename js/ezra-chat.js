@@ -5709,27 +5709,11 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
             contextSummary += localKbContext;
         }
 
-        // ── SUPER ADMIN: Direct Claude access (bypass proxy) ──
-        if (window.currentUserRole === 'super_admin') {
-            const claudeKey = window._userKeys?.ai_api_key;
-            const claudeProvider = window._userKeys?.ai_provider;
-            if (claudeKey && claudeProvider === 'anthropic') {
-                try {
-                    const aiResponse = await callClaudeDirect(message, contextSummary, claudeKey);
-                    if (aiResponse) {
-                        const autoFillData = extractAutoFillFields(aiResponse);
-                        return { content: aiResponse, autoFillFields: autoFillData, metadata: { provider: 'claude-direct', model: 'claude-3-5-sonnet' } };
-                    }
-                } catch (e) {
-                    console.warn('Ezra: Direct Claude call failed, falling back to proxy', e.message);
-                    // Fall through to proxy
-                }
-            }
-        }
-
         // ── Try real AI backend first ──
+        // Super admins get Claude directly, others use the cascade
+        const isSuperAdmin = window.currentUserRole === 'super_admin';
         try {
-            const aiResponse = await callAIProxy(message, model, intent, contextSummary);
+            const aiResponse = await callAIProxy(message, model, intent, contextSummary, isSuperAdmin);
             if (aiResponse) {
                 const autoFillData = extractAutoFillFields(aiResponse);
                 return { content: aiResponse, autoFillFields: autoFillData };
@@ -5740,36 +5724,6 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
 
         // ── Fallback: dynamic templates using REAL form data ──
         return buildDynamicResponse(message, intent, ctx);
-    }
-
-    // Call Claude API directly (Super Admin only)
-    async function callClaudeDirect(message, contextSummary, apiKey) {
-        const systemPrompt = EZRA_KNOWLEDGE.buildSystemPrompt() + contextSummary;
-        
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01'
-            },
-            body: JSON.stringify({
-                model: 'claude-3-5-sonnet-20241022',
-                max_tokens: 1500,
-                system: systemPrompt,
-                messages: [
-                    { role: 'user', content: message }
-                ]
-            })
-        });
-
-        if (!response.ok) {
-            const err = await response.json().catch(() => ({}));
-            throw new Error(err.error?.message || `Claude API ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data.content?.[0]?.text || null;
     }
 
     // Get a fresh access token — always refreshes to avoid stale JWT 401s
@@ -5786,7 +5740,8 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
     }
 
     // Call the ai-proxy Edge Function with provider cascade (cheapest first)
-    async function callAIProxy(message, model, intent, contextSummary) {
+    // Super admins can request direct Claude access via preferClaude flag
+    async function callAIProxy(message, model, intent, contextSummary, preferClaude = false) {
         if (!EzraState.supabase) return null;
 
         const token = await getFreshToken();
@@ -5798,6 +5753,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         const systemPrompt = EZRA_KNOWLEDGE.buildSystemPrompt() + contextSummary;
 
         // Use cascade action — tries Gemini → Groq → OpenAI → Anthropic
+        // Super admins with preferClaude=true will get Claude directly (skips cascade)
         const response = await fetch(`${supabaseUrl}/functions/v1/ai-proxy`, {
             method: 'POST',
             headers: {
@@ -5805,11 +5761,12 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-                action: 'generate_cascade',
+                action: preferClaude ? 'generate_claude' : 'generate_cascade',
                 systemPrompt,
                 userMessage: message,
                 maxTokens: 1500,
-                intent: intent || 'generate'
+                intent: intent || 'generate',
+                preferClaude: preferClaude // Signal to Edge Function that super admin wants Claude
             })
         });
 

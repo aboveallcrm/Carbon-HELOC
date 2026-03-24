@@ -107,23 +107,6 @@ try {
     window._resetQuoteId = resetQuoteId;
     window._setQuoteId = setQuoteId;
 
-    // Load user AI keys for super admin direct access
-    if (window.currentUserRole === 'super_admin') {
-        try {
-            const { data: keysData } = await supabase
-                .from('user_integrations')
-                .select('metadata')
-                .eq('user_id', effectiveUser.id)
-                .eq('provider', 'heloc_keys')
-                .maybeSingle();
-            if (keysData?.metadata) {
-                window._userKeys = keysData.metadata;
-            }
-        } catch (e) {
-            console.warn('Failed to load user keys:', e.message);
-        }
-    }
-
     await captureGoogleProviderToken().catch(() => {});
 
     if (effectiveUser.isImpersonated) {
