@@ -16673,9 +16673,16 @@ Sent via Above All Carbon HELOC Tool`;
             });
 
             clonedDoc.querySelectorAll('canvas').forEach(function(el) {
-                if (!el.width) el.width = 1;
-                if (!el.height) el.height = 1;
+                // Ensure canvas has valid dimensions to prevent createPattern crash in html2canvas
+                // Set both attribute and CSS dimensions
+                if (!el.width || el.width === 0) el.width = 1;
+                if (!el.height || el.height === 0) el.height = 1;
+                el.style.width = (el.width || 1) + 'px';
+                el.style.height = (el.height || 1) + 'px';
                 el.style.display = 'none';
+                // Also set min dimensions to ensure they're not zero
+                el.style.minWidth = '1px';
+                el.style.minHeight = '1px';
             });
 
             clonedDoc.querySelectorAll('img').forEach(function(img) {
@@ -16768,7 +16775,18 @@ Sent via Above All Carbon HELOC Tool`;
                         var eqOrbs = clonedDoc.querySelectorAll('.eq-orb, .eq-panel');
                         eqOrbs.forEach(function(el) { el.style.display = 'none'; });
                         // Hide all video/canvas elements — html2canvas crashes on 0-size video/canvas
-                        clonedDoc.querySelectorAll('video, canvas').forEach(function(el) { el.style.display = 'none'; });
+                        clonedDoc.querySelectorAll('video, canvas').forEach(function(el) { 
+                            el.style.display = 'none';
+                            // Ensure canvas has valid dimensions to prevent createPattern crash
+                            if (el.tagName.toLowerCase() === 'canvas') {
+                                if (!el.width || el.width === 0) el.width = 1;
+                                if (!el.height || el.height === 0) el.height = 1;
+                                el.style.width = (el.width || 1) + 'px';
+                                el.style.height = (el.height || 1) + 'px';
+                                el.style.minWidth = '1px';
+                                el.style.minHeight = '1px';
+                            }
+                        });
                         // Replace empty-src images with 1px transparent PNG to prevent createPattern crash
                         var blankPng = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
                         clonedDoc.querySelectorAll('img').forEach(function(img) {
