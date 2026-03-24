@@ -8380,36 +8380,8 @@
                     We offer three origination fee tiers. The trade-off is simple: <strong>pay more upfront &#8594; lower monthly payment</strong>, or <strong>pay less upfront &#8594; higher monthly payment</strong>. Choose based on your goals.
                 </p>
 
-                <div class="fee-tier-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
-                    
-                    <!-- Tier 1 -->
-                    <div class="fee-card" style="background: linear-gradient(135deg, rgba(197, 160, 89, 0.1), rgba(197, 160, 89, 0.05)); border: 1px solid var(--accent-color); border-radius: 12px; padding: 20px;">
-                        <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-color); font-weight: 700; margin-bottom: 8px;">1.50% Origination Fee</div>
-                        <div style="font-size: 24px; font-weight: 700; color: var(--accent-color); margin-bottom: 12px;">~7.50% APR</div>
-                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;"><strong>Best for:</strong> "I want to minimize fees" — Lower origination, higher rate. Best if you plan to pay off early or want less financed.</p>
-                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;"><strong>Example:</strong> $250,000 HELOC &#8594; $3,750 fee financed over 20 years.</p>
-                        <p style="color: var(--accent-color); font-weight: 600; font-size: 12px;">&#10003; Lowest Fee | Highest Rate</p>
-                    </div>
-
-                    <!-- Tier 2 -->
-                    <div class="fee-card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)); border: 2px solid var(--green); border-radius: 12px; padding: 20px; position: relative; overflow: hidden;">
-                        <div style="position: absolute; top: 10px; right: 10px; background: var(--green); color: white; font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 4px; text-transform: uppercase;">Most Popular</div>
-                        <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: var(--green); font-weight: 700; margin-bottom: 8px;">2.99% Origination Fee</div>
-                        <div style="font-size: 24px; font-weight: 700; color: var(--green); margin-bottom: 12px;">~7.13% APR</div>
-                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;"><strong>Best for:</strong> "I want balance" — Sweet spot between rate and payment. Most borrowers choose this.</p>
-                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;"><strong>Example:</strong> $250,000 HELOC &#8594; $7,475 fee financed over 20 years.</p>
-                        <p style="color: var(--green); font-weight: 600; font-size: 12px;">&#10003; Mid Rate | Mid Payment | Most Popular</p>
-                    </div>
-
-                    <!-- Tier 3 -->
-                    <div class="fee-card" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05)); border: 1px solid #3b82f6; border-radius: 12px; padding: 20px;">
-                        <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #3b82f6; font-weight: 700; margin-bottom: 8px;">4.99% Origination Fee</div>
-                        <div style="font-size: 24px; font-weight: 700; color: #3b82f6; margin-bottom: 12px;">~7.00% APR</div>
-                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;"><strong>Best for:</strong> "I want the lowest possible rate" — Finance more upfront to buy down your rate for long-term savings.</p>
-                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5;"><strong>Example:</strong> $250,000 HELOC &#8594; $12,475 fee financed over 20 years.</p>
-                        <p style="color: #3b82f6; font-weight: 600; font-size: 12px;">&#10003; Lowest Rate | Highest Fee Financed</p>
-                    </div>
-
+                <div class="fee-tier-grid" id="fee-tier-grid-dynamic" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                    <!-- Dynamically populated by renderOriginationCards() -->
                 </div>
 
                 <div style="padding: 16px; background: rgba(197, 160, 89, 0.1); border-radius: 8px; border-left: 4px solid var(--accent-color);">
@@ -8847,9 +8819,9 @@
                 origFeeAllFinanced: 'Todas las tarifas se financian en su pago',
                 origFeeAllFinancedDesc: 'nada de su bolsillo. Mueva el control deslizante arriba para ver como cada tarifa impacta SU escenario especifico.',
                 origFeeMostPopular: 'Mas Popular',
-                origFee1Desc: '"Quiero la tasa mas baja posible" — Prioriza ahorros a largo plazo sobre el costo inicial.',
+                origFee1Desc: '"Quiero minimizar cargos" — Menor tarifa de originacion, tasa mas alta. Ideal si planea pagar rapidamente.',
                 origFee2Desc: '"Quiero equilibrio" — El punto ideal entre tasa y pago. La mayoria de los prestatarios eligen esto.',
-                origFee3Desc: '"Quiero el pago mensual mas bajo ahora" — Necesita maximo flujo de efectivo mensual hoy.',
+                origFee3Desc: '"Quiero la tasa mas baja posible" — Financie mas por adelantado para reducir su tasa a largo plazo.',
                 whatIfBorrowTitle: 'Que Pasa Si Pide Prestado Mas?',
                 whatIfPaybackTitle: 'Que Pasa Si Paga Esto?',
                 exitTitle: 'Espere — una pregunta.',
@@ -9448,6 +9420,9 @@
                 // Apply template mode - hide/show sections based on mode
                 applyTemplateMode(templateMode, linkOpts);
 
+                // === ORIGINATION FEE CARDS — Dynamic from actual tiers ===
+                renderOriginationCards(data);
+
                 // === DEBT CONSOLIDATION RENDERING ===
                 if (data.debts && data.debts.length > 0 && data.showDebts) {
                     var debtSection = document.getElementById('sec-debt-consolidation');
@@ -9535,7 +9510,7 @@
                     greetEl.innerHTML = '<div class="greeting-text">' + esc(timeGreeting) + (greetName ? ', ' + esc(greetName) : '') + '! &#128075;</div>' +
                         '<div class="greeting-sub">' + (isEs ? 'Su cotizacion HELOC personalizada esta lista para revisar' : 'Your personalized HELOC quote is ready for review') + '</div>' +
                         '<div style="margin-top:10px;display:flex;justify-content:center;">' +
-                        '<button id="btn-email-self" onclick="emailQuoteToSelf()" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.85);padding:8px 16px;border-radius:20px;font-size:12px;font-family:var(--font-heading);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;">' +
+                        '<button id="btn-email-self" onclick="emailQuoteToSelf()" style="background:var(--primary-color, #0f2b4c);border:2px solid var(--primary-color, #0f2b4c);color:#ffffff;padding:10px 22px;border-radius:8px;font-size:13px;font-family:var(--font-heading);font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;">' +
                         '&#9993; ' + (isEs ? 'Enviar a mi correo' : 'Email this quote to myself') + '</button></div>';
                 }
 
@@ -9590,6 +9565,51 @@
                     footerPowered.innerHTML = 'Powered by <span class="powered-by-name">' + esc(poweredBy) + '</span>';
                 }
 
+                // Render origination fee cards dynamically from actual tier data
+                function renderOriginationCards(data) {
+                    var grid = document.getElementById('fee-tier-grid-dynamic');
+                    if (!grid || !data.tiers || data.tiers.length === 0) return;
+
+                    var netCash = parseFloat(String(data.cashBack || data.totalLoan || 0).replace(/[$,]/g, '')) || 100000;
+                    var recTerm = (data.recTerm || data.term || '20');
+                    if (recTerm.indexOf('yr') === -1) recTerm += 'yr';
+                    var recTierNum = parseInt(data.recTier) || 0;
+
+                    // Sort tiers by origPts ascending (lowest fee first)
+                    var sorted = data.tiers.slice().sort(function(a, b) { return parseFloat(a.origPts) - parseFloat(b.origPts); });
+
+                    var tierStyles = [
+                        { color: '#c5a059', bg: 'rgba(197,160,89,0.1)', bg2: 'rgba(197,160,89,0.05)', label: 'Lowest Fee', labelEs: 'Menor Costo', desc: '"I want to minimize fees" — Lower origination, higher rate. Best if you plan to pay off early.', tags: 'Lowest Fee | Highest Rate' },
+                        { color: '#10b981', bg: 'rgba(16,185,129,0.1)', bg2: 'rgba(16,185,129,0.05)', label: 'Most Popular', labelEs: 'Mas Popular', desc: '"I want balance" — Sweet spot between rate and payment. Most borrowers choose this.', tags: 'Mid Rate | Mid Payment | Most Popular' },
+                        { color: '#3b82f6', bg: 'rgba(59,130,246,0.1)', bg2: 'rgba(59,130,246,0.05)', label: 'Best Rate', labelEs: 'Mejor Tasa', desc: '"I want the lowest possible rate" — Finance more upfront to buy down your rate for long-term savings.', tags: 'Lowest Rate | Highest Fee Financed' }
+                    ];
+
+                    var html = '';
+                    sorted.forEach(function(tier, idx) {
+                        var style = tierStyles[Math.min(idx, 2)];
+                        var origPts = parseFloat(tier.origPts) || 0;
+                        var fee = Math.round(netCash * (origPts / 100));
+                        var isRec = parseInt(tier.tier) === recTierNum;
+                        var isMid = idx === 1;
+
+                        // Get actual rate from tier data
+                        var rateEntry = tier.rates[recTerm] || tier.rates[Object.keys(tier.rates)[0]];
+                        var rateStr = rateEntry ? rateEntry.rate : '—';
+
+                        var borderStyle = isMid ? '2px solid ' + style.color : '1px solid ' + style.color;
+                        html += '<div class="fee-card" style="background:linear-gradient(135deg,' + style.bg + ',' + style.bg2 + ');border:' + borderStyle + ';border-radius:12px;padding:20px;position:relative;overflow:hidden;">';
+                        if (isMid) html += '<div style="position:absolute;top:10px;right:10px;background:' + style.color + ';color:white;font-size:10px;font-weight:700;padding:4px 8px;border-radius:4px;text-transform:uppercase;">Most Popular</div>';
+                        if (isRec && !isMid) html += '<div style="position:absolute;top:10px;right:10px;background:var(--accent-color);color:#0f172a;font-size:10px;font-weight:700;padding:4px 8px;border-radius:4px;text-transform:uppercase;">&#9733; Recommended</div>';
+                        html += '<div style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:' + style.color + ';font-weight:700;margin-bottom:8px;">' + origPts.toFixed(2) + '% Origination Fee</div>';
+                        html += '<div style="font-size:24px;font-weight:700;color:' + style.color + ';margin-bottom:12px;">' + rateStr + ' Rate</div>';
+                        html += '<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;line-height:1.5;"><strong>Best for:</strong> ' + style.desc + '</p>';
+                        html += '<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px;line-height:1.5;"><strong>Your scenario:</strong> $' + netCash.toLocaleString() + ' HELOC &#8594; $' + fee.toLocaleString() + ' fee financed</p>';
+                        html += '<p style="color:' + style.color + ';font-weight:600;font-size:12px;">&#10003; ' + style.tags + '</p>';
+                        html += '</div>';
+                    });
+                    grid.innerHTML = html;
+                }
+
                 // Template Mode Application
                 function applyTemplateMode(mode, opts) {
                     opts = opts || {};
@@ -9608,7 +9628,9 @@
                         tierCompare: document.getElementById('sec-tier-compare'),
                         dtiCalc: document.getElementById('sec-dti-calc'),
                         testimonials: document.getElementById('sec-testimonials'),
-                        debtConsolidation: document.getElementById('sec-debt-consolidation')
+                        debtConsolidation: document.getElementById('sec-debt-consolidation'),
+                        originationCards: document.getElementById('originationFeeTiers'),
+                        borrowerStrategy: document.getElementById('sec-borrower-strategy')
                     };
 
                     function hide(el) { if (el) el.style.display = 'none'; }
@@ -9620,7 +9642,7 @@
                     switch(mode) {
                         case 'minimal':
                         case 'simple':
-                            // Minimal: Dark theme, numbers only, no interactivity
+                            // Minimal: Dark theme, numbers only — rate table + recommended option only
                             // (Do NOT add theme-light — keep the dark background)
                             hide(sections.video);
                             hide(sections.socialProof);
@@ -9635,6 +9657,8 @@
                             hide(sections.dtiCalc);
                             hide(sections.testimonials);
                             hide(sections.debtConsolidation);
+                            hide(sections.originationCards);
+                            hide(sections.borrowerStrategy);
                             // Hide Ezra
                             hide(document.getElementById('eq-orb'));
                             break;
@@ -9805,7 +9829,15 @@
                 var tiersHtml = '';
                 var recFound = false; // only highlight first match
                 if (data.tiers && data.tiers.length > 0) {
-                    data.tiers.forEach(function (tier) {
+                    // Sort: recommended tier first, then by origination fee ascending
+                    var displayTiers = data.tiers.slice().sort(function(a, b) {
+                        var aIsRec = parseInt(a.tier) === recTierNum;
+                        var bIsRec = parseInt(b.tier) === recTierNum;
+                        if (aIsRec && !bIsRec) return -1;
+                        if (!aIsRec && bIsRec) return 1;
+                        return parseFloat(a.origPts) - parseFloat(b.origPts);
+                    });
+                    displayTiers.forEach(function (tier) {
                         var origDollars = Math.round((parseFloat(tier.origPts) / 100) * loanAmt);
                         tiersHtml += '<div class="tier"><div class="tier-header"><span>Tier ' + tier.tier + '</span><span class="pts">' + esc(tier.origPts) + '% ($' + origDollars.toLocaleString() + ')</span></div>';
                         tiersHtml += '<table class="rate-table"><thead><tr><th>Term</th><th>' + (hasVarRates ? 'Fixed Rate' : 'Rate') + '</th><th>' + (hasVarRates ? 'Fixed Pmt' : 'Payment') + '</th>';
