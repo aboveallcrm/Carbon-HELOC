@@ -16685,6 +16685,8 @@ Sent via Above All Carbon HELOC Tool`;
                     if (eqRoot) eqRoot.style.display = 'none';
                     const eqOrbs = clonedDoc.querySelectorAll('.eq-orb, .eq-panel');
                     eqOrbs.forEach(el => el.style.display = 'none');
+                    // Hide all video elements — html2canvas crashes on 0-size video/canvas
+                    clonedDoc.querySelectorAll('video, canvas').forEach(el => el.style.display = 'none');
                 }
             });
             container.style.width = origWidth;
