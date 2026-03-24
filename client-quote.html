@@ -10829,6 +10829,76 @@
                 else if (method === 'copy') navigator.clipboard.writeText(url).then(function () { showToast('Link copied to clipboard!'); }).catch(function () { showToast('Could not copy link'); });
                 trackEvent('share_clicked', { method: method, code: code });
             };
+
+            var SAFE_CAPTURE_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+            function sanitizeQuoteCaptureClone(clonedDoc) {
+                if (!clonedDoc) return;
+                var hideSelectors = '#decision-banner, #floating-bar, .floating-bar, #exit-modal, #eq-root, .eq-orb, .eq-panel, .eq-hint, .eq-nudge, .sticky-cta-bar, .toast-container, .theme-toggle, .no-print, .command-palette, .kbd-hint, .key-hint, #scroll-progress, #particle-canvas, #apply-modal, #contact-modal, #share-modal, .modal-overlay, #sec-personal-video, .pvf-play-btn, .pvf-pulse-ring, .pvf-play-label, .pvf-duration-badge, .pvf-video-pattern, .fc-dots, .fc-cta, .confetti';
+                clonedDoc.querySelectorAll(hideSelectors).forEach(function(el) {
+                    el.style.display = 'none';
+                });
+                clonedDoc.querySelectorAll('video, iframe, object, embed').forEach(function(el) {
+                    el.style.display = 'none';
+                });
+                clonedDoc.querySelectorAll('canvas').forEach(function(el) {
+                    if (!el.width) el.width = 1;
+                    if (!el.height) el.height = 1;
+                    el.style.display = 'none';
+                });
+                clonedDoc.querySelectorAll('img').forEach(function(img) {
+                    var src = (img.getAttribute('src') || '').trim();
+                    var isBroken = img.complete && img.naturalWidth === 0 && img.naturalHeight === 0;
+                    if (!src || isBroken) {
+                        img.setAttribute('src', SAFE_CAPTURE_PNG);
+                        if (!img.width) img.width = 1;
+                        if (!img.height) img.height = 1;
+                        img.style.minWidth = img.style.minWidth || '1px';
+                        img.style.minHeight = img.style.minHeight || '1px';
+                    }
+                });
+                if (clonedDoc.defaultView && typeof clonedDoc.defaultView.getComputedStyle === 'function') {
+                    clonedDoc.querySelectorAll('*').forEach(function(el) {
+                        var computed = clonedDoc.defaultView.getComputedStyle(el);
+                        var rect = typeof el.getBoundingClientRect === 'function' ? el.getBoundingClientRect() : null;
+                        if (computed && computed.animationName && computed.animationName !== 'none') {
+                            el.style.animation = 'none';
+                        }
+                        if (computed && computed.backgroundImage && computed.backgroundImage !== 'none' && rect && (rect.width === 0 || rect.height === 0)) {
+                            el.style.backgroundImage = 'none';
+                        }
+                    });
+                }
+                var clonedQuotePage = clonedDoc.querySelector('.quote-page');
+                if (clonedQuotePage) {
+                    clonedQuotePage.querySelectorAll('.reveal, .stagger-children > *').forEach(function(el) {
+                        el.style.opacity = '1';
+                        el.style.transform = 'none';
+                    });
+                }
+            }
+
+            async function captureQuotePageForPdf(quotePage) {
+                if (!quotePage || typeof html2canvas === 'undefined') return null;
+                return await html2canvas(quotePage, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: '#ffffff',
+                    width: quotePage.scrollWidth,
+                    height: quotePage.scrollHeight,
+                    scrollX: 0,
+                    scrollY: 0,
+                    x: 0,
+                    y: 0,
+                    logging: false,
+                    imageTimeout: 5000,
+                    onclone: function(clonedDoc) {
+                        sanitizeQuoteCaptureClone(clonedDoc);
+                    }
+                });
+            }
+
             window.downloadPDF = async function () {
                 trackEvent('pdf_download_clicked', { code: code });
 
@@ -10843,33 +10913,8 @@
                 try {
                     var quotePage = document.querySelector('.quote-page');
                     if (!quotePage) { window.print(); return; }
-
-                    // Hide non-content elements during capture
-                    var hideSelectors = '#decision-banner, #floating-bar, .floating-bar, #exit-modal, #eq-root, .eq-orb, .eq-panel, .eq-hint, .eq-nudge, .sticky-cta-bar, .toast-container, .theme-toggle, .no-print, .command-palette, .kbd-hint, .key-hint, #scroll-progress, #particle-canvas, #apply-modal, #contact-modal, #share-modal, .modal-overlay, .pvf-play-btn, .pvf-pulse-ring, .pvf-play-label, .pvf-duration-badge, .fc-dots, .fc-cta, .confetti';
-                    var hidden = [];
-                    document.querySelectorAll(hideSelectors).forEach(function(el) {
-                        if (el.style.display !== 'none') {
-                            hidden.push({ el: el, prev: el.style.display });
-                            el.style.display = 'none';
-                        }
-                    });
-
-                    // Force all reveal sections visible
-                    var reveals = document.querySelectorAll('.reveal, .stagger-children > *');
-                    reveals.forEach(function(el) { el.style.opacity = '1'; el.style.transform = 'none'; });
-
-                    var canvas = await html2canvas(quotePage, {
-                        scale: 2,
-                        useCORS: true,
-                        allowTaint: false,
-                        backgroundColor: '#ffffff',
-                        width: quotePage.scrollWidth,
-                        height: quotePage.scrollHeight,
-                        scrollX: 0, scrollY: 0, x: 0, y: 0
-                    });
-
-                    // Restore hidden elements
-                    hidden.forEach(function(h) { h.el.style.display = h.prev; });
+                    var canvas = await captureQuotePageForPdf(quotePage);
+                    if (!canvas) { window.print(); return; }
 
                     var imgData = canvas.toDataURL('image/jpeg', 0.92);
                     var jsPDF = window.jspdf.jsPDF;

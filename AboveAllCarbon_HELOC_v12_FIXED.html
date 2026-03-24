@@ -8174,8 +8174,7 @@ Best regards,
 
         <footer>
             <div class="footer-main">
-                <img src=""
-                    alt="Loan Officer" class="footer-headshot" id="footer-img" loading="lazy">
+                <img alt="Loan Officer" class="footer-headshot" id="footer-img" loading="lazy" style="display:none;">
                 <div class="footer-info">
                     <span class="footer-name" id="footer-name">Your Name</span>
                     <span id="footer-title">Loan Officer</span><br>
@@ -8185,8 +8184,7 @@ Best regards,
                     <span id="footer-website">—</span>
                     <div class="footer-stars">★★★★★ 5.0 Google Rating</div>
                 </div>
-                <img src=""
-                    alt="Company Logo" class="company-logo-footer" id="company-logo-footer" loading="lazy" style="display:none;">
+                <img alt="Company Logo" class="company-logo-footer" id="company-logo-footer" loading="lazy" style="display:none;">
             </div>
             <div class="footer-legal">
                 <img src="https://assets.cdn.filesafe.space/eVB3bUDr8bdQfRu6ae03/media/693bb403ed957f64da26426c.jpg"
@@ -12578,10 +12576,26 @@ Best regards,
             if (coNmls) document.getElementById('footer-co-nmls').innerText = coNmls.value;
             if (coDre) document.getElementById('footer-co-dre').innerText = coDre.value;
             if (loAddress) document.getElementById('footer-address').innerText = loAddress.value;
-            if (loHeadshotUrl && loHeadshotUrl.value) document.getElementById('footer-img').src = loHeadshotUrl.value;
+            var footerImg = document.getElementById('footer-img');
+            if (footerImg) {
+                if (loHeadshotUrl && loHeadshotUrl.value) {
+                    footerImg.src = loHeadshotUrl.value;
+                    footerImg.style.display = '';
+                } else {
+                    footerImg.removeAttribute('src');
+                    footerImg.style.display = 'none';
+                }
+            }
             var footerLogo = document.getElementById('company-logo-footer');
-            if (loLogoUrl && loLogoUrl.value) { footerLogo.src = loLogoUrl.value; footerLogo.style.display = ''; }
-            else if (footerLogo) { footerLogo.style.display = 'none'; }
+            if (footerLogo) {
+                if (loLogoUrl && loLogoUrl.value) {
+                    footerLogo.src = loLogoUrl.value;
+                    footerLogo.style.display = '';
+                } else {
+                    footerLogo.removeAttribute('src');
+                    footerLogo.style.display = 'none';
+                }
+            }
             
             // Titanium v5.9.3 - Sync Lender Name with Company Name (if not manually edited)
             if (loCompany && wlLenderName && !window.wlLenderNameManuallyEdited) {
@@ -14725,8 +14739,8 @@ Generate the sales strategy and phone script now.`;
                 let imageBase64 = null;
                 if (typeof html2canvas !== 'undefined') {
                     statusDiv.innerHTML = '<div style="font-size:24px;margin-bottom:10px;">📸</div>Capturing quote image...';
-                    var canvas = await captureProposal({ scale: 1.5 });
-                    imageBase64 = canvas.toDataURL('image/jpeg', 0.85);
+                    var canvas = await captureProposalSafe({ scale: 1.5 });
+                    if (canvas) imageBase64 = canvas.toDataURL('image/jpeg', 0.85);
                 }
 
                 // Step 2: Create or find contact in GHL
@@ -16643,6 +16657,60 @@ Sent via Above All Carbon HELOC Tool`;
 
         // ===== SCREENSHOT & PDF =====
 
+        var TRANSPARENT_CAPTURE_PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+        function sanitizeCaptureClone(clonedDoc, hideSelectors) {
+            if (!clonedDoc) return;
+
+            if (hideSelectors) {
+                clonedDoc.querySelectorAll(hideSelectors).forEach(function(el) {
+                    el.style.display = 'none';
+                });
+            }
+
+            clonedDoc.querySelectorAll('video, iframe, object, embed').forEach(function(el) {
+                el.style.display = 'none';
+            });
+
+            clonedDoc.querySelectorAll('canvas').forEach(function(el) {
+                if (!el.width) el.width = 1;
+                if (!el.height) el.height = 1;
+                el.style.display = 'none';
+            });
+
+            clonedDoc.querySelectorAll('img').forEach(function(img) {
+                var src = (img.getAttribute('src') || '').trim();
+                var isBroken = img.complete && img.naturalWidth === 0 && img.naturalHeight === 0;
+                if (!src || isBroken) {
+                    img.setAttribute('src', TRANSPARENT_CAPTURE_PNG);
+                    if (!img.width) img.width = 1;
+                    if (!img.height) img.height = 1;
+                    img.style.minWidth = img.style.minWidth || '1px';
+                    img.style.minHeight = img.style.minHeight || '1px';
+                }
+            });
+
+            if (clonedDoc.defaultView && typeof clonedDoc.defaultView.getComputedStyle === 'function') {
+                clonedDoc.querySelectorAll('*').forEach(function(el) {
+                    var computed = clonedDoc.defaultView.getComputedStyle(el);
+                    var rect = typeof el.getBoundingClientRect === 'function' ? el.getBoundingClientRect() : null;
+                    if (computed && computed.animationName && computed.animationName !== 'none') {
+                        el.style.animation = 'none';
+                    }
+                    if (computed && computed.backgroundImage && computed.backgroundImage !== 'none' && rect && (rect.width === 0 || rect.height === 0)) {
+                        el.style.backgroundImage = 'none';
+                    }
+                });
+            }
+        }
+
+        function requireProposalCanvas(canvas, message) {
+            if (!canvas) {
+                throw new Error(message || 'Could not capture the quote preview.');
+            }
+            return canvas;
+        }
+
         /**
          * Capture proposal container as a canvas via html2canvas.
          * @param {object} [opts] - { width: 950, scale: 2, settle: 100 }
@@ -16719,13 +16787,69 @@ Sent via Above All Carbon HELOC Tool`;
             }
         }
 
+        async function captureProposalSafe(opts) {
+            opts = opts || {};
+            var captureWidth = opts.width || 950;
+            var scale = opts.scale || 2;
+            var settle = opts.settle || 100;
+            if (typeof html2canvas === 'undefined') return null;
+            var container = document.getElementById('proposal-container');
+            if (!container) return null;
+
+            var origWidth = container.style.width;
+            container.style.width = captureWidth + 'px';
+            await new Promise(function(r) { setTimeout(r, settle); });
+
+            var rect = container.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) {
+                container.style.width = origWidth;
+                console.warn('captureProposalSafe: container has zero dimensions and was skipped');
+                return null;
+            }
+
+            try {
+                var canvas = await html2canvas(container, {
+                    scale: scale,
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: '#ffffff',
+                    windowWidth: captureWidth,
+                    width: captureWidth,
+                    height: container.scrollHeight,
+                    scrollX: 0,
+                    scrollY: 0,
+                    x: 0,
+                    y: 0,
+                    logging: false,
+                    imageTimeout: 5000,
+                    onclone: function(clonedDoc) {
+                        var clonedContainer = clonedDoc.getElementById('proposal-container');
+                        if (clonedContainer) {
+                            clonedContainer.style.width = captureWidth + 'px';
+                            clonedContainer.style.maxWidth = captureWidth + 'px';
+                        }
+                        sanitizeCaptureClone(
+                            clonedDoc,
+                            '#ai-assistant-container, #send-quote-section, #eq-root, .eq-orb, .eq-panel, #carbon-prediction-bar, #carbon-quick-widget, #email-send-modal, .toast-container, .modal-overlay, #screen-share-preview'
+                        );
+                    }
+                });
+                container.style.width = origWidth;
+                return canvas;
+            } catch (err) {
+                container.style.width = origWidth;
+                console.warn('captureProposalSafe failed:', err.message);
+                return null;
+            }
+        }
+
         async function captureAndCopy() {
             const notification = document.createElement('div');
             notification.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#10b981;color:white;padding:20px 30px;border-radius:10px;z-index:10000;font-family:var(--font-heading);font-size:13px;box-shadow:0 8px 32px rgba(0,0,0,0.3);';
             notification.textContent = '📸 Capturing...';
             document.body.appendChild(notification);
             try {
-                const canvas = await captureProposal();
+                const canvas = requireProposalCanvas(await captureProposalSafe(), 'Could not capture quote screenshot.');
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
                 try {
                     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
@@ -16756,7 +16880,10 @@ Sent via Above All Carbon HELOC Tool`;
             
             try {
                 // Capture at optimized width
-                const canvas = await captureProposal({ width: 850, scale: 2, settle: 200 });
+                const canvas = requireProposalCanvas(
+                    await captureProposalSafe({ width: 850, scale: 2, settle: 200 }),
+                    'Could not capture quote preview for PDF export.'
+                );
 
                 const imgData = canvas.toDataURL('image/jpeg', 0.92);
                 const { jsPDF } = window.jspdf;
@@ -16907,7 +17034,10 @@ Sent via Above All Carbon HELOC Tool`;
             }
 
             try {
-                const canvas = await captureProposal({ settle: 150 });
+                const canvas = requireProposalCanvas(
+                    await captureProposalSafe({ settle: 150 }),
+                    'Could not capture quote preview for branded PDF export.'
+                );
                 pdfHiddenEls.forEach(el => el.classList.remove('print-exclude'));
 
                 const imgData = canvas.toDataURL('image/jpeg', 0.92);
@@ -16967,7 +17097,7 @@ Sent via Above All Carbon HELOC Tool`;
             notification.textContent = '📸 Capturing & preparing email...';
             document.body.appendChild(notification);
             try {
-                const canvas = await captureProposal();
+                const canvas = requireProposalCanvas(await captureProposalSafe(), 'Could not capture quote preview for email.');
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
 
                 // Build rich HTML with embedded screenshot and copy to clipboard
@@ -17055,7 +17185,7 @@ Sent via Above All Carbon HELOC Tool`;
 
             // Capture screenshot (email-optimized: 600px wide, JPEG for smaller file size)
             try {
-                var canvas = await captureProposal({ width: 600, scale: 1.5, settle: 150 });
+                var canvas = await captureProposalSafe({ width: 600, scale: 1.5, settle: 150 });
 
                 if (canvas) {
                     // Convert to JPEG for email-friendly size
