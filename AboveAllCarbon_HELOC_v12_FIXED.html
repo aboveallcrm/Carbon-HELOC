@@ -11900,9 +11900,12 @@ Best regards,
             document.getElementById('keys-ai-max-tokens').value = meta.ai_max_tokens || '';
             document.getElementById('keys-ai-system-prompt').value = meta.ai_system_prompt || '';
             // Cascade fallback keys
-            document.getElementById('keys-kimi-api-key').value = meta.kimi_api_key || '';
-            document.getElementById('keys-perplexity-api-key').value = meta.perplexity_api_key || '';
-            document.getElementById('keys-grok-api-key').value = meta.grok_api_key || '';
+            var _kimiEl = document.getElementById('keys-kimi-api-key');
+            var _pplxEl = document.getElementById('keys-perplexity-api-key');
+            var _grokEl = document.getElementById('keys-grok-api-key');
+            if (_kimiEl) _kimiEl.value = meta.kimi_api_key || '';
+            if (_pplxEl) _pplxEl.value = meta.perplexity_api_key || '';
+            if (_grokEl) _grokEl.value = meta.grok_api_key || '';
         }
 
         async function saveUserKeys() {
@@ -11926,9 +11929,9 @@ Best regards,
                 ai_max_tokens: parseInt(document.getElementById('keys-ai-max-tokens').value) || null,
                 ai_system_prompt: document.getElementById('keys-ai-system-prompt').value,
                 // Cascade fallback keys
-                kimi_api_key: document.getElementById('keys-kimi-api-key').value,
-                perplexity_api_key: document.getElementById('keys-perplexity-api-key').value,
-                grok_api_key: document.getElementById('keys-grok-api-key').value
+                kimi_api_key: document.getElementById('keys-kimi-api-key')?.value || '',
+                perplexity_api_key: document.getElementById('keys-perplexity-api-key')?.value || '',
+                grok_api_key: document.getElementById('keys-grok-api-key')?.value || ''
             };
 
             // Check if row exists already
@@ -17793,10 +17796,10 @@ Sent via Above All Carbon HELOC Tool`;
                 headers: headers,
                 body: JSON.stringify(payload)
             });
-            var data = await resp.json();
             if (resp.status === 401) {
                 throw new Error('Gmail connection expired — reconnect in Settings → Integrations');
             }
+            var data = await resp.json();
             if (!resp.ok) throw new Error(data.error || 'Gmail send error');
             return data;
         }
