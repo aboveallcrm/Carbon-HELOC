@@ -18,6 +18,27 @@ function jsonResponse(body: any, status = 200) {
     })
 }
 
+async function recordSyncError(
+    supabaseAdmin: any,
+    userId: string,
+    provider: string,
+    context: string,
+    errorMessage: string,
+    payload: Record<string, any> = {},
+) {
+    try {
+        await supabaseAdmin.from('sync_errors').insert({
+            user_id: userId,
+            provider,
+            context,
+            error_message: errorMessage,
+            payload,
+        })
+    } catch (err) {
+        console.error('Failed to record sync error:', err)
+    }
+}
+
 async function timedFetch(url: string, options: RequestInit = {}): Promise<Response> {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), GHL_FETCH_TIMEOUT_MS)
@@ -41,6 +62,8 @@ serve(async (req: Request) => {
         return jsonResponse({ error: 'Method not allowed' }, 405)
     }
 
+    let userId = ''
+
     try {
         // 1. Authenticate caller via JWT
         const authHeader = req.headers.get('Authorization')
@@ -55,7 +78,7 @@ serve(async (req: Request) => {
         const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
         if (authError || !user) return jsonResponse({ error: 'Invalid or expired token' }, 401)
 
-        const userId = user.id
+        userId = user.id
 
         // 2. Get GHL API key and location ID from user_integrations
         const { data: integrations } = await supabaseAdmin
@@ -159,6 +182,13 @@ serve(async (req: Request) => {
                     })
                     .eq('id', item.id)
 
+                await recordSyncError(supabaseAdmin, userId, 'ghl', 'outbound_queue_dispatch', message, {
+                    queue_id: item.id,
+                    channel: item.channel,
+                    retry_count: newRetry,
+                    max_retries: maxRetries,
+                })
+
                 results.push({ id: item.id, channel: item.channel, success: false, error: message })
             }
         }
@@ -177,6 +207,13 @@ serve(async (req: Request) => {
         }
         const message = err instanceof Error ? err.message : String(err)
         console.error('sync-ghl-outbound error:', message)
+        if (userId) {
+            const supabaseAdmin = createClient(
+                Deno.env.get('SUPABASE_URL') ?? '',
+                Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+            )
+            await recordSyncError(supabaseAdmin, userId, 'ghl', 'sync_ghl_outbound', message)
+        }
         return jsonResponse({ error: message }, 500)
     }
 })
@@ -302,6 +339,7 @@ async function syncSingleLead(
         .select('*')
         .eq('id', leadId)
         .eq('user_id', userId)
+        .limit(1)
         .single()
 
     if (leadErr || !lead) {
@@ -373,6 +411,10 @@ async function syncSingleLead(
     const ghlData = await ghlResp.json().catch(() => ({}))
 
     if (!ghlResp.ok) {
+        await recordSyncError(supabaseAdmin, userId, 'ghl', `sync_single_lead_${operation}`, `GHL ${operation} failed (${ghlResp.status})`, {
+            lead_id: leadId,
+            detail: ghlData,
+        })
         return jsonResponse({
             error: `GHL ${operation} failed`,
             status: ghlResp.status,

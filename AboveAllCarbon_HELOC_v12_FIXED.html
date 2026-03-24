@@ -34,6 +34,7 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
     <link rel="apple-touch-icon" href="/apple-touch-icon-152x152.png" sizes="152x152">
     <link rel="manifest" href="/manifest.json">
+    <script src="/api/public-config.js"></script>
     <link rel="stylesheet" href="./js/pwa-styles.css">
     
     <!-- Structured Data -->
@@ -5371,9 +5372,9 @@
                 <div class="input-group" style="align-items: center;">
                     <div class="input-field"><label style="color: var(--accent-color);">Rec. Tier <span class="help-tip">?<span class="help-tip-text">Your recommended pricing tier. The quote highlights this tier in gold so the client sees which option you suggest.</span></span></label><select
                             id="rec-tier-select" style="border-color: var(--accent-color);">
-                            <option value="t1">Tier 1</option>
-                            <option value="t2" selected>Tier 2</option>
-                            <option value="t3">Tier 3</option>
+                            <option value="1">Tier 1</option>
+                            <option value="2" selected>Tier 2</option>
+                            <option value="3">Tier 3</option>
                         </select></div>
                     <div class="input-field"><label style="color: var(--accent-color);">Rec. Term <span class="help-tip">?<span class="help-tip-text">Your recommended loan term. Shorter terms = lower rate but higher payment. The quote highlights this term for the client.</span></span></label><select
                             id="rec-term-select" style="border-color: var(--accent-color);">
@@ -6798,7 +6799,7 @@ Best regards,
                                 GHL → Carbon Webhook URL <span class="help-tip">?<span class="help-tip-text">Copy this URL into GHL → Settings → Webhooks to sync changes from GHL back to Carbon.</span></span>
                             </label>
                             <div style="display: flex; gap: 6px;">
-                                <input type="text" id="ghl-inbound-webhook-url" readonly style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 4px; padding: 6px 8px; font-size: 9px; color: #10b981; font-family: monospace;" value="https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/handle-ghl-webhook">
+                                <input type="text" id="ghl-inbound-webhook-url" readonly style="flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 4px; padding: 6px 8px; font-size: 9px; color: #10b981; font-family: monospace;" value="" placeholder="Loading...">
                                 <button class="btn" style="background: #10b981; font-size: 8px; padding: 4px 10px;" onclick="copyGHLWebhookUrl()">📋 Copy</button>
                             </div>
                         </div>
@@ -6992,30 +6993,30 @@ Best regards,
                         <div style="margin-bottom: 10px;">
                             <label style="font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Bonzo Inbound Webhook</label>
                             <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
-                                <input type="text" readonly value="https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/bonzo-webhook"
+                                <input type="text" id="static-bonzo-webhook-url" readonly value="" placeholder="Loading..."
                                     style="flex: 1; font-size: 9px; background: rgba(0,0,0,0.3); border: 1px solid rgba(197,160,89,0.3); color: #c5a059; padding: 6px 8px; border-radius: 4px; font-family: 'Courier New', monospace; cursor: text;">
                                 <button class="btn" style="background: rgba(197,160,89,0.3); border: 1px solid var(--accent-color); font-size: 8px; white-space: nowrap; padding: 4px 8px;"
-                                    onclick="copyStaticWebhookUrl('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/bonzo-webhook', this)">📋 Copy</button>
+                                    onclick="copyStaticWebhookUrl(this.previousElementSibling.value, this)">📋 Copy</button>
                             </div>
                         </div>
 
                         <div style="margin-bottom: 10px;">
                             <label style="font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">GHL Inbound Webhook</label>
                             <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
-                                <input type="text" readonly value="https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/handle-ghl-webhook"
+                                <input type="text" id="static-ghl-webhook-url" readonly value="" placeholder="Loading..."
                                     style="flex: 1; font-size: 9px; background: rgba(0,0,0,0.3); border: 1px solid rgba(197,160,89,0.3); color: #c5a059; padding: 6px 8px; border-radius: 4px; font-family: 'Courier New', monospace; cursor: text;">
                                 <button class="btn" style="background: rgba(197,160,89,0.3); border: 1px solid var(--accent-color); font-size: 8px; white-space: nowrap; padding: 4px 8px;"
-                                    onclick="copyStaticWebhookUrl('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/handle-ghl-webhook', this)">📋 Copy</button>
+                                    onclick="copyStaticWebhookUrl(this.previousElementSibling.value, this)">📋 Copy</button>
                             </div>
                         </div>
 
                         <div style="margin-bottom: 4px;">
                             <label style="font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Lead Source / LeadMailbox Inbound</label>
                             <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
-                                <input type="text" readonly value="https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/inbound-lead"
+                                <input type="text" id="static-lead-webhook-url" readonly value="" placeholder="Loading..."
                                     style="flex: 1; font-size: 9px; background: rgba(0,0,0,0.3); border: 1px solid rgba(197,160,89,0.3); color: #c5a059; padding: 6px 8px; border-radius: 4px; font-family: 'Courier New', monospace; cursor: text;">
                                 <button class="btn" style="background: rgba(197,160,89,0.3); border: 1px solid var(--accent-color); font-size: 8px; white-space: nowrap; padding: 4px 8px;"
-                                    onclick="copyStaticWebhookUrl('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/inbound-lead', this)">📋 Copy</button>
+                                    onclick="copyStaticWebhookUrl(this.previousElementSibling.value, this)">📋 Copy</button>
                             </div>
                         </div>
                     </div>
@@ -8209,20 +8210,23 @@ Best regards,
     <script defer src="./js/link-shortener-universal.js"></script>
     <script>
         // ===== GLOBAL ERROR HANDLERS =====
-        window.addEventListener('unhandledrejection', function(event) {
-            console.error('Unhandled promise rejection:', event.reason);
-            if (typeof showToast === 'function') {
-                showToast('Something went wrong. Please try again.', 'error');
-            }
-            event.preventDefault();
-        });
-        window.onerror = function(msg, url, line, col, error) {
-            console.error('Global error:', msg, 'at line', line);
-            if (typeof showToast === 'function') {
-                showToast('Something went wrong. Please try again.', 'error');
-            }
+        window.onerror = function(msg, src, line, col, err) {
+            console.error('[Global Error]', msg, src, line);
             return true;
         };
+        window.onunhandledrejection = function(e) {
+            console.error('[Unhandled Promise]', e.reason);
+            return true;
+        };
+
+        window._debug = window._debug === true || new URLSearchParams(window.location.search).get('debug') === '1';
+        if (!window._debug) {
+            console.debug = function() {};
+            console.log = function() {};
+        }
+        function dbg() {
+            if (window._debug) console.log.apply(console, arguments);
+        }
 
         // ===== UTILITY HELPERS =====
         // Safe auth header helper — always gets a fresh token via refreshSession
@@ -8253,6 +8257,28 @@ Best regards,
             try { return JSON.parse(str); } catch (e) { return fallback !== undefined ? fallback : null; }
         }
 
+        function normalizeRecTierValue(value) {
+            var normalized = String(value || '').toLowerCase().replace(/^tier\s*/, '').replace(/^t/, '');
+            if (normalized === '1' || normalized === '2' || normalized === '3') return normalized;
+            return '2';
+        }
+
+        function recTierTableId(value) {
+            return 't' + normalizeRecTierValue(value);
+        }
+
+        function getSelectedRecTerm() {
+            var termSelect = document.getElementById('rec-term-select');
+            return termSelect ? String(termSelect.value || '20') : '20';
+        }
+
+        function getRateLockExpiresAt(days) {
+            var safeDays = Math.max(parseInt(days, 10) || 0, 0);
+            var expires = new Date();
+            expires.setDate(expires.getDate() + safeDays);
+            return expires;
+        }
+
         // ===== GLOBALS =====
         let isInterestOnly = false;
         let manualRatesEnabled = false;
@@ -8273,7 +8299,7 @@ Best regards,
         function showToast(message, type, duration) {
             type = type || 'info'; duration = duration || 3500;
             const container = document.getElementById('toast-container');
-            if (!container) { console.log('[toast]', type, message); return; }
+            if (!container) { return; }
             const toast = document.createElement('div');
             toast.className = 'toast ' + type;
             const icons = { success: '\u2705', error: '\u274C', warning: '\u26A0\uFE0F', info: '\u2139\uFE0F' };
@@ -8286,6 +8312,91 @@ Best regards,
             if (toast.classList.contains('fade-out')) return;
             toast.classList.add('fade-out');
             setTimeout(function () { toast.remove(); }, 300);
+        }
+
+        function ensureProfileReadyForQuote() {
+            var requiredFields = [
+                { id: 'lo-name', label: 'Loan officer name' },
+                { id: 'lo-company', label: 'Company name' },
+                { id: 'lo-nmls', label: 'NMLS number' }
+            ];
+            var missing = requiredFields.filter(function(field) {
+                var el = document.getElementById(field.id);
+                return !el || !String(el.value || '').trim();
+            });
+
+            if (missing.length === 0) return true;
+
+            showToast('Complete your LO profile before generating a client quote.', 'warning', 5000);
+            if (typeof OnboardingWizard !== 'undefined' && typeof OnboardingWizard.reopen === 'function') {
+                setTimeout(function() { OnboardingWizard.reopen(); }, 250);
+            } else if (typeof switchTab === 'function') {
+                switchTab('lo');
+            }
+            return false;
+        }
+
+        function ensureWritableMode(actionLabel) {
+            if (!window.isImpersonatedReadOnly) return true;
+            showToast('Demo As mode is read-only. Exit impersonation to ' + (actionLabel || 'continue') + '.', 'warning');
+            return false;
+        }
+
+        async function logUsageEvent(eventType, metadata) {
+            try {
+                var sb = window._supabase;
+                var userId = window.currentUserId;
+                if (!sb || !userId || window.isImpersonatedReadOnly) return;
+                await sb.from('usage_events').insert({
+                    user_id: userId,
+                    event_type: eventType,
+                    metadata: metadata || {},
+                    created_at: new Date().toISOString()
+                });
+            } catch (_err) {}
+        }
+
+        async function ensureOutboundConsent(channel, email, phone) {
+            try {
+                var sb = window._supabase;
+                var userId = window.currentUserId;
+                if (!sb || !userId) return false;
+
+                var rows = [];
+                if (phone) {
+                    var byPhone = await sb.from('consent_vault')
+                        .select('channels_allowed,opted_in_at,revoked_at,opted_out,is_active,dnc_listed')
+                        .eq('user_id', userId)
+                        .eq('phone', phone)
+                        .limit(10);
+                    rows = rows.concat(byPhone.data || []);
+                }
+                if ((!rows || rows.length === 0) && email) {
+                    var byEmail = await sb.from('consent_vault')
+                        .select('channels_allowed,opted_in_at,revoked_at,opted_out,is_active,dnc_listed')
+                        .eq('user_id', userId)
+                        .eq('email', email)
+                        .limit(10);
+                    rows = rows.concat(byEmail.data || []);
+                }
+
+                var valid = (rows || []).some(function(row) {
+                    if (!row || !row.opted_in_at || row.revoked_at || row.opted_out === true || row.dnc_listed === true || row.is_active === false) return false;
+                    var rawChannels = row.channels_allowed;
+                    var channels = Array.isArray(rawChannels)
+                        ? rawChannels.map(function(v) { return String(v || '').toLowerCase(); })
+                        : String(JSON.stringify(rawChannels || [])).toLowerCase();
+                    if (Array.isArray(channels)) return channels.includes(channel) || channels.includes('all');
+                    return channels.indexOf(channel) !== -1 || channels.indexOf('all') !== -1;
+                });
+
+                if (valid) return true;
+                showToast('A valid ' + channel.toUpperCase() + ' opt-in is required before automated outreach can be sent.', 'warning', 5000);
+                return false;
+            } catch (_err) {
+                showToast('Could not verify outbound consent. Please try again after reconnecting.', 'warning', 5000);
+                return false;
+            }
         }
 
         // ===== INITIALIZATION =====
@@ -8304,6 +8415,7 @@ Best regards,
                 var heroSeen = localStorage.getItem('heroSeen');
                 if (!heroSeen && (!clientName.value || clientName.value.trim() === '')) {
                     hero.style.display = 'block';
+                    rateLockNotice.innerHTML = '🔒 Rate locked through ' + escapeHtml(rateLockExpires.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })) + ' (' + escapeHtml(String(rateLockDays)) + ' days)';
                 } else {
                     hero.style.display = 'none';
                 }
@@ -8648,7 +8760,7 @@ Best regards,
         const TIER_LABELS = { carbon: 'CARBON', titanium: 'TITANIUM', platinum: 'PLATINUM', obsidian: 'OBSIDIAN', diamond: 'DIAMOND' };
 
         function isTrueSuperAdmin() {
-            return window.currentUserRole === 'super_admin';
+            return window.realUserRole === 'super_admin' && !window.isImpersonatedReadOnly;
         }
 
         function applyRoleAccess(role) {
@@ -9653,7 +9765,7 @@ Best regards,
 
             async function _populateBonzoWebhookUrl(el) {
                 var userId = window.currentUserId || 'USER_ID';
-                var baseUrl = (typeof SUPABASE_FUNCTIONS_URL !== 'undefined' ? SUPABASE_FUNCTIONS_URL : 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1') + '/bonzo-webhook';
+                var baseUrl = SUPABASE_FUNCTIONS_URL + '/bonzo-webhook';
                 var token = _webhookToken || '';
                 if (!token && window._supabase && userId !== 'USER_ID') {
                     try {
@@ -11585,7 +11697,10 @@ Best regards,
 
             // Fetch profiles and user_integrations in parallel
             const [profilesRes, keysRes] = await Promise.all([
-                sb.from('profiles').select('*').order('created_at', { ascending: false }),
+                sb.from('profiles')
+                    .select('id, email, role, tier, subscription_status, created_at')
+                    .order('created_at', { ascending: false })
+                    .limit(500),
                 sb.from('user_integrations').select('user_id, metadata').eq('provider', 'heloc_keys')
             ]);
 
@@ -12097,7 +12212,7 @@ Best regards,
                 async function () {
                     var sb = window._supabase;
                     if (!sb) { showToast('Supabase not loaded', 'error'); return; }
-                    var redirectUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'login.html';
+                    var redirectUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'AboveAllCarbon_HELOC_v12_FIXED.html';
                     var result = await sb.auth.resetPasswordForEmail(email, { redirectTo: redirectUrl });
                     if (result.error) {
                         showToast('Error: ' + result.error.message, 'error');
@@ -12541,7 +12656,7 @@ Best regards,
                     try {
                         const authHeaders = await getAuthHeaders();
                         if (!authHeaders) { results.style.display = 'none'; return; }
-                        const response = await fetch((typeof SUPABASE_FUNCTIONS_URL !== 'undefined' ? SUPABASE_FUNCTIONS_URL : 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1') + '/radar-proxy', {
+                        const response = await fetch(SUPABASE_FUNCTIONS_URL + '/radar-proxy', {
                             method: 'POST',
                             headers: authHeaders,
                             body: JSON.stringify({ query: query })
@@ -12847,7 +12962,7 @@ Best regards,
                         if (emailToggle) emailToggle.classList.toggle('active', data.emailNotificationsEnabled);
                     }
                     if (data.wlApplyText) document.getElementById('wl-apply-text').value = data.wlApplyText;
-                    if (data.recTier) document.getElementById('rec-tier-select').value = data.recTier;
+                    if (data.recTier) document.getElementById('rec-tier-select').value = normalizeRecTierValue(data.recTier);
                     if (data.recTerm) document.getElementById('rec-term-select').value = data.recTerm;
                     if (data.recType) document.getElementById('rec-type-select').value = data.recType;
                     if (data.t1Orig) document.getElementById('t1-orig').value = data.t1Orig;
@@ -13160,7 +13275,8 @@ Best regards,
                 });
             });
 
-            const recTier = document.getElementById('rec-tier-select').value;
+            const recTierValue = normalizeRecTierValue(document.getElementById('rec-tier-select').value);
+            const recTier = recTierTableId(recTierValue);
             const recTerm = parseInt(document.getElementById('rec-term-select').value);
             const recRateType = document.getElementById('rec-type-select').value;
             const isVarRec = recRateType === 'variable';
@@ -13191,9 +13307,15 @@ Best regards,
                 const rateLockDays = document.getElementById('rate-lock-days')?.value || '30';
                 if (rateLockEnabled) {
                     rateLockNotice.style.display = 'block';
+                    const rateLockExpires = getRateLockExpiresAt(rateLockDays);
+                    rateLockNotice.innerHTML = '🔒 Rate locked through ' + escapeHtml(rateLockExpires.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })) + ' (' + escapeHtml(String(rateLockDays)) + ' days)';
                     rateLockNotice.innerHTML = '🔒 Rate locked for ' + escapeHtml(String(rateLockDays)) + ' days';
                 } else {
                     rateLockNotice.style.display = 'none';
+                }
+                if (rateLockEnabled) {
+                    const rateLockExpires = getRateLockExpiresAt(rateLockDays);
+                    rateLockNotice.innerHTML = '🔒 Rate locked through ' + escapeHtml(rateLockExpires.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })) + ' (' + escapeHtml(String(rateLockDays)) + ' days)';
                 }
             }
 
@@ -13221,7 +13343,8 @@ Best regards,
             const disclaimerRateLock = document.getElementById('disclaimer-rate-lock');
             if (disclaimerRateLock) {
                 if (rateLockEnabled) {
-                    disclaimerRateLock.innerText = 'Rate is locked for ' + rateLockDays + ' days. ';
+                    const rateLockExpires = getRateLockExpiresAt(rateLockDays);
+                    disclaimerRateLock.innerText = 'Rate is locked through ' + rateLockExpires.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' (' + rateLockDays + ' days). ';
                     disclaimerRateLock.style.display = 'inline';
                 } else {
                     disclaimerRateLock.style.display = 'none';
@@ -13607,7 +13730,7 @@ Best regards,
             // Computed outputs
             ctx.totalLoanAmount = g('snap-total-loan');
             ctx.recommendedRate = g('snap-rate');
-            ctx.recommendedTerm = g('snap-term');
+            ctx.recommendedTerm = getSelectedRecTerm();
             ctx.monthlyPayment = g('snap-payment');
             ctx.origination = g('snap-orig-perc');
             ctx.recType = document.getElementById('rec-type-select')?.value || 'fixed';
@@ -14531,6 +14654,7 @@ Generate the sales strategy and phone script now.`;
         }
 
         async function sendViaGHL() {
+            if (!ensureWritableMode('send an email')) return;
             const apiKey = document.getElementById('ghl-api-key').value;
             const locationId = document.getElementById('ghl-location-id').value;
             const fromName = document.getElementById('ghl-from-name').value;
@@ -14563,6 +14687,8 @@ Generate the sales strategy and phone script now.`;
                 return;
             }
 
+            if (!await ensureOutboundConsent('email', contactEmail, contactPhone)) return;
+
             // Gather quote data
             const homeValue = parseFloat(document.getElementById('in-home-value').value) || 0;
             const mortgageBalance = parseFloat(document.getElementById('in-mortgage-balance').value) || 0;
@@ -14572,7 +14698,7 @@ Generate the sales strategy and phone script now.`;
             const propertyType = document.getElementById('in-property-type').value;
             const totalLoan = document.getElementById('snap-total-loan').innerText;
             const rate = document.getElementById('snap-rate').innerText;
-            const term = document.getElementById('snap-term').innerText;
+            const term = getSelectedRecTerm();
             const payment = document.getElementById('snap-payment').innerText;
             const origination = document.getElementById('snap-orig-perc').innerText;
 
@@ -14756,7 +14882,7 @@ Sent via Above All Carbon HELOC Tool`;
                             .limit(1).maybeSingle();
                         if (matchedLead) {
                             var trackingCode = window._lastGeneratedQuoteCode || '';
-                            trackingPixelUrl = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/track-quote-view?lead_id=' + matchedLead.id + '&user_id=' + window.currentUserId + '&event=quote_opened' + (trackingCode ? '&code=' + encodeURIComponent(trackingCode) : '');
+                            trackingPixelUrl = SUPABASE_FUNCTIONS_URL + '/track-quote-view?lead_id=' + matchedLead.id + '&user_id=' + window.currentUserId + '&event=quote_opened' + (trackingCode ? '&code=' + encodeURIComponent(trackingCode) : '');
                         }
                     } catch (tpErr) { console.debug('Tracking pixel lookup skipped:', tpErr.message); }
                 }
@@ -14853,6 +14979,12 @@ Sent via Above All Carbon HELOC Tool`;
                     email: contactEmail, name: contactName, phone: contactPhone,
                     firstName, lastName
                 }, 'ghl');
+                await logUsageEvent('client_link_sent', {
+                    quote_code: window._lastGeneratedQuoteCode || null,
+                    lead_id: window._lastGeneratedQuoteLeadId || null,
+                    channel: 'email',
+                    provider: 'ghl'
+                });
 
                 // Success!
                 statusDiv.style.background = 'rgba(16,185,129,0.95)';
@@ -15012,7 +15144,7 @@ Sent via Above All Carbon HELOC Tool`;
         });
 
         // ===== HEYGEN AI VIDEO FUNCTIONS =====
-        var SUPABASE_FUNCTIONS_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1';
+        var SUPABASE_FUNCTIONS_URL = (window.__PUBLIC_CONFIG__ && window.__PUBLIC_CONFIG__.supabaseFunctionsUrl) || window.SUPABASE_FUNCTIONS_URL || '';
 
         async function testHeyGenConnection() {
             var headers = await getAuthHeaders();
@@ -15057,7 +15189,7 @@ Sent via Above All Carbon HELOC Tool`;
             var mbNum = parseFloat(mortBal.replace(/[^0-9.]/g, '')) || 0;
             var equity = '$' + Math.round(hvNum - mbNum).toLocaleString();
             var rate = g('snap-rate') || '0';
-            var term = g('snap-term') || '30';
+            var term = getSelectedRecTerm() || '30';
             var payment = g('snap-payment') || '$0';
             var totalLoan = g('snap-total-loan') || g('in-net-cash') || '$0';
             var expiryDays = document.getElementById('link-expiry-days')?.value || '7';
@@ -15089,6 +15221,7 @@ Sent via Above All Carbon HELOC Tool`;
 
         // ===== QUOTE PREVIEW FUNCTIONALITY =====
         function previewQuote() {
+            if (!ensureProfileReadyForQuote()) return;
             var g = function (id) { var el = document.getElementById(id); return el ? (el.value || el.innerText || '').trim() : ''; };
 
             // Gather all quote data (same structure as generateClientLink)
@@ -15104,11 +15237,11 @@ Sent via Above All Carbon HELOC Tool`;
                 cltv: g('out-cltv'),
                 totalLoan: g('snap-total-loan'),
                 rate: g('snap-rate'),
-                term: document.getElementById('rec-term-select')?.value || g('snap-term'),
+                term: getSelectedRecTerm(),
                 payment: g('snap-payment'),
                 origination: g('snap-orig-perc'),
                 recType: document.getElementById('rec-type-select').value || 'fixed',
-                recTier: (document.getElementById('rec-tier-select')?.value || '').replace('t', ''),
+                recTier: normalizeRecTierValue(document.getElementById('rec-tier-select')?.value || ''),
                 recTerm: document.getElementById('rec-term-select')?.value || '',
                 date: new Date().toLocaleDateString(),
                 linkOptions: {
@@ -15236,6 +15369,8 @@ Sent via Above All Carbon HELOC Tool`;
             var sb = window._supabase;
             var userId = window.currentUserId;
             if (!sb || !userId) { showToast('Not authenticated', 'error'); return; }
+            if (!ensureProfileReadyForQuote()) return;
+            if (!ensureWritableMode('generate a client link')) return;
 
             var g = function (id) { var el = document.getElementById(id); return el ? (el.value || el.innerText || '').trim() : ''; };
 
@@ -15252,11 +15387,11 @@ Sent via Above All Carbon HELOC Tool`;
                 cltv: g('out-cltv'),
                 totalLoan: g('snap-total-loan'),
                 rate: g('snap-rate'),
-                term: document.getElementById('rec-term-select')?.value || g('snap-term'),
+                term: getSelectedRecTerm(),
                 payment: g('snap-payment'),
                 origination: g('snap-orig-perc'),
                 recType: document.getElementById('rec-type-select').value || 'fixed',
-                recTier: (document.getElementById('rec-tier-select')?.value || '').replace('t', ''),
+                recTier: normalizeRecTierValue(document.getElementById('rec-tier-select')?.value || ''),
                 recTerm: document.getElementById('rec-term-select')?.value || '',
                 date: new Date().toLocaleDateString(),
                 linkOptions: {
@@ -15522,6 +15657,7 @@ Sent via Above All Carbon HELOC Tool`;
                 window._lastGeneratedQuoteLink = shortUrl;
                 window._lastGeneratedQuoteCode = code;
                 window._lastGeneratedQuoteData = quoteData;
+                window._lastGeneratedQuoteLeadId = leadId || null;
 
                 // Show SMS-ready section
                 var smsSection = document.getElementById('sms-ready-section');
@@ -15548,6 +15684,18 @@ Sent via Above All Carbon HELOC Tool`;
                 }
 
                 showToast(shortLinkId ? 'Link generated, shortened & copied!' : 'Client link generated and copied!', 'success');
+                await logUsageEvent('quote_generated', {
+                    quote_code: code,
+                    lead_id: leadId || null,
+                    short_link_id: shortLinkId || null,
+                    expires_at: expiresAt || null
+                });
+                await logUsageEvent('quote_link_generated', {
+                    quote_code: code,
+                    lead_id: leadId || null,
+                    short_link_id: shortLinkId || null,
+                    expires_at: expiresAt || null
+                });
 
                 // Fire outbound webhooks
                 fireOutboundWebhooks('client_link_created', {
@@ -15573,6 +15721,7 @@ Sent via Above All Carbon HELOC Tool`;
         async function sendSmsViaGHL() {
             var smsText = document.getElementById('sms-ready-text').value;
             if (!smsText) { showToast('Generate a client link first to create SMS text.', 'warning'); return; }
+            if (!ensureWritableMode('send SMS')) return;
 
             var apiKey = document.getElementById('ghl-api-key').value;
             var locationId = document.getElementById('ghl-location-id').value;
@@ -15587,6 +15736,8 @@ Sent via Above All Carbon HELOC Tool`;
             var dncClear = await DNCProtection.checkBeforeSend(contactEmail, contactPhone, contactName, 'ghl');
             if (!dncClear) { showToast('Send cancelled — contact is on DNC list.', 'warning'); return; }
 
+            if (!await ensureOutboundConsent('sms', contactEmail, contactPhone)) return;
+
             var GHL_API = 'https://services.leadconnectorhq.com';
             var headers = { 'Authorization': 'Bearer ' + apiKey, 'Version': '2021-07-28', 'Content-Type': 'application/json' };
 
@@ -15594,6 +15745,7 @@ Sent via Above All Carbon HELOC Tool`;
                 showToast('Sending SMS via GHL...', 'info');
                 // Find or create contact
                 var searchResp = await fetch(GHL_API + '/contacts/?locationId=' + locationId + '&query=' + encodeURIComponent(contactPhone), { method: 'GET', headers: headers });
+                if (!searchResp.ok) throw new Error('GHL contact search failed (HTTP ' + searchResp.status + ')');
                 var searchData = await searchResp.json();
                 var contactId;
                 if (searchData.contacts && searchData.contacts.length > 0) {
@@ -15604,6 +15756,7 @@ Sent via Above All Carbon HELOC Tool`;
                         method: 'POST', headers: headers,
                         body: JSON.stringify({ locationId: locationId, firstName: nameParts[0] || '', lastName: nameParts.slice(1).join(' ') || '', phone: contactPhone, email: contactEmail, source: 'HELOC Quote Tool' })
                     });
+                    if (!createResp.ok) throw new Error('GHL contact creation failed (HTTP ' + createResp.status + ')');
                     var createData = await createResp.json();
                     contactId = createData.contact?.id;
                 }
@@ -15618,6 +15771,12 @@ Sent via Above All Carbon HELOC Tool`;
                     var errData = await smsResp.json().catch(function() { return {}; });
                     throw new Error(errData.message || 'SMS send failed (HTTP ' + smsResp.status + ')');
                 }
+                await logUsageEvent('client_link_sent', {
+                    quote_code: window._lastGeneratedQuoteCode || null,
+                    lead_id: window._lastGeneratedQuoteLeadId || null,
+                    channel: 'sms',
+                    provider: 'ghl'
+                });
                 showToast('SMS sent via GHL!', 'success');
             } catch (e) {
                 showToast('GHL SMS error: ' + e.message, 'error');
@@ -15628,6 +15787,7 @@ Sent via Above All Carbon HELOC Tool`;
         async function sendSmsViaBonzo() {
             var smsText = document.getElementById('sms-ready-text').value;
             if (!smsText) { showToast('Generate a client link first to create SMS text.', 'warning'); return; }
+            if (!ensureWritableMode('send SMS')) return;
 
             var teamId = document.getElementById('bonzo-team-id')?.value || '';
             var contactPhone = document.getElementById('client-phone')?.value || '';
@@ -15635,6 +15795,7 @@ Sent via Above All Carbon HELOC Tool`;
             var contactName = document.getElementById('in-client-name').value;
 
             if (!contactPhone) { showToast('Enter client phone number in the Email/Share tab first.', 'warning'); return; }
+            if (!await ensureOutboundConsent('sms', contactEmail, contactPhone)) return;
 
             // DNC check
             var dncClear = await DNCProtection.checkBeforeSend(contactEmail, contactPhone, contactName, 'bonzo');
@@ -15659,6 +15820,12 @@ Sent via Above All Carbon HELOC Tool`;
 
                 // Send SMS message via proxy
                 await _bonzoProxy('send_sms', { contactId: bonzoContactId, payload: { message: smsText } });
+                await logUsageEvent('client_link_sent', {
+                    quote_code: window._lastGeneratedQuoteCode || null,
+                    lead_id: window._lastGeneratedQuoteLeadId || null,
+                    channel: 'sms',
+                    provider: 'bonzo'
+                });
                 showToast('SMS sent via Bonzo!', 'success');
             } catch (e) {
                 showToast('Bonzo SMS error: ' + e.message, 'error');
@@ -15753,6 +15920,7 @@ Sent via Above All Carbon HELOC Tool`;
                 showUpgradeModal();
                 return;
             }
+            if (!ensureWritableMode('send a quote')) return;
 
             var statusDiv = document.getElementById('send-quote-status');
 
@@ -15773,6 +15941,8 @@ Sent via Above All Carbon HELOC Tool`;
             var dncClear = await DNCProtection.checkBeforeSend(contactEmail, contactPhone, contactName, 'bonzo');
             if (!dncClear) { statusDiv.innerHTML = '<span style="color:#ef4444;">Blocked — contact is on DNC list.</span>'; return; }
 
+            if (!await ensureOutboundConsent('sms', contactEmail, contactPhone)) { statusDiv.innerHTML = ''; return; }
+
             statusDiv.innerHTML = '<span style="color:#a78bfa;">Sending via Bonzo...</span>';
             var teamId = document.getElementById('bonzo-team-id')?.value || '';
 
@@ -15792,6 +15962,12 @@ Sent via Above All Carbon HELOC Tool`;
 
                 await _bonzoProxy('send_sms', { contactId: bonzoContactId, payload: { message: smsText } });
                 statusDiv.innerHTML = '<span style="color:#10b981;">✅ SMS sent via Bonzo!</span>';
+                await logUsageEvent('client_link_sent', {
+                    quote_code: window._lastGeneratedQuoteCode || null,
+                    lead_id: window._lastGeneratedQuoteLeadId || null,
+                    channel: 'sms',
+                    provider: 'bonzo'
+                });
                 showToast('Quote SMS sent via Bonzo!', 'success');
                 setTimeout(function() { statusDiv.innerHTML = ''; }, 4000);
             } catch (e) {
@@ -15808,6 +15984,7 @@ Sent via Above All Carbon HELOC Tool`;
                 showUpgradeModal();
                 return;
             }
+            if (!ensureWritableMode('send a quote')) return;
 
             var statusDiv = document.getElementById('send-quote-status');
 
@@ -15831,12 +16008,15 @@ Sent via Above All Carbon HELOC Tool`;
             var dncClear = await DNCProtection.checkBeforeSend(contactEmail, contactPhone, contactName, 'ghl');
             if (!dncClear) { statusDiv.innerHTML = '<span style="color:#ef4444;">Blocked — contact is on DNC list.</span>'; return; }
 
+            if (!await ensureOutboundConsent('sms', contactEmail, contactPhone)) { statusDiv.innerHTML = ''; return; }
+
             statusDiv.innerHTML = '<span style="color:#f97316;">Sending via GHL...</span>';
             var GHL_API = 'https://services.leadconnectorhq.com';
             var headers = { 'Authorization': 'Bearer ' + apiKey, 'Version': '2021-07-28', 'Content-Type': 'application/json' };
 
             try {
                 var searchResp = await fetch(GHL_API + '/contacts/?locationId=' + locationId + '&query=' + encodeURIComponent(contactPhone), { method: 'GET', headers: headers });
+                if (!searchResp.ok) throw new Error('GHL contact search failed (HTTP ' + searchResp.status + ')');
                 var searchData = await searchResp.json();
                 var contactId;
                 if (searchData.contacts && searchData.contacts.length > 0) {
@@ -15847,6 +16027,7 @@ Sent via Above All Carbon HELOC Tool`;
                         method: 'POST', headers: headers,
                         body: JSON.stringify({ locationId: locationId, firstName: nameParts[0] || '', lastName: nameParts.slice(1).join(' ') || '', phone: contactPhone, email: contactEmail, source: 'HELOC Quote Tool' })
                     });
+                    if (!createResp.ok) throw new Error('GHL contact creation failed (HTTP ' + createResp.status + ')');
                     var createData = await createResp.json();
                     contactId = createData.contact?.id;
                 }
@@ -15861,6 +16042,12 @@ Sent via Above All Carbon HELOC Tool`;
                     throw new Error(errData.message || 'SMS send failed (HTTP ' + smsResp.status + ')');
                 }
                 statusDiv.innerHTML = '<span style="color:#10b981;">✅ SMS sent via GHL!</span>';
+                await logUsageEvent('client_link_sent', {
+                    quote_code: window._lastGeneratedQuoteCode || null,
+                    lead_id: window._lastGeneratedQuoteLeadId || null,
+                    channel: 'sms',
+                    provider: 'ghl'
+                });
                 showToast('Quote SMS sent via GHL!', 'success');
                 setTimeout(function() { statusDiv.innerHTML = ''; }, 4000);
             } catch (e) {
@@ -16224,6 +16411,7 @@ Sent via Above All Carbon HELOC Tool`;
 
         // ===== SEND TO BONZO =====
         async function sendViaBonzo() {
+            if (!ensureWritableMode('send an email')) return;
             const teamId = document.getElementById('bonzo-team-id')?.value || '';
             const contactEmail = document.getElementById('client-email').value;
             const contactName = document.getElementById('in-client-name').value;
@@ -16240,6 +16428,8 @@ Sent via Above All Carbon HELOC Tool`;
                 showToast('Send cancelled — contact is on DNC list.', 'warning');
                 return;
             }
+
+            if (!await ensureOutboundConsent('email', contactEmail, contactPhone)) return;
 
             // Build status overlay
             const statusDiv = document.createElement('div');
@@ -16270,7 +16460,7 @@ Sent via Above All Carbon HELOC Tool`;
                 const cashBack = document.getElementById('out-net-cash')?.innerText || '$0';
                 const rate = document.getElementById('snap-rate')?.innerText || '0.00';
                 const payment = document.getElementById('snap-payment')?.innerText || '$0';
-                const term = document.getElementById('snap-term')?.innerText || '20';
+                const term = getSelectedRecTerm() || '20';
                 const totalLoan = document.getElementById('snap-total-loan')?.innerText || '$0';
                 const origination = document.getElementById('snap-orig-perc')?.innerText || '0';
                 const creditScore = document.getElementById('in-client-credit')?.value || '';
@@ -16398,6 +16588,12 @@ Sent via Above All Carbon HELOC Tool`;
                 log('');
                 log('🎉 <strong>Bonzo send complete!</strong> (' + tags.length + ' tags applied)');
                 log('');
+                await logUsageEvent('client_link_sent', {
+                    quote_code: window._lastGeneratedQuoteCode || null,
+                    lead_id: window._lastGeneratedQuoteLeadId || null,
+                    channel: 'email',
+                    provider: 'bonzo'
+                });
                 log('Need to resend or open in email client?');
 
                 // Gmail button
@@ -17144,7 +17340,8 @@ Sent via Above All Carbon HELOC Tool`;
                     .from('leads')
                     .select('*')
                     .eq('user_id', userId)
-                    .or('sync_status.eq.pending,sync_status.eq.error,external_id.is.null');
+                    .or('sync_status.eq.pending,sync_status.eq.error,external_id.is.null')
+                    .limit(500);
                 
                 if (error) throw error;
                 
@@ -17172,7 +17369,7 @@ Sent via Above All Carbon HELOC Tool`;
                 
                 // Trigger immediate sync
                 var syncHeaders = await getAuthHeaders();
-                if (syncHeaders) fetch('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/sync-ghl-outbound', { method: 'POST', headers: syncHeaders }).catch(console.error);
+                if (syncHeaders) fetch(SUPABASE_FUNCTIONS_URL + '/sync-ghl-outbound', { method: 'POST', headers: syncHeaders }).catch(console.error);
                 
             } catch (e) {
                 showToast('Error queueing leads for sync: ' + e.message, 'error');
@@ -17324,6 +17521,9 @@ Sent via Above All Carbon HELOC Tool`;
         async function initWebhookUrls() {
             const userId = window.currentUserId || 'USER_ID';
             const baseUrl = SUPABASE_FUNCTIONS_URL + '/bonzo-webhook';
+            const staticBonzoWebhook = SUPABASE_FUNCTIONS_URL + '/bonzo-webhook';
+            const staticGhlWebhook = SUPABASE_FUNCTIONS_URL + '/handle-ghl-webhook';
+            const staticLeadWebhook = SUPABASE_FUNCTIONS_URL + '/inbound-lead';
 
             // Load or generate webhook token
             const sb = window._supabase;
@@ -17348,8 +17548,16 @@ Sent via Above All Carbon HELOC Tool`;
             const tokenParam = _webhookToken ? '&token=' + _webhookToken : '';
             const inboundEl = document.getElementById('inbound-webhook-url');
             const bonzoEl = document.getElementById('bonzo-inbound-url');
+            const ghlInboundEl = document.getElementById('ghl-inbound-webhook-url');
+            const staticBonzoEl = document.getElementById('static-bonzo-webhook-url');
+            const staticGhlEl = document.getElementById('static-ghl-webhook-url');
+            const staticLeadEl = document.getElementById('static-lead-webhook-url');
             if (inboundEl) inboundEl.value = baseUrl + '?user_id=' + userId + tokenParam;
             if (bonzoEl) bonzoEl.value = baseUrl + '?user_id=' + userId + '&source=bonzo' + tokenParam;
+            if (ghlInboundEl) ghlInboundEl.value = staticGhlWebhook;
+            if (staticBonzoEl) staticBonzoEl.value = staticBonzoWebhook;
+            if (staticGhlEl) staticGhlEl.value = staticGhlWebhook;
+            if (staticLeadEl) staticLeadEl.value = staticLeadWebhook;
         }
 
         async function regenerateWebhookToken() {
@@ -17580,7 +17788,7 @@ Sent via Above All Carbon HELOC Tool`;
         async function _callGmailSend(payload) {
             var headers = await getAuthHeaders();
             if (!headers) throw new Error('Not authenticated');
-            var resp = await fetch('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/gmail-send', {
+            var resp = await fetch(SUPABASE_FUNCTIONS_URL + '/gmail-send', {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(payload)
@@ -18138,7 +18346,7 @@ Sent via Above All Carbon HELOC Tool`;
                 showFees: document.getElementById('toggle-show-fees')?.classList.contains('active') || false,
                 showDisclaimer: document.getElementById('toggle-show-disclaimer')?.classList.contains('active') || false,
                 // Rec settings
-                recTier: document.getElementById('rec-tier-select')?.value || 't2',
+                recTier: normalizeRecTierValue(document.getElementById('rec-tier-select')?.value || '2'),
                 recTerm: document.getElementById('rec-term-select')?.value || '20',
                 showBreakEven: document.getElementById('chk-show-break')?.checked || false,
                 showAI: document.getElementById('chk-show-ai')?.checked || false,
@@ -18171,7 +18379,7 @@ Sent via Above All Carbon HELOC Tool`;
                 if (!active && el.classList.contains('active')) toggleSwitch(el);
             });
             // Restore selects
-            if (state.recTier) { var s = document.getElementById('rec-tier-select'); if (s) s.value = state.recTier; }
+            if (state.recTier) { var s = document.getElementById('rec-tier-select'); if (s) s.value = normalizeRecTierValue(state.recTier); }
             if (state.recTerm) { var s = document.getElementById('rec-term-select'); if (s) s.value = state.recTerm; }
             if (state.propertyType) { var s = document.getElementById('in-property-type'); if (s) s.value = state.propertyType; }
             // Restore checkboxes
@@ -18525,7 +18733,7 @@ Sent via Above All Carbon HELOC Tool`;
                     document.getElementById('custom-address-input').value = d.address;
                     document.getElementById('out-property-address').innerText = d.address;
                 }
-                if (d.recTier) document.getElementById('rec-tier-select').value = d.recTier;
+                if (d.recTier) document.getElementById('rec-tier-select').value = normalizeRecTierValue(d.recTier);
                 if (d.recTerm) document.getElementById('rec-term-select').value = d.recTerm;
 
                 // Recalculate the quote with loaded data
@@ -18645,7 +18853,7 @@ Sent via Above All Carbon HELOC Tool`;
             document.getElementById('out-property-address').innerText = '';
 
             // Reset recommendation selections to defaults
-            document.getElementById('rec-tier-select').value = 't2';
+            document.getElementById('rec-tier-select').value = '2';
             document.getElementById('rec-term-select').value = '20';
 
             // Recalculate
@@ -18661,7 +18869,7 @@ Sent via Above All Carbon HELOC Tool`;
             if (!sb || !userId) return;
             try {
                 // Fetch all analytics for this user
-                var { data: analytics } = await sb.from('lead_analytics').select('*').eq('user_id', userId);
+                var { data: analytics } = await sb.from('lead_analytics').select('*').eq('user_id', userId).limit(1000);
                 if (!analytics || analytics.length === 0) return;
 
                 // Fetch leads to compute open rate
@@ -18781,10 +18989,16 @@ Sent via Above All Carbon HELOC Tool`;
                     var statusColor = a.status === 'active' ? '#10b981' : a.status === 'idle' ? '#f59e0b' : '#64748b';
                     var ago = Math.round((Date.now() - new Date(a.last_seen).getTime()) / 60000);
                     var agoStr = ago < 1 ? 'just now' : ago + 'm ago';
+                    var safeName = escapeHtml(name || 'Borrower');
+                    var safeDevice = escapeHtml(device);
+                    var safeStatus = escapeHtml(a.status || 'idle');
+                    name = safeName;
+                    device = safeDevice;
+                    a.status = safeStatus;
                     return '<div style="display:flex;align-items:center;gap:8px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:8px 12px;">' +
                         '<div style="width:8px;height:8px;border-radius:50%;background:' + statusColor + ';flex-shrink:0;animation:pulse 1.5s ease-in-out infinite;"></div>' +
                         '<div style="flex:1;min-width:0;">' +
-                        '<div style="font-family:var(--font-heading);font-size:10px;font-weight:600;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (name || 'Borrower') + '</div>' +
+                        '<div style="font-family:var(--font-heading);font-size:10px;font-weight:600;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + safeName + '</div>' +
                         '<div style="font-size:8px;color:#94a3b8;">' + device + ' · ' + msgs + ' chat msgs · ' + agoStr + '</div>' +
                         '</div>' +
                         '<div style="font-size:8px;color:' + statusColor + ';font-weight:600;text-transform:uppercase;font-family:var(--font-heading);">' + a.status + '</div>' +
@@ -19331,7 +19545,7 @@ Sent via Above All Carbon HELOC Tool`;
             if (!sb) return;
             try {
                 // Get lead details
-                var { data: lead, error: lErr } = await sb.from('leads').select('*').eq('id', leadId).single();
+                var { data: lead, error: lErr } = await sb.from('leads').select('*').eq('id', leadId).limit(1).single();
                 if (lErr || !lead) { showToast('Lead not found', 'error'); return; }
 
                 // Check for Bonzo reactivation campaign config
@@ -19404,7 +19618,7 @@ Sent via Above All Carbon HELOC Tool`;
 
         async function _reactivateSingle(leadId) {
             var sb = window._supabase;
-            var { data: lead, error: lErr } = await sb.from('leads').select('*').eq('id', leadId).single();
+            var { data: lead, error: lErr } = await sb.from('leads').select('*').eq('id', leadId).limit(1).single();
             if (lErr || !lead) throw new Error('Lead not found');
 
             await sb.from('leads').update({
@@ -20030,7 +20244,7 @@ Sent via Above All Carbon HELOC Tool`;
             const registration = await navigator.serviceWorker.ready;
             
             // Get VAPID key from server
-            const response = await fetch('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/push-config');
+            const response = await fetch(SUPABASE_FUNCTIONS_URL + '/push-config');
             const config = await response.json();
             
             if (!config.vapidPublicKey) {
@@ -20088,7 +20302,7 @@ Sent via Above All Carbon HELOC Tool`;
                     showToast('Please log in again before testing push notifications.', 'warning');
                     return;
                 }
-                const response = await fetch('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/push-notify', {
+                const response = await fetch(SUPABASE_FUNCTIONS_URL + '/push-notify', {
                     method: 'POST',
                     headers: authHeaders,
                     body: JSON.stringify({
@@ -20140,7 +20354,8 @@ Sent via Above All Carbon HELOC Tool`;
                 let query = sb.from('schedule_requests')
                     .select('*')
                     .eq('user_id', userId)
-                    .order('created_at', { ascending: false });
+                    .order('created_at', { ascending: false })
+                    .limit(100);
                 
                 if (filter === 'today') {
                     const today = new Date().toISOString().split('T')[0];
@@ -20260,7 +20475,8 @@ Sent via Above All Carbon HELOC Tool`;
                 const { data, error } = await sb.from('push_subscriptions')
                     .select('*')
                     .eq('user_id', userId)
-                    .eq('is_active', true);
+                    .eq('is_active', true)
+                    .limit(25);
                 
                 const listEl = document.getElementById('push-devices-list');
                 if (!listEl) return;

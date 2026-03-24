@@ -265,6 +265,7 @@ serve(async (req: Request) => {
             .select('*')
             .eq('user_id', userId)
             .eq('is_active', true)
+            .limit(25)
 
         if (subError || !subscriptions || subscriptions.length === 0) {
             return new Response(

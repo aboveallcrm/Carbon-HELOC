@@ -19,6 +19,27 @@ function jsonResp(body: any, status = 200) {
     })
 }
 
+async function recordSyncError(
+    supabaseAdmin: any,
+    userId: string,
+    provider: string,
+    context: string,
+    errorMessage: string,
+    payload: Record<string, any> = {},
+) {
+    try {
+        await supabaseAdmin.from('sync_errors').insert({
+            user_id: userId,
+            provider,
+            context,
+            error_message: errorMessage,
+            payload,
+        })
+    } catch (err) {
+        console.error('Failed to record sync error:', err)
+    }
+}
+
 // Helper: fetch with AbortController timeout
 async function timedFetch(url: string, options: RequestInit = {}): Promise<Response> {
     const controller = new AbortController()
@@ -106,6 +127,8 @@ serve(async (req: Request) => {
 
     const logs: string[] = []
 
+    let userId = ''
+
     try {
         // 1. Authenticate caller via JWT
         const authHeader = req.headers.get('Authorization')
@@ -120,7 +143,7 @@ serve(async (req: Request) => {
         const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
         if (authError || !user) return jsonResp({ error: 'Invalid or expired token' }, 401)
 
-        const userId = user.id
+        userId = user.id
 
         // 2. Get the user's Bonzo API key — check both storage providers
         const { data: integrations } = await supabaseAdmin
@@ -260,6 +283,11 @@ serve(async (req: Request) => {
         }
 
         if (bonzoError && contacts.length === 0) {
+            await recordSyncError(supabaseAdmin, userId, 'bonzo', 'sync_contacts', bonzoError, {
+                logs,
+                pagination: paginationInfo,
+                response_keys: rawResponseKeys,
+            })
             return jsonResp({ error: bonzoError, logs }, 502)
         }
 
@@ -412,6 +440,13 @@ serve(async (req: Request) => {
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
         console.error('bonzo-sync error:', message, logs)
+        if (userId) {
+            const supabaseAdmin = createClient(
+                Deno.env.get('SUPABASE_URL') ?? '',
+                Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+            )
+            await recordSyncError(supabaseAdmin, userId, 'bonzo', 'sync_contacts', message, { logs })
+        }
         return jsonResp({ error: 'Sync failed. Please try again.' }, 500)
     }
 })

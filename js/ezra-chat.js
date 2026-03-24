@@ -5474,6 +5474,14 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
 
         const fmt = (n) => '$' + Number(n).toLocaleString();
         const tierNames = { t1: 'Tier 1', t2: 'Tier 2', t3: 'Tier 3' };
+        const tierTableId = (value) => {
+            const normalized = String(value || '').toLowerCase().replace(/^tier\s*/, '');
+            if (normalized === '1' || normalized === 't1') return 't1';
+            if (normalized === '2' || normalized === 't2') return 't2';
+            if (normalized === '3' || normalized === 't3') return 't3';
+            return 't2';
+        };
+        const tierSelectValue = (value) => tierTableId(value).replace('t', '');
 
         function setField(id, value) {
             const field = document.getElementById(id);
@@ -5502,7 +5510,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
                 totalLoan: g('snap-total-loan'),
                 origPts: g('snap-orig-perc'),
                 origAmt: g('snap-orig-amt'),
-                tier: document.getElementById('rec-tier-select')?.value || 't2'
+                tier: tierTableId(document.getElementById('rec-tier-select')?.value || '2')
             };
         }
 
@@ -5522,7 +5530,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         switch (cmd.action) {
             case 'select_tier': {
                 const sel = document.getElementById('rec-tier-select');
-                if (sel) { sel.value = cmd.tier; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+                if (sel) { sel.value = tierSelectValue(cmd.tier); sel.dispatchEvent(new Event('change', { bubbles: true })); }
                 refreshQuote();
                 highlightTierTable(cmd.tier);
                 const snap = readSnapshot();
@@ -5538,7 +5546,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
             case 'select_both': {
                 const tierSel = document.getElementById('rec-tier-select');
                 const termSel = document.getElementById('rec-term-select');
-                if (tierSel) { tierSel.value = cmd.tier; tierSel.dispatchEvent(new Event('change', { bubbles: true })); }
+                if (tierSel) { tierSel.value = tierSelectValue(cmd.tier); tierSel.dispatchEvent(new Event('change', { bubbles: true })); }
                 if (termSel) { termSel.value = String(cmd.term); termSel.dispatchEvent(new Event('change', { bubbles: true })); }
                 refreshQuote();
                 highlightTierTable(cmd.tier);
@@ -5551,7 +5559,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
                 return `**Highlighted ${tierNames[cmd.tier]}**\n\n| Term | Rate | Payment |\n|------|------|--------|\n| 30yr | ${g('out-' + cmd.tier + '-30-rate')}% | ${g('out-' + cmd.tier + '-30-pay')} |\n| 20yr | ${g('out-' + cmd.tier + '-20-rate')}% | ${g('out-' + cmd.tier + '-20-pay')} |\n| 15yr | ${g('out-' + cmd.tier + '-15-rate')}% | ${g('out-' + cmd.tier + '-15-pay')} |\n| 10yr | ${g('out-' + cmd.tier + '-10-rate')}% | ${g('out-' + cmd.tier + '-10-pay')} |\n\nOrigination: ${g('out-' + cmd.tier + '-orig')}%\n\nWant to go with this tier? Just say "use ${tierNames[cmd.tier].toLowerCase()}".`;
             }
             case 'highlight_current': {
-                const currentTier = document.getElementById('rec-tier-select')?.value || 't2';
+                const currentTier = tierTableId(document.getElementById('rec-tier-select')?.value || '2');
                 highlightTierTable(currentTier);
                 return `**Highlighted current recommendation (${tierNames[currentTier]})**\n\nThe recommended tier is now scrolled into view with a gold highlight. Want to switch to a different tier?`;
             }
@@ -5581,7 +5589,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
                 if (cmd.direction === 'lower_rate') {
                     // Move to tier 1 (lower rate, higher points)
                     const sel = document.getElementById('rec-tier-select');
-                    if (sel) { sel.value = 't1'; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+                    if (sel) { sel.value = '1'; sel.dispatchEvent(new Event('change', { bubbles: true })); }
                     refreshQuote();
                     highlightTierTable('t1');
                     const snap = readSnapshot();
@@ -5732,7 +5740,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         if (!token) return null;
 
         const supabaseUrl = EzraState.supabase.supabaseUrl ||
-            window.SUPABASE_URL || 'https://czzabvfzuxhpdcowgvam.supabase.co';
+            window.SUPABASE_URL || (window.__PUBLIC_CONFIG__ || {}).supabaseUrl || '';
 
         const systemPrompt = EZRA_KNOWLEDGE.buildSystemPrompt() + contextSummary;
 
@@ -5786,7 +5794,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         if (!token) return null;
 
         const supabaseUrl = EzraState.supabase.supabaseUrl ||
-            window.SUPABASE_URL || 'https://czzabvfzuxhpdcowgvam.supabase.co';
+            window.SUPABASE_URL || (window.__PUBLIC_CONFIG__ || {}).supabaseUrl || '';
 
         const response = await fetch(`${supabaseUrl}/functions/v1/ai-proxy`, {
             method: 'POST',
@@ -7474,13 +7482,15 @@ Which sequence would you like to set up?`, { model: 'local' });
                     .from('quote_views')
                     .select('*')
                     .eq('quote_id', quoteId)
-                    .order('viewed_at', { ascending: false });
+                    .order('viewed_at', { ascending: false })
+                    .limit(25);
                 
                 // Get quote data
                 const { data: quote } = await EzraState.supabase
                     .from('quote_links')
                     .select('*, leads(*)')
                     .eq('id', quoteId)
+                    .limit(1)
                     .single();
                 
                 if (!quote) return null;

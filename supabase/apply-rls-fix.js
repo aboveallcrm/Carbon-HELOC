@@ -1,8 +1,16 @@
 const { createClient } = require('@supabase/supabase-js');
 
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// TODO: Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in your shell before running this script.
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('Missing required env vars: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
+}
+
 const supabase = createClient(
-    'https://czzabvfzuxhpdcowgvam.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6emFidmZ6dXhocGRjb3dndmFtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTE2ODA1NiwiZXhwIjoyMDg0NzQ0MDU2fQ.8UiuFW0_MfVma29RvaXdi448ZOdMFyrCgw4CrcO6yRs',
+    SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY,
     { auth: { autoRefreshToken: false, persistSession: false } }
 );
 

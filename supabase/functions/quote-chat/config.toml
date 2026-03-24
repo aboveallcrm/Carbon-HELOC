@@ -1,2 +1,3 @@
 [functions.quote-chat]
+# Intentional public access: borrower-facing quote chat runs from client-quote.html with the anon key.
 verify_jwt = false

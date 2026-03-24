@@ -13,6 +13,11 @@
         vapidPublicKey: null, // Will be set from server
     };
 
+    function getFunctionsBaseUrl() {
+        const cfg = window.__PUBLIC_CONFIG__ || {};
+        return window.SUPABASE_FUNCTIONS_URL || cfg.supabaseFunctionsUrl || '';
+    }
+
     // ==================== STATE ====================
     let deferredPrompt = null;
     let isInstalled = false;
@@ -465,7 +470,9 @@
         
         // Otherwise fetch from API
         try {
-            const response = await fetch('https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/push-config');
+            const functionsBaseUrl = getFunctionsBaseUrl();
+            if (!functionsBaseUrl) return null;
+            const response = await fetch(functionsBaseUrl + '/push-config');
             const data = await response.json();
             return data.vapidPublicKey;
         } catch (error) {

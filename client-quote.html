@@ -45,6 +45,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <script src="/api/public-config.js"></script>
 
     <!-- Structured Data -->
     <script type="application/ld+json" id="schema-financial">
@@ -7531,14 +7532,18 @@
             <input type="text" id="apply-name" placeholder="Your Full Name">
             <input type="email" id="apply-email" placeholder="Email Address">
             <input type="tel" id="apply-phone" placeholder="Phone Number">
+            <div id="apply-inline-error" style="display:none; margin-top:-6px; margin-bottom:10px; color:#fca5a5; font-size:12px; line-height:1.4;"></div>
             <textarea id="apply-message" rows="3" placeholder="Any questions or notes? (optional)"></textarea>
+            <p id="apply-tcpa-disclaimer" style="margin:10px 0 0; color:rgba(255,255,255,0.62); font-size:11px; line-height:1.5;">
+                By providing your phone number and submitting this form, you consent to be contacted about this quote by phone, text, or email. Message and data rates may apply. Consent is not required as a condition of applying.
+            </p>
             <div
                 style="text-align: center; padding: 8px 0 4px; font-size: 10px; color: rgba(255,255,255,0.4); font-family: var(--font-heading);">
                 &#128274; Your information is encrypted and secure</div>
             <div style="display: flex; gap: 10px; margin-top: 8px;">
                 <button onclick="closeApplyModal()"
                     style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer;">Cancel</button>
-                <button onclick="submitApplication()"
+                <button id="apply-submit-btn" onclick="submitApplication()"
                     style="flex: 1; background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: #0f172a; border: none; padding: 12px; border-radius: 8px; font-family: var(--font-heading); font-weight: 700; cursor: pointer;">Submit
                     Application</button>
             </div>
@@ -8629,6 +8634,20 @@
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
+        window._debug = window._debug === true || new URLSearchParams(window.location.search).get('debug') === '1';
+        if (!window._debug) {
+            console.debug = function () {};
+            console.log = function () {};
+        }
+        window.onerror = function(msg, src, line, col, err) {
+            console.error('[Global Error]', msg, src, line);
+            return true;
+        };
+        window.onunhandledrejection = function(e) {
+            console.error('[Unhandled Promise]', e.reason);
+            return true;
+        };
+
         // ===== INFO MODAL (replaces alert() for policy popups) =====
         function showInfoModal(title, content) {
             var overlay = document.createElement('div');
@@ -8636,7 +8655,9 @@
             overlay.onclick = function(e) { if (e.target === overlay) document.body.removeChild(overlay); };
             var box = document.createElement('div');
             box.style.cssText = 'background:#1e293b;color:#e2e8f0;border-radius:12px;padding:24px;max-width:500px;width:90%;max-height:70vh;overflow-y:auto;';
-            box.innerHTML = '<h3 style="margin:0 0 12px;color:#22d3ee;">' + title + '</h3><div style="font-size:14px;line-height:1.6;">' + content + '</div><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="margin-top:16px;background:#22d3ee;color:#0f172a;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:600;">Close</button>';
+            var safeTitle = esc(title || '');
+            var safeContent = esc(content || '').replace(/\n/g, '<br>');
+            box.innerHTML = '<h3 style="margin:0 0 12px;color:#22d3ee;">' + safeTitle + '</h3><div style="font-size:14px;line-height:1.6;">' + safeContent + '</div><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="margin-top:16px;background:#22d3ee;color:#0f172a;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:600;">Close</button>';
             overlay.appendChild(box);
             document.body.appendChild(overlay);
         }
@@ -8953,14 +8974,20 @@
         // Default: always start in English.
 
         (function () {
-            var SUPABASE_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co';
-            var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6emFidmZ6dXhocGRjb3dndmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjgwNTYsImV4cCI6MjA4NDc0NDA1Nn0.tFliE-x2Tz9ET3A38R4y7eSo6bUu-bYY47XkWeX1xHY';
+            var publicConfig = window.__PUBLIC_CONFIG__ || {};
+            var SUPABASE_URL = publicConfig.supabaseUrl || '';
+            var SUPABASE_ANON_KEY = publicConfig.supabaseAnonKey || '';
             var TRACK_URL = SUPABASE_URL + '/functions/v1/track-quote-view';
             var CHAT_URL = SUPABASE_URL + '/functions/v1/quote-chat';
 
             var params = new URLSearchParams(window.location.search);
             var code = params.get('id') || params.get('code');
             var isPreview = params.get('preview') === 'true';
+
+            if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+                showError('This quote is temporarily unavailable. Please contact your loan officer.', 'Missing public Supabase runtime config');
+                return;
+            }
 
             // ===== PREVIEW MODE =====
             if (isPreview) {
@@ -9053,7 +9080,12 @@
                 }
             });
 
-            sb.from('quote_links').select('*').eq('code', code).maybeSingle().then(function (res) {
+            sb.from('quote_links')
+                .select('id, code, user_id, lead_id, quote_data, lo_info, expires_at, short_url, short_link_id, lo_tier')
+                .eq('code', code)
+                .limit(1)
+                .maybeSingle()
+                .then(function (res) {
                 if (res.error) {
                     console.error('Database error loading quote:', res.error);
                     showError(
@@ -9275,7 +9307,7 @@
                         }, { threshold: 0.5 }).observe(sec);
                     });
                 }
-            });
+                });
 
             // ===== TRACKING =====
             var _userId = null, _leadId = null;
@@ -9320,7 +9352,7 @@
                 var baseUrl = window.location.origin;
                 var lenderName = lo.lenderName || lo.company || 'Your Lender';
                 var companyName = lo.company || lenderName;
-                var poweredBy = lo.poweredBy || 'Above All Carbon';
+                var poweredBy = lo.poweredBy || lo.lenderName || lo.company || 'Above All Carbon';
                 
                 // Update meta tags dynamically
                 var metaAuthor = document.getElementById('meta-author');
@@ -9553,7 +9585,7 @@
                     fHtml += '<br>';
                 }
                 if (lo.address) fHtml += esc(lo.address) + '<br>';
-                fHtml += 'Equal Housing Lender. All loan programs subject to credit approval. Rates, terms, and conditions are subject to change without notice. This is not a commitment to lend. Licensed by the California Department of Financial Protection and Innovation under the California Residential Mortgage Lending Act.';
+                fHtml += 'Equal Housing Lender. ' + esc(lo.company || lenderName) + (lo.coNmls ? ' NMLS# ' + esc(lo.coNmls) + '. ' : '. ') + 'This is not a commitment to lend. Rates and terms are subject to change. All loan programs are subject to credit approval. We support fair lending and equal access to credit without regard to race, color, religion, national origin, sex, marital status, age, receipt of public assistance, or the good-faith exercise of consumer rights. Licensed by the California Department of Financial Protection and Innovation under the California Residential Mortgage Lending Act.';
                 fHtml += '<p style="margin-top:8px;font-size:11px;"><a href="#" style="color:#999;text-decoration:underline;" onclick="event.preventDefault();showInfoModal(\'Privacy Policy\', \'We collect only the information necessary to process your HELOC quote. Your data is encrypted, never sold, and retained only as required by law. Contact your loan officer for questions.\');">Privacy Policy</a> &nbsp;|&nbsp; <a href="#" style="color:#999;text-decoration:underline;" onclick="event.preventDefault();showInfoModal(\'Terms of Use\', \'This quote is for informational purposes only and does not constitute a commitment to lend. Rates, terms, and conditions are subject to change. Subject to credit approval.\');">Terms of Use</a></p>';
                 fHtml += '</div></div>';
                 fHtml += '<div class="proprietary-notice">PROPRIETARY TOOL NOTICE: This ' + esc(poweredBy) + ' HELOC Quote Tool is proprietary software owned by ' + esc(lo.company || poweredBy) + '. Unauthorized copying, distribution, modification, or reverse engineering is strictly prohibited. &copy; 2024-2026 ' + esc(poweredBy) + '. All rights reserved.</div>';
@@ -10338,13 +10370,22 @@
             }
 
             function showError(message, debug) {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('error').style.display = 'block';
+                var loadingEl = document.getElementById('loading');
+                var errorEl = document.getElementById('error');
+                var errorMessageEl = document.getElementById('error-message');
+                var errorDebugEl = document.getElementById('error-debug');
+
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (!errorEl) return;
+                errorEl.style.display = 'block';
                 if (message) {
-                    document.getElementById('error-message').innerHTML = message;
+                    if (errorMessageEl) {
+                        errorMessageEl.style.whiteSpace = 'pre-line';
+                        errorMessageEl.textContent = String(message).replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '');
+                    }
                 }
-                if (debug) {
-                    document.getElementById('error-debug').textContent = debug;
+                if (errorDebugEl) {
+                    errorDebugEl.textContent = window._debug && debug ? String(debug) : '';
                 }
             }
 
@@ -10379,6 +10420,17 @@
             window.closeContactModal = function () { document.getElementById('contact-modal').classList.remove('visible'); };
             window.openShareModal = function () { document.getElementById('share-url').value = window.location.href; document.getElementById('share-modal').classList.add('visible'); trackEvent('modal_opened', { modal: 'share', code: code }); };
             window.closeShareModal = function () { document.getElementById('share-modal').classList.remove('visible'); };
+            function setApplyFieldError(el, hasError) {
+                if (!el) return;
+                el.style.borderColor = hasError ? '#ef4444' : '';
+                el.style.boxShadow = hasError ? '0 0 0 1px rgba(239,68,68,0.2)' : '';
+            }
+            function setApplyInlineError(message) {
+                var errorEl = document.getElementById('apply-inline-error');
+                if (!errorEl) return;
+                errorEl.style.display = message ? 'block' : 'none';
+                errorEl.textContent = message || '';
+            }
             // Ask Question — prefer Ezra chat if available, else fall back to contact modal
             window.askQuestion = function () {
                 var orb = document.getElementById('eq-orb');
@@ -10387,12 +10439,38 @@
             };
 
             window.submitApplication = function () {
-                var n = document.getElementById('apply-name').value.trim(), e = document.getElementById('apply-email').value.trim(), p = document.getElementById('apply-phone').value.trim();
-                if (!n || !e || !p) { showToast('Please fill in all required fields'); return; }
-                trackEvent('application_submitted', { code: code, name: n, email: e }); createConfetti(); closeApplyModal();
+                var nameEl = document.getElementById('apply-name');
+                var emailEl = document.getElementById('apply-email');
+                var phoneEl = document.getElementById('apply-phone');
+                var submitBtn = document.getElementById('apply-submit-btn');
+                if (!nameEl || !emailEl || !phoneEl || !submitBtn) {
+                    showToast('Application form is temporarily unavailable.', 'error');
+                    return;
+                }
 
-                // Save application lead data via RPC (fire and forget)
-                // Uses SECURITY DEFINER function so anon clients can save lead data
+                var n = nameEl.value.trim();
+                var e = emailEl.value.trim();
+                var p = phoneEl.value.trim();
+                var emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+                var phoneValid = p.replace(/\D/g, '').length >= 10;
+
+                setApplyFieldError(nameEl, !n);
+                setApplyFieldError(emailEl, !e || !emailValid);
+                setApplyFieldError(phoneEl, !p || !phoneValid);
+
+                if (!n || !e || !p) { setApplyInlineError('Please complete your name, email, and phone number.'); showToast('Please complete the required fields', 'warning'); return; }
+                if (!emailValid) { setApplyInlineError('Enter a valid email address before submitting.'); showToast('Enter a valid email address', 'warning'); return; }
+                if (!phoneValid) { setApplyInlineError('Enter a valid phone number before submitting.'); showToast('Enter a valid phone number', 'warning'); return; }
+
+                setApplyInlineError('');
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.6';
+                submitBtn.style.cursor = 'wait';
+
+                trackEvent('application_submitted', { code: code });
+                createConfetti();
+                closeApplyModal();
+
                 if (sb && _userId) {
                     sb.rpc('submit_quote_application', {
                         p_user_id: _userId,
@@ -10401,13 +10479,19 @@
                         p_email: e,
                         p_phone: p,
                         p_quote_code: code
-                    }).then(function (res) { if (res.error) console.error('Application save failed:', res.error); }).catch(function (err) { console.error('Application save error:', err); });
+                    }).then(function (res) { if (res.error) console.error('Application save failed:', res.error); }).catch(function (err) { console.error('Application save error:', err); }).finally(function () {
+                        submitBtn.disabled = false;
+                        submitBtn.style.opacity = '';
+                        submitBtn.style.cursor = '';
+                    });
+                } else {
+                    submitBtn.disabled = false;
+                    submitBtn.style.opacity = '';
+                    submitBtn.style.cursor = '';
                 }
 
-                // Redirect to LO's apply link if available
                 var applyUrl = window._loInfo && window._loInfo.applyLink;
                 if (applyUrl) {
-                    // Ensure URL has protocol
                     if (!/^https?:\/\//i.test(applyUrl)) applyUrl = 'https://' + applyUrl;
                     showToast('Great move! Redirecting you to start your application...');
                     setTimeout(function () { window.open(applyUrl, '_blank'); }, 1200);
@@ -10418,7 +10502,7 @@
             window.submitQuestion = function () {
                 var n = document.getElementById('contact-name').value.trim(), e = document.getElementById('contact-email').value.trim(), m = document.getElementById('contact-message').value.trim();
                 if (!n || !e || !m) { showToast('Please fill in all fields'); return; }
-                trackEvent('question_submitted', { code: code, name: n }); closeContactModal();
+                trackEvent('question_submitted', { code: code }); closeContactModal();
                 showToast('Message sent! Your loan officer will respond shortly.');
             };
             window.shareQuote = function () { openShareModal(); };
@@ -10433,7 +10517,7 @@
                 var body = encodeURIComponent('Here is your personalized HELOC quote link. Open it anytime to review your numbers:\n\n' + pageUrl + '\n\nThis link is saved for you — share it with your partner or revisit on a larger screen.');
                 window.open('mailto:' + encodeURIComponent(email) + '?subject=' + subject + '&body=' + body, '_self');
                 if (btn) { btn.textContent = 'Sent!'; btn.style.borderColor = '#10b981'; btn.style.color = '#10b981'; }
-                trackEvent('email_self', { code: code, email: email });
+                trackEvent('email_self', { code: code });
             };
 
             // ============================================
@@ -12074,7 +12158,7 @@
 
                     var lo = window._loInfo || {};
                     var qd = window._quoteData || {};
-                    var DOC_UPLOAD_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/doc-upload';
+                    var DOC_UPLOAD_URL = SUPABASE_URL + '/functions/v1/doc-upload';
 
                     fetch(DOC_UPLOAD_URL, {
                         method: 'POST',
@@ -12095,7 +12179,7 @@
                     .then(function(result) {
                         if (result.success) {
                             // Success state
-                            card.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:36px;color:var(--green);">&#10003;</div><div style="font-weight:600;font-size:13px;color:var(--green);margin-top:4px;">Uploaded</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">' + file.name.substring(0, 20) + '</div></div>';
+                            card.innerHTML = '<div style="text-align:center;padding:20px;"><div style="font-size:36px;color:var(--green);">&#10003;</div><div style="font-weight:600;font-size:13px;color:var(--green);margin-top:4px;">Uploaded</div><div style="font-size:11px;color:var(--text-muted);margin-top:4px;">' + esc(file.name.substring(0, 20)) + '</div></div>';
                             card.style.borderColor = 'var(--green)';
                             card.style.borderStyle = 'solid';
                             card.dataset.uploaded = 'true';
@@ -14186,7 +14270,7 @@
                 
                 // Send schedule request to API
                 function sendScheduleRequest(requestType, phone, preferredTime, isUrgent) {
-                    var SCHEDULE_API_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1/schedule-request';
+                    var SCHEDULE_API_URL = SUPABASE_URL + '/functions/v1/schedule-request';
                     
                     fetch(SCHEDULE_API_URL, {
                         method: 'POST',

@@ -1,11 +1,12 @@
 /*
  * Above All CRM - Universal Link Shortener
- * Drop this into any authenticated HTML tool to auto-shorten URLs via Supabase.
+ * Uses the runtime public Supabase config injected by /api/public-config.js.
  */
 
 const LINK_SHORTENER = (() => {
-  const SB_URL = 'https://czzabvfzuxhpdcowgvam.supabase.co';
-  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6emFidmZ6dXhocGRjb3dndmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjgwNTYsImV4cCI6MjA4NDc0NDA1Nn0.tFliE-x2Tz9ET3A38R4y7eSo6bUu-bYY47XkWeX1xHY';
+  const publicConfig = window.__PUBLIC_CONFIG__ || {};
+  const SB_URL = publicConfig.supabaseUrl || window.SUPABASE_URL || '';
+  const SB_KEY = publicConfig.supabaseAnonKey || window.SUPABASE_ANON_KEY || '';
 
   async function getHeaders() {
     const headers = {
@@ -29,6 +30,10 @@ const LINK_SHORTENER = (() => {
   }
 
   async function postRpc(path, payload) {
+    if (!SB_URL || !SB_KEY) {
+      return { error: 'Public Supabase config is missing' };
+    }
+
     const headers = await getHeaders();
     if (!headers.Authorization) {
       return { error: 'Authenticated session required' };

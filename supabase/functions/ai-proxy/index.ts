@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
+// TODO: Confirm the production project env contains the provider keys used by the cascade:
+// OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, GROQ_API_KEY, KIMI_API_KEY, PERPLEXITY_API_KEY, and GROK_API_KEY.
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -9,6 +11,8 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 }
 
 const AI_FETCH_TIMEOUT_MS = 25_000;
+const AI_RATE_LIMIT_WINDOW_MS = Number(Deno.env.get("AI_PROXY_RATE_LIMIT_WINDOW_MS") || 60_000);
+const AI_RATE_LIMIT_MAX_REQUESTS = Number(Deno.env.get("AI_PROXY_RATE_LIMIT_MAX_REQUESTS") || 20);
 
 // Cost per 1M tokens (USD) for estimation
 const COST_PER_1M: Record<string, { input: number; output: number }> = {
@@ -345,10 +349,22 @@ serve(async (req: Request) => {
 
     // ── test ──
     if (action === "test") {
+      const rateLimit = await checkAiProxyRateLimit(supabaseAdmin, userId);
+      if (!rateLimit.allowed) {
+        return json({ error: "AI temporarily unavailable — please try again in a moment", retry_after_sec: rateLimit.retryAfterSec }, 429);
+      }
+
       const result = await callProvider(aiProvider, aiModel, aiKey, 50, "", 'Say "Connection successful!"', aiEndpointUrl);
       if (result.ok) {
         // Log test call too
         await logUsage(supabaseAdmin, userId, result.provider, result.model, "test", intent || "test", result.usage);
+        await logUsageEvent(supabaseAdmin, userId, "ai_call", {
+          provider: result.provider,
+          model: result.model,
+          action: "test",
+          intent: intent || "test",
+          total_tokens: result.usage.totalTokens,
+        });
         return json({ success: true, text: result.text, provider: result.provider, model: result.model, usage: result.usage });
       }
       return json({ error: "AI provider returned an error", status: result.status, details: JSON.stringify(result.aiData || {}).substring(0, 500) }, 502);
@@ -357,12 +373,23 @@ serve(async (req: Request) => {
     // ── generate (single provider) ──
     if (action === "generate") {
       if (!userMessage) return json({ error: "Missing userMessage for generate action" }, 400);
+      const rateLimit = await checkAiProxyRateLimit(supabaseAdmin, userId);
+      if (!rateLimit.allowed) {
+        return json({ error: "AI temporarily unavailable — please try again in a moment", retry_after_sec: rateLimit.retryAfterSec }, 429);
+      }
 
       const result = await callProvider(aiProvider, aiModel, aiKey, aiMaxTokens, finalSystemPrompt, userMessage, aiEndpointUrl);
       if (!result.ok) {
         return json({ error: "AI provider returned an error", status: result.status, details: JSON.stringify(result.aiData || {}).substring(0, 500) }, 502);
       }
       await logUsage(supabaseAdmin, userId, result.provider, result.model, "generate", intent || "generate", result.usage);
+      await logUsageEvent(supabaseAdmin, userId, "ai_call", {
+        provider: result.provider,
+        model: result.model,
+        action: "generate",
+        intent: intent || "generate",
+        total_tokens: result.usage.totalTokens,
+      });
       // Increment token budget
       const budgetUpdate = await incrementBudget(supabaseAdmin, userId, result.usage.totalTokens);
       return json({ success: true, text: result.text, provider: result.provider, model: result.model, usage: result.usage, ...budgetUpdate });
@@ -371,6 +398,10 @@ serve(async (req: Request) => {
     // ── generate_cascade (try cheapest providers first, exhaust all keys per provider) ──
     if (action === "generate_cascade") {
       if (!userMessage) return json({ error: "Missing userMessage for generate_cascade action" }, 400);
+      const rateLimit = await checkAiProxyRateLimit(supabaseAdmin, userId);
+      if (!rateLimit.allowed) {
+        return json({ error: "AI temporarily unavailable — please try again in a moment", retry_after_sec: rateLimit.retryAfterSec }, 429);
+      }
 
       // Order: cheapest first — exhaust ALL Gemini keys, then ALL Groq keys, before OpenAI/Anthropic
       const cascadeOrder = ["gemini", "groq", "kimi", "perplexity", "grok", "openai", "anthropic"];
@@ -390,6 +421,14 @@ serve(async (req: Request) => {
           const result = await callProvider(prov, provModel, keys[ki], aiMaxTokens, finalSystemPrompt, userMessage, "");
           if (result.ok) {
             await logUsage(supabaseAdmin, userId, prov, provModel, "generate_cascade", intent || "generate", result.usage, { cascade_attempts: attempts, key_index: ki });
+            await logUsageEvent(supabaseAdmin, userId, "ai_call", {
+              provider: prov,
+              model: provModel,
+              action: "generate_cascade",
+              intent: intent || "generate",
+              total_tokens: result.usage.totalTokens,
+              cascade_attempts: attempts,
+            });
             const budgetUpdate = await incrementBudget(supabaseAdmin, userId, result.usage.totalTokens);
             return json({ success: true, text: result.text, provider: prov, model: provModel, usage: result.usage, cascadeAttempts: attempts, ...budgetUpdate });
           }
@@ -397,13 +436,17 @@ serve(async (req: Request) => {
         }
         // All keys for this provider exhausted — move to next provider
       }
-      return json({ error: "All AI providers failed", cascadeAttempts: attempts }, 502);
+      return json({ error: "AI temporarily unavailable — please try again in a moment", code: "all_providers_failed", cascadeAttempts: attempts }, 502);
     }
 
     // ── analyze_image (vision — skip Groq, no vision support) ──
     if (action === "analyze_image") {
       if (!imageBase64 || !imageMimeType) return json({ error: "Missing imageBase64 or imageMimeType" }, 400);
       const message = userMessage || "Analyze this image and describe what you see in detail.";
+      const rateLimit = await checkAiProxyRateLimit(supabaseAdmin, userId);
+      if (!rateLimit.allowed) {
+        return json({ error: "AI temporarily unavailable — please try again in a moment", retry_after_sec: rateLimit.retryAfterSec }, 429);
+      }
 
       // Vision cascade: Gemini → Grok → OpenAI → Anthropic (Groq/Kimi/Perplexity have no vision)
       // Exhaust all keys per provider before moving to the next
@@ -423,12 +466,20 @@ serve(async (req: Request) => {
           const result = await callProvider(prov, provModel, keys[ki], aiMaxTokens, finalSystemPrompt, message, "", imageBase64, imageMimeType);
           if (result.ok) {
             await logUsage(supabaseAdmin, userId, prov, provModel, "analyze_image", intent || "document_analysis", result.usage, { cascade_attempts: attempts, key_index: ki });
+            await logUsageEvent(supabaseAdmin, userId, "ai_call", {
+              provider: prov,
+              model: provModel,
+              action: "analyze_image",
+              intent: intent || "document_analysis",
+              total_tokens: result.usage.totalTokens,
+              cascade_attempts: attempts,
+            });
             const budgetUpdate = await incrementBudget(supabaseAdmin, userId, result.usage.totalTokens);
             return json({ success: true, text: result.text, provider: prov, model: provModel, usage: result.usage, cascadeAttempts: attempts, ...budgetUpdate });
           }
         }
       }
-      return json({ error: "All vision providers failed", cascadeAttempts: attempts }, 502);
+      return json({ error: "AI temporarily unavailable — please try again in a moment", code: "all_vision_providers_failed", cascadeAttempts: attempts }, 502);
     }
 
     return json({ error: "Unknown action: " + action }, 400);
@@ -477,5 +528,84 @@ async function logUsage(
     });
   } catch (e) {
     console.error("Failed to log AI usage:", e);
+  }
+}
+
+async function logUsageEvent(
+  supabase: any,
+  userId: string,
+  eventType: string,
+  metadata: Record<string, any>,
+) {
+  try {
+    await supabase.from("usage_events").insert({
+      user_id: userId,
+      event_type: eventType,
+      metadata: metadata || {},
+    });
+  } catch (e) {
+    console.error("Failed to log usage event:", e);
+  }
+}
+
+async function checkAiProxyRateLimit(
+  supabase: any,
+  userId: string,
+): Promise<{ allowed: boolean; retryAfterSec?: number }> {
+  const now = new Date();
+  const nowIso = now.toISOString();
+
+  try {
+    const { data: row, error } = await supabase
+      .from("ai_proxy_rate_limits")
+      .select("user_id, window_start, request_count")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Failed to read ai_proxy_rate_limits:", error);
+      return { allowed: true };
+    }
+
+    if (!row) {
+      await supabase.from("ai_proxy_rate_limits").upsert({
+        user_id: userId,
+        window_start: nowIso,
+        request_count: 1,
+        updated_at: nowIso,
+      });
+      return { allowed: true };
+    }
+
+    const windowStart = new Date(row.window_start);
+    const windowExpiresAt = windowStart.getTime() + AI_RATE_LIMIT_WINDOW_MS;
+    if (now.getTime() >= windowExpiresAt) {
+      await supabase.from("ai_proxy_rate_limits").upsert({
+        user_id: userId,
+        window_start: nowIso,
+        request_count: 1,
+        updated_at: nowIso,
+      });
+      return { allowed: true };
+    }
+
+    const currentCount = Number(row.request_count || 0);
+    if (currentCount >= AI_RATE_LIMIT_MAX_REQUESTS) {
+      return {
+        allowed: false,
+        retryAfterSec: Math.max(1, Math.ceil((windowExpiresAt - now.getTime()) / 1000)),
+      };
+    }
+
+    await supabase.from("ai_proxy_rate_limits").upsert({
+      user_id: userId,
+      window_start: row.window_start,
+      request_count: currentCount + 1,
+      updated_at: nowIso,
+    });
+    return { allowed: true };
+  } catch (e) {
+    console.error("Failed to enforce ai-proxy rate limit:", e);
+    return { allowed: true };
   }
 }

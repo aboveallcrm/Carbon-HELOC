@@ -87,8 +87,6 @@ export async function captureGoogleProviderToken() {
 
         if (error) {
             console.warn('Failed to store Google provider token:', error.message);
-        } else {
-            console.log('Google provider token stored for email sending');
         }
 
         return { providerToken, providerRefreshToken };
@@ -210,7 +208,6 @@ export async function getEffectiveUser(realUser) {
         // Check time limit
         if (Date.now() - imp.startedAt > IMPERSONATE_MAX_MS) {
             localStorage.removeItem(IMPERSONATE_KEY);
-            console.log('Impersonation session expired');
             return realUser;
         }
 

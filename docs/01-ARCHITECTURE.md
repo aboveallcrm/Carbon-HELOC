@@ -23,9 +23,9 @@
 |---------|-------|
 | Project ID | `czzabvfzuxhpdcowgvam` |
 | URL | `https://czzabvfzuxhpdcowgvam.supabase.co` |
-| Anon Key | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6emFidmZ6dXhocGRjb3dndmFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjgwNTYsImV4cCI6MjA4NDc0NDA1Nn0.tFliE-x2Tz9ET3A38R4y7eSo6bUu-bYY47XkWeX1xHY` |
-| Super Admin UUID | `795aea13-6aba-45f2-97d4-04576f684557` |
-| Super Admin Email | `barraganmortgage@gmail.com` |
+| Anon Key | `Provided at runtime via /api/public-config.js` |
+| Super Admin UUID | `Configured per environment` |
+| Super Admin Email | `Configured per environment` |
 
 ---
 
