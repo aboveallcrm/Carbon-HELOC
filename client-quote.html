@@ -8590,7 +8590,7 @@
             <div class="trust-badge"><span class="trust-badge-icon">&#127968;</span>Est. 2018</div>
         </div>
         <div class="quote-footer reveal" id="sec-footer"></div>
-        <div class="footer-powered" id="footer-powered">Powered by <span class="powered-by-name">Above All Carbon</span></div>
+        <div class="footer-powered" id="footer-powered">Powered by <span class="powered-by-name">your lending team</span></div>
     </div>
 
     <!-- Ezra Chat Widget (injected by JS) -->
@@ -9352,7 +9352,7 @@
                 var baseUrl = window.location.origin;
                 var lenderName = lo.lenderName || lo.company || 'Your Lender';
                 var companyName = lo.company || lenderName;
-                var poweredBy = lo.poweredBy || lo.lenderName || lo.company || 'Above All Carbon';
+                var poweredBy = lo.poweredBy || lo.lenderName || lo.company || 'Your Lending Team';
                 
                 // Update meta tags dynamically
                 var metaAuthor = document.getElementById('meta-author');
@@ -14087,7 +14087,7 @@
                     // Figure / online lender / fintech comparison
                     if (/figure|online.*lender|fintech|digital.*heloc|better\.com|sofi.*heloc/i.test(lower)) {
                         return "Great question, " + cn + "! I'm familiar with online HELOC lenders like Figure. Here's how your quote compares:\n\n" +
-                            "**Your HELOC (West Capital Lending):**\n" +
+                            "**Your HELOC (" + esc((loN || loCo) ? (loN + (loCo ? " at " + loCo : "")) : "your lender") + "):**\n" +
                             "- **10-year draw period** — access funds anytime for a full decade\n" +
                             "- **Interest-only during draw** — keeps payments low when you need flexibility\n" +
                             "- Your actual rate: **" + rateStr + "%**\n" +
