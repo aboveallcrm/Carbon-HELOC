@@ -617,14 +617,14 @@
             backdrop-filter: blur(20px) saturate(160%);
             -webkit-backdrop-filter: blur(20px) saturate(160%);
             border-radius: var(--radius-lg);
-            padding: 20px 24px;
-            margin: 16px 0;
+            padding: 28px 24px 20px 24px; /* Extra top padding for icon */
+            margin: 24px 0 16px 0; /* Extra top margin to accommodate icon */
             text-align: center;
             position: relative;
             box-shadow: 
                 0 8px 32px rgba(197, 160, 89, 0.15),
                 inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            overflow: hidden;
+            /* overflow: hidden removed to allow icon to show */
         }
         
         .certificate-box::before {
@@ -648,21 +648,23 @@
         .certificate-box::after {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(135deg, 
-                transparent 40%, 
-                rgba(255, 255, 255, 0.4) 50%, 
-                transparent 60%);
-            animation: shimmer-rotate 8s linear infinite;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.3) 50%, 
+                transparent 100%);
+            background-size: 200% 100%;
+            animation: shimmer-sweep 3s ease-in-out infinite;
             pointer-events: none;
         }
         
-        @keyframes shimmer-rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes shimmer-sweep {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
 
         .cert-icon {
