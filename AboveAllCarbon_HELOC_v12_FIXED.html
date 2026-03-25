@@ -5312,6 +5312,94 @@
             transform: translateY(-3px) !important;
             box-shadow: 0 8px 25px rgba(0,0,0,0.3) !important;
         }
+        
+        /* ============================================
+           PRINT-SPECIFIC CSS FOR PDF GENERATION
+           ============================================ */
+        @media print {
+            /* Disable glassmorphism effects for PDF */
+            .glass-card,
+            .certificate-box,
+            .snapshot-container,
+            .matrix-container > div,
+            #proposal-container {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                background: #ffffff !important;
+                border: 1px solid #ddd !important;
+                box-shadow: none !important;
+            }
+            
+            /* Certificate box specific */
+            .certificate-box::before,
+            .certificate-box::after {
+                display: none !important;
+            }
+            
+            .certificate-box {
+                border: 2px solid var(--accent-color) !important;
+                background: #fffbf0 !important;
+            }
+            
+            /* Header */
+            .premium-header {
+                background: var(--header-bg) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            /* Ensure crisp text */
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background: white !important;
+            }
+            
+            /* Prevent awkward page breaks */
+            .matrix-container,
+            .certificate-box,
+            .snapshot-container,
+            .heloc-table {
+                page-break-inside: avoid !important;
+            }
+            
+            h3,
+            .premium-header {
+                page-break-after: avoid !important;
+            }
+            
+            .snapshot-row,
+            tr {
+                page-break-inside: avoid !important;
+            }
+            
+            /* Hide interactive elements */
+            #floating-toolbar,
+            #ezra-orb,
+            #eq-root,
+            .eq-panel,
+            .toast-container,
+            .no-print {
+                display: none !important;
+            }
+            
+            /* Ensure proper contrast */
+            .highlight-row td {
+                background-color: #fffbf0 !important;
+                border: 1px solid var(--accent-color) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            /* Tables */
+            table {
+                border-collapse: collapse !important;
+            }
+            
+            td, th {
+                border: 1px solid #ddd !important;
+            }
+        }
     </style>
 </head>
 
@@ -17235,13 +17323,17 @@ Sent via Above All Carbon HELOC Tool`;
             showToast('Generating PDF...', 'info');
             
             try {
-                // Capture at optimized width
+                // Capture at optimized settings for crisp PDF output
+                // - width: 900px for better proportions
+                // - scale: 2.5 for retina-quality text
+                // - settle: 300ms to ensure fonts load
                 const canvas = requireProposalCanvas(
-                    await captureProposalSafe({ width: 850, scale: 2, settle: 200 }),
+                    await captureProposalSafe({ width: 900, scale: 2.5, settle: 300 }),
                     'Could not capture quote preview for PDF export.'
                 );
 
-                const imgData = canvas.toDataURL('image/jpeg', 0.92);
+                // Use PNG for lossless quality (better text clarity than JPEG)
+                const imgData = canvas.toDataURL('image/png');
                 const { jsPDF } = window.jspdf;
 
                 // Letter size in mm (8.5 x 11 inches)
@@ -17453,11 +17545,16 @@ Sent via Above All Carbon HELOC Tool`;
             notification.textContent = '📸 Capturing & preparing email...';
             document.body.appendChild(notification);
             try {
-                const canvas = requireProposalCanvas(await captureProposalSafe(), 'Could not capture quote preview for email.');
+                // Capture at higher quality for email
+                const canvas = requireProposalCanvas(
+                    await captureProposalSafe({ width: 800, scale: 2, settle: 300 }),
+                    'Could not capture quote preview for email.'
+                );
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
 
                 // Build rich HTML with embedded screenshot and copy to clipboard
-                var screenshotDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                // Use higher quality JPEG for email (0.92)
+                var screenshotDataUrl = canvas.toDataURL('image/jpeg', 0.92);
                 var richHtml = buildRichEmailHTML({ screenshotDataUrl: screenshotDataUrl });
                 let clipboardOk = false;
                 try {
@@ -17539,13 +17636,21 @@ Sent via Above All Carbon HELOC Tool`;
             // Update the link display in the modal
             _esmUpdateLinkDisplay();
 
-            // Capture screenshot (email-optimized: 600px wide, JPEG for smaller file size)
+            // Capture screenshot (email-optimized for quality and size)
+            // - width: 800px for better detail
+            // - scale: 2 for retina quality
+            // - settle: 300ms for fonts to load
             try {
-                var canvas = await captureProposalSafe({ width: 600, scale: 1.5, settle: 150 });
+                var canvas = await captureProposalSafe({ width: 800, scale: 2, settle: 300 });
 
                 if (canvas) {
-                    // Convert to JPEG for email-friendly size
-                    _esmScreenshotDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                    // Use WebP if supported, fallback to JPEG
+                    // Quality 0.9 for good balance of size/clarity
+                    _esmScreenshotDataUrl = canvas.toDataURL('image/webp', 0.9);
+                    // Fallback to JPEG if WebP not supported
+                    if (_esmScreenshotDataUrl.indexOf('data:image/webp') !== 0) {
+                        _esmScreenshotDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                    }
                     _esmScreenshotBlob = await new Promise(function (resolve) { canvas.toBlob(resolve, 'image/png'); });
 
                     img.src = _esmScreenshotDataUrl;
