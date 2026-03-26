@@ -9196,17 +9196,20 @@ Best regards,
             };
 
             // Define which sections each role can access
+            // Diamond-tier users get parser + email even with 'user' role
+            var tierForAccess = window.currentUserTier || 'carbon';
+            var isDiamondUser = (tierForAccess === 'diamond' || tierForAccess === 'obsidian');
             const access = {
                 'super_admin': ['lo', 'company', 'whitelabel', 'parser', 'lenderparser', 'email', 'integrations'],
                 'admin': ['lo', 'parser', 'email', 'integrations'],
-                'user': ['lo', 'integrations']
+                'user': isDiamondUser ? ['lo', 'parser', 'email', 'integrations'] : ['lo', 'integrations']
             };
 
             // Define which tabs each role can see
             const tabAccess = {
                 'super_admin': ['client', 'quotes', 'leads', 'rates', 'lo', 'whitelabel', 'parser', 'email', 'integrations', 'superadmin'],
                 'admin': ['client', 'quotes', 'leads', 'rates', 'lo', 'parser', 'email', 'integrations'],
-                'user': ['client', 'quotes', 'leads', 'rates', 'lo', 'integrations']
+                'user': isDiamondUser ? ['client', 'quotes', 'leads', 'rates', 'lo', 'parser', 'email', 'integrations'] : ['client', 'quotes', 'leads', 'rates', 'lo', 'integrations']
             };
 
             const allowed = access[role] || [];
