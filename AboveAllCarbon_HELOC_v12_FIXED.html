@@ -11011,6 +11011,8 @@ Best regards,
             var currentStep = 0;
             var isActive = false;
             var overlayEl, spotlightEl, tooltipEl;
+            var _keydownFn = null;
+            var _resizeFn = null;
 
             function lsKey() {
                 return 'aboveAllWalkthroughDone_' + (window.currentUserId || 'anon');
@@ -11104,20 +11106,25 @@ Best regards,
                     if (e.target === overlayEl) { /* click on dim area does nothing */ }
                 });
 
-                document.addEventListener('keydown', function (e) {
+                // Store references for cleanup in dismiss()
+                if (_keydownFn) document.removeEventListener('keydown', _keydownFn);
+                _keydownFn = function (e) {
                     if (!isActive) return;
                     if (e.key === 'Escape') { dismiss(); }
                     if (e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); nextStep(); }
                     if (e.key === 'ArrowLeft') { e.preventDefault(); prevStep(); }
-                });
+                };
+                document.addEventListener('keydown', _keydownFn);
 
                 var resizeTimer;
-                window.addEventListener('resize', function () {
+                if (_resizeFn) window.removeEventListener('resize', _resizeFn);
+                _resizeFn = function () {
                     clearTimeout(resizeTimer);
                     resizeTimer = setTimeout(function () {
                         if (isActive) showStep(currentStep);
                     }, 200);
-                });
+                };
+                window.addEventListener('resize', _resizeFn);
             }
 
             function shouldAutoStart() {
@@ -11141,6 +11148,9 @@ Best regards,
                 spotlightEl.style.display = 'none';
                 tooltipEl.style.display = 'none';
                 localStorage.setItem(lsKey(), new Date().toISOString());
+                // Cleanup event listeners to prevent memory leaks
+                if (_keydownFn) { document.removeEventListener('keydown', _keydownFn); _keydownFn = null; }
+                if (_resizeFn) { window.removeEventListener('resize', _resizeFn); _resizeFn = null; }
                 var panel = document.getElementById('admin-panel');
                 if (panel) panel.style.display = 'none';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -11176,7 +11186,7 @@ Best regards,
                 setTimeout(function () {
                     var targetEl = document.querySelector(step.target);
                     if (!targetEl) {
-                        console.warn('Walkthrough target not found:', step.target);
+                        console.warn('Walkthrough: skipping step "' + step.title + '" — target not found:', step.target);
                         if (index < steps.length - 1) { currentStep++; showStep(currentStep); }
                         else dismiss();
                         return;
@@ -11184,7 +11194,7 @@ Best regards,
 
                     positionSpotlight(targetEl);
                     renderTooltip(step, index, targetEl);
-                }, 450);
+                }, 600);
             }
 
             function positionSpotlight(el) {
