@@ -10863,6 +10863,8 @@ Best regards,
                 }
                 applyToFormFields();
                 if (currentStep === 3 && wizardData.ratePreset) applyRatePreset(wizardData.ratePreset);
+                // Save integration keys when leaving the integrations step (step 5)
+                if (currentStep === 5 && typeof saveIntegrations === 'function') saveIntegrations();
                 saveProgress(false);
                 if (currentStep < totalSteps - 1) { currentStep++; renderStep(currentStep, 'forward'); }
             }
@@ -10880,6 +10882,8 @@ Best regards,
             function complete() {
                 collectStepData();
                 applyToFormFields();
+                // Save integration keys (bonzo, ghl, radar, n8n) to user_integrations table
+                if (typeof saveIntegrations === 'function') saveIntegrations();
                 if (wizardData.ratePreset) applyRatePreset(wizardData.ratePreset);
                 currentStep = totalSteps - 1;
                 saveProgress(true);
