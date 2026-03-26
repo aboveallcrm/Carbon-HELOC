@@ -17198,17 +17198,36 @@ Sent via Above All Carbon HELOC Tool`;
                 });
             }
 
-            // Fix glassmorphism → solid equivalent for PDF/screenshot/email capture
-            // html2canvas cannot render backdrop-filter — simulate the frosted glass look with solid colors
+            // Fix glassmorphism for PDF/screenshot/email capture
+            // html2canvas cannot render backdrop-filter — use inline overrides (beat stylesheet specificity)
+            var certBox = clonedDoc.querySelector('.certificate-box');
+            if (certBox) {
+                certBox.style.background = '#ffffff';
+                certBox.style.backdropFilter = 'none';
+                certBox.style.webkitBackdropFilter = 'none';
+                certBox.style.border = '2px solid #c5a059';
+                certBox.style.boxShadow = '0 2px 12px rgba(197,160,89,0.2)';
+                var certH2 = certBox.querySelector('h2');
+                if (certH2) certH2.style.color = '#0f2b4c';
+                var mainOffer = certBox.querySelector('.main-offer');
+                if (mainOffer) mainOffer.style.color = '#a68543';
+                var tagline = certBox.querySelector('.tagline');
+                if (tagline) tagline.style.color = '#1e293b';
+            }
+            var certIcon = clonedDoc.querySelector('.cert-icon');
+            if (certIcon) {
+                certIcon.style.border = '3px solid #ffffff';
+                certIcon.style.boxShadow = '0 2px 8px rgba(197,160,89,0.4)';
+            }
+            // Fix all glassmorphism containers
+            clonedDoc.querySelectorAll('.glass-card, .snapshot-container').forEach(function(el) {
+                el.style.background = '#ffffff';
+                el.style.backdropFilter = 'none';
+                el.style.webkitBackdropFilter = 'none';
+            });
+            // Pseudo-elements can't be overridden inline — inject minimal style
             var captureStyle = clonedDoc.createElement('style');
-            captureStyle.textContent = [
-                '.certificate-box::before, .certificate-box::after { display: none !important; }',
-                '.certificate-box { background: #f8f5ef !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; border: 2px solid #c5a059 !important; box-shadow: 0 2px 8px rgba(197,160,89,0.15) !important; }',
-                '.certificate-box h2 { color: #0f2b4c !important; }',
-                '.certificate-box .main-offer { color: #a68543 !important; }',
-                '.certificate-box .tagline { color: #1e293b !important; }',
-                '.cert-icon { border-color: #f8f5ef !important; }'
-            ].join('\n');
+            captureStyle.textContent = '.certificate-box::before, .certificate-box::after { display:none !important; }';
             clonedDoc.head.appendChild(captureStyle);
         }
 
