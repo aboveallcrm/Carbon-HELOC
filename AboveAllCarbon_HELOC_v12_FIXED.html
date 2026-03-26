@@ -5423,7 +5423,7 @@
     <!-- Onboarding Wizard -->
     <div id="ob-overlay" onclick="if(event.target===this)OnboardingWizard.minimize()">
         <div id="ob-container">
-            <button class="ob-close" onclick="OnboardingWizard.minimize()" title="Finish later">&times;</button>
+            <!-- Close button removed: onboarding is mandatory -->
             <div class="ob-progress-bar">
                 <div class="ob-progress-fill" id="ob-progress-fill" style="width:0%"></div>
             </div>
@@ -7494,10 +7494,10 @@ Best regards,
                             style="font-family: var(--font-heading); font-size: 9px; color: #fb923c; margin: 0 0 8px 0;">
                             🟠 Bonzo CRM (Two-Way Sync)</h6>
                         <div class="input-group">
-                            <div class="input-field" style="flex: 2;"><label>Bonzo Xcode <span class="help-tip">?<span class="help-tip-text">Your Bonzo Xcode key. Found in Bonzo → Settings → API / Integrations → Xcode. This is NOT the same as the API Key — both are required.</span></span></label><input type="password"
-                                    id="bonzo-api-key" autocomplete="off" placeholder="Your Bonzo Xcode key"></div>
-                            <div class="input-field" style="flex: 2;"><label>Bonzo API Key <span class="help-tip">?<span class="help-tip-text">Your Bonzo API Key (separate from Xcode). Found on the same settings page but in a different section. Used for the "Sync Bonzo" bulk import in My Leads.</span></span></label><input type="password"
-                                    id="bonzo-api-key-2" autocomplete="off" placeholder="Your Bonzo API key (different from Xcode)">
+                            <div class="input-field" style="flex: 2;"><label>Bonzo Xcode <span style="color:rgba(255,255,255,0.35);font-size:8px;">(short hash)</span> <span class="help-tip">?<span class="help-tip-text">Your Bonzo Xcode key — a short hash like "d9a5cf48...". Found in Bonzo → Settings → API / Integrations → Xcode.</span></span></label><input type="password"
+                                    id="bonzo-api-key" autocomplete="off" placeholder="Short hash e.g. d9a5cf48..."></div>
+                            <div class="input-field" style="flex: 2;"><label>Bonzo API Key <span style="color:rgba(255,255,255,0.35);font-size:8px;">(long JWT token)</span> <span class="help-tip">?<span class="help-tip-text">Your Bonzo API Bearer Token — a long string starting with "eyJ...". Found in Bonzo → Settings → API Keys → Create Token.</span></span></label><input type="password"
+                                    id="bonzo-api-key-2" autocomplete="off" placeholder="Long token starting with eyJ...">
                             </div>
                         </div>
                         <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 4px 0 0 0;">Find your <b style="color:#fb923c;">Xcode</b> in Bonzo → Settings → API / Integrations → Xcode. The <b style="color:#fb923c;">API Key</b> is a separate key from the same page. Both are required for full sync.</p>
@@ -10284,7 +10284,7 @@ Best regards,
                     '</div>' +
                     renderDots(0) +
                     '<div class="ob-footer">' +
-                    '<button class="ob-btn-skip" onclick="OnboardingWizard.minimize()">I\'ll do this later</button>' +
+                    '' +
                     '<button class="ob-btn ob-btn-primary" onclick="OnboardingWizard.next()">Let\'s Go &#8594;</button>' +
                     '</div>';
             }
@@ -10320,7 +10320,7 @@ Best regards,
                     '<div class="ob-footer">' +
                     '<button class="ob-btn ob-btn-secondary" onclick="OnboardingWizard.back()">&#8592; Back</button>' +
                     '<div>' +
-                    '<button class="ob-btn-skip" onclick="OnboardingWizard.skipStep()">Skip for now</button>' +
+                    '' +
                     '<button class="ob-btn ob-btn-primary" onclick="OnboardingWizard.next()">Next &#8594;</button>' +
                     '</div>' +
                     '</div>';
@@ -10365,7 +10365,7 @@ Best regards,
                     '<div class="ob-footer">' +
                     '<button class="ob-btn ob-btn-secondary" onclick="OnboardingWizard.back()">&#8592; Back</button>' +
                     '<div>' +
-                    '<button class="ob-btn-skip" onclick="OnboardingWizard.skipStep()">Skip for now</button>' +
+                    '' +
                     '<button class="ob-btn ob-btn-primary" onclick="OnboardingWizard.next()">Next &#8594;</button>' +
                     '</div>' +
                     '</div>';
@@ -10417,7 +10417,7 @@ Best regards,
                     '<div class="ob-footer">' +
                     '<button class="ob-btn ob-btn-secondary" onclick="OnboardingWizard.back()">&#8592; Back</button>' +
                     '<div>' +
-                    '<button class="ob-btn-skip" onclick="OnboardingWizard.skipStep()">Skip for now</button>' +
+                    '' +
                     '<button class="ob-btn ob-btn-primary" onclick="OnboardingWizard.next()">Next &#8594;</button>' +
                     '</div>' +
                     '</div>';
@@ -10511,7 +10511,7 @@ Best regards,
                     '<div class="ob-footer">' +
                     '<button class="ob-btn ob-btn-secondary" onclick="OnboardingWizard.back()">&#8592; Back</button>' +
                     '<div>' +
-                    '<button class="ob-btn-skip" onclick="OnboardingWizard.skipStep()">Skip integrations</button>' +
+                    '' +
                     '<button class="ob-btn ob-btn-primary" onclick="OnboardingWizard.next()">Next &#8594;</button>' +
                     '</div>' +
                     '</div>';
@@ -10651,7 +10651,7 @@ Best regards,
                     '<div class="ob-footer">' +
                     '<button class="ob-btn ob-btn-secondary" onclick="OnboardingWizard.back()">&#8592; Back</button>' +
                     '<div>' +
-                    '<button class="ob-btn-skip" onclick="OnboardingWizard.skipStep()">Skip for now</button>' +
+                    '' +
                     '<button class="ob-btn ob-btn-primary" onclick="OnboardingWizard.next()">Next &#8594;</button>' +
                     '</div>' +
                     '</div>';
@@ -13732,7 +13732,10 @@ Best regards,
 
         // ===== WHITE LABEL =====
         function applyWhiteLabel() {
-            const headerBg = document.getElementById('wl-header-bg').value;
+            // White Label elements may not exist for non-SA users (DOM stripped by applyRoleAccess)
+            var _wlEl = document.getElementById('wl-header-bg');
+            if (!_wlEl) return; // WL section not in DOM — skip safely
+            const headerBg = _wlEl.value;
             const accent = document.getElementById('wl-accent').value;
             const headerText = document.getElementById('wl-header-text').value;
             const bodyText = document.getElementById('wl-body-text').value;
