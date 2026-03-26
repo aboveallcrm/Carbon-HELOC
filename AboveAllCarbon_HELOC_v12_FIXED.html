@@ -162,8 +162,8 @@
                 rgba(253, 251, 247, 0.95) 0%, 
                 rgba(255, 255, 255, 0.9) 50%,
                 rgba(253, 251, 247, 0.95) 100%);
-            backdrop-filter: blur(20px) saturate(150%);
-            -webkit-backdrop-filter: blur(20px) saturate(150%);
+            backdrop-filter: blur(10px) saturate(150%);
+            -webkit-backdrop-filter: blur(10px) saturate(150%);
             box-shadow: 
                 0 30px 80px rgba(15, 43, 76, 0.15), 
                 0 10px 30px rgba(0,0,0,0.05), 
@@ -189,8 +189,8 @@
                 rgba(15, 43, 76, 0.98) 0%, 
                 rgba(15, 43, 76, 0.9) 50%,
                 rgba(15, 43, 76, 0.85) 100%);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
             color: var(--header-text);
             padding: 25px 40px;
             text-align: center;
@@ -293,7 +293,7 @@
         .glass-gradient-border {
             position: relative;
             background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(20px) saturate(160%);
+            backdrop-filter: blur(10px) saturate(160%);
             border-radius: var(--radius-lg);
             overflow: hidden;
         }
@@ -321,8 +321,8 @@
             background: linear-gradient(180deg, 
                 rgba(15, 43, 76, 0.95) 0%, 
                 rgba(15, 43, 76, 0.85) 100%);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
             border-bottom: 1px solid rgba(197, 160, 89, 0.3);
             box-shadow: 
                 0 4px 30px rgba(0, 0, 0, 0.2),
@@ -352,7 +352,7 @@
         .glass-shimmer-border {
             position: relative;
             background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(10px);
             border-radius: var(--radius-lg);
         }
         
@@ -368,7 +368,7 @@
                 rgba(197, 160, 89, 0.6), 
                 transparent);
             background-size: 200% 100%;
-            animation: shimmer-border 3s linear infinite;
+            animation: shimmer-border 6s linear infinite;
             z-index: -1;
         }
         
@@ -381,13 +381,13 @@
         
         .glass-layer-2 {
             background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(10px);
             transform: translateZ(10px);
         }
         
         .glass-layer-3 {
             background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(30px);
+            backdrop-filter: blur(10px);
             transform: translateZ(20px);
         }
         
@@ -548,7 +548,8 @@
             transition: all 0.2s ease;
         }
         
-        tr:hover td {
+        #leads-table tr:hover td,
+        #sa-users-table tr:hover td {
             background: rgba(255, 255, 255, 0.9);
             transform: translateX(2px);
         }
@@ -614,8 +615,8 @@
             background: linear-gradient(145deg, 
                 rgba(255, 255, 255, 0.9) 0%, 
                 rgba(255, 255, 255, 0.7) 100%);
-            backdrop-filter: blur(20px) saturate(160%);
-            -webkit-backdrop-filter: blur(20px) saturate(160%);
+            backdrop-filter: blur(10px) saturate(160%);
+            -webkit-backdrop-filter: blur(10px) saturate(160%);
             border-radius: var(--radius-lg);
             padding: 28px 24px 20px 24px; /* Extra top padding for icon */
             margin: 24px 0 16px 0; /* Extra top margin to accommodate icon */
@@ -658,7 +659,7 @@
                 rgba(255, 255, 255, 0.3) 50%, 
                 transparent 100%);
             background-size: 200% 100%;
-            animation: shimmer-sweep 3s ease-in-out infinite;
+            animation: shimmer-sweep 6s ease-in-out infinite;
             pointer-events: none;
         }
         
@@ -11835,31 +11836,35 @@ Best regards,
                 if (!sb || !userId) return null;
 
                 try {
-                    if (email) {
-                        var res = await sb.from('leads')
+                    var emailPromise = email
+                        ? sb.from('leads')
                             .select('id, dnc, dnc_reason')
                             .eq('user_id', userId)
                             .eq('dnc', true)
                             .ilike('email', email.toLowerCase().trim())
                             .limit(1)
-                            .maybeSingle();
-                        if (res.data) return { reason: res.data.dnc_reason || 'Marked DNC in local leads' };
-                    }
-                    if (phone) {
-                        var digits = phone.replace(/\D/g, '');
-                        if (digits.length >= 10) {
-                            var res2 = await sb.from('leads')
-                                .select('id, phone, dnc, dnc_reason')
-                                .eq('user_id', userId)
-                                .eq('dnc', true)
-                                .limit(100);
-                            if (res2.data) {
-                                var match = res2.data.find(function (l) {
-                                    return l.phone && l.phone.replace(/\D/g, '') === digits;
-                                });
-                                if (match) return { reason: match.dnc_reason || 'Phone matches DNC lead' };
-                            }
-                        }
+                            .maybeSingle()
+                        : Promise.resolve(null);
+
+                    var digits = phone ? phone.replace(/\D/g, '') : '';
+                    var phonePromise = (phone && digits.length >= 10)
+                        ? sb.from('leads')
+                            .select('id, phone, dnc, dnc_reason')
+                            .eq('user_id', userId)
+                            .eq('dnc', true)
+                            .limit(100)
+                        : Promise.resolve(null);
+
+                    var results = await Promise.all([emailPromise, phonePromise]);
+                    var res = results[0];
+                    var res2 = results[1];
+
+                    if (res && res.data) return { reason: res.data.dnc_reason || 'Marked DNC in local leads' };
+                    if (res2 && res2.data) {
+                        var match = res2.data.find(function (l) {
+                            return l.phone && l.phone.replace(/\D/g, '') === digits;
+                        });
+                        if (match) return { reason: match.dnc_reason || 'Phone matches DNC lead' };
                     }
                 } catch (e) {
                     console.debug('DNC local check error:', e.message);
@@ -12048,17 +12053,20 @@ Best regards,
             if (window.isImpersonatedReadOnly) {
                 applyReadOnlyMode();
             }
-            // Initialize webhook URLs now that we have user ID
-            initWebhookUrls();
-            // Load integration settings from Supabase (overrides localStorage cache)
-            _loadIntegrationsFromSupabase();
-            // Check AI key status (key stays server-side via Edge Function proxy)
-            _checkUserAIKeyStatus();
-            // Load user's saved quotes, leads, notification prefs, and cloud-synced profile
-            loadUserQuotes();
-            loadUserLeads();
-            loadNotifPrefs();
-            _loadProfileFromCloud();
+            // Fire independent async data fetches concurrently for faster load
+            Promise.all([
+                // Integration setup (independent of each other)
+                initWebhookUrls(),
+                _loadIntegrationsFromSupabase(),
+                _checkUserAIKeyStatus(),
+                // Independent data fetches
+                loadUserQuotes(),
+                loadUserLeads(),
+                loadNotifPrefs(),
+                _loadProfileFromCloud()
+            ]).catch(function(err) {
+                console.warn('[auth-ready] Parallel load error:', err);
+            });
             // Start polling for quote view notifications
             initQuoteViewNotifications();
             // Auto-load users only for the verified Super Admin account
@@ -12114,6 +12122,49 @@ Best regards,
         }
 
         // ===== SUPER ADMIN FUNCTIONS =====
+
+        // Render a single admin user row — reusable for initial load and loadMoreUsers
+        function _renderAdminUserRow(p, keyStatus) {
+            var currentId = window.currentUserId;
+            var tierColors = TIER_COLORS;
+            var roleColors = { user: '#3b82f6', admin: '#f59e0b', super_admin: '#ef4444' };
+            var statusColors = { active: '#10b981', trialing: '#f59e0b', canceled: '#ef4444', past_due: '#f97316', suspended: '#991b1b' };
+            var created = p.created_at ? new Date(p.created_at).toLocaleDateString() : '—';
+            var safeEmail = escapeAttr(p.email || '');
+            var safeId = escapeAttr(p.id || '');
+            var safeRole = escapeAttr(p.role || 'user');
+            var safeTier = escapeAttr(p.tier || 'carbon');
+            var safeStatus = escapeAttr(p.subscription_status || 'trialing');
+            var isSelf = p.id === currentId;
+            var isSuspended = p.subscription_status === 'suspended';
+            // Key status indicators
+            var ks = keyStatus[p.id] || {};
+            var keyDots = '<span title="' + (ks.ai ? 'AI key set' : 'No AI key') + '" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + (ks.ai ? '#8b5cf6' : '#374151') + ';margin:0 1px;"></span>' +
+                '<span title="' + (ks.ghl ? 'GHL key set' : 'No GHL key') + '" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + (ks.ghl ? '#10b981' : '#374151') + ';margin:0 1px;"></span>' +
+                '<span title="' + (ks.n8n ? 'n8n set' : 'No n8n') + '" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + (ks.n8n ? '#f97316' : '#374151') + ';margin:0 1px;"></span>' +
+                '<span title="' + (ks.bonzo ? 'Bonzo set' : 'No Bonzo') + '" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + (ks.bonzo ? '#fb923c' : '#374151') + ';margin:0 1px;"></span>' +
+                '<span title="' + (ks.fub ? 'FUB set' : 'No FUB') + '" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + (ks.fub ? '#38bdf8' : '#374151') + ';margin:0 1px;"></span>';
+            return '<tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">' +
+                '<td style="padding: 8px 6px; color: white; font-size: 10px;">' + (safeEmail || '—') + '</td>' +
+                '<td style="padding: 8px 6px;"><span style="background:' + (roleColors[p.role] || '#6b7280') + '; color: white; padding: 2px 8px; border-radius: 10px; font-size: 8px; font-family: var(--font-heading); text-transform: uppercase;">' + safeRole + '</span></td>' +
+                '<td style="padding: 8px 6px;"><span style="background:' + (tierColors[p.tier] || '#6b7280') + '; color: white; padding: 2px 8px; border-radius: 10px; font-size: 8px; font-family: var(--font-heading); text-transform: uppercase;">' + safeTier + '</span></td>' +
+                '<td style="padding: 8px 6px;"><span style="background:' + (statusColors[p.subscription_status] || '#6b7280') + '; color: white; padding: 2px 8px; border-radius: 10px; font-size: 8px; font-family: var(--font-heading);">' + safeStatus + '</span></td>' +
+                '<td style="padding: 8px 6px; text-align: center;">' + keyDots + '</td>' +
+                '<td style="padding: 8px 6px; color: rgba(255,255,255,0.5); font-size: 9px;">' + escapeAttr(created) + '</td>' +
+                '<td style="padding: 8px 6px; text-align: center; white-space: nowrap;">' +
+                '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #3b82f6; margin: 1px;" onclick="editUser(\'' + safeId + '\',\'' + safeEmail + '\',\'' + safeRole + '\',\'' + safeTier + '\',\'' + safeStatus + '\')">Edit</button>' +
+                '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #8b5cf6; margin: 1px;" onclick="manageUserKeys(\'' + safeId + '\',\'' + safeEmail + '\')">Keys</button>' +
+                (isSelf ? '' : '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #f59e0b; margin: 1px;" onclick="impersonateAsUser(\'' + safeId + '\',\'' + safeEmail + '\')">View As</button>') +
+                (isSelf ? '' : '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #22c55e; margin: 1px;" onclick="loginAsUser(\'' + safeId + '\',\'' + safeEmail + '\')">Login As</button>') +
+                (isSelf ? '' : '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #6366f1; margin: 1px;" onclick="initiateScreenShare(\'' + safeId + '\',\'' + safeEmail + '\')">Share</button>') +
+                '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #0891b2; margin: 1px;" onclick="resetUserPassword(\'' + safeEmail + '\')">Reset PW</button>' +
+                (isSelf ? '' : '<button class="btn" style="font-size: 7px; padding: 3px 6px; background:' + (isSuspended ? '#10b981' : '#f97316') + '; margin: 1px;" onclick="suspendUser(\'' + safeId + '\',\'' + safeEmail + '\',\'' + safeStatus + '\')">' + (isSuspended ? 'Unsuspend' : 'Suspend') + '</button>') +
+                '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #06b6d4; margin: 1px;" onclick="viewUserQuotes(\'' + safeId + '\',\'' + safeEmail + '\')">Quotes</button>' +
+                (isSelf ? '' : '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #ef4444; margin: 1px;" onclick="deleteUser(\'' + safeId + '\',\'' + safeEmail + '\')">Delete</button>') +
+                '</td>' +
+                '</tr>';
+        }
+
         async function loadAllUsers() {
             const sb = window._supabase;
             if (!sb || !isTrueSuperAdmin()) return;
@@ -12126,7 +12177,7 @@ Best regards,
                 sb.from('profiles')
                     .select('id, email, role, tier, subscription_status, created_at')
                     .order('created_at', { ascending: false })
-                    .limit(500),
+                    .limit(200),
                 sb.from('user_integrations').select('user_id, metadata').eq('provider', 'heloc_keys')
             ]);
 
@@ -12156,46 +12207,61 @@ Best regards,
                 });
             }
 
-            var currentId = window.currentUserId;
-            tbody.innerHTML = profiles.map(p => {
-                const tierColors = TIER_COLORS;
-                const roleColors = { user: '#3b82f6', admin: '#f59e0b', super_admin: '#ef4444' };
-                const statusColors = { active: '#10b981', trialing: '#f59e0b', canceled: '#ef4444', past_due: '#f97316', suspended: '#991b1b' };
-                const created = p.created_at ? new Date(p.created_at).toLocaleDateString() : '—';
-                const safeEmail = escapeAttr(p.email || '');
-                const safeId = escapeAttr(p.id || '');
-                const safeRole = escapeAttr(p.role || 'user');
-                const safeTier = escapeAttr(p.tier || 'carbon');
-                const safeStatus = escapeAttr(p.subscription_status || 'trialing');
-                var isSelf = p.id === currentId;
-                var isSuspended = p.subscription_status === 'suspended';
-                // Key status indicators
-                var ks = keyStatus[p.id] || {};
-                var keyDots = '<span title="' + (ks.ai ? 'AI key set' : 'No AI key') + '" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + (ks.ai ? '#8b5cf6' : '#374151') + ';margin:0 1px;"></span>' +
-                    '<span title="' + (ks.ghl ? 'GHL key set' : 'No GHL key') + '" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + (ks.ghl ? '#10b981' : '#374151') + ';margin:0 1px;"></span>' +
-                    '<span title="' + (ks.n8n ? 'n8n set' : 'No n8n') + '" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + (ks.n8n ? '#f97316' : '#374151') + ';margin:0 1px;"></span>' +
-                    '<span title="' + (ks.bonzo ? 'Bonzo set' : 'No Bonzo') + '" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + (ks.bonzo ? '#fb923c' : '#374151') + ';margin:0 1px;"></span>' +
-                    '<span title="' + (ks.fub ? 'FUB set' : 'No FUB') + '" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:' + (ks.fub ? '#38bdf8' : '#374151') + ';margin:0 1px;"></span>';
-                return '<tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">' +
-                    '<td style="padding: 8px 6px; color: white; font-size: 10px;">' + (safeEmail || '—') + '</td>' +
-                    '<td style="padding: 8px 6px;"><span style="background:' + (roleColors[p.role] || '#6b7280') + '; color: white; padding: 2px 8px; border-radius: 10px; font-size: 8px; font-family: var(--font-heading); text-transform: uppercase;">' + safeRole + '</span></td>' +
-                    '<td style="padding: 8px 6px;"><span style="background:' + (tierColors[p.tier] || '#6b7280') + '; color: white; padding: 2px 8px; border-radius: 10px; font-size: 8px; font-family: var(--font-heading); text-transform: uppercase;">' + safeTier + '</span></td>' +
-                    '<td style="padding: 8px 6px;"><span style="background:' + (statusColors[p.subscription_status] || '#6b7280') + '; color: white; padding: 2px 8px; border-radius: 10px; font-size: 8px; font-family: var(--font-heading);">' + safeStatus + '</span></td>' +
-                    '<td style="padding: 8px 6px; text-align: center;">' + keyDots + '</td>' +
-                    '<td style="padding: 8px 6px; color: rgba(255,255,255,0.5); font-size: 9px;">' + escapeAttr(created) + '</td>' +
-                    '<td style="padding: 8px 6px; text-align: center; white-space: nowrap;">' +
-                    '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #3b82f6; margin: 1px;" onclick="editUser(\'' + safeId + '\',\'' + safeEmail + '\',\'' + safeRole + '\',\'' + safeTier + '\',\'' + safeStatus + '\')">Edit</button>' +
-                    '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #8b5cf6; margin: 1px;" onclick="manageUserKeys(\'' + safeId + '\',\'' + safeEmail + '\')">Keys</button>' +
-                    (isSelf ? '' : '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #f59e0b; margin: 1px;" onclick="impersonateAsUser(\'' + safeId + '\',\'' + safeEmail + '\')">View As</button>') +
-                    (isSelf ? '' : '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #22c55e; margin: 1px;" onclick="loginAsUser(\'' + safeId + '\',\'' + safeEmail + '\')">Login As</button>') +
-                    (isSelf ? '' : '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #6366f1; margin: 1px;" onclick="initiateScreenShare(\'' + safeId + '\',\'' + safeEmail + '\')">Share</button>') +
-                    '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #0891b2; margin: 1px;" onclick="resetUserPassword(\'' + safeEmail + '\')">Reset PW</button>' +
-                    (isSelf ? '' : '<button class="btn" style="font-size: 7px; padding: 3px 6px; background:' + (isSuspended ? '#10b981' : '#f97316') + '; margin: 1px;" onclick="suspendUser(\'' + safeId + '\',\'' + safeEmail + '\',\'' + safeStatus + '\')">' + (isSuspended ? 'Unsuspend' : 'Suspend') + '</button>') +
-                    '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #06b6d4; margin: 1px;" onclick="viewUserQuotes(\'' + safeId + '\',\'' + safeEmail + '\')">Quotes</button>' +
-                    (isSelf ? '' : '<button class="btn" style="font-size: 7px; padding: 3px 6px; background: #ef4444; margin: 1px;" onclick="deleteUser(\'' + safeId + '\',\'' + safeEmail + '\')">Delete</button>') +
-                    '</td>' +
-                    '</tr>';
-            }).join('');
+            // Store full list in cache for pagination
+            window._adminUsersCache = profiles;
+            window._adminUsersKeyStatus = keyStatus;
+            window._adminUsersRendered = 0;
+            var _usersPageSize = 25;
+
+            // Render first batch
+            var firstBatch = profiles.slice(0, _usersPageSize);
+            tbody.innerHTML = firstBatch.map(function(p) { return _renderAdminUserRow(p, keyStatus); }).join('');
+            window._adminUsersRendered = firstBatch.length;
+
+            // Show "Load More" row if there are more users
+            if (profiles.length > _usersPageSize) {
+                var loadMoreRow = document.createElement('tr');
+                loadMoreRow.id = 'admin-users-load-more-row';
+                loadMoreRow.innerHTML = '<td colspan="7" style="padding:12px;text-align:center;">' +
+                    '<button onclick="loadMoreUsers()" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;border:none;border-radius:8px;padding:8px 24px;font-family:var(--font-heading);font-size:10px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
+                    'Load More (' + (profiles.length - _usersPageSize) + ' remaining)</button></td>';
+                tbody.appendChild(loadMoreRow);
+            }
+        }
+
+        function loadMoreUsers() {
+            var users = window._adminUsersCache || [];
+            var keyStatus = window._adminUsersKeyStatus || {};
+            var rendered = window._adminUsersRendered || 0;
+            var pageSize = 25;
+            var tbody = document.getElementById('admin-user-tbody');
+            if (!tbody) return;
+
+            // Remove the "Load More" row
+            var loadMoreRow = document.getElementById('admin-users-load-more-row');
+            if (loadMoreRow) loadMoreRow.remove();
+
+            // Render next batch
+            var nextBatch = users.slice(rendered, rendered + pageSize);
+            var fragment = document.createDocumentFragment();
+            var temp = document.createElement('tbody');
+            temp.innerHTML = nextBatch.map(function(p) { return _renderAdminUserRow(p, keyStatus); }).join('');
+            while (temp.firstChild) {
+                fragment.appendChild(temp.firstChild);
+            }
+            tbody.appendChild(fragment);
+            window._adminUsersRendered = rendered + nextBatch.length;
+
+            // Add new "Load More" if still more
+            var remaining = users.length - window._adminUsersRendered;
+            if (remaining > 0) {
+                var newRow = document.createElement('tr');
+                newRow.id = 'admin-users-load-more-row';
+                newRow.innerHTML = '<td colspan="7" style="padding:12px;text-align:center;">' +
+                    '<button onclick="loadMoreUsers()" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;border:none;border-radius:8px;padding:8px 24px;font-family:var(--font-heading);font-size:10px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
+                    'Load More (' + remaining + ' remaining)</button></td>';
+                tbody.appendChild(newRow);
+            }
         }
 
         async function editUser(id, email, role, tier, status) {
