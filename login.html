@@ -625,7 +625,7 @@
             success.style.display = 'none';
 
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'AboveAllCarbon_HELOC_v12_FIXED.html'
+                redirectTo: window.location.origin + window.location.pathname.replace(/[^/]*$/, '') + 'reset-password.html'
             });
 
             if (error) {

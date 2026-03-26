@@ -15,6 +15,7 @@ const STATIC_ASSETS = [
   './js/ezra-chat.js',
   './js/pwa-install.js',
   './js/dom-cache.js',
+  './reset-password.html',
   './offline.html',
   './manifest.json',
   './favicon.ico',
