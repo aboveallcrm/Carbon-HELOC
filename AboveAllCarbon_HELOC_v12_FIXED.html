@@ -8823,7 +8823,7 @@ Best regards,
         // ===== INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', function () {
             populateRateDropdowns();
-            loadFromStorage();
+            // loadFromStorage() deferred to auth-ready — uses user-scoped key
             loadIntegrations();
             setupEventListeners();
             updateQuote();
@@ -10035,14 +10035,8 @@ Best regards,
             async function shouldShow() {
                 if (window.isImpersonatedReadOnly) return false;
                 if (document.getElementById('impersonation-banner')) return false;
-                var local = localStorage.getItem(lsKey());
-                if (local) {
-                    try {
-                        var p = JSON.parse(local);
-                        if (p.completed) return false;
-                        if (p.step > 0) { currentStep = p.step; wizardData = p.data || {}; }
-                    } catch (e) { }
-                }
+
+                // ALWAYS check the DB first — localStorage may be stale or from another user
                 var sb = window._supabase;
                 var userId = window.currentUserId;
                 if (sb && userId) {
@@ -10054,6 +10048,16 @@ Best regards,
                             if (res.data.onboarding_data && typeof res.data.onboarding_data === 'object') wizardData = res.data.onboarding_data;
                         }
                     } catch (e) { console.warn('Onboarding check failed:', e.message); }
+                }
+
+                // Fallback to localStorage only if DB check didn't run (no supabase/userId)
+                var local = localStorage.getItem(lsKey());
+                if (local) {
+                    try {
+                        var p = JSON.parse(local);
+                        if (p.completed) return false;
+                        if (p.step > 0 && !currentStep) { currentStep = p.step; wizardData = p.data || {}; }
+                    } catch (e) { }
                 }
                 return true;
             }
@@ -12054,6 +12058,8 @@ Best regards,
             if (window.isImpersonatedReadOnly) {
                 applyReadOnlyMode();
             }
+            // Load user-scoped localStorage data now that we know which user
+            loadFromStorage();
             // Fire independent async data fetches concurrently for faster load
             Promise.all([
                 // Integration setup (independent of each other)
@@ -13287,7 +13293,8 @@ Best regards,
                 pdfRatesTable: document.getElementById('chk-pdf-rates-table')?.checked ?? true,
                 pdfLogo: document.getElementById('chk-pdf-logo')?.checked ?? true,
             };
-            try { localStorage.setItem('aboveAllCarbonHELOC', JSON.stringify(data)); } catch (e) { /* storage full or blocked */ }
+            var _storageKey = window.currentUserId ? 'aboveAllCarbonHELOC_' + window.currentUserId : 'aboveAllCarbonHELOC';
+            try { localStorage.setItem(_storageKey, JSON.stringify(data)); } catch (e) { /* storage full or blocked */ }
             _debouncedCloudSync(); // Sync profile to Supabase in background
             setTimeout(() => {
                 if (autosaveStatus) {
@@ -13384,7 +13391,8 @@ Best regards,
                 if (!data || !data.metadata) return;
 
                 var cloud = data.metadata;
-                var localStr = localStorage.getItem('aboveAllCarbonHELOC');
+                var _storageKey = window.currentUserId ? 'aboveAllCarbonHELOC_' + window.currentUserId : 'aboveAllCarbonHELOC';
+                var localStr = localStorage.getItem(_storageKey);
                 var local = safeParse(localStr, {});
 
                 // Use cloud data if local is empty OR cloud is newer
@@ -13423,7 +13431,8 @@ Best regards,
         }
 
         function loadFromStorage() {
-            const saved = localStorage.getItem('aboveAllCarbonHELOC');
+            var _storageKey = window.currentUserId ? 'aboveAllCarbonHELOC_' + window.currentUserId : 'aboveAllCarbonHELOC';
+            const saved = localStorage.getItem(_storageKey);
             if (saved) {
                 try {
                     const data = JSON.parse(saved);
