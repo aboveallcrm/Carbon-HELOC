@@ -80,6 +80,15 @@ serve(async (req: Request) => {
         // Parse the incoming payload
         const rawPayload = await req.json()
 
+        // Ignore Bonzo message events — these are SMS notifications, not new contacts
+        const eventType = (rawPayload.event || '').toLowerCase()
+        if (eventType.startsWith('messages.')) {
+            return new Response(
+                JSON.stringify({ ok: true, skipped: true, reason: 'Message events are not ingested as leads', event: eventType }),
+                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
         // Bonzo event hooks send { event, prospect: {...} } — unwrap if present
         const payload = rawPayload.prospect || rawPayload
         // Bonzo mortgage data may be nested under payload.mortgage
@@ -120,6 +129,14 @@ serve(async (req: Request) => {
             propertyType: payload.property_type || payload.propertyType || mortgage.property_type
                 || customMap['property_type'] || customMap['heloc_property_type'] || customMap['Property Type']
                 || payload.occupancy || '',
+        }
+
+        // Reject leads with no identifiable info (no name, no email, no phone)
+        if (!leadData.firstName && !leadData.lastName && !leadData.email && !leadData.phone) {
+            return new Response(
+                JSON.stringify({ ok: true, skipped: true, reason: 'No contact data (name, email, or phone) found in payload' }),
+                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
         }
 
         // Map Bonzo tags/event to pipeline status
