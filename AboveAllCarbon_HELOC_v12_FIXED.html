@@ -19988,7 +19988,7 @@ Sent via Above All Carbon HELOC Tool`;
                         .select('id, first_name, last_name, email, phone, status, source, crm_source, crm_contact_id, metadata, dnc, dnc_reason, created_at, funded_at, quote_sent_at')
                         .eq('user_id', userId)
                         .order('created_at', { ascending: false })
-                        .limit(500),
+                        .limit(2000),
                     sb.from('quotes')
                         .select('id, quote_data, created_at')
                         .eq('user_id', userId)
