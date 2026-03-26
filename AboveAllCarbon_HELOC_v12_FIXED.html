@@ -19759,21 +19759,23 @@ Sent via Above All Carbon HELOC Tool`;
             tbody.innerHTML = '<tr><td colspan="18" style="padding:20px;text-align:center;color:rgba(255,255,255,0.4);">Loading...</td></tr>';
 
             try {
-                // 1. Fetch leads for this user
-                const { data: leads, error } = await sb
-                    .from('leads')
-                    .select('*')
-                    .eq('user_id', userId)
-                    .order('created_at', { ascending: false })
-                    .limit(1000);
+                // 1. Fetch leads + quotes + analytics in PARALLEL (not sequential)
+                var [leadsResult, quotesResult] = await Promise.all([
+                    sb.from('leads')
+                        .select('id, first_name, last_name, email, phone, status, source, crm_source, crm_contact_id, metadata, dnc, dnc_reason, created_at, funded_at, quote_sent_at')
+                        .eq('user_id', userId)
+                        .order('created_at', { ascending: false })
+                        .limit(500),
+                    sb.from('quotes')
+                        .select('id, quote_data, created_at')
+                        .eq('user_id', userId)
+                ]);
+
+                var leads = leadsResult.data;
+                var error = leadsResult.error;
+                var quotes = quotesResult.data;
 
                 if (error) throw error;
-
-                // 2. Fetch all quotes for this user to cross-reference (match by client email or name)
-                const { data: quotes } = await sb
-                    .from('quotes')
-                    .select('id, quote_data, created_at')
-                    .eq('user_id', userId);
 
                 // Build lookup sets from quote data for matching
                 const quotedEmails = new Set();
@@ -19853,10 +19855,10 @@ Sent via Above All Carbon HELOC Tool`;
                     return;
                 }
 
-                var sourceColors = { bonzo: '#f59e0b', ghl: '#3b82f6', webhook: '#8b5cf6', csv: '#10b981', manual: '#6b7280', zapier: '#ff4a00', n8n: '#ef4444', leadmailbox: '#06b6d4' };
+                var sourceColors = window._leadSourceColors = { bonzo: '#f59e0b', ghl: '#3b82f6', webhook: '#8b5cf6', csv: '#10b981', manual: '#6b7280', zapier: '#ff4a00', n8n: '#ef4444', leadmailbox: '#06b6d4' };
 
                 // 5. Fetch analytics counts per lead (quote_opened events)
-                var analyticsMap = {};
+                var analyticsMap = window._leadAnalyticsMap = {};
                 try {
                     var { data: analyticsRows } = await sb.from('lead_analytics')
                         .select('lead_id, event_type, created_at')
@@ -19879,125 +19881,24 @@ Sent via Above All Carbon HELOC Tool`;
                 // Store leads globally so loadLeadIntoForm can access full data
                 window._leadsCache = enriched;
 
-                tbody.innerHTML = enriched.map(function (l) {
-                    // Build name from first_name + last_name; fallback to metadata.raw fields if empty
-                    var fn = l.first_name || '';
-                    var ln = l.last_name || '';
-                    if (!fn && !ln && l.metadata && l.metadata.raw) {
-                        var raw = l.metadata.raw;
-                        fn = raw.firstName || raw.first_name || raw.fname || raw.name || '';
-                        ln = raw.lastName || raw.last_name || raw.lname || '';
-                    }
-                    // If still no name, try email prefix as last resort
-                    if (!fn && !ln && l.email) {
-                        fn = l.email.split('@')[0].replace(/[._-]/g, ' ');
-                    }
-                    var name = escapeAttr(((fn || '') + ' ' + (ln || '')).trim() || 'Unknown');
-                    var email = escapeAttr(l.email || '—');
-                    var phone = escapeAttr(l.phone || '—');
-                    var src = escapeAttr(l.source || 'webhook');
-                    var st = l.status || 'New';
-                    var srcColor = sourceColors[src] || '#6b7280';
-                    // Smart date: show most relevant lifecycle date
-                    var dateLabel = 'Created';
-                    var dateColor = 'rgba(255,255,255,0.5)';
-                    var dateVal = l.created_at;
-                    var daysSince = '';
-                    if (l.funded_at) {
-                        dateLabel = 'Funded';
-                        dateVal = l.funded_at;
-                        dateColor = '#10b981';
-                        var ds = Math.floor((Date.now() - new Date(l.funded_at).getTime()) / 86400000);
-                        daysSince = ds + 'd';
-                        if (ds >= 180) dateColor = '#ef4444'; // refi ready
-                        else if (ds >= 90) dateColor = '#f59e0b'; // warming
-                    } else if (l.quote_sent_at) {
-                        dateLabel = 'Quoted';
-                        dateVal = l.quote_sent_at;
-                        dateColor = '#06b6d4';
-                    }
-                    var date = dateVal ? new Date(dateVal).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
-                    var isRefiReady = l.funded_at && Math.floor((Date.now() - new Date(l.funded_at).getTime()) / 86400000) >= 180;
-                    var refiReadyBadge = isRefiReady ? ' <span class="refi-ready-badge">REFI READY</span>' : '';
-                    var reactivateBtn = (isRefiReady && (l.status || '').toLowerCase() === 'funded') ? '<button onclick="event.stopPropagation();startReactivation(\'' + safeId + '\')" title="Start reactivation campaign" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;opacity:0.5;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">🔄</button>' : '';
-                    var safeId = escapeAttr(l.id);
-                    var quotedBadge = l.isQuoted
-                        ? '<span style="background:#10b981;color:white;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);">YES</span>'
-                        : '<span style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);">NO</span>';
+                // Pagination: render only first 50 leads for performance
+                var _leadsPageSize = 50;
+                window._leadsRendered = 0;
 
-                    // Extract metadata fields for column display
-                    var meta = l.metadata || {};
-                    var credit = meta.credit_score || '';
-                    var homeVal = meta.home_value || '';
-                    var mortBal = meta.mortgage_balance || '';
-                    var cashAmt = meta.cash_out || '';
-                    var propAddr = meta.property_address || '';
-                    var loanType = meta.loan_type || '';
-                    var propType = meta.property_type || meta.occupancy || '';
-                    // Format money values
-                    var fmtMoney = function(v) { var n = Number(String(v).replace(/[$,]/g, '')); return n ? '$' + n.toLocaleString() : '—'; };
-                    var fmtCredit = credit ? '<span style="color:' + (Number(credit) >= 740 ? '#10b981' : Number(credit) >= 680 ? '#f59e0b' : '#ef4444') + ';">' + credit + '</span>' : '—';
+                // Render first batch
+                var firstBatch = enriched.slice(0, _leadsPageSize);
+                tbody.innerHTML = firstBatch.map(_renderLeadRow).join('');
+                window._leadsRendered = firstBatch.length;
 
-                    // Analytics badge
-                    var analytics = analyticsMap[l.id];
-                    var viewsBadge = '';
-                    if (analytics && analytics.count > 0) {
-                        var lastDate = analytics.lastViewed ? new Date(analytics.lastViewed).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
-                        viewsBadge = '<span onclick="event.stopPropagation();showLeadAnalytics(\'' + safeId + '\',\'' + escapeAttr(name) + '\')" title="Opened ' + analytics.count + ' time' + (analytics.count !== 1 ? 's' : '') + (lastDate ? ', last ' + lastDate : '') + ' — Click for details" style="background:rgba(59,130,246,0.2);color:#60a5fa;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);cursor:pointer;">👁 ' + analytics.count + '</span>';
-                    } else {
-                        viewsBadge = '<span style="color:rgba(255,255,255,0.2);font-size:8px;font-family:var(--font-heading);">—</span>';
-                    }
-
-                    // DNC badge
-                    var dncBadge = l.dnc
-                        ? '<span class="dnc-badge" onclick="event.stopPropagation();DNCProtection.toggleLeadDNC(\'' + safeId + '\',true)" title="' + escapeAttr(l.dnc_reason || 'Marked DNC') + ' — Click to remove">DNC</span>'
-                        : '<span class="dnc-badge inactive" onclick="event.stopPropagation();DNCProtection.toggleLeadDNC(\'' + safeId + '\',false)" title="Click to mark as Do Not Contact">—</span>';
-
-                    // Status dropdown with full pipeline stages (Bonzo + GHL compatible)
-                    var stLower = (st || 'new').toLowerCase();
-                    var statusOpts = [
-                        { val: 'new', label: 'New', color: '#3b82f6' },
-                        { val: 'contacted', label: 'Contacted', color: '#8b5cf6' },
-                        { val: 'qualified', label: 'Qualified', color: '#f59e0b' },
-                        { val: 'quoted', label: 'Quoted', color: '#06b6d4' },
-                        { val: 'application_sent', label: 'App Sent', color: '#a78bfa' },
-                        { val: 'in_underwriting', label: 'Underwriting', color: '#fb923c' },
-                        { val: 'approved', label: 'Approved', color: '#34d399' },
-                        { val: 'docs_out', label: 'Docs Out', color: '#2dd4bf' },
-                        { val: 'funded', label: 'Funded', color: '#10b981' },
-                        { val: 'on_hold', label: 'On Hold', color: '#6b7280' },
-                        { val: 'lost', label: 'Lost', color: '#ef4444' },
-                        { val: 'reactivation', label: 'Reactivation', color: '#f97316' },
-                        { val: 'archived', label: 'Archived', color: '#4b5563' }
-                    ];
-                    var statusDropdown = '<select onchange="updateLeadStatus(\'' + safeId + '\', this.value)" onclick="event.stopPropagation()" style="background:rgba(0,0,0,0.4);color:white;border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:2px 4px;font-family:var(--font-heading);font-size:8px;cursor:pointer;">';
-                    statusOpts.forEach(function(o) {
-                        var sel = stLower === o.val || (stLower === 'closed' && o.val === 'funded') ? ' selected' : '';
-                        statusDropdown += '<option value="' + o.val + '"' + sel + ' style="color:' + o.color + ';">' + o.label + '</option>';
-                    });
-                    statusDropdown += '</select>';
-
-                    return '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;" onmouseover="this.style.background=\'rgba(255,255,255,0.05)\'" onmouseout="this.style.background=\'none\'" onclick="loadLeadIntoForm(\'' + safeId + '\')">' +
-                        '<td style="padding:8px 4px;text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="lead-checkbox" data-lead-id="' + safeId + '" onchange="onLeadCheckboxChange()" title="Select this lead"></td>' +
-                        '<td style="padding:8px 6px;color:white;font-size:10px;font-weight:600;min-width:140px;">' + name + '</td>' +
-                        '<td style="padding:8px 6px;color:rgba(255,255,255,0.7);font-size:10px;">' + phone + '</td>' +
-                        '<td style="padding:8px 6px;color:rgba(255,255,255,0.7);font-size:10px;">' + email + '</td>' +
-                        '<td class="td-addr" title="' + escapeAttr(propAddr) + '">' + escapeAttr(propAddr || '—') + '</td>' +
-                        '<td style="text-align:center;font-size:10px;font-weight:600;">' + fmtCredit + '</td>' +
-                        '<td class="td-money">' + fmtMoney(homeVal) + '</td>' +
-                        '<td class="td-money">' + fmtMoney(mortBal) + '</td>' +
-                        '<td class="td-money">' + fmtMoney(cashAmt) + '</td>' +
-                        '<td style="font-size:9px;color:rgba(255,255,255,0.6);">' + escapeAttr(loanType || '—') + '</td>' +
-                        '<td style="font-size:9px;color:rgba(255,255,255,0.6);">' + escapeAttr(propType || '—') + '</td>' +
-                        '<td><span style="background:' + srcColor + ';color:white;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);text-transform:uppercase;">' + src + '</span></td>' +
-                        '<td>' + statusDropdown + '</td>' +
-                        '<td style="text-align:center;">' + quotedBadge + '</td>' +
-                        '<td style="font-size:9px;"><span style="display:block;font-size:7px;color:rgba(255,255,255,0.35);">' + dateLabel + '</span><span style="color:' + dateColor + ';">' + date + (daysSince ? ' <span style="font-size:7px;opacity:0.6;">(' + daysSince + ')</span>' : '') + '</span>' + refiReadyBadge + '</td>' +
-                        '<td style="text-align:center;">' + viewsBadge + '</td>' +
-                        '<td style="text-align:center;">' + dncBadge + '</td>' +
-                        '<td style="text-align:center;white-space:nowrap;">' + reactivateBtn + '<button onclick="event.stopPropagation();deleteLead(\'' + safeId + '\')" title="Archive lead" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;opacity:0.4;transition:opacity 0.2s;" onmouseover="this.style.opacity=1;this.style.color=\'#ef4444\'" onmouseout="this.style.opacity=0.4;this.style.color=\'\'">🗑</button></td>' +
-                        '</tr>';
-                }).join('');
+                // Show "Load More" row if there are more leads
+                if (enriched.length > _leadsPageSize) {
+                    var loadMoreRow = document.createElement('tr');
+                    loadMoreRow.id = 'leads-load-more-row';
+                    loadMoreRow.innerHTML = '<td colspan="18" style="padding:12px;text-align:center;">' +
+                        '<button onclick="loadMoreLeads()" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;border:none;border-radius:8px;padding:8px 24px;font-family:var(--font-heading);font-size:10px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
+                        'Load More (' + (enriched.length - _leadsPageSize) + ' remaining)</button></td>';
+                    tbody.appendChild(loadMoreRow);
+                }
 
                 // Reset checkbox selection state
                 var selectAllCb = document.getElementById('leads-select-all');
@@ -20011,6 +19912,158 @@ Sent via Above All Carbon HELOC Tool`;
             } catch (e) {
                 console.error('Error loading leads:', e);
                 tbody.innerHTML = '<tr><td colspan="18" style="padding:20px;text-align:center;color:#f87171;font-family:var(--font-heading);font-size:10px;">Error loading leads: ' + escapeHtml(e.message) + '</td></tr>';
+            }
+        }
+
+        // Render a single lead row — used by both initial load and loadMoreLeads
+        function _renderLeadRow(l) {
+            var sourceColors = window._leadSourceColors || {};
+            var analyticsMap = window._leadAnalyticsMap || {};
+
+            var fn = l.first_name || '';
+            var ln = l.last_name || '';
+            if (!fn && !ln && l.metadata && l.metadata.raw) {
+                var raw = l.metadata.raw;
+                fn = raw.firstName || raw.first_name || raw.fname || raw.name || '';
+                ln = raw.lastName || raw.last_name || raw.lname || '';
+            }
+            if (!fn && !ln && l.email) {
+                fn = l.email.split('@')[0].replace(/[._-]/g, ' ');
+            }
+            var name = escapeAttr(((fn || '') + ' ' + (ln || '')).trim() || 'Unknown');
+            var email = escapeAttr(l.email || '—');
+            var phone = escapeAttr(l.phone || '—');
+            var src = escapeAttr(l.source || 'webhook');
+            var st = l.status || 'New';
+            var srcColor = sourceColors[src] || '#6b7280';
+            var safeId = escapeAttr(l.id);
+
+            // Smart date
+            var dateLabel = 'Created';
+            var dateColor = 'rgba(255,255,255,0.5)';
+            var dateVal = l.created_at;
+            var daysSince = '';
+            if (l.funded_at) {
+                dateLabel = 'Funded';
+                dateVal = l.funded_at;
+                dateColor = '#10b981';
+                var ds = Math.floor((Date.now() - new Date(l.funded_at).getTime()) / 86400000);
+                daysSince = ds + 'd';
+                if (ds >= 180) dateColor = '#ef4444';
+                else if (ds >= 90) dateColor = '#f59e0b';
+            } else if (l.quote_sent_at) {
+                dateLabel = 'Quoted';
+                dateVal = l.quote_sent_at;
+                dateColor = '#06b6d4';
+            }
+            var date = dateVal ? new Date(dateVal).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—';
+            var isRefiReady = l.funded_at && Math.floor((Date.now() - new Date(l.funded_at).getTime()) / 86400000) >= 180;
+            var refiReadyBadge = isRefiReady ? ' <span class="refi-ready-badge">REFI READY</span>' : '';
+            var reactivateBtn = (isRefiReady && (l.status || '').toLowerCase() === 'funded') ? '<button onclick="event.stopPropagation();startReactivation(\'' + safeId + '\')" title="Start reactivation campaign" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;opacity:0.5;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">🔄</button>' : '';
+            var quotedBadge = l.isQuoted
+                ? '<span style="background:#10b981;color:white;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);">YES</span>'
+                : '<span style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.4);padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);">NO</span>';
+
+            var meta = l.metadata || {};
+            var credit = meta.credit_score || '';
+            var homeVal = meta.home_value || '';
+            var mortBal = meta.mortgage_balance || '';
+            var cashAmt = meta.cash_out || '';
+            var propAddr = meta.property_address || '';
+            var loanType = meta.loan_type || '';
+            var propType = meta.property_type || meta.occupancy || '';
+            var fmtMoney = function(v) { var n = Number(String(v).replace(/[$,]/g, '')); return n ? '$' + n.toLocaleString() : '—'; };
+            var fmtCredit = credit ? '<span style="color:' + (Number(credit) >= 740 ? '#10b981' : Number(credit) >= 680 ? '#f59e0b' : '#ef4444') + ';">' + credit + '</span>' : '—';
+
+            var analytics = analyticsMap[l.id];
+            var viewsBadge = '';
+            if (analytics && analytics.count > 0) {
+                var lastDate = analytics.lastViewed ? new Date(analytics.lastViewed).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+                viewsBadge = '<span onclick="event.stopPropagation();showLeadAnalytics(\'' + safeId + '\',\'' + escapeAttr(name) + '\')" title="Opened ' + analytics.count + ' time' + (analytics.count !== 1 ? 's' : '') + (lastDate ? ', last ' + lastDate : '') + ' — Click for details" style="background:rgba(59,130,246,0.2);color:#60a5fa;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);cursor:pointer;">👁 ' + analytics.count + '</span>';
+            } else {
+                viewsBadge = '<span style="color:rgba(255,255,255,0.2);font-size:8px;font-family:var(--font-heading);">—</span>';
+            }
+
+            var dncBadge = l.dnc
+                ? '<span class="dnc-badge" onclick="event.stopPropagation();DNCProtection.toggleLeadDNC(\'' + safeId + '\',true)" title="' + escapeAttr(l.dnc_reason || 'Marked DNC') + ' — Click to remove">DNC</span>'
+                : '<span class="dnc-badge inactive" onclick="event.stopPropagation();DNCProtection.toggleLeadDNC(\'' + safeId + '\',false)" title="Click to mark as Do Not Contact">—</span>';
+
+            var stLower = (st || 'new').toLowerCase();
+            var statusOpts = [
+                { val: 'new', label: 'New', color: '#3b82f6' },
+                { val: 'contacted', label: 'Contacted', color: '#8b5cf6' },
+                { val: 'qualified', label: 'Qualified', color: '#f59e0b' },
+                { val: 'quoted', label: 'Quoted', color: '#06b6d4' },
+                { val: 'application_sent', label: 'App Sent', color: '#a78bfa' },
+                { val: 'in_underwriting', label: 'Underwriting', color: '#fb923c' },
+                { val: 'approved', label: 'Approved', color: '#34d399' },
+                { val: 'docs_out', label: 'Docs Out', color: '#2dd4bf' },
+                { val: 'funded', label: 'Funded', color: '#10b981' },
+                { val: 'on_hold', label: 'On Hold', color: '#6b7280' },
+                { val: 'lost', label: 'Lost', color: '#ef4444' },
+                { val: 'reactivation', label: 'Reactivation', color: '#f97316' },
+                { val: 'archived', label: 'Archived', color: '#4b5563' }
+            ];
+            var statusDropdown = '<select onchange="updateLeadStatus(\'' + safeId + '\', this.value)" onclick="event.stopPropagation()" style="background:rgba(0,0,0,0.4);color:white;border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:2px 4px;font-family:var(--font-heading);font-size:8px;cursor:pointer;">';
+            statusOpts.forEach(function(o) {
+                var sel = stLower === o.val || (stLower === 'closed' && o.val === 'funded') ? ' selected' : '';
+                statusDropdown += '<option value="' + o.val + '"' + sel + ' style="color:' + o.color + ';">' + o.label + '</option>';
+            });
+            statusDropdown += '</select>';
+
+            return '<tr style="border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;" onmouseover="this.style.background=\'rgba(255,255,255,0.05)\'" onmouseout="this.style.background=\'none\'" onclick="loadLeadIntoForm(\'' + safeId + '\')">' +
+                '<td style="padding:8px 4px;text-align:center;" onclick="event.stopPropagation()"><input type="checkbox" class="lead-checkbox" data-lead-id="' + safeId + '" onchange="onLeadCheckboxChange()" title="Select this lead"></td>' +
+                '<td style="padding:8px 6px;color:white;font-size:10px;font-weight:600;min-width:140px;">' + name + '</td>' +
+                '<td style="padding:8px 6px;color:rgba(255,255,255,0.7);font-size:10px;">' + phone + '</td>' +
+                '<td style="padding:8px 6px;color:rgba(255,255,255,0.7);font-size:10px;">' + email + '</td>' +
+                '<td class="td-addr" title="' + escapeAttr(propAddr) + '">' + escapeAttr(propAddr || '—') + '</td>' +
+                '<td style="text-align:center;font-size:10px;font-weight:600;">' + fmtCredit + '</td>' +
+                '<td class="td-money">' + fmtMoney(homeVal) + '</td>' +
+                '<td class="td-money">' + fmtMoney(mortBal) + '</td>' +
+                '<td class="td-money">' + fmtMoney(cashAmt) + '</td>' +
+                '<td style="font-size:9px;color:rgba(255,255,255,0.6);">' + escapeAttr(loanType || '—') + '</td>' +
+                '<td style="font-size:9px;color:rgba(255,255,255,0.6);">' + escapeAttr(propType || '—') + '</td>' +
+                '<td><span style="background:' + srcColor + ';color:white;padding:2px 8px;border-radius:10px;font-size:8px;font-family:var(--font-heading);text-transform:uppercase;">' + src + '</span></td>' +
+                '<td>' + statusDropdown + '</td>' +
+                '<td style="text-align:center;">' + quotedBadge + '</td>' +
+                '<td style="font-size:9px;"><span style="display:block;font-size:7px;color:rgba(255,255,255,0.35);">' + dateLabel + '</span><span style="color:' + dateColor + ';">' + date + (daysSince ? ' <span style="font-size:7px;opacity:0.6;">(' + daysSince + ')</span>' : '') + '</span>' + refiReadyBadge + '</td>' +
+                '<td style="text-align:center;">' + viewsBadge + '</td>' +
+                '<td style="text-align:center;">' + dncBadge + '</td>' +
+                '<td style="text-align:center;white-space:nowrap;">' + reactivateBtn + '<button onclick="event.stopPropagation();deleteLead(\'' + safeId + '\')" title="Archive lead" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;opacity:0.4;transition:opacity 0.2s;" onmouseover="this.style.opacity=1;this.style.color=\'#ef4444\'" onmouseout="this.style.opacity=0.4;this.style.color=\'\'">🗑</button></td>' +
+                '</tr>';
+        }
+
+        function loadMoreLeads() {
+            var enriched = window._leadsCache || [];
+            var rendered = window._leadsRendered || 0;
+            var pageSize = 50;
+            var tbody = document.getElementById('leads-tbody');
+            if (!tbody) return;
+
+            // Remove the "Load More" row
+            var loadMoreRow = document.getElementById('leads-load-more-row');
+            if (loadMoreRow) loadMoreRow.remove();
+
+            // Render next batch
+            var nextBatch = enriched.slice(rendered, rendered + pageSize);
+            var fragment = document.createDocumentFragment();
+            var temp = document.createElement('tbody');
+            temp.innerHTML = nextBatch.map(_renderLeadRow).join('');
+            while (temp.firstChild) {
+                fragment.appendChild(temp.firstChild);
+            }
+            tbody.appendChild(fragment);
+            window._leadsRendered = rendered + nextBatch.length;
+
+            // Add new "Load More" if still more
+            var remaining = enriched.length - window._leadsRendered;
+            if (remaining > 0) {
+                var newRow = document.createElement('tr');
+                newRow.id = 'leads-load-more-row';
+                newRow.innerHTML = '<td colspan="18" style="padding:12px;text-align:center;">' +
+                    '<button onclick="loadMoreLeads()" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:white;border:none;border-radius:8px;padding:8px 24px;font-family:var(--font-heading);font-size:10px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
+                    'Load More (' + remaining + ' remaining)</button></td>';
+                tbody.appendChild(newRow);
             }
         }
 
@@ -20460,7 +20513,8 @@ Sent via Above All Carbon HELOC Tool`;
                 content.innerHTML = metricsHtml + deviceHtml + lastHtml + timelineHtml; // These are internally generated, safe
 
             } catch (e) {
-                document.getElementById('lead-analytics-content').innerHTML = '<div style="color:#f87171;">Error loading analytics: ' + escapeHtml(e.message) + '</div>';
+                var _lac = document.getElementById('lead-analytics-content');
+                if (_lac) _lac.innerHTML = '<div style="color:#f87171;">Error loading analytics: ' + escapeHtml(e.message) + '</div>';
             }
         }
 
