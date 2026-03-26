@@ -143,7 +143,7 @@ export async function checkSession() {
 
     // Public pages check
     const path = window.location.pathname;
-    const isPublic = path.endsWith('login.html') || path.endsWith('register.html');
+    const isPublic = path.endsWith('login.html') || path.endsWith('register.html') || path.endsWith('/login') || path.endsWith('/register') || path.endsWith('reset-password.html') || path.endsWith('/reset-password');
 
     if (!user && !isPublic) {
         redirectToLogin();
