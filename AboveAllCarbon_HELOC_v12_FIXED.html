@@ -6559,6 +6559,14 @@
                             placeholder="Your DRE#" oninput="debouncedUpdateProfile()"></div>
                 </div>
                 <div class="input-group" style="margin-top:8px;">
+                    <div class="input-field"><label>Company Name</label><input type="text" id="lo-company"
+                            value="" placeholder="Your Company Name" oninput="debouncedUpdateProfile()"></div>
+                    <div class="input-field"><label>Co NMLS</label><input type="text" id="co-nmls" value=""
+                            placeholder="Company NMLS#" oninput="debouncedUpdateProfile()"></div>
+                    <div class="input-field"><label>Co DRE</label><input type="text" id="co-dre" value=""
+                            placeholder="Company DRE#" oninput="debouncedUpdateProfile()"></div>
+                </div>
+                <div class="input-group" style="margin-top:8px;">
                     <div class="input-field"><label>Phone</label><input type="text" id="lo-phone" value=""
                             placeholder="(555) 555-5555" oninput="debouncedUpdateProfile()"></div>
                     <div class="input-field"><label>Email</label><input type="text" id="lo-email"
@@ -6718,35 +6726,28 @@
                         Gmail and Outlook copy the rich HTML email to clipboard and open compose — paste with Ctrl+V.
                         GHL sends directly via API. Google OAuth for direct send coming soon.</p>
                 </div>
-            </div>
-            <div id="company-settings-section" class="control-section locked-section locked"
-                style="background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(109,40,217,0.1)); border-color: #8b5cf6;"
-                data-lock-text="🔒 Super Admin Only">
-                <h4 style="font-family: var(--font-heading); color: #a78bfa; margin: 0 0 10px 0; font-size: 11px;">🏢
-                    Company Settings</h4>
-                <div class="input-group">
-                    <div class="input-field"><label>Company Name</label><input type="text" id="lo-company"
-                            value="" placeholder="Your Company Name" oninput="debouncedUpdateProfile()"></div>
-                    <div class="input-field"><label>Co NMLS</label><input type="text" id="co-nmls" value=""
-                            placeholder="Company NMLS#" oninput="debouncedUpdateProfile()"></div>
-                    <div class="input-field"><label>Co DRE</label><input type="text" id="co-dre" value=""
-                            placeholder="Company DRE#" oninput="debouncedUpdateProfile()"></div>
-                </div>
-                <div class="input-group" style="margin-top:8px;">
-                    <div class="input-field" style="flex: 2;"><label>Office Address</label><input type="text"
-                            id="lo-address" value=""
-                            placeholder="123 Main St, Suite 100, City, ST 12345" oninput="debouncedUpdateProfile()"></div>
-                    <div class="input-field"><label>Logo URL</label>
-                        <div style="display:flex;gap:6px;"><input type="text" id="lo-logo-url"
-                                value=""
-                                placeholder="https://your-logo-url.png" oninput="debouncedUpdateProfile()" style="flex:1;"><button type="button" class="btn"
-                                style="background:rgba(255,255,255,0.1);font-size:9px;padding:6px 12px;white-space:nowrap;"
-                                onclick="uploadSettingsImage('lo-logo-url','logoUrl')">📷 Upload</button></div>
+
+                <!-- Company & Office -->
+                <div
+                    style="margin-top: 12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(139,92,246,0.2);">
+                    <h5 style="font-family: var(--font-heading); font-size: 10px; color: #a78bfa; margin: 0 0 8px 0;">🏢
+                        Company & Office</h5>
+                    <div class="input-group">
+                        <div class="input-field" style="flex: 2;"><label>Office Address</label><input type="text"
+                                id="lo-address" value=""
+                                placeholder="123 Main St, Suite 100, City, ST 12345" oninput="debouncedUpdateProfile()"></div>
+                        <div class="input-field"><label>Logo URL</label>
+                            <div style="display:flex;gap:6px;"><input type="text" id="lo-logo-url"
+                                    value=""
+                                    placeholder="https://your-logo-url.png" oninput="debouncedUpdateProfile()" style="flex:1;"><button type="button" class="btn"
+                                    style="background:rgba(255,255,255,0.1);font-size:9px;padding:6px 12px;white-space:nowrap;"
+                                    onclick="uploadSettingsImage('lo-logo-url','logoUrl')">📷 Upload</button></div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Security: Change Password (hidden for Google OAuth users) -->
-                <div id="security-password-section" style="margin-top:16px;padding:14px;background:rgba(0,0,0,0.15);border-radius:8px;border:1px solid rgba(255,255,255,0.08);">
+                <div id="security-password-section" style="margin-top:12px;padding:14px;background:rgba(0,0,0,0.15);border-radius:8px;border:1px solid rgba(255,255,255,0.08);">
                     <h4 style="font-family:var(--font-heading);font-size:10px;color:rgba(255,255,255,0.8);margin:0 0 10px 0;letter-spacing:1px;text-transform:uppercase;">🔐 Change Password</h4>
                     <div class="input-group" style="gap:8px;">
                         <div class="input-field" style="flex:1;">
@@ -8768,11 +8769,10 @@ Best regards,
 
             if (missing.length === 0) return true;
 
-            showToast('Complete your LO profile before generating a client quote.', 'warning', 5000);
-            if (typeof OnboardingWizard !== 'undefined' && typeof OnboardingWizard.reopen === 'function') {
-                setTimeout(function() { OnboardingWizard.reopen(); }, 250);
-            } else if (typeof switchTab === 'function') {
-                switchTab('lo');
+            var labels = missing.map(function(f) { return f.label; }).join(', ');
+            showToast('Please fill in: ' + labels + ' (LO Profile tab)', 'warning', 5000);
+            if (typeof switchTab === 'function') {
+                setTimeout(function() { switchTab('lo'); }, 250);
             }
             return false;
         }
@@ -9207,7 +9207,6 @@ Best regards,
         function applyRoleAccess(role) {
             const sectionMap = {
                 'lo': 'lo-profile-section',
-                'company': 'company-settings-section',
                 'whitelabel': 'whitelabel-section',
                 'parser': 'parser-section',
                 'lenderparser': 'lenderparser-section',
@@ -9220,7 +9219,7 @@ Best regards,
             var tierForAccess = window.currentUserTier || 'carbon';
             var isDiamondUser = (tierForAccess === 'diamond' || tierForAccess === 'obsidian');
             const access = {
-                'super_admin': ['lo', 'company', 'whitelabel', 'parser', 'lenderparser', 'email', 'integrations'],
+                'super_admin': ['lo', 'whitelabel', 'parser', 'lenderparser', 'email', 'integrations'],
                 'admin': ['lo', 'parser', 'email', 'integrations'],
                 'user': isDiamondUser ? ['lo', 'parser', 'email', 'integrations'] : ['lo', 'integrations']
             };
@@ -9830,7 +9829,7 @@ Best regards,
                 // else stays locked (role access already handles this)
             }
 
-            // ---- OBSIDIAN+ (level >= 3): White Label, Company Settings ----
+            // ---- OBSIDIAN+ (level >= 3): White Label ----
             const whitelabel = document.getElementById('whitelabel-section');
             if (whitelabel) {
                 if (level >= 3) {
@@ -9838,13 +9837,7 @@ Best regards,
                     whitelabel.onclick = null;
                 }
             }
-            const company = document.getElementById('company-settings-section');
-            if (company) {
-                if (level >= 3) {
-                    company.classList.remove('locked');
-                    company.onclick = null;
-                }
-            }
+            // company-settings-section removed — fields moved into LO Profile for all users
 
             // ---- PLATINUM+ (level >= 2): Rate Sheet Pre-Pricing ----
             var rateSheetSection = document.getElementById('ezra-rate-sheet-section');
