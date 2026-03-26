@@ -5331,10 +5331,14 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
             const kbLines = kbResults.split('\n').filter(l => l.trim());
             const scoreMatch = kbLines[0]?.match(/\(score:\s*([\d.]+)\)/);
             const topScore = scoreMatch ? parseFloat(scoreMatch[1]) : 0;
-            if (topScore >= 0.7) {
-                // High-confidence KB match — respond without AI
-                const kbContent = kbLines.map(l => l.replace(/\(score:.*?\)/g, '').trim()).join('\n\n');
-                return { content: kbContent, metadata: { model: 'local-kb', intent: intent || 'kb_match' } };
+            if (topScore >= 0.55) {
+                // KB match — respond without AI (saves API cost)
+                let kbContent = kbLines.map(l => l.replace(/\(score:.*?\)/g, '').trim()).join('\n\n');
+                // Lower-confidence matches get a follow-up prompt so users can dig deeper
+                if (topScore < 0.7) {
+                    kbContent += '\n\n*Need more detail? Just ask and I\'ll dig deeper.*';
+                }
+                return { content: kbContent, metadata: { model: 'local-kb', intent: intent || 'kb_match', score: topScore } };
             }
         }
 

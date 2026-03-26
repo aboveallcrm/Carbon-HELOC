@@ -10102,6 +10102,10 @@ Best regards,
                         var updateData = { onboarding_step: currentStep, onboarding_data: wizardData };
                         if (completed) updateData.onboarding_completed = true;
                         if (wizardData.crmPreference) updateData.crm_preference = wizardData.crmPreference;
+                        // Persist LO profile fields to profiles table so ensureProfileReadyForQuote works
+                        if (wizardData.loName) updateData.agent_name = wizardData.loName;
+                        if (wizardData.loCompany) updateData.agent_company = wizardData.loCompany;
+                        if (wizardData.loNmls) updateData.agent_nmls = wizardData.loNmls;
                         await sb.from('profiles').update(updateData).eq('id', userId);
                     }
                     catch (e) { console.warn('Onboarding cloud save failed:', e.message); }
@@ -13464,6 +13468,14 @@ Best regards,
                 } else {
                     await sb.from('user_integrations')
                         .insert({ user_id: userId, provider: 'heloc_profile', metadata: profileData });
+                }
+                // Also sync agent_name/company/nmls to profiles table for ensureProfileReadyForQuote
+                var agentUpdate = {};
+                if (profileData.loName) agentUpdate.agent_name = profileData.loName;
+                if (profileData.loCompany) agentUpdate.agent_company = profileData.loCompany;
+                if (profileData.loNmls) agentUpdate.agent_nmls = profileData.loNmls;
+                if (Object.keys(agentUpdate).length > 0) {
+                    await sb.from('profiles').update(agentUpdate).eq('id', userId).then(function(){}).catch(function(){});
                 }
                 console.debug('Profile synced to cloud');
             } catch (e) {
@@ -17834,14 +17846,22 @@ Sent via Above All Carbon HELOC Tool`;
             modal.classList.add('active');
 
             // Auto-generate client view link if one doesn't exist yet
+            // Use a soft check — don't force onboarding if profile is incomplete
             if (!window._lastGeneratedQuoteLink && window._supabase && window.currentUserId) {
-                try {
-                    await generateClientLink();
-                } catch (e) {
-                    console.warn('Auto-generate client link failed:', e);
+                var loName = document.getElementById('lo-name')?.value?.trim();
+                var loCompany = document.getElementById('lo-company')?.value?.trim();
+                var loNmls = document.getElementById('lo-nmls')?.value?.trim();
+                if (loName && loCompany && loNmls) {
+                    try {
+                        await generateClientLink();
+                    } catch (e) {
+                        console.warn('Auto-generate client link failed:', e);
+                    }
+                } else {
+                    console.info('ESM: Skipping auto client link — LO profile incomplete. Email send still works.');
                 }
             }
-            // Update the link display in the modal
+            // Update the link display in the modal (hides row if no link)
             _esmUpdateLinkDisplay();
 
             // Capture screenshot (email-optimized for quality and size)
