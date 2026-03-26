@@ -17197,6 +17197,29 @@ Sent via Above All Carbon HELOC Tool`;
                     }
                 });
             }
+
+            // Fix glassmorphism → solid colors for PDF/screenshot capture
+            // html2canvas cannot render backdrop-filter or translucent backgrounds properly
+            var certBox = clonedDoc.querySelector('.certificate-box');
+            if (certBox) {
+                certBox.style.background = 'linear-gradient(135deg, #c5a059, #a68543)';
+                certBox.style.backdropFilter = 'none';
+                certBox.style.webkitBackdropFilter = 'none';
+                certBox.style.border = '2px solid #a68543';
+                certBox.style.boxShadow = '0 4px 12px rgba(166, 133, 67, 0.3)';
+                var certH2 = certBox.querySelector('h2');
+                if (certH2) certH2.style.color = '#ffffff';
+                var mainOffer = certBox.querySelector('.main-offer');
+                if (mainOffer) { mainOffer.style.color = '#ffffff'; mainOffer.style.textShadow = '0 1px 2px rgba(0,0,0,0.2)'; }
+                var tagline = certBox.querySelector('.tagline');
+                if (tagline) tagline.style.color = 'rgba(255,255,255,0.9)';
+            }
+            var certIcon = clonedDoc.querySelector('.cert-icon');
+            if (certIcon) certIcon.style.border = '3px solid #ffffff';
+            // Kill ::before/::after pseudo-elements (shimmer, gradient border)
+            var captureStyle = clonedDoc.createElement('style');
+            captureStyle.textContent = '.certificate-box::before, .certificate-box::after { display: none !important; }';
+            clonedDoc.head.appendChild(captureStyle);
         }
 
         function requireProposalCanvas(canvas, message) {

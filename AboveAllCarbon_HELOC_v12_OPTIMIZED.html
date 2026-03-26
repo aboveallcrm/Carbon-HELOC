@@ -2947,16 +2947,17 @@ window.addEventListener('auth-ready', function(e) {
     if (window.isImpersonatedReadOnly) {
         applyReadOnlyMode();
     }
-    // Initialize webhook URLs now that we have user ID
-    initWebhookUrls();
-    // Load integration settings from Supabase (overrides localStorage cache)
-    _loadIntegrationsFromSupabase();
-    // Check AI key status (key stays server-side via Edge Function proxy)
-    _checkUserAIKeyStatus();
-    // Load user's saved quotes, leads, and notification prefs
-    loadUserQuotes();
-    loadUserLeads();
-    loadNotifPrefs();
+    // Fire independent async data fetches concurrently for faster load
+    Promise.all([
+        initWebhookUrls(),
+        _loadIntegrationsFromSupabase(),
+        _checkUserAIKeyStatus(),
+        loadUserQuotes(),
+        loadUserLeads(),
+        loadNotifPrefs()
+    ]).catch(function(err) {
+        console.warn('[auth-ready] Parallel load error:', err);
+    });
     // Auto-load users only for the verified Super Admin account
     if (isTrueSuperAdmin()) {
         setTimeout(() => loadAllUsers(), 500);
