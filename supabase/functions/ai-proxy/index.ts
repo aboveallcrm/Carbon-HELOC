@@ -2,656 +2,438 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
-// TODO: Confirm the production project env contains the provider keys used by the cascade:
-// OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, DEEPSEEK_API_KEY, GROQ_API_KEY, KIMI_API_KEY, PERPLEXITY_API_KEY, and GROK_API_KEY.
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error("Missing required env vars: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY");
-}
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Missing env vars");
 
-const AI_FETCH_TIMEOUT_MS = 25_000;
-const AI_RATE_LIMIT_WINDOW_MS = Number(Deno.env.get("AI_PROXY_RATE_LIMIT_WINDOW_MS") || 60_000);
-const AI_RATE_LIMIT_MAX_REQUESTS = Number(Deno.env.get("AI_PROXY_RATE_LIMIT_MAX_REQUESTS") || 20);
+const SUPER_ADMIN_EMAILS = [
+  (Deno.env.get("SUPER_ADMIN_EMAIL") || "barraganmortgage@gmail.com").toLowerCase(),
+  "eddieb@westcapitallending.com",
+];
 
-// Cost per 1M tokens (USD) for estimation
-const COST_PER_1M: Record<string, { input: number; output: number }> = {
-  gemini:    { input: 0.075, output: 0.30 },
-  groq:      { input: 0.59,  output: 0.79 },
-  openai:    { input: 2.50,  output: 10.00 },
-  deepseek:  { input: 0.27,  output: 1.10 },
-  grok:      { input: 5.00,  output: 15.00 },
-  anthropic: { input: 3.00,  output: 15.00 },
-  perplexity:{ input: 1.00,  output: 1.00 },
-  kimi:      { input: 0.30,  output: 1.20 },
-};
+const CASCADE_TIMEOUT_MS     = 8_000;
+const AI_FETCH_TIMEOUT_MS    = 25_000;
+const SUPER_ADMIN_TIMEOUT_MS = 90_000;
+const RL_WINDOW_MS  = Number(Deno.env.get("AI_PROXY_RATE_LIMIT_WINDOW_MS")  || 60_000);
+const RL_MAX_REQ    = Number(Deno.env.get("AI_PROXY_RATE_LIMIT_MAX_REQUESTS") || 20);
 
-function estimateCost(provider: string, inputTokens: number, outputTokens: number): number {
-  const rates = COST_PER_1M[provider] || COST_PER_1M["openai"];
-  return (inputTokens * rates.input + outputTokens * rates.output) / 1_000_000;
-}
+// ─── MODEL CONSTANTS ────────────────────────────────────────────────────────
+const CLAUDE_SONNET = "claude-sonnet-4-6";
+const CLAUDE_HAIKU  = "claude-haiku-4-5-20251001";
 
-function extractUsage(provider: string, aiData: any): { inputTokens: number; outputTokens: number; totalTokens: number } {
-  let inputTokens = 0, outputTokens = 0;
-  if (provider === "gemini") {
-    inputTokens = aiData.usageMetadata?.promptTokenCount || 0;
-    outputTokens = aiData.usageMetadata?.candidatesTokenCount || 0;
-  } else if (provider === "anthropic") {
-    inputTokens = aiData.usage?.input_tokens || 0;
-    outputTokens = aiData.usage?.output_tokens || 0;
-  } else {
-    // OpenAI-compatible: openai, groq, deepseek, grok, kimi, perplexity
-    inputTokens = aiData.usage?.prompt_tokens || 0;
-    outputTokens = aiData.usage?.completion_tokens || 0;
-  }
-  return { inputTokens, outputTokens, totalTokens: inputTokens + outputTokens };
-}
+// ─── OPENROUTER MODELS ──────────────────────────────────────────────────────
+const OR_BASE_URL = "https://openrouter.ai/api/v1/chat/completions";
+const OR_KIMI_MODEL    = "moonshotai/kimi-vl-a3b-thinking:free";
+const OR_KIMI_PAID     = "moonshotai/moonshot-v1-8k";
+const OR_GEMINI_MODEL  = "google/gemini-2.0-flash-001";
+const OR_CLAUDE_MODEL  = "anthropic/claude-sonnet-4-5";
 
-function extractResponseText(provider: string, aiData: any): string {
-  if (provider === "gemini") {
-    return aiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
-  } else if (provider === "anthropic") {
-    return aiData.content?.[0]?.text || "";
-  } else {
-    return aiData.choices?.[0]?.message?.content || "";
-  }
-}
+// ─── TIER CONFIG ─────────────────────────────────────────────────────────────
+const TIER_LEVEL: Record<string,number> = { carbon:0, titanium:1, platinum:2, obsidian:3, diamond:4 };
+const TIER_CASCADE_CUTOFF: Record<string,number> = { carbon:1, titanium:2, platinum:5, obsidian:7, diamond:7 };
 
-// Provider key lookup from env
-const ENV_KEY_MAP: Record<string, string> = {
-  gemini: "GEMINI_API_KEY",
-  openai: "OPENAI_API_KEY",
-  anthropic: "ANTHROPIC_API_KEY",
-  deepseek: "DEEPSEEK_API_KEY",
-  groq: "GROQ_API_KEY",
-  grok: "GROK_API_KEY",
-  perplexity: "PERPLEXITY_API_KEY",
-  kimi: "KIMI_API_KEY",
-};
-
-const DEFAULT_MODELS: Record<string, string> = {
-  openai: "gpt-4o",
-  gemini: "gemini-2.0-flash",
-  anthropic: "claude-sonnet-4-5-20250929",
-  deepseek: "deepseek-chat",
-  groq: "llama-3.3-70b-versatile",
-  grok: "grok-2-latest",
-  kimi: "moonshot-v1-8k",
-};
-
-const DEFAULT_URLS: Record<string, string> = {
-  openai: "https://api.openai.com/v1/chat/completions",
-  deepseek: "https://api.deepseek.com/v1/chat/completions",
-  groq: "https://api.groq.com/openai/v1/chat/completions",
-  grok: "https://api.x.ai/v1/chat/completions",
-  kimi: "https://api.moonshot.cn/v1/chat/completions",
-  perplexity: "https://api.perplexity.ai/chat/completions",
-};
-
-// Get a single key (first available) for a provider
-function getProviderKey(provider: string, userKey?: string): string {
-  const all = getAllProviderKeys(provider, userKey);
-  return all[0] || "";
-}
-
-// Get ALL available keys for a provider (user key + env key + numbered variants)
-// This allows the cascade to exhaust every cheap key before moving to expensive providers
-function getAllProviderKeys(provider: string, userKey?: string): string[] {
-  const keys: string[] = [];
-  const seen = new Set<string>();
-
-  const addKey = (k: string) => {
-    if (k && !seen.has(k)) { seen.add(k); keys.push(k); }
-  };
-
-  // Per-user key first
-  if (userKey) addKey(userKey);
-
-  const envName = ENV_KEY_MAP[provider];
-  if (!envName) return keys;
-
-  // Primary env key
-  addKey(Deno.env.get(envName) || "");
-
-  // Numbered variants: GEMINI_API_KEY_1 through _10
-  for (let i = 1; i <= 10; i++) {
-    addKey(Deno.env.get(envName.replace("_KEY", `_KEY_${i}`)) || "");
-  }
-
-  return keys;
-}
-
-interface CallResult {
-  ok: boolean;
-  text: string;
-  usage: { inputTokens: number; outputTokens: number; totalTokens: number };
-  provider: string;
-  model: string;
-  aiData?: any;
-  status?: number;
-}
-
-async function callProvider(
-  provider: string,
-  aiModel: string,
-  aiKey: string,
-  aiMaxTokens: number,
-  systemPrompt: string,
-  userMessage: string,
-  endpointUrl: string,
-  imageBase64?: string,
-  imageMimeType?: string,
-): Promise<CallResult> {
-  let requestBody: string;
-  let aiHeaders: Record<string, string>;
-  let actualUrl: string;
-
-  const isVision = !!imageBase64;
-  const model = aiModel || DEFAULT_MODELS[provider] || "gpt-4o";
-
-  if (provider === "gemini") {
-    actualUrl = (endpointUrl || "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent")
-      .replace("{model}", model) + "?key=" + aiKey;
-    aiHeaders = { "Content-Type": "application/json" };
-
-    const parts: any[] = [];
-    if (systemPrompt) parts.push({ text: systemPrompt + "\n\n" });
-    if (isVision) {
-      parts.push({ inline_data: { mime_type: imageMimeType, data: imageBase64 } });
+function getFeatureRoute(feature: string, tier: string, isSuperAdmin: boolean): { provider:string; model:string } {
+  const level = TIER_LEVEL[tier] || 0;
+  const premium = level >= 3 || isSuperAdmin;
+  if (isSuperAdmin) {
+    switch (feature) {
+      case "document_parse": case "rate_sheet":
+        return { provider:"openrouter", model:OR_GEMINI_MODEL };
+      default:
+        return { provider:"openrouter", model:OR_KIMI_MODEL };
     }
-    parts.push({ text: userMessage });
+  }
+  switch (feature) {
+    case "sms_reply": case "note_taker": case "call_script":
+      return premium ? { provider:"anthropic", model:CLAUDE_HAIKU } : { provider:"gemini", model:"gemini-2.0-flash" };
+    case "deal_analysis": case "ezra_copilot": case "objection": case "prompt_improver": case "campaign_generation":
+      return premium ? { provider:"anthropic", model:CLAUDE_SONNET } : { provider:"gemini", model:"gemini-2.0-flash" };
+    case "document_parse": case "rate_sheet":
+      return { provider:"gemini", model:"gemini-2.0-flash" };
+    default:
+      return premium ? { provider:"anthropic", model:CLAUDE_HAIKU } : { provider:"gemini", model:"gemini-2.0-flash" };
+  }
+}
 
-    requestBody = JSON.stringify({
-      contents: [{ parts }],
-      generationConfig: { maxOutputTokens: aiMaxTokens },
-    });
+const COST_PER_1M: Record<string,{input:number;output:number}> = {
+  gemini:     { input:0.075, output:0.30 },
+  groq:       { input:0.59,  output:0.79 },
+  openai:     { input:0.15,  output:0.60 },
+  deepseek:   { input:0.27,  output:1.10 },
+  grok:       { input:5.00,  output:15.00 },
+  anthropic:  { input:3.00,  output:15.00 },
+  perplexity: { input:1.00,  output:1.00 },
+  kimi:       { input:0.30,  output:1.20 },
+  openrouter: { input:0.20,  output:0.80 },
+};
 
-  } else if (provider === "anthropic") {
-    actualUrl = endpointUrl || "https://api.anthropic.com/v1/messages";
-    aiHeaders = {
-      "Content-Type": "application/json",
-      "x-api-key": aiKey,
-      "anthropic-version": "2023-06-01",
+const CASCADE_ORDER = [
+  { name:"gemini",     model:"gemini-2.0-flash",          url:"" },
+  { name:"groq",       model:"llama-3.3-70b-versatile",   url:"" },
+  { name:"kimi",       model:"moonshot-v1-8k",            url:"https://api.moonshot.cn/v1/chat/completions" },
+  { name:"perplexity", model:"sonar",                     url:"https://api.perplexity.ai/chat/completions" },
+  { name:"grok",       model:"grok-beta",                 url:"https://api.x.ai/v1/chat/completions" },
+  { name:"openai",     model:"gpt-4o-mini",               url:"https://api.openai.com/v1/chat/completions" },
+  { name:"anthropic",  model:CLAUDE_HAIKU,                url:"https://api.anthropic.com/v1/messages" },
+];
+
+const ENV_KEY_MAP: Record<string,string> = {
+  gemini:"GEMINI_API_KEY", openai:"OPENAI_API_KEY", anthropic:"ANTHROPIC_API_KEY",
+  deepseek:"DEEPSEEK_API_KEY", groq:"GROQ_API_KEY", grok:"XAI_API_KEY",
+  perplexity:"PERPLEXITY_API_KEY", kimi:"MOONSHOT_API_KEY",
+  openrouter:"OPENROUTER_API_KEY",
+};
+
+const DEFAULT_MODELS: Record<string,string> = {
+  openai:"gpt-4o-mini", gemini:"gemini-2.0-flash", anthropic:CLAUDE_SONNET,
+  deepseek:"deepseek-chat", groq:"llama-3.3-70b-versatile",
+  grok:"grok-beta", kimi:"moonshot-v1-8k", perplexity:"sonar",
+  openrouter:OR_KIMI_MODEL,
+};
+
+const DEFAULT_URLS: Record<string,string> = {
+  openai:"https://api.openai.com/v1/chat/completions",
+  deepseek:"https://api.deepseek.com/v1/chat/completions",
+  groq:"https://api.groq.com/openai/v1/chat/completions",
+  grok:"https://api.x.ai/v1/chat/completions",
+  kimi:"https://api.moonshot.cn/v1/chat/completions",
+  perplexity:"https://api.perplexity.ai/chat/completions",
+  openrouter:OR_BASE_URL,
+};
+
+// ─── KB SEARCH ────────────────────────────────────────────────────────────────
+async function searchKB(supabase:any, query:string, feature:string): Promise<{context:string;hitCount:number;entryIds:string[]}> {
+  try {
+    const STOP = new Set(["the","and","for","are","but","not","you","all","can","her","was","one","our","out","day","get","has","him","his","how","its","may","new","now","own","say","she","too","use","way","who","did","let","put","old"]);
+    const words = query.toLowerCase().replace(/[^a-z0-9\s]/g," ").split(/\s+/).filter(w=>w.length>3&&!STOP.has(w));
+    if (!words.length) return {context:"",hitCount:0,entryIds:[]};
+    const terms = words.slice(0,5);
+    const catMap: Record<string,string[]> = {
+      sms_reply:["objections","sales_scripts","sms_templates"],
+      deal_analysis:["sales_scripts","objections","guidelines"],
+      ezra_copilot:["sales_scripts","guidelines","compliance"],
+      objection:["objections","sales_scripts"],
+      note_taker:["guidelines"],
+      document_parse:["guidelines","aus_guidelines","credit"],
+      call_script:["sales_scripts","objections"],
+      campaign_generation:["sales_scripts","sms_templates","guidelines"],
     };
+    const cats = catMap[feature]||[];
+    const filter = terms.map(w=>`title.ilike.%${w}%,content.ilike.%${w}%`).join(",");
+    const {data:entries,error} = await supabase.from("knowledge_base").select("id,title,content,category").eq("is_active",true).or(filter).limit(5);
+    if (error||!entries?.length) return {context:"",hitCount:0,entryIds:[]};
+    const scored = entries.map((e:any)=>{ let s=cats.includes(e.category)?2:0; const c=(e.title+" "+e.content).toLowerCase(); s+=terms.filter(w=>c.includes(w)).length; return {...e,score:s}; }).sort((a:any,b:any)=>b.score-a.score).slice(0,3);
+    if (!scored.length) return {context:"",hitCount:0,entryIds:[]};
+    const context = scored.map((e:any)=>`## KB: ${e.title}\n${e.content.substring(0,800)}`).join("\n\n");
+    return {context,hitCount:scored.length,entryIds:scored.map((e:any)=>e.id)};
+  } catch(err) { console.error("KB search error:",err); return {context:"",hitCount:0,entryIds:[]}; }
+}
 
-    const content: any[] = [];
-    if (isVision) {
-      content.push({ type: "image", source: { type: "base64", media_type: imageMimeType, data: imageBase64 } });
-    }
-    content.push({ type: "text", text: userMessage });
+// ─── HELPERS ──────────────────────────────────────────────────────────────────
+function estimateCost(p:string,i:number,o:number):number { const r=COST_PER_1M[p]||COST_PER_1M["openai"]; return(i*r.input+o*r.output)/1_000_000; }
 
-    requestBody = JSON.stringify({
-      model,
-      max_tokens: aiMaxTokens,
-      ...(systemPrompt ? { system: systemPrompt } : {}),
-      messages: [{ role: "user", content }],
-    });
+function extractUsage(p:string,d:any){let i=0,o=0;if(p==="gemini"){i=d.usageMetadata?.promptTokenCount||0;o=d.usageMetadata?.candidatesTokenCount||0;}else if(p==="anthropic"){i=d.usage?.input_tokens||0;o=d.usage?.output_tokens||0;}else{i=d.usage?.prompt_tokens||0;o=d.usage?.completion_tokens||0;}return{inputTokens:i,outputTokens:o,totalTokens:i+o};}
 
+function extractText(p:string,d:any):string{if(p==="gemini")return d.candidates?.[0]?.content?.parts?.[0]?.text||"";if(p==="anthropic")return d.content?.[0]?.text||"";return d.choices?.[0]?.message?.content||""}
+
+function getAllKeys(p:string,uk?:string):string[]{const ks:string[]=[],seen=new Set<string>();const add=(k:string)=>{if(k&&!seen.has(k)){seen.add(k);ks.push(k);}};if(uk)add(uk);const en=ENV_KEY_MAP[p];if(!en)return ks;add(Deno.env.get(en)||"" );for(let i=1;i<=10;i++)add(Deno.env.get(en.replace("_KEY",`_KEY_${i}`))||"" );return ks;}
+function getKey(p:string,uk?:string):string{return getAllKeys(p,uk)[0]||""}
+
+async function isSuperAdmin(sb:any,uid:string,email:string):Promise<boolean>{
+  if(SUPER_ADMIN_EMAILS.includes(email.toLowerCase()))return true;
+  try{const{data:p}=await sb.from("profiles").select("role,is_platform_admin,email").eq("id",uid).single();if(!p)return false;if(SUPER_ADMIN_EMAILS.includes((p.email||"").toLowerCase()))return true;return p.role==="super_admin"||p.is_platform_admin===true;}catch{return false;}
+}
+
+interface CR{ok:boolean;text:string;usage:{inputTokens:number;outputTokens:number;totalTokens:number};provider:string;model:string;aiData?:any;status?:number;}
+
+// ─── CALL PROVIDER ────────────────────────────────────────────────────────────
+async function callProvider(provider:string,aiModel:string,aiKey:string,maxTok:number,sysprompt:string,usermsg:string,epUrl:string,img64?:string,imgMime?:string,timeoutMs=AI_FETCH_TIMEOUT_MS):Promise<CR>{
+  let body:string, hdrs:Record<string,string>, url:string;
+  const isVision=!!img64, model=aiModel||DEFAULT_MODELS[provider]||"gpt-4o-mini";
+
+  if(provider==="gemini"){
+    url=(epUrl||"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent").replace("{model}",model)+"?key="+aiKey;
+    hdrs={"Content-Type":"application/json"};
+    const parts:any[]=[]; if(sysprompt)parts.push({text:sysprompt+"\n\n"}); if(isVision)parts.push({inline_data:{mime_type:imgMime,data:img64}}); parts.push({text:usermsg});
+    body=JSON.stringify({contents:[{parts}],generationConfig:{maxOutputTokens:maxTok}});
+  } else if(provider==="anthropic"){
+    url=epUrl||"https://api.anthropic.com/v1/messages";
+    hdrs={"Content-Type":"application/json","x-api-key":aiKey,"anthropic-version":"2023-06-01"};
+    const content:any[]=[]; if(isVision)content.push({type:"image",source:{type:"base64",media_type:imgMime,data:img64}}); content.push({type:"text",text:usermsg});
+    body=JSON.stringify({model,max_tokens:maxTok,...(sysprompt?{system:sysprompt}:{}),messages:[{role:"user",content}]});
   } else {
-    // OpenAI-compatible: openai, groq, deepseek, grok, kimi, perplexity
-    actualUrl = endpointUrl || DEFAULT_URLS[provider] || "https://api.openai.com/v1/chat/completions";
-    aiHeaders = {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer " + aiKey,
-    };
+    url=epUrl||DEFAULT_URLS[provider]||OR_BASE_URL;
+    hdrs={"Content-Type":"application/json","Authorization":"Bearer "+aiKey};
+    if(provider==="openrouter"){
+      hdrs["HTTP-Referer"]="https://aboveallcrm.com";
+      hdrs["X-Title"]="Above All CRM";
+    }
+    const msgs:any[]=[]; if(sysprompt)msgs.push({role:"system",content:sysprompt}); if(isVision)msgs.push({role:"user",content:[{type:"image_url",image_url:{url:`data:${imgMime};base64,${img64}`}},{type:"text",text:usermsg}]});else msgs.push({role:"user",content:usermsg});
+    body=JSON.stringify({model,max_tokens:maxTok,messages:msgs});
+  }
 
-    const messages: any[] = [];
-    if (systemPrompt) messages.push({ role: "system", content: systemPrompt });
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),timeoutMs);
+  try{
+    const r=await fetch(url,{method:"POST",headers:hdrs,body,signal:ctrl.signal}); clearTimeout(t);
+    const d=await r.json(); const text=extractText(provider,d); const usage=extractUsage(provider,d);
+    if(!r.ok) console.error(`[callProvider] ${provider}/${model} HTTP ${r.status}:`, JSON.stringify(d).substring(0,400));
+    return{ok:r.ok&&!!text,text,usage,provider,model,aiData:d,status:r.status};
+  }catch(e:any){clearTimeout(t);console.error(`[callProvider] ${provider}/${model} error:`,e.message);return{ok:false,text:"",usage:{inputTokens:0,outputTokens:0,totalTokens:0},provider,model,status:0};}
+}
 
-    if (isVision) {
-      messages.push({
-        role: "user",
-        content: [
-          { type: "image_url", image_url: { url: `data:${imageMimeType};base64,${imageBase64}` } },
-          { type: "text", text: userMessage },
-        ],
-      });
+// ─── SUPER ADMIN CHAIN ────────────────────────────────────────────────────────
+async function superAdminChain(
+  sysprompt:string, usermsg:string, maxTok:number,
+  img64?:string, imgMime?:string
+): Promise<CR> {
+  const orKey  = getKey("openrouter");
+  const ck     = getKey("anthropic");
+
+  if (orKey) {
+    console.log("[SuperAdmin] Trying Kimi 2.5 via OpenRouter...");
+    const kimiModels = [OR_KIMI_MODEL, OR_KIMI_PAID];
+    for (const km of kimiModels) {
+      const r = await callProvider("openrouter", km, orKey, maxTok, sysprompt, usermsg, OR_BASE_URL, img64, imgMime, 20_000);
+      if (r.ok) {
+        console.log(`[SuperAdmin] Kimi succeeded: ${km}`);
+        return r;
+      }
+      console.log(`[SuperAdmin] Kimi ${km} failed (${r.status}), trying next...`);
+    }
+  }
+
+  if (ck) {
+    console.log("[SuperAdmin] Kimi failed, falling back to Claude Sonnet...");
+    const r = await callProvider("anthropic", CLAUDE_SONNET, ck, maxTok, sysprompt, usermsg, "", img64, imgMime, SUPER_ADMIN_TIMEOUT_MS);
+    if (r.ok) {
+      console.log("[SuperAdmin] Claude Sonnet succeeded");
+      return r;
+    }
+    console.log(`[SuperAdmin] Claude also failed (${r.status})`);
+  }
+
+  return { ok:false, text:"", usage:{inputTokens:0,outputTokens:0,totalTokens:0}, provider:"none", model:"none" };
+}
+
+// ─── MAIN HANDLER ─────────────────────────────────────────────────────────────
+serve(async(req:Request)=>{
+  const ch=getCorsHeaders(req);
+  if(req.method==="OPTIONS")return new Response("ok",{headers:ch});
+  const json=(b:any,s=200)=>new Response(JSON.stringify(b),{status:s,headers:{...ch,"Content-Type":"application/json"}});
+
+  try{
+    const auth=req.headers.get("Authorization"); if(!auth)return json({error:"Missing authorization header"},401);
+    const sb=createClient(SUPABASE_URL,SUPABASE_SERVICE_ROLE_KEY);
+    const tok=auth.replace("Bearer ","");
+    const{data:{user},error:ae}=await sb.auth.getUser(tok); if(ae||!user)return json({error:"Invalid or expired token"},401);
+    const uid=user.id, email=(user.email||"").toLowerCase();
+    const isAdmin=await isSuperAdmin(sb,uid,email);
+
+    const body=await req.json();
+    const{action,provider,model,maxTokens,systemPrompt,userMessage,endpointUrl,imageBase64,imageMimeType,intent,feature}=body;
+    const ftag=feature||intent||"";
+
+    const[intRes,profRes]=await Promise.all([
+      sb.from("user_integrations").select("metadata").eq("user_id",uid).eq("provider","heloc_keys").maybeSingle(),
+      sb.from("profiles").select("tier,current_tier,preferred_ai_mode").eq("id",uid).maybeSingle(),
+    ]);
+    const intg=intRes.data;
+    const rawTier=profRes.data?.tier||profRes.data?.current_tier||"carbon";
+    const userTier=["carbon","titanium","platinum","obsidian","diamond"].includes(rawTier)?rawTier:"carbon";
+    const tierLevel=TIER_LEVEL[userTier]||0;
+    const aiMode = isAdmin ? (profRes.data?.preferred_ai_mode||"auto") : "auto";
+    const userAiKey=intg?.metadata?.ai_api_key||"";
+    const aiMaxTokens=intg?.metadata?.ai_max_tokens||maxTokens||800;
+    const aiEndpointUrl=intg?.metadata?.ai_endpoint_url||"";
+
+    let aiProvider:string, aiModel:string;
+    if(isAdmin && aiMode==="claude"){ aiProvider="anthropic"; aiModel=model||CLAUDE_SONNET; }
+    else if(isAdmin && aiMode==="gemini"){ aiProvider="openrouter"; aiModel=model||OR_GEMINI_MODEL; }
+    else if(ftag && action==="generate"){
+      const route=getFeatureRoute(ftag,userTier,isAdmin&&aiMode==="auto");
+      aiProvider=provider||route.provider; aiModel=model||route.model;
     } else {
-      messages.push({ role: "user", content: userMessage });
+      aiProvider=intg?.metadata?.ai_provider||provider||"gemini";
+      aiModel=intg?.metadata?.ai_model||model||DEFAULT_MODELS[aiProvider]||"gemini-2.0-flash";
     }
 
-    requestBody = JSON.stringify({ model, max_tokens: aiMaxTokens, messages });
-  }
+    let aiKey=userAiKey; if(!aiKey){aiKey=getKey(aiProvider,"");}
 
-  // Fetch with timeout
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), AI_FETCH_TIMEOUT_MS);
-  try {
-    const resp = await fetch(actualUrl, {
-      method: "POST",
-      headers: aiHeaders,
-      body: requestBody,
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
-    const aiData = await resp.json();
-    const text = extractResponseText(provider, aiData);
-    const usage = extractUsage(provider, aiData);
-    return { ok: resp.ok && !!text, text, usage, provider, model, aiData, status: resp.status };
-  } catch (err) {
-    clearTimeout(timeout);
-    return { ok: false, text: "", usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 }, provider, model, status: 0 };
-  }
-}
-
-serve(async (req: Request) => {
-  const corsHeaders = getCorsHeaders(req);
-
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
-  const json = (body: any, status = 200) =>
-    new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-
-  try {
-    // 1. Authenticate the calling user via their JWT
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return json({ error: "Missing authorization header" }, 401);
-
-    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    if (authError || !user) return json({ error: "Invalid or expired token" }, 401);
-
-    const userId = user.id;
-
-    // 2. Parse request body
-    const body = await req.json();
-    const {
-      action, provider, model, maxTokens, systemPrompt, userMessage, endpointUrl,
-      imageBase64, imageMimeType, intent,
-    } = body;
-
-    // 3. Look up the user's AI key from user_integrations
-    const { data: integration, error: intError } = await supabaseAdmin
-      .from("user_integrations")
-      .select("metadata")
-      .eq("user_id", userId)
-      .eq("provider", "heloc_keys")
-      .maybeSingle();
-
-    if (intError) return json({ error: "Failed to look up AI key" }, 500);
-
-    // Per-user key and config overrides
-    const userAiKey = integration?.metadata?.ai_api_key || "";
-    const aiProvider = integration?.metadata?.ai_provider || provider || "openai";
-    const aiModel = integration?.metadata?.ai_model || model || DEFAULT_MODELS[aiProvider] || "gpt-4o";
-    const aiMaxTokens = integration?.metadata?.ai_max_tokens || maxTokens || 500;
-    const aiEndpointUrl = integration?.metadata?.ai_endpoint_url || "";
-    const aiSystemPrompt = integration?.metadata?.ai_system_prompt || systemPrompt || "";
-
-    // Resolve key: per-user first, then platform env
-    let aiKey = userAiKey;
-    let keySource = "user";
-    if (!aiKey) {
-      aiKey = getProviderKey(aiProvider, "");
-      if (aiKey) keySource = "platform";
-    }
-
-    // ── Token budget check (for generate/generate_cascade/analyze_image actions) ──
-    // RPC returns: budget_tokens_used, budget_tokens_limit, budget_tier (prefixed to avoid PL/pgSQL ambiguity)
-    let tokenBudget: { tokens_used: number; tokens_limit: number; tier: string } | null = null;
-    if (action === "generate" || action === "generate_cascade" || action === "analyze_image") {
-      const { data: budgetData } = await supabaseAdmin.rpc("get_or_create_token_budget", { p_user_id: userId });
-      if (budgetData && budgetData.length > 0) {
-        const b = budgetData[0];
-        tokenBudget = { tokens_used: b.budget_tokens_used, tokens_limit: b.budget_tokens_limit, tier: b.budget_tier };
-        // Check if budget exceeded (skip for unlimited = -1)
-        if (tokenBudget.tokens_limit !== -1 && tokenBudget.tokens_used >= tokenBudget.tokens_limit) {
-          return json({
-            error: "Monthly AI token budget exceeded",
-            tokens_used: tokenBudget.tokens_used,
-            tokens_limit: tokenBudget.tokens_limit,
-            tier: tokenBudget.tier,
-            upgrade_hint: "Upgrade your tier for more AI tokens",
-          }, 429);
-        }
+    let finalSysprompt=intg?.metadata?.ai_system_prompt||systemPrompt||"";
+    let kbHit=false,kbIds:string[]=[],kbCount=0;
+    if((action==="generate"||action==="generate_super_admin")&&userMessage&&ftag){
+      const kb=await searchKB(sb,userMessage,ftag);
+      if(kb.hitCount>0){
+        kbHit=true;kbCount=kb.hitCount;kbIds=kb.entryIds;
+        finalSysprompt=`KNOWLEDGE BASE CONTEXT (use this first before generating — this is curated West Capital intelligence):\n${kb.context}\n\n---\n\n${finalSysprompt}`;
+        console.log(`[KB] Hit ${kbCount} entries for feature=${ftag}`);
+      } else {
+        logKBGap(sb,uid,userMessage,ftag).catch(()=>{});
+        console.log(`[KB] Miss for feature=${ftag} — logged to kb_gaps`);
       }
     }
 
-    // ── Obsidian+ custom system prompt injection ──
-    let finalSystemPrompt = aiSystemPrompt;
-    if (action !== "check_status" && action !== "test") {
-      try {
-        const { data: settingsRow } = await supabaseAdmin
-          .from("user_integrations")
-          .select("metadata")
-          .eq("user_id", userId)
-          .eq("provider", "heloc_settings")
-          .maybeSingle();
-        const customPrompt = settingsRow?.metadata?.ai?.customSystemPrompt;
-        // Look up tier
-        const { data: profileRow } = await supabaseAdmin
-          .from("profiles").select("tier").eq("id", userId).maybeSingle();
-        const userTier = profileRow?.tier || "carbon";
-        const tierLevel = { carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 }[userTier] || 0;
-        if (customPrompt && tierLevel >= 3) {
-          finalSystemPrompt = customPrompt + "\n\n" + finalSystemPrompt;
-        }
-      } catch (_e) {
-        // Non-blocking: if settings lookup fails, proceed with original prompt
+    if(action!=="check_status"&&action!=="test"){ try{ const{data:sr}=await sb.from("user_integrations").select("metadata").eq("user_id",uid).eq("provider","heloc_settings").maybeSingle(); const cp=sr?.metadata?.ai?.customSystemPrompt; if(cp&&(tierLevel>=3||isAdmin))finalSysprompt=cp+"\n\n"+finalSysprompt; }catch(_e){} }
+
+    if(["generate","generate_cascade","generate_super_admin","analyze_image"].includes(action)){
+      const{data:bd}=await sb.rpc("get_or_create_token_budget",{p_user_id:uid});
+      const b=Array.isArray(bd)?bd[0]:bd;
+      if(b&&!isAdmin&&b.tokens_limit!==-1&&b.budget_tokens_used>=b.budget_tokens_limit){
+        return json({error:"Monthly AI token budget exceeded",tokens_used:b.budget_tokens_used,tokens_limit:b.budget_tokens_limit,tier:b.budget_tier,upgrade_hint:"Upgrade your tier for more AI tokens"},429);
       }
     }
 
-    // ── check_status ──
-    if (action === "check_status") {
+    if(action==="check_status"){
+      const orKey=getKey("openrouter"); const ck=getKey("anthropic");
       return json({
-        success: true, configured: !!aiKey,
-        provider: aiProvider, model: aiModel, keySource,
+        success:true, configured:!!aiKey, provider:aiProvider, model:aiModel, tier:userTier,
+        is_super_admin:isAdmin, ai_mode:aiMode,
+        lane:isAdmin?`super_admin_${aiMode}`:"feature_routed",
+        kimi_available:!!orKey,
+        claude_available:!!ck,
+        super_admin_chain: isAdmin ? (orKey?"kimi→claude":ck?"claude_only":"none") : null,
+        tier_cascade_entries:TIER_CASCADE_CUTOFF[userTier]||1,
       });
     }
 
-    if (!aiKey) {
-      return json({ error: "No AI key configured for " + aiProvider + ". Contact your Super Admin." }, 403);
+    if(action==="test"){
+      const rl=await checkRL(sb,uid); if(!rl.allowed)return json({error:"Rate limited",retry_after_sec:rl.retryAfterSec},429);
+      if(isAdmin){
+        const r=await superAdminChain("Reply with: Connection successful!", "Test", 50);
+        if(r.ok)return json({success:true,text:r.text,provider:r.provider,model:r.model,is_super_admin:true,ai_mode:aiMode,chain:"kimi_first"});
+        return json({error:"All super admin providers failed",status:r.status},502);
+      }
+      const r=await callProvider(aiProvider,aiModel,aiKey,50,"","Say \"Connection successful!\"",aiEndpointUrl);
+      if(r.ok){await logUsage(sb,uid,r.provider,r.model,"test","test",r.usage);return json({success:true,text:r.text,provider:r.provider,model:r.model});}
+      return json({error:"AI error",status:r.status,details:JSON.stringify(r.aiData||{}).substring(0,500)},502);
     }
 
-    // ── test ──
-    if (action === "test") {
-      const rateLimit = await checkAiProxyRateLimit(supabaseAdmin, userId);
-      if (!rateLimit.allowed) {
-        return json({ error: "AI temporarily unavailable — please try again in a moment", retry_after_sec: rateLimit.retryAfterSec }, 429);
+    if(action==="generate"||action==="generate_super_admin"){
+      if(!userMessage)return json({error:"Missing userMessage"},400);
+      const rl=await checkRL(sb,uid); if(!rl.allowed)return json({error:"Rate limited",retry_after_sec:rl.retryAfterSec},429);
+
+      if(isAdmin && aiMode==="cascade"){
+        const r=await runCascade(sb,uid,"diamond",finalSysprompt,userMessage,maxTokens||2500,ftag,kbHit,kbIds,userAiKey);
+        if(!r.ok)return json({error:"All cascade providers failed"},502);
+        return json({success:true,...r,is_super_admin:true,ai_mode:"cascade",kb_hit:kbHit,kb_entries:kbCount});
       }
 
-      const result = await callProvider(aiProvider, aiModel, aiKey, 50, "", 'Say "Connection successful!"', aiEndpointUrl);
-      if (result.ok) {
-        // Log test call too
-        await logUsage(supabaseAdmin, userId, result.provider, result.model, "test", intent || "test", result.usage);
-        await logUsageEvent(supabaseAdmin, userId, "ai_call", {
-          provider: result.provider,
-          model: result.model,
-          action: "test",
-          intent: intent || "test",
-          total_tokens: result.usage.totalTokens,
-        });
-        return json({ success: true, text: result.text, provider: result.provider, model: result.model, usage: result.usage });
+      if(isAdmin){
+        console.log(`[SuperAdmin:${aiMode}] ${email} | feature=${ftag} | KB=${kbHit} | maxTok=${maxTokens||2500}`);
+        const r=await superAdminChain(finalSysprompt,userMessage,maxTokens||2500,imageBase64,imageMimeType);
+        if(!r.ok)return json({error:"All super admin providers failed (Kimi + Claude)"},502);
+        await logUsage(sb,uid,r.provider,r.model,"generate",ftag||"super_admin",r.usage,{lane:`super_admin_${aiMode}`,kb_hit:kbHit,kb_entries:kbIds,chain:"kimi_then_claude"});
+        await logEvent(sb,uid,"ai_call",{provider:r.provider,model:r.model,action:"generate",feature:ftag,total_tokens:r.usage.totalTokens,lane:`super_admin_${aiMode}`,kb_hit:kbHit});
+        await incBudget(sb,uid,r.usage.totalTokens);
+        return json({success:true,text:r.text,provider:r.provider,model:r.model,usage:r.usage,lane:`super_admin_${aiMode}`,is_super_admin:true,ai_mode:aiMode,kb_hit:kbHit,kb_entries:kbCount});
       }
-      return json({ error: "AI provider returned an error", status: result.status, details: JSON.stringify(result.aiData || {}).substring(0, 500) }, 502);
+
+      if(!aiKey)return json({error:"No AI key configured for "+aiProvider},403);
+      const r=await callProvider(aiProvider,aiModel,aiKey,aiMaxTokens,finalSysprompt,userMessage,aiEndpointUrl);
+      if(!r.ok)return json({error:"AI error",status:r.status,details:JSON.stringify(r.aiData||{}).substring(0,500)},502);
+      console.log(`[Generate] ${userTier} | ${aiProvider}/${aiModel} | feature=${ftag} | KB=${kbHit}`);
+      await logUsage(sb,uid,r.provider,r.model,"generate",ftag||"generate",r.usage,{kb_hit:kbHit,kb_entries:kbIds,tier:userTier,feature:ftag});
+      await logEvent(sb,uid,"ai_call",{provider:r.provider,model:r.model,action:"generate",feature:ftag,total_tokens:r.usage.totalTokens,kb_hit:kbHit,tier:userTier});
+      const bu=await incBudget(sb,uid,r.usage.totalTokens);
+      return json({success:true,text:r.text,provider:r.provider,model:r.model,usage:r.usage,kb_hit:kbHit,kb_entries:kbCount,tier:userTier,...bu});
     }
 
-    // ── generate (single provider) ──
-    if (action === "generate") {
-      if (!userMessage) return json({ error: "Missing userMessage for generate action" }, 400);
-      const rateLimit = await checkAiProxyRateLimit(supabaseAdmin, userId);
-      if (!rateLimit.allowed) {
-        return json({ error: "AI temporarily unavailable — please try again in a moment", retry_after_sec: rateLimit.retryAfterSec }, 429);
-      }
-
-      const result = await callProvider(aiProvider, aiModel, aiKey, aiMaxTokens, finalSystemPrompt, userMessage, aiEndpointUrl);
-      if (!result.ok) {
-        return json({ error: "AI provider returned an error", status: result.status, details: JSON.stringify(result.aiData || {}).substring(0, 500) }, 502);
-      }
-      await logUsage(supabaseAdmin, userId, result.provider, result.model, "generate", intent || "generate", result.usage);
-      await logUsageEvent(supabaseAdmin, userId, "ai_call", {
-        provider: result.provider,
-        model: result.model,
-        action: "generate",
-        intent: intent || "generate",
-        total_tokens: result.usage.totalTokens,
-      });
-      // Increment token budget
-      const budgetUpdate = await incrementBudget(supabaseAdmin, userId, result.usage.totalTokens);
-      return json({ success: true, text: result.text, provider: result.provider, model: result.model, usage: result.usage, ...budgetUpdate });
+    if(action==="generate_cascade"){
+      if(!userMessage)return json({error:"Missing userMessage"},400);
+      const rl=await checkRL(sb,uid); if(!rl.allowed)return json({error:"Rate limited",retry_after_sec:rl.retryAfterSec},429);
+      const r=await runCascade(sb,uid,userTier,finalSysprompt,userMessage,aiMaxTokens,ftag,kbHit,kbIds,userAiKey);
+      if(!r.ok)return json({error:"All cascade providers failed",code:"all_providers_failed",cascadeAttempts:r.attempts},502);
+      const bu=await incBudget(sb,uid,r.usage.totalTokens);
+      return json({success:true,...r,kb_hit:kbHit,...bu});
     }
 
-    // ── generate_claude (Super Admin only — direct Claude access, skips cascade) ──
-    if (action === "generate_claude") {
-      if (!userMessage) return json({ error: "Missing userMessage for generate_claude action" }, 400);
-      
-      // Verify user is super admin
-      const { data: profile } = await supabaseAdmin
-        .from("profiles")
-        .select("role")
-        .eq("id", userId)
-        .single();
-      
-      if (profile?.role !== "super_admin") {
-        return json({ error: "Unauthorized — generate_claude is Super Admin only" }, 403);
-      }
-      
-      const rateLimit = await checkAiProxyRateLimit(supabaseAdmin, userId);
-      if (!rateLimit.allowed) {
-        return json({ error: "AI temporarily unavailable — please try again in a moment", retry_after_sec: rateLimit.retryAfterSec }, 429);
-      }
-
-      // Use platform's Anthropic key (not user's key)
-      const anthropicKey = getProviderKey("anthropic", "");
-      if (!anthropicKey) {
-        return json({ error: "No Anthropic API key configured on platform" }, 500);
-      }
-
-      const claudeModel = "claude-3-5-sonnet-20241022";
-      const result = await callProvider("anthropic", claudeModel, anthropicKey, aiMaxTokens, finalSystemPrompt, userMessage, "");
-      
-      if (!result.ok) {
-        return json({ error: "Claude API error", status: result.status, details: JSON.stringify(result.aiData || {}).substring(0, 500) }, 502);
-      }
-      
-      await logUsage(supabaseAdmin, userId, "anthropic", claudeModel, "generate_claude", intent || "generate", result.usage, { super_admin: true });
-      await logUsageEvent(supabaseAdmin, userId, "ai_call", {
-        provider: "anthropic",
-        model: claudeModel,
-        action: "generate_claude",
-        intent: intent || "generate",
-        total_tokens: result.usage.totalTokens,
-        super_admin: true,
-      });
-      const budgetUpdate = await incrementBudget(supabaseAdmin, userId, result.usage.totalTokens);
-      return json({ success: true, text: result.text, provider: "anthropic", model: claudeModel, usage: result.usage, superAdmin: true, ...budgetUpdate });
-    }
-
-    // ── generate_cascade (try cheapest providers first, exhaust all keys per provider) ──
-    if (action === "generate_cascade") {
-      if (!userMessage) return json({ error: "Missing userMessage for generate_cascade action" }, 400);
-      const rateLimit = await checkAiProxyRateLimit(supabaseAdmin, userId);
-      if (!rateLimit.allowed) {
-        return json({ error: "AI temporarily unavailable — please try again in a moment", retry_after_sec: rateLimit.retryAfterSec }, 429);
-      }
-
-      // Order: cheapest first — exhaust ALL Gemini keys, then ALL Groq keys, before OpenAI/Anthropic
-      const cascadeOrder = ["gemini", "groq", "kimi", "perplexity", "grok", "openai", "anthropic"];
-      const attempts: string[] = [];
-
-      for (const prov of cascadeOrder) {
-        const keys = getAllProviderKeys(prov, prov === aiProvider ? userAiKey : "");
-        if (keys.length === 0) continue;
-
-        const provModel = DEFAULT_MODELS[prov] || "gpt-4o";
-
-        // Try every available key for this provider before moving on
-        for (let ki = 0; ki < keys.length; ki++) {
-          const keyLabel = keys.length > 1 ? `${prov}[${ki + 1}/${keys.length}]` : prov;
-          attempts.push(keyLabel);
-
-          const result = await callProvider(prov, provModel, keys[ki], aiMaxTokens, finalSystemPrompt, userMessage, "");
-          if (result.ok) {
-            await logUsage(supabaseAdmin, userId, prov, provModel, "generate_cascade", intent || "generate", result.usage, { cascade_attempts: attempts, key_index: ki });
-            await logUsageEvent(supabaseAdmin, userId, "ai_call", {
-              provider: prov,
-              model: provModel,
-              action: "generate_cascade",
-              intent: intent || "generate",
-              total_tokens: result.usage.totalTokens,
-              cascade_attempts: attempts,
-            });
-            const budgetUpdate = await incrementBudget(supabaseAdmin, userId, result.usage.totalTokens);
-            return json({ success: true, text: result.text, provider: prov, model: provModel, usage: result.usage, cascadeAttempts: attempts, ...budgetUpdate });
-          }
-          // Key failed (rate limit, quota, error) — try next key for same provider
+    if(action==="analyze_image"){
+      if(!imageBase64||!imageMimeType)return json({error:"Missing imageBase64 or imageMimeType"},400);
+      const msg=userMessage||"Analyze this image in detail.";
+      const rl=await checkRL(sb,uid); if(!rl.allowed)return json({error:"Rate limited",retry_after_sec:rl.retryAfterSec},429);
+      if(isAdmin){
+        const r=await superAdminChain(finalSysprompt,msg,aiMaxTokens,imageBase64,imageMimeType);
+        if(r.ok){
+          await logUsage(sb,uid,r.provider,r.model,"analyze_image",intent||"document_analysis",r.usage);
+          const bu=await incBudget(sb,uid,r.usage.totalTokens);
+          return json({success:true,text:r.text,provider:r.provider,model:r.model,usage:r.usage,is_super_admin:true,...bu});
         }
-        // All keys for this provider exhausted — move to next provider
       }
-      return json({ error: "AI temporarily unavailable — please try again in a moment", code: "all_providers_failed", cascadeAttempts: attempts }, 502);
-    }
-
-    // ── analyze_image (vision — skip Groq, no vision support) ──
-    if (action === "analyze_image") {
-      if (!imageBase64 || !imageMimeType) return json({ error: "Missing imageBase64 or imageMimeType" }, 400);
-      const message = userMessage || "Analyze this image and describe what you see in detail.";
-      const rateLimit = await checkAiProxyRateLimit(supabaseAdmin, userId);
-      if (!rateLimit.allowed) {
-        return json({ error: "AI temporarily unavailable — please try again in a moment", retry_after_sec: rateLimit.retryAfterSec }, 429);
-      }
-
-      // Vision cascade: Gemini → Grok → OpenAI → Anthropic (Groq/Kimi/Perplexity have no vision)
-      // Exhaust all keys per provider before moving to the next
-      const visionCascade = ["gemini", "grok", "openai", "anthropic"];
-      const attempts: string[] = [];
-
-      for (const prov of visionCascade) {
-        const keys = getAllProviderKeys(prov, prov === aiProvider ? userAiKey : "");
-        if (keys.length === 0) continue;
-
-        const provModel = DEFAULT_MODELS[prov] || "gpt-4o";
-
-        for (let ki = 0; ki < keys.length; ki++) {
-          const keyLabel = keys.length > 1 ? `${prov}[${ki + 1}/${keys.length}]` : prov;
-          attempts.push(keyLabel);
-
-          const result = await callProvider(prov, provModel, keys[ki], aiMaxTokens, finalSystemPrompt, message, "", imageBase64, imageMimeType);
-          if (result.ok) {
-            await logUsage(supabaseAdmin, userId, prov, provModel, "analyze_image", intent || "document_analysis", result.usage, { cascade_attempts: attempts, key_index: ki });
-            await logUsageEvent(supabaseAdmin, userId, "ai_call", {
-              provider: prov,
-              model: provModel,
-              action: "analyze_image",
-              intent: intent || "document_analysis",
-              total_tokens: result.usage.totalTokens,
-              cascade_attempts: attempts,
-            });
-            const budgetUpdate = await incrementBudget(supabaseAdmin, userId, result.usage.totalTokens);
-            return json({ success: true, text: result.text, provider: prov, model: provModel, usage: result.usage, cascadeAttempts: attempts, ...budgetUpdate });
+      const vCascade=["gemini","openai","anthropic"];
+      const attempts:string[]=[];
+      for(const prov of vCascade){
+        const keys=getAllKeys(prov,prov===aiProvider?userAiKey:""); if(!keys.length)continue;
+        const pm=prov==="anthropic"?CLAUDE_SONNET:(DEFAULT_MODELS[prov]||"gpt-4o-mini");
+        for(let ki=0;ki<keys.length;ki++){
+          const kl=`${prov}[${ki}]`; attempts.push(kl);
+          const r=await callProvider(prov,pm,keys[ki],aiMaxTokens,finalSysprompt,msg,"",imageBase64,imageMimeType,CASCADE_TIMEOUT_MS);
+          if(r.ok){
+            await logUsage(sb,uid,prov,pm,"analyze_image",intent||"document_analysis",r.usage);
+            const bu=await incBudget(sb,uid,r.usage.totalTokens);
+            return json({success:true,text:r.text,provider:prov,model:pm,usage:r.usage,cascadeAttempts:attempts,...bu});
           }
         }
       }
-      return json({ error: "AI temporarily unavailable — please try again in a moment", code: "all_vision_providers_failed", cascadeAttempts: attempts }, 502);
+      return json({error:"All vision providers failed"},502);
     }
 
-    return json({ error: "Unknown action: " + action }, 400);
+    if(action==="set_ai_mode"){
+      if(!isAdmin)return json({error:"Super admin only"},403);
+      const newMode=body.mode;
+      if(!["auto","claude","cascade","gemini"].includes(newMode))return json({error:"Invalid mode. Use: auto|claude|cascade|gemini"},400);
+      await sb.from("profiles").update({preferred_ai_mode:newMode}).eq("id",uid);
+      console.log(`[SuperAdmin] ${email} set AI mode → ${newMode}`);
+      return json({success:true,ai_mode:newMode,message:`AI mode set to ${newMode}. Super admin chain: Kimi→Claude will be used for auto/claude modes.`});
+    }
 
-  } catch (err) {
-    console.error("ai-proxy error:", err);
-    return json({ error: (err as Error)?.message || "Internal error" }, 500);
+    return json({error:"Unknown action: "+action},400);
+  }catch(err){
+    console.error("ai-proxy error:",err);
+    return json({error:(err as Error)?.message||"Internal error"},500);
   }
 });
 
-// Increment token budget after a successful AI call (returns updated budget for client display)
-async function incrementBudget(
-  supabase: any, userId: string, totalTokens: number,
-): Promise<{ tokens_used?: number; tokens_limit?: number; tier?: string }> {
-  try {
-    // RPC returns budget_tokens_used, budget_tokens_limit, budget_tier (prefixed columns)
-    const { data } = await supabase.rpc("increment_token_usage", { p_user_id: userId, p_tokens: totalTokens });
-    if (data && data.length > 0) {
-      return { tokens_used: data[0].budget_tokens_used, tokens_limit: data[0].budget_tokens_limit, tier: data[0].budget_tier };
+// ─── TIER-AWARE CASCADE ────────────────────────────────────────────────────────
+async function runCascade(sb:any,uid:string,tier:string,sysprompt:string,usermsg:string,maxTok:number,ftag:string,kbHit:boolean,kbIds:string[],userKey:string):Promise<any>{
+  const cutoff=TIER_CASCADE_CUTOFF[tier]??1;
+  const allowed=CASCADE_ORDER.slice(0,cutoff);
+  const attempts:string[]=[];
+  for(const e of allowed){
+    const keys=getAllKeys(e.name,e.name==="gemini"?userKey:"");
+    if(!keys.length){console.log(`[Cascade] Skip ${e.name} — no key`);continue;}
+    for(let ki=0;ki<keys.length;ki++){
+      const kl=keys.length>1?`${e.name}[${ki+1}/${keys.length}]`:e.name; attempts.push(kl);
+      try{
+        const r=await callProvider(e.name,e.model,keys[ki],maxTok,sysprompt,usermsg,e.url,undefined,undefined,CASCADE_TIMEOUT_MS);
+        if(r.ok){
+          console.log(`[Cascade:${tier}] Used ${e.name} after ${attempts.length} attempt(s)`);
+          await logUsage(sb,uid,e.name,e.model,"generate_cascade",ftag||"generate",r.usage,{cascade_attempts:attempts,kb_hit:kbHit,kb_entries:kbIds,tier});
+          await logEvent(sb,uid,"ai_call",{provider:e.name,model:e.model,action:"generate_cascade",feature:ftag,total_tokens:r.usage.totalTokens,cascade_attempts:attempts,kb_hit:kbHit,tier});
+          return{ok:true,text:r.text,provider:e.name,model:e.model,usage:r.usage,cascadeAttempts:attempts};
+        }
+        console.log(`[Cascade] ${kl} failed (${r.status}) — next`);
+      }catch(err){console.log(`[Cascade] ${kl} threw — next`,err);}
     }
-  } catch (e) {
-    console.error("Failed to increment token budget:", e);
   }
-  return {};
+  return{ok:false,text:"",usage:{inputTokens:0,outputTokens:0,totalTokens:0},provider:"",model:"",attempts};
 }
 
-// Log AI usage to ai_usage_log table (fire-and-forget, don't block response)
-async function logUsage(
-  supabase: any, userId: string, provider: string, model: string,
-  action: string, intent: string,
-  usage: { inputTokens: number; outputTokens: number; totalTokens: number },
-  metadata?: Record<string, any>,
-) {
-  try {
-    const cost = estimateCost(provider, usage.inputTokens, usage.outputTokens);
-    await supabase.from("ai_usage_log").insert({
-      user_id: userId,
-      provider,
-      model,
-      action,
-      intent,
-      input_tokens: usage.inputTokens,
-      output_tokens: usage.outputTokens,
-      estimated_cost_usd: cost,
-      metadata: metadata || {},
-    });
-  } catch (e) {
-    console.error("Failed to log AI usage:", e);
-  }
-}
-
-async function logUsageEvent(
-  supabase: any,
-  userId: string,
-  eventType: string,
-  metadata: Record<string, any>,
-) {
-  try {
-    await supabase.from("usage_events").insert({
-      user_id: userId,
-      event_type: eventType,
-      metadata: metadata || {},
-    });
-  } catch (e) {
-    console.error("Failed to log usage event:", e);
-  }
-}
-
-async function checkAiProxyRateLimit(
-  supabase: any,
-  userId: string,
-): Promise<{ allowed: boolean; retryAfterSec?: number }> {
-  const now = new Date();
-  const nowIso = now.toISOString();
-
-  try {
-    const { data: row, error } = await supabase
-      .from("ai_proxy_rate_limits")
-      .select("user_id, window_start, request_count")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Failed to read ai_proxy_rate_limits:", error);
-      return { allowed: true };
-    }
-
-    if (!row) {
-      await supabase.from("ai_proxy_rate_limits").upsert({
-        user_id: userId,
-        window_start: nowIso,
-        request_count: 1,
-        updated_at: nowIso,
-      });
-      return { allowed: true };
-    }
-
-    const windowStart = new Date(row.window_start);
-    const windowExpiresAt = windowStart.getTime() + AI_RATE_LIMIT_WINDOW_MS;
-    if (now.getTime() >= windowExpiresAt) {
-      await supabase.from("ai_proxy_rate_limits").upsert({
-        user_id: userId,
-        window_start: nowIso,
-        request_count: 1,
-        updated_at: nowIso,
-      });
-      return { allowed: true };
-    }
-
-    const currentCount = Number(row.request_count || 0);
-    if (currentCount >= AI_RATE_LIMIT_MAX_REQUESTS) {
-      return {
-        allowed: false,
-        retryAfterSec: Math.max(1, Math.ceil((windowExpiresAt - now.getTime()) / 1000)),
-      };
-    }
-
-    await supabase.from("ai_proxy_rate_limits").upsert({
-      user_id: userId,
-      window_start: row.window_start,
-      request_count: currentCount + 1,
-      updated_at: nowIso,
-    });
-    return { allowed: true };
-  } catch (e) {
-    console.error("Failed to enforce ai-proxy rate limit:", e);
-    return { allowed: true };
-  }
+// ─── BACKGROUND HELPERS ────────────────────────────────────────────────────────
+async function logKBGap(sb:any,uid:string,q:string,feat:string){ try{await sb.from("kb_gaps").insert({user_id:uid,query:q.substring(0,500),feature:feat,created_at:new Date().toISOString()});}catch(_e){} }
+async function incBudget(sb:any,uid:string,tokens:number){ try{const{data:d}=await sb.rpc("increment_token_usage",{p_user_id:uid,p_tokens:tokens});const b=Array.isArray(d)?d[0]:d;if(b)return{tokens_used:b.tokens_used,tokens_limit:b.tokens_limit,tier:b.tier};}catch(e){console.error("Budget inc error:",e);}return{}; }
+async function logUsage(sb:any,uid:string,provider:string,model:string,action:string,intent:string,usage:{inputTokens:number;outputTokens:number;totalTokens:number},meta?:Record<string,any>){ try{const cost=estimateCost(provider,usage.inputTokens,usage.outputTokens);await sb.from("ai_usage_log").insert({user_id:uid,provider,model,action,intent,input_tokens:usage.inputTokens,output_tokens:usage.outputTokens,estimated_cost_usd:cost,metadata:meta||{}});}catch(e){console.error("logUsage error:",e);} }
+async function logEvent(sb:any,uid:string,et:string,meta:Record<string,any>){ try{await sb.from("usage_events").insert({user_id:uid,event_type:et,metadata:meta||{}});}catch(e){console.error("logEvent error:",e);} }
+async function checkRL(sb:any,uid:string):Promise<{allowed:boolean;retryAfterSec?:number}>{
+  const now=new Date(),ni=now.toISOString();
+  try{
+    const{data:row,error}=await sb.from("ai_proxy_rate_limits").select("user_id,window_start,request_count").eq("user_id",uid).maybeSingle();
+    if(error){console.error("RL read error:",error);return{allowed:true};}
+    if(!row){await sb.from("ai_proxy_rate_limits").upsert({user_id:uid,window_start:ni,request_count:1,updated_at:ni});return{allowed:true};}
+    const exp=new Date(row.window_start).getTime()+RL_WINDOW_MS;
+    if(now.getTime()>=exp){await sb.from("ai_proxy_rate_limits").upsert({user_id:uid,window_start:ni,request_count:1,updated_at:ni});return{allowed:true};}
+    const cnt=Number(row.request_count||0);
+    if(cnt>=RL_MAX_REQ)return{allowed:false,retryAfterSec:Math.max(1,Math.ceil((exp-now.getTime())/1000))};
+    await sb.from("ai_proxy_rate_limits").upsert({user_id:uid,window_start:row.window_start,request_count:cnt+1,updated_at:ni});
+    return{allowed:true};
+  }catch(e){console.error("RL error:",e);return{allowed:true};}
 }

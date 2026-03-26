@@ -5709,11 +5709,10 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
             contextSummary += localKbContext;
         }
 
-        // ── Try real AI backend first ──
-        // Super admins get Claude directly, others use the cascade
-        const isSuperAdmin = window.currentUserRole === 'super_admin';
+        // ── Try real AI backend ──
+        // The server-side proxy auto-detects super admin and routes accordingly
         try {
-            const aiResponse = await callAIProxy(message, model, intent, contextSummary, isSuperAdmin);
+            const aiResponse = await callAIProxy(message, model, intent, contextSummary);
             if (aiResponse) {
                 const autoFillData = extractAutoFillFields(aiResponse);
                 return { content: aiResponse, autoFillFields: autoFillData };
@@ -5740,8 +5739,8 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
     }
 
     // Call the ai-proxy Edge Function with provider cascade (cheapest first)
-    // Super admins can request direct Claude access via preferClaude flag
-    async function callAIProxy(message, model, intent, contextSummary, preferClaude = false) {
+    // Call the ai-proxy edge function — server auto-detects super admin routing
+    async function callAIProxy(message, model, intent, contextSummary) {
         if (!EzraState.supabase) return null;
 
         const token = await getFreshToken();
@@ -5752,8 +5751,8 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
 
         const systemPrompt = EZRA_KNOWLEDGE.buildSystemPrompt() + contextSummary;
 
-        // Use cascade action — tries Gemini → Groq → OpenAI → Anthropic
-        // Super admins with preferClaude=true will get Claude directly (skips cascade)
+        // Server-side proxy auto-detects super admin → routes Kimi→Claude
+        // Regular users get feature-routed or cascade
         const response = await fetch(`${supabaseUrl}/functions/v1/ai-proxy`, {
             method: 'POST',
             headers: {
@@ -5761,12 +5760,12 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-                action: preferClaude ? 'generate_claude' : 'generate_cascade',
+                action: 'generate',
                 systemPrompt,
                 userMessage: message,
                 maxTokens: 1500,
                 intent: intent || 'generate',
-                preferClaude: preferClaude // Signal to Edge Function that super admin wants Claude
+                feature: intent || 'ezra_copilot'
             })
         });
 
