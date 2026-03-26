@@ -18535,11 +18535,24 @@ Sent via Above All Carbon HELOC Tool`;
         }
 
         async function _checkGmailStatus() {
+            // Skip the server call if no Google OAuth token was ever captured
+            // This prevents a 401 from gmail-send which used to trigger false "session expired" banners
+            var sb = window._supabase;
+            if (sb) {
+                try {
+                    var { data: gs } = await sb.from('gmail_settings').select('access_token').eq('user_id', window.currentUserId).maybeSingle();
+                    if (!gs || !gs.access_token) {
+                        _updateGmailStatusUI(false, null);
+                        return;
+                    }
+                } catch (_e) { /* table may not exist — fall through to edge function check */ }
+            }
             try {
                 var result = await _callGmailSend({ action: 'status' });
                 _updateGmailStatusUI(result.connected, result.connected_email);
             } catch (e) {
                 console.warn('Gmail status check failed:', e.message);
+                _updateGmailStatusUI(false, null);
             }
         }
 

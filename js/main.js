@@ -62,7 +62,9 @@ function installSupabaseWriteGuard() {
         }
 
         const response = await nativeFetch(input, init);
-        if (response.status === 401 && url.origin === supabaseOrigin) {
+        // Only trigger session expired for REST API 401s, not edge functions
+        // Edge functions like gmail-send return 401 when OAuth isn't connected — that's not a session issue
+        if (response.status === 401 && url.origin === supabaseOrigin && url.pathname.startsWith('/rest/v1/')) {
             clearUserCache();
             showSessionExpiredBanner();
         }
