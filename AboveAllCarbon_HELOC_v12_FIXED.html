@@ -10098,7 +10098,9 @@ Best regards,
                 var sb = window._supabase, userId = window.currentUserId;
                 if (sb && userId) {
                     try {
-                        var updateData = { onboarding_completed: !!completed, onboarding_step: currentStep, onboarding_data: wizardData };
+                        // Only set onboarding_completed when completing — never overwrite true→false
+                        var updateData = { onboarding_step: currentStep, onboarding_data: wizardData };
+                        if (completed) updateData.onboarding_completed = true;
                         if (wizardData.crmPreference) updateData.crm_preference = wizardData.crmPreference;
                         await sb.from('profiles').update(updateData).eq('id', userId);
                     }
@@ -19065,34 +19067,38 @@ Sent via Above All Carbon HELOC Tool`;
                     showToast('Integration settings saved locally.', 'info');
                 }
             } else {
-                // Non-super_admin: only save Bonzo data (merge into existing metadata)
-                var bonzoData = {
-                    apiKey: _val('bonzo-api-key'),
-                    apiKey2: _val('bonzo-api-key-2')
-                };
+                // Non-super_admin: save Bonzo + other keys to BOTH heloc_keys (flat format for edge functions) and heloc_settings
+                var bonzoXcode = _val('bonzo-api-key');
+                var bonzoApiKey2 = _val('bonzo-api-key-2');
+                var radarKey = _val('radar-api-key');
                 if (sb && userId) {
                     try {
-                        var { data: existingRow } = await sb
-                            .from('user_integrations')
-                            .select('id, metadata')
-                            .eq('user_id', userId)
-                            .eq('provider', 'heloc_settings')
-                            .maybeSingle();
-
-                        var mergedMeta = existingRow?.metadata || {};
-                        mergedMeta.bonzo = bonzoData;
-
-                        if (existingRow) {
-                            await sb.from('user_integrations')
-                                .update({ metadata: mergedMeta, updated_at: new Date().toISOString() })
-                                .eq('id', existingRow.id);
+                        // Save to heloc_keys (flat format — this is where edge functions read from)
+                        var { data: keysRow } = await sb.from('user_integrations').select('id, metadata')
+                            .eq('user_id', userId).eq('provider', 'heloc_keys').maybeSingle();
+                        var keysMeta = keysRow?.metadata || {};
+                        if (bonzoXcode) keysMeta.bonzo_api_key = bonzoXcode;
+                        if (bonzoApiKey2) keysMeta.bonzo_api_key_2 = bonzoApiKey2;
+                        if (radarKey) keysMeta.radar_api_key = radarKey;
+                        if (keysRow) {
+                            await sb.from('user_integrations').update({ metadata: keysMeta, updated_at: new Date().toISOString() }).eq('id', keysRow.id);
                         } else {
-                            await sb.from('user_integrations')
-                                .insert({ user_id: userId, provider: 'heloc_settings', metadata: { bonzo: bonzoData } });
+                            await sb.from('user_integrations').insert({ user_id: userId, provider: 'heloc_keys', metadata: keysMeta });
                         }
-                        showToast('Bonzo settings saved!', 'success');
+
+                        // Also save to heloc_settings (nested format — for backward compat)
+                        var { data: settingsRow } = await sb.from('user_integrations').select('id, metadata')
+                            .eq('user_id', userId).eq('provider', 'heloc_settings').maybeSingle();
+                        var settingsMeta = settingsRow?.metadata || {};
+                        settingsMeta.bonzo = { apiKey: bonzoXcode, apiKey2: bonzoApiKey2 };
+                        if (settingsRow) {
+                            await sb.from('user_integrations').update({ metadata: settingsMeta, updated_at: new Date().toISOString() }).eq('id', settingsRow.id);
+                        } else {
+                            await sb.from('user_integrations').insert({ user_id: userId, provider: 'heloc_settings', metadata: settingsMeta });
+                        }
+                        showToast('Integration settings saved!', 'success');
                     } catch (e) {
-                        console.error('Bonzo save failed:', e);
+                        console.error('Integration save failed:', e);
                         showToast('Save failed: ' + e.message, 'error');
                     }
                 } else {
