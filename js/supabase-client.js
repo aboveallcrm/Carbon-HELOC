@@ -20,7 +20,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // Cached user object avoids repeated profile reads during autosave.
 let _cachedUser = null;
 let _cacheTime = 0;
-const CACHE_TTL_MS = 60 * 1000;
+const CACHE_TTL_MS = 300 * 1000; // 5 min — profile rarely changes mid-session
 
 export async function getActiveSession() {
     const { data: { session } } = await supabase.auth.getSession();

@@ -82,6 +82,8 @@
     <link rel="preconnect" href="https://czzabvfzuxhpdcowgvam.supabase.co">
     <link rel="dns-prefetch" href="https://czzabvfzuxhpdcowgvam.supabase.co">
     <link rel="prefetch" href="/client-quote.html">
+    <link rel="preload" href="https://fonts.gstatic.com/s/dmsans/v15/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAopxhS23kUQ.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v18/UcCo3FwrK3iLTcviYwY.woff2" as="font" type="font/woff2" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;700;800&family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
@@ -21637,7 +21639,23 @@ Sent via Above All Carbon HELOC Tool`;
     <!-- Carbon Command Palette v3.0 Ultimate -->
     <script src="js/carbon-commands-v3.js" defer></script>
     <!-- Ezra AI Loan Structuring Assistant -->
-    <script defer src="./js/ezra-chat.js"></script>
+    <!-- Ezra AI: lazy-loaded after 5s or on first interaction (saves 435KB parse on initial load) -->
+    <script>
+    (function() {
+        var loaded = false;
+        function loadEzra() {
+            if (loaded) return;
+            loaded = true;
+            var s = document.createElement('script');
+            s.src = './js/ezra-chat.js';
+            document.body.appendChild(s);
+        }
+        document.addEventListener('click', function(e) {
+            if (e.target.closest && e.target.closest('.ezra-toggle, .ezra-widget, [onclick*="Ezra"], [onclick*="ezra"]')) loadEzra();
+        });
+        setTimeout(loadEzra, 5000);
+    })();
+    </script>
     <!-- Integration Health Monitor -->
     <script defer src="./js/integration-health-monitor.js"></script>
     <script defer src="./js/integration-health-dashboard.js"></script>
