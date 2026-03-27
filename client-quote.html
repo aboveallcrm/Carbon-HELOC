@@ -14235,7 +14235,23 @@
                         return;
                     }
 
-                    // No local match — send to AI service with full context
+                    // No local match — check LO tier before calling API
+                    var loTierLevel = window._loTierLevel || 0;
+                    if (loTierLevel < 1) {
+                        // Carbon LO: no API calls, redirect to LO
+                        showTyping();
+                        setTimeout(function() {
+                            hideTyping();
+                            var loN = (loInfo && loInfo.name) ? loInfo.name : 'your loan officer';
+                            var loP = (loInfo && loInfo.phone) ? loInfo.phone : '';
+                            var contactLine = loP ? '\n\n**Call ' + loN + '**: ' + loP : '\n\n**Contact ' + loN + '** to discuss the details.';
+                            addMsg('assistant', "That's a great question! " + loN + " can walk you through the specifics of your quote and answer that in detail." + contactLine);
+                            updateSmartChips();
+                        }, 400);
+                        return;
+                    }
+
+                    // Titanium+ LO: send to AI service with full context
                     showTyping(); isSending = true;
                     var aiCtx = getPageContext();
                     var aiSCtx = _ezraSupabaseCtx || {};

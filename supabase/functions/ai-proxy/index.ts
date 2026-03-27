@@ -260,6 +260,8 @@ serve(async(req:Request)=>{
     let aiKey=userAiKey; if(!aiKey){aiKey=getKey(aiProvider,"");}
 
     let finalSysprompt=intg?.metadata?.ai_system_prompt||systemPrompt||"";
+    // Mortgage scope fence: prevent off-topic drift for all non-super-admin users
+    if(!isAdmin){finalSysprompt=`SCOPE: You are a HELOC and mortgage specialist ONLY. You may discuss mortgages, home equity, real estate, debt consolidation, credit, and personal finance topics. If the user asks about anything unrelated, respond: "I specialize in HELOC and mortgage topics — how can I help with your home equity needs?" Do not answer off-topic questions.\n\n${finalSysprompt}`;}
     let kbHit=false,kbIds:string[]=[],kbCount=0;
     if((action==="generate"||action==="generate_super_admin")&&userMessage&&ftag){
       const kb=await searchKB(sb,userMessage,ftag);

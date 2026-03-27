@@ -1340,8 +1340,8 @@ RESPONSE RULES
         user: null,
         dealRadarData: null,
         activeTab: 'chat', // 'chat' | 'deal-radar'
-        _upsellMode: false,
-        _upsellMsgIndex: 0,
+        _localOnlyMode: false,
+        _localOnlyMsgIndex: 0,
         _tokenBudget: null,
         _pendingComplianceCheck: false,
         pendingAttachment: null, // { file, base64, mimeType, previewUrl }
@@ -1374,12 +1374,12 @@ RESPONSE RULES
         // Pick up tier from app globals
         if (window.currentUserTier) EzraState.userTier = window.currentUserTier;
 
-        // Tier gate: Carbon users get upsell-only mode, Titanium+ gets full Ezra
+        // Tier gate: Carbon users get local-only mode (KB + objections, no API)
         const tier = (EzraState.userTier || 'carbon').toLowerCase();
         const userLevel = TIER_LEVELS[tier] || 0;
         if (userLevel < 1 && window.currentUserRole !== 'super_admin') {
-            EzraState._upsellMode = true;
-            console.debug('Ezra: Carbon tier — upsell mode active');
+            EzraState._localOnlyMode = true;
+            console.debug('Ezra: Carbon tier — local-only mode (KB + objections active, no API)');
         }
 
         // Create widget DOM first so elements exist
@@ -1454,52 +1454,27 @@ RESPONSE RULES
         }
     }
 
-    // ============================================
-    // UPSELL MODE (Carbon tier)
-    // ============================================
-    const UPSELL_MESSAGES = [
-        "I'm **Ezra**, your AI loan structuring co-pilot. I can build quotes in seconds, handle objections with smart counter-scripts, draft personalized messages, run compliance checks, and much more.\n\n**Upgrade to Titanium** to unlock me and start closing faster.",
-        "Here's what I can do for you:\n\n\u2726 **Quick Quote** — Build a full quote in seconds\n\u2726 **Smart Objections** — Counter scripts using real numbers\n\u2726 **Draft Messages** — SMS & email templates with client data\n\u2726 **Compliance Check** — Auto-review for TILA/RESPA\n\u2726 **Compare Scenarios** — Side-by-side 5/10/15/30yr analysis\n\nUpgrade to **Titanium** to unlock all features.",
-        "Loan officers using Ezra AI close **40% faster** with instant quote building, smart deal structuring, and automated follow-up coaching.\n\n**Titanium** gives you the full AI toolkit. **Platinum** adds lead briefings and follow-up timing intelligence.\n\nReady to upgrade?",
-        "I can predict your client's questions before they ask, narrate quotes in plain English for easy conversations, and generate ready-to-send SMS and email drafts.\n\nAll of this is waiting for you at **Titanium** tier and above.",
-    ];
-
-    const UPSELL_QUICK_COMMANDS = [
-        { label: 'Quick Quotes', icon: '\uD83D\uDE80', tier: 'Titanium', desc: 'Build quotes instantly with AI' },
-        { label: 'Smart Objections', icon: '\uD83D\uDEE1\uFE0F', tier: 'Titanium', desc: 'AI-powered counter scripts' },
-        { label: 'Draft Messages', icon: '\u2709\uFE0F', tier: 'Titanium', desc: 'SMS & email with client data' },
-        { label: 'Compliance Check', icon: '\u26A0\uFE0F', tier: 'Titanium', desc: 'Auto TILA/RESPA review' },
-        { label: 'Lead Briefings', icon: '\uD83D\uDCCB', tier: 'Platinum', desc: 'Daily lead priority digest' },
-        { label: 'Follow-Up Coach', icon: '\u23F0', tier: 'Platinum', desc: 'AI timing recommendations' },
-    ];
-
-    function getUpsellResponse() {
-        const msg = UPSELL_MESSAGES[EzraState._upsellMsgIndex % UPSELL_MESSAGES.length];
-        EzraState._upsellMsgIndex++;
-        return msg;
-    }
-
     // Tier level mapping — IIFE-scoped so all functions can access it
     const TIER_LEVELS = { carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 };
 
     // Intent-to-tier mapping for granular feature gating
     const INTENT_TIER_MAP = {
-        // Local (zero cost) — Titanium+
+        // Local (zero cost) — Carbon+ (the hook — works via KB + intent detection)
+        objection_handling: 0,
+        // Local quick commands — Titanium+ (buttons hidden for Carbon)
         quote_narrator: 1,
-        draft_message: 1,
         scenario_comparison: 1,
-        question_predictor: 1,
         compliance_check: 1,
-        objection_handling: 1,
+        draft_message: 1,
+        question_predictor: 1,
         // API-calling — Titanium+
         deal_architect: 1,
         quote_creation: 1,
         program_recommendation: 1,
         simple_chat: 1,
-        // Async local (DB queries) — Platinum+
+        // Async/API — Platinum+
         followup_coach: 2,
         lead_briefing: 2,
-        // API-calling — Platinum+
         sales_coach: 2,
         complex_strategy: 2,
     };
@@ -1507,7 +1482,7 @@ RESPONSE RULES
 
     // Token budget display
     async function fetchTokenBudget() {
-        if (EzraState._upsellMode || !EzraState.supabase || !window.currentUserId) return;
+        if (EzraState._localOnlyMode || !EzraState.supabase || !window.currentUserId) return;
         try {
             const { data } = await EzraState.supabase.rpc('get_or_create_token_budget', { p_user_id: window.currentUserId });
             if (data && data.length > 0) {
@@ -1550,6 +1525,21 @@ RESPONSE RULES
         return `\uD83D\uDD12 **${tierName}+ Feature**\n\n${desc}\n\nUpgrade to **${tierName}** to unlock this and more.`;
     }
 
+    function getLocalModeUpgradeMessage(message, intent) {
+        // Contextual upgrade messages based on what the user was trying to do
+        const lower = (message || '').toLowerCase();
+        if (/deal|structure|architect|build/i.test(lower)) {
+            return "I'd love to help structure this deal for you! With **Titanium**, I can analyze your exact quote numbers and recommend the optimal program, term, and tier.\n\nFor now, try asking me about objection handling, HELOC basics, or sales scripts — I've got deep knowledge there.";
+        }
+        if (/draft|sms|text|email|write/i.test(lower)) {
+            return "I can draft personalized SMS and email templates with **Titanium** — using your client's name, rate, and payment amount.\n\nFor now, ask me about sales scripts or how to position HELOCs vs other products — I'll give you ready-to-use talking points.";
+        }
+        if (/narrate|summary|explain.*quote/i.test(lower)) {
+            return "Quote narration is a **Titanium** feature — I'll walk through the quote in plain English so you can read it to your client.\n\nMeanwhile, try asking me about objection handling or competitive comparisons!";
+        }
+        return "That's a great question! I can give you even better answers with **Titanium** — personalized to your exact deal numbers.\n\nFor now, I'm great with objection handling, HELOC product knowledge, sales scripts, and competitive comparisons. Try asking me something specific!";
+    }
+
     // ============================================
     // DOM CREATION
     // ============================================
@@ -1579,7 +1569,7 @@ RESPONSE RULES
                             <span class="ezra-title">EZRA</span>
                             <span class="ezra-status">
                                 <span class="ezra-status-dot"></span>
-                                <span class="ezra-status-text">${EzraState._upsellMode ? 'Locked — Upgrade to Unlock' : 'Online'}</span>
+                                <span class="ezra-status-text">${EzraState._localOnlyMode ? 'Local Mode' : 'Online'}</span>
                             </span>
                             <span id="ezra-token-budget" class="ezra-token-budget" style="display:none;font-size:9px;color:#94a3b8;"></span>
                         </div>
@@ -1599,13 +1589,16 @@ RESPONSE RULES
                 <div class="ezra-quick-commands-wrapper">
                     <button class="ezra-scroll-btn ezra-scroll-left" onclick="scrollQuickCommands('left')" title="Scroll left">‹</button>
                     <div class="ezra-quick-commands" id="ezra-quick-commands">
-                        ${EzraState._upsellMode ? UPSELL_QUICK_COMMANDS.map(cmd => `
-                            <button class="ezra-quick-btn ezra-upsell-cmd" data-action="upsell" title="${cmd.desc}" style="opacity:0.7;position:relative;">
-                                <span>${cmd.icon}</span>
-                                <span>${cmd.label}</span>
-                                <span style="position:absolute;top:-4px;right:-4px;font-size:7px;background:rgba(167,139,250,0.9);color:white;padding:1px 4px;border-radius:6px;white-space:nowrap;">${cmd.tier}+</span>
+                        ${EzraState._localOnlyMode ? `
+                            <button class="ezra-quick-btn" data-action="handle_objection" title="Handle Objection">
+                                <span>\uD83D\uDEE1\uFE0F</span>
+                                <span>Handle Objection</span>
                             </button>
-                        `).join('') : EZRA_CONFIG.quickCommands.map(cmd => `
+                            <button class="ezra-quick-btn" data-action="upsell" title="Unlock all 6 AI tools" style="background:linear-gradient(135deg,rgba(167,139,250,0.2),rgba(139,92,246,0.2));border-color:rgba(167,139,250,0.4);">
+                                <span>\u2728</span>
+                                <span>See All 6 Tools</span>
+                            </button>
+                        ` : EZRA_CONFIG.quickCommands.map(cmd => `
                             <button class="ezra-quick-btn" data-action="${cmd.action}" title="${cmd.label}">
                                 <span>${cmd.icon}</span>
                                 <span>${cmd.label}</span>
@@ -1618,16 +1611,16 @@ RESPONSE RULES
                 <!-- Messages Area -->
                 <div id="ezra-messages" class="ezra-messages">
                     <div class="ezra-welcome" id="ezra-welcome">
-                        <div class="ezra-welcome-icon">${EzraState._upsellMode ? '\uD83D\uDD12' : '\u2726'}</div>
+                        <div class="ezra-welcome-icon">\u2726</div>
                         <h3>Hello, I'm Ezra</h3>
-                        <p>${EzraState._upsellMode ? 'Your AI co-pilot is ready — upgrade to unlock.' : 'Your AI loan structuring co-pilot.'}</p>
+                        <p>${EzraState._localOnlyMode ? 'Your AI mortgage co-pilot. Ask me anything about HELOCs, objections, or sales strategy.' : 'Your AI loan structuring co-pilot.'}</p>
                         <div class="ezra-welcome-capabilities">
-                            ${EzraState._upsellMode ? `
-                            <div class="ezra-welcome-cap"><span>\uD83D\uDE80</span> Build quotes in seconds</div>
-                            <div class="ezra-welcome-cap"><span>\uD83D\uDEE1\uFE0F</span> Smart objection handling</div>
-                            <div class="ezra-welcome-cap"><span>\u2709\uFE0F</span> Auto-draft SMS & emails</div>
-                            <div class="ezra-welcome-cap"><span>\u26A0\uFE0F</span> Compliance auto-check</div>
-                            <div style="margin-top:8px;text-align:center;font-size:11px;color:#a78bfa;">Upgrade to Titanium to unlock all features</div>
+                            ${EzraState._localOnlyMode ? `
+                            <div class="ezra-welcome-cap"><span>\uD83D\uDEE1\uFE0F</span> Handle any client objection</div>
+                            <div class="ezra-welcome-cap"><span>\uD83D\uDCDA</span> HELOC product knowledge</div>
+                            <div class="ezra-welcome-cap"><span>\uD83C\uDFC6</span> Sales scripts & closing tips</div>
+                            <div class="ezra-welcome-cap"><span>\u2694\uFE0F</span> Competitive comparisons</div>
+                            <div style="margin-top:8px;text-align:center;font-size:10px;color:rgba(255,255,255,0.4);">Upgrade to Titanium for personalized AI deal analysis</div>
                             ` : `
                             <div class="ezra-welcome-cap"><span>\u2726</span> Build & auto-fill quotes</div>
                             <div class="ezra-welcome-cap"><span>\u2726</span> Structure deals instantly</div>
@@ -1664,9 +1657,8 @@ RESPONSE RULES
                         <textarea
                             id="ezra-input"
                             class="ezra-input"
-                            placeholder="${EzraState._upsellMode ? 'Upgrade to Titanium to unlock Ezra AI...' : EZRA_CONFIG.placeholderText}"
+                            placeholder="${EzraState._localOnlyMode ? 'Ask about rates, objections, scripts, comparisons...' : EZRA_CONFIG.placeholderText}"
                             rows="1"
-                            ${EzraState._upsellMode ? '' : ''}
                         ></textarea>
                         <button id="ezra-paste-rates" class="ezra-action-btn" title="Paste lender rates (Ctrl+A from Figure)">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -4152,17 +4144,9 @@ Would you like me to fill in the quote form with these details?`, { model: 'loca
 
         if ((!message && !attachment) || EzraState.isTyping) return;
 
-        // Upsell mode: always return promotional response
-        if (EzraState._upsellMode) {
-            input.value = '';
-            input.style.height = 'auto';
-            addMessage('user', message || 'Tell me more');
-            showTypingIndicator();
-            await new Promise(r => setTimeout(r, 600));
-            hideTypingIndicator();
-            addMessage('assistant', getUpsellResponse(), { model: 'local', intent: 'upsell' });
-            return;
-        }
+        // Local-only mode (Carbon): messages flow through routeToAI normally.
+        // KB search + objection handling work for free.
+        // callAIService guard catches API attempts and shows upgrade nudge.
 
         // Clear input and attachment
         input.value = '';
@@ -5751,6 +5735,30 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
     }
 
     async function callAIService(message, model, intent) {
+        // ── LOCAL-ONLY MODE GUARD (Carbon tier) ──
+        // KB search already ran in routeToAI (score >= 0.55 returns directly).
+        // If we reached here, KB didn't match well. Try a lower threshold
+        // and show the result with an upgrade nudge instead of calling the API.
+        if (EzraState._localOnlyMode) {
+            const kbFallback = EZRA_KNOWLEDGE.searchLocalKB(message);
+            if (kbFallback) {
+                const lines = kbFallback.split('\n').filter(l => l.trim());
+                const scoreMatch = lines[0]?.match(/\(score:\s*([\d.]+)\)/);
+                const score = scoreMatch ? parseFloat(scoreMatch[1]) : 0;
+                if (score >= 0.3) {
+                    const kbContent = lines.map(l => l.replace(/\(score:.*?\)/g, '').trim()).join('\n\n');
+                    return {
+                        content: kbContent + '\n\n---\n*Want a personalized analysis using your exact quote numbers? **Upgrade to Titanium** to unlock full conversational AI.*',
+                        metadata: { model: 'local-kb', intent: intent || 'carbon_fallback', score }
+                    };
+                }
+            }
+            return {
+                content: getLocalModeUpgradeMessage(message, intent),
+                metadata: { model: 'local', intent: 'carbon_upgrade' }
+            };
+        }
+
         const formCtx = getFormContext();
         // Merge form data with any inline numbers/names from the message
         const ctx = parseMessageContext(message, formCtx);

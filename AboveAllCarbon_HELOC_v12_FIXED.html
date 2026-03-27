@@ -581,19 +581,6 @@
             position: relative;
         }
         
-        .highlight-row td::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, 
-                transparent, 
-                rgba(197, 160, 89, 0.1), 
-                transparent);
-            pointer-events: none;
-        }
 
         .highlight-row td:first-child {
             border-left: 2px solid var(--accent-color);
@@ -606,79 +593,14 @@
         }
 
         .certificate-box {
-            background: linear-gradient(145deg, 
-                rgba(255, 255, 255, 0.9) 0%, 
-                rgba(255, 255, 255, 0.7) 100%);
-            backdrop-filter: blur(10px) saturate(160%);
-            -webkit-backdrop-filter: blur(10px) saturate(160%);
+            background: #ffffff;
+            border: 2px solid #c5a059;
             border-radius: var(--radius-lg);
-            padding: 28px 24px 20px 24px; /* Extra top padding for icon */
-            margin: 24px 0 16px 0; /* Extra top margin to accommodate icon */
+            padding: 24px;
+            margin: 24px 0 16px 0;
             text-align: center;
             position: relative;
-            box-shadow: 
-                0 8px 32px rgba(197, 160, 89, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            /* overflow: hidden removed to allow icon to show */
-        }
-        
-        .certificate-box::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: var(--radius-lg);
-            padding: 2px;
-            background: linear-gradient(135deg, 
-                rgba(197, 160, 89, 0.9), 
-                rgba(255, 255, 255, 0.5),
-                rgba(197, 160, 89, 0.7));
-            -webkit-mask: 
-                linear-gradient(#fff 0 0) content-box, 
-                linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
-        
-        .certificate-box::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border-radius: var(--radius-lg);
-            background: linear-gradient(90deg, 
-                transparent 0%, 
-                rgba(255, 255, 255, 0.3) 50%, 
-                transparent 100%);
-            background-size: 200% 100%;
-            animation: shimmer-sweep 6s ease-in-out infinite;
-            pointer-events: none;
-        }
-        
-        @keyframes shimmer-sweep {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-
-        .cert-icon {
-            position: absolute;
-            top: -16px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            border: 3px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 4px 15px rgba(197, 160, 89, 0.4);
-            z-index: 10;
+            box-shadow: 0 2px 12px rgba(197, 160, 89, 0.2);
         }
 
         .certificate-box h2 {
@@ -1789,13 +1711,6 @@
             .certificate-box {
                 padding: 8px;
                 margin: 8px 0;
-            }
-
-            .cert-icon {
-                width: 18px;
-                height: 18px;
-                font-size: 10px;
-                top: -9px;
             }
 
             .certificate-box h2 {
@@ -6262,7 +6177,10 @@
                     </div>
                     <button class="btn"
                         style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); font-size: 9px; padding: 5px 12px;"
-                        onclick="exportLeadsCSV()">📥 Export CSV <span class="help-tip" style="margin-left:2px;">?<span class="help-tip-text">Download all your leads as a CSV spreadsheet file. Opens in Excel, Google Sheets, or any spreadsheet app.</span></span></button>
+                        onclick="exportLeadsCSV()">📥 Export <span class="help-tip" style="margin-left:2px;">?<span class="help-tip-text">Download all your leads as a CSV spreadsheet file. Opens in Excel, Google Sheets, or any spreadsheet app.</span></span></button>
+                    <button class="btn"
+                        style="background: linear-gradient(135deg, #6366f1, #4f46e5); font-size: 9px; padding: 5px 12px;"
+                        onclick="importLeadsCSV()">📤 Import CSV <span class="help-tip" style="margin-left:2px;">?<span class="help-tip-text">Upload a CSV file to bulk-import leads. Use the same format as Export (Name, Email, Phone, etc.) or any CSV with email/phone columns. Duplicates are skipped automatically.</span></span></button>
                     <input type="text" id="leads-search" class="section-search" placeholder="Search name, email, phone..." oninput="debouncedFilterLeads(this.value)">
                     <span class="help-tip" style="margin-right:-2px;">?<span class="help-tip-text">Filter leads by status (Quoted, New, Contacted, etc.) or by source (Bonzo, GHL, Manual, CSV, etc.). Use both dropdowns together to narrow your view.</span></span>
                     <select id="leads-filter-status" onchange="loadUserLeads()"
@@ -6736,10 +6654,10 @@
                         <div class="input-field" style="flex: 2;"><label>Office Address</label><input type="text"
                                 id="lo-address" value=""
                                 placeholder="123 Main St, Suite 100, City, ST 12345" oninput="debouncedUpdateProfile()"></div>
-                        <div class="input-field"><label>Logo URL</label>
+                        <div class="input-field"><label>Lender Logo URL</label>
                             <div style="display:flex;gap:6px;"><input type="text" id="lo-logo-url"
                                     value=""
-                                    placeholder="https://your-logo-url.png" oninput="debouncedUpdateProfile()" style="flex:1;"><button type="button" class="btn"
+                                    placeholder="Default: Above All logo (edit anytime)" oninput="debouncedUpdateProfile()" style="flex:1;"><button type="button" class="btn"
                                     style="background:rgba(255,255,255,0.1);font-size:9px;padding:6px 12px;white-space:nowrap;"
                                     onclick="uploadSettingsImage('lo-logo-url','logoUrl')">📷 Upload</button></div>
                         </div>
@@ -6913,10 +6831,9 @@
             </div>
             <div id="lenderparser-section" class="control-section locked-section locked"
                 style="background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(220,38,38,0.1)); border-color: #ef4444;"
-                data-lock-text="🔒 Super Admin Only">
+                data-lock-text="🔒 Loading...">
                 <h4 style="font-family: var(--font-heading); color: #f87171; margin: 0 0 10px 0; font-size: 11px;">🏦
-                    Lender Info Parser <span
-                        style="font-size: 8px; background: #ef4444; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 6px;">ADMIN</span>
+                    Lender Info Parser</h4>
                 </h4>
                 <div class="input-group">
                     <div class="input-field" style="flex: 1;">
@@ -8508,7 +8425,6 @@ Best regards,
             <!-- RECOMMENDATION -->
             <div id="recommendation-section">
                 <div class="certificate-box">
-                    <div class="cert-icon">★</div>
                     <h2>Recommended <span id="rec-term-display">20-YEAR</span> <span id="rec-type-display">FIXED</span>
                     </h2>
                     <div class="main-offer" id="rec-offer-line">20-Yr @ 7.50% | 2.99% Orig | $1,612/mo</div>
@@ -9220,15 +9136,15 @@ Best regards,
             var isDiamondUser = (tierForAccess === 'diamond' || tierForAccess === 'obsidian');
             const access = {
                 'super_admin': ['lo', 'whitelabel', 'parser', 'lenderparser', 'email', 'integrations'],
-                'admin': ['lo', 'parser', 'email', 'integrations'],
-                'user': isDiamondUser ? ['lo', 'parser', 'email', 'integrations'] : ['lo', 'integrations']
+                'admin': ['lo', 'parser', 'lenderparser', 'email', 'integrations'],
+                'user': isDiamondUser ? ['lo', 'parser', 'lenderparser', 'email', 'integrations'] : ['lo', 'lenderparser', 'integrations']
             };
 
             // Define which tabs each role can see
             const tabAccess = {
                 'super_admin': ['client', 'quotes', 'leads', 'rates', 'lo', 'whitelabel', 'parser', 'email', 'integrations', 'superadmin'],
                 'admin': ['client', 'quotes', 'leads', 'rates', 'lo', 'parser', 'email', 'integrations'],
-                'user': isDiamondUser ? ['client', 'quotes', 'leads', 'rates', 'lo', 'parser', 'email', 'integrations'] : ['client', 'quotes', 'leads', 'rates', 'lo', 'integrations']
+                'user': isDiamondUser ? ['client', 'quotes', 'leads', 'rates', 'lo', 'parser', 'email', 'integrations'] : ['client', 'quotes', 'leads', 'rates', 'lo', 'parser', 'integrations']
             };
 
             const allowed = access[role] || [];
@@ -9819,14 +9735,11 @@ Best regards,
                 }
             }
 
-            // Lender Parser section unlock (platinum+)
+            // Lender Parser section unlock (all tiers)
             const lenderParser = document.getElementById('lenderparser-section');
             if (lenderParser) {
-                if (level >= 2) {
-                    lenderParser.classList.remove('locked');
-                    lenderParser.onclick = null;
-                }
-                // else stays locked (role access already handles this)
+                lenderParser.classList.remove('locked');
+                lenderParser.onclick = null;
             }
 
             // ---- OBSIDIAN+ (level >= 3): White Label ----
@@ -12103,8 +12016,9 @@ Best regards,
             ]).catch(function(err) {
                 console.warn('[auth-ready] Parallel load error:', err);
             });
-            // Start polling for quote view notifications
+            // Start polling for quote view notifications + automation alerts
             initQuoteViewNotifications();
+            initAutomationAlerts();
             // Auto-load users only for the verified Super Admin account
             if (isTrueSuperAdmin()) {
                 setTimeout(() => { loadAllUsers(); loadCompetitorRates(); }, 500);
@@ -13527,6 +13441,13 @@ Best regards,
                 }
             } catch (e) {
                 console.debug('Cloud profile load skipped:', e.message);
+            }
+
+            // Default lender logo — use Above All logo if user hasn't set their own
+            var logoField = document.getElementById('lo-logo-url');
+            if (logoField && !logoField.value.trim()) {
+                logoField.value = 'https://carbon-heloc.vercel.app/above-all-crm-horizontal.svg';
+                if (typeof updateProfile === 'function') updateProfile();
             }
         }
 
@@ -17317,37 +17238,12 @@ Sent via Above All Carbon HELOC Tool`;
                 });
             }
 
-            // Fix glassmorphism for PDF/screenshot/email capture
-            // html2canvas cannot render backdrop-filter — use inline overrides (beat stylesheet specificity)
-            var certBox = clonedDoc.querySelector('.certificate-box');
-            if (certBox) {
-                certBox.style.background = '#ffffff';
-                certBox.style.backdropFilter = 'none';
-                certBox.style.webkitBackdropFilter = 'none';
-                certBox.style.border = '2px solid #c5a059';
-                certBox.style.boxShadow = '0 2px 12px rgba(197,160,89,0.2)';
-                var certH2 = certBox.querySelector('h2');
-                if (certH2) certH2.style.color = '#0f2b4c';
-                var mainOffer = certBox.querySelector('.main-offer');
-                if (mainOffer) mainOffer.style.color = '#a68543';
-                var tagline = certBox.querySelector('.tagline');
-                if (tagline) tagline.style.color = '#1e293b';
-            }
-            var certIcon = clonedDoc.querySelector('.cert-icon');
-            if (certIcon) {
-                certIcon.style.border = '3px solid #ffffff';
-                certIcon.style.boxShadow = '0 2px 8px rgba(197,160,89,0.4)';
-            }
-            // Fix all glassmorphism containers
+            // Fix glassmorphism containers for PDF/screenshot/email capture
             clonedDoc.querySelectorAll('.glass-card, .snapshot-container').forEach(function(el) {
                 el.style.background = '#ffffff';
                 el.style.backdropFilter = 'none';
                 el.style.webkitBackdropFilter = 'none';
             });
-            // Pseudo-elements can't be overridden inline — inject minimal style
-            var captureStyle = clonedDoc.createElement('style');
-            captureStyle.textContent = '.certificate-box::before, .certificate-box::after { display:none !important; }';
-            clonedDoc.head.appendChild(captureStyle);
         }
 
         function requireProposalCanvas(canvas, message) {
@@ -17398,41 +17294,10 @@ Sent via Above All Carbon HELOC Tool`;
                     onclone: function(clonedDoc) {
                         var el = clonedDoc.getElementById('proposal-container');
                         if (el) { el.style.width = captureWidth + 'px'; el.style.maxWidth = captureWidth + 'px'; }
-                        // Hide internal-only sections from client-facing screenshots
-                        var aiBox = clonedDoc.getElementById('ai-assistant-container');
-                        if (aiBox) aiBox.style.display = 'none';
-                        var sendBox = clonedDoc.getElementById('send-quote-section');
-                        if (sendBox) sendBox.style.display = 'none';
-                        // Hide command palette prediction bar and quick widget
-                        ['carbon-prediction-bar', 'carbon-quick-widget'].forEach(function(id) {
-                            var el = clonedDoc.getElementById(id);
-                            if (el) el.style.display = 'none';
-                        });
-                        // Hide floating widgets like Ezra
-                        var eqRoot = clonedDoc.getElementById('eq-root');
-                        if (eqRoot) eqRoot.style.display = 'none';
-                        var eqOrbs = clonedDoc.querySelectorAll('.eq-orb, .eq-panel');
-                        eqOrbs.forEach(function(el) { el.style.display = 'none'; });
-                        // Hide all video/canvas elements — html2canvas crashes on 0-size video/canvas
-                        clonedDoc.querySelectorAll('video, canvas').forEach(function(el) { 
-                            el.style.display = 'none';
-                            // Ensure canvas has valid dimensions to prevent createPattern crash
-                            if (el.tagName.toLowerCase() === 'canvas') {
-                                if (!el.width || el.width === 0) el.width = 1;
-                                if (!el.height || el.height === 0) el.height = 1;
-                                el.style.width = (el.width || 1) + 'px';
-                                el.style.height = (el.height || 1) + 'px';
-                                el.style.minWidth = '1px';
-                                el.style.minHeight = '1px';
-                            }
-                        });
-                        // Replace empty-src images with 1px transparent PNG to prevent createPattern crash
-                        var blankPng = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-                        clonedDoc.querySelectorAll('img').forEach(function(img) {
-                            if (!img.getAttribute('src') || img.getAttribute('src') === '' || img.naturalWidth === 0) {
-                                img.src = blankPng;
-                            }
-                        });
+                        sanitizeCaptureClone(
+                            clonedDoc,
+                            '#ai-assistant-container, #send-quote-section, #eq-root, .eq-orb, .eq-panel, #carbon-prediction-bar, #carbon-quick-widget, #email-send-modal, .toast-container, .modal-overlay, #screen-share-preview'
+                        );
                     }
                 });
                 container.style.width = origWidth;
@@ -20651,6 +20516,141 @@ Sent via Above All Carbon HELOC Tool`;
             showToast(leads.length + ' leads exported to CSV', 'success');
         }
 
+        // ===== CSV IMPORT =====
+        function importLeadsCSV() {
+            var fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.csv,text/csv';
+            fileInput.onchange = async function() {
+                var file = fileInput.files[0];
+                if (!file) return;
+                if (file.size > 10 * 1024 * 1024) { showToast('File too large (max 10MB)', 'error'); return; }
+
+                var sb = window._supabase;
+                var userId = window.currentUserId;
+                if (!sb || !userId) { showToast('Not authenticated', 'error'); return; }
+
+                showToast('Reading CSV...', 'info');
+                var text = await file.text();
+                var lines = text.split(/\r?\n/).filter(function(l) { return l.trim(); });
+                if (lines.length < 2) { showToast('CSV is empty or has no data rows', 'warning'); return; }
+
+                // Parse header row — normalize to lowercase, trim
+                var headerRaw = parseCSVRow(lines[0]);
+                var headers = headerRaw.map(function(h) { return h.toLowerCase().trim().replace(/[^a-z0-9_]/g, '_'); });
+
+                // Map common column names to our fields
+                var colMap = {
+                    first_name: findCol(headers, ['first_name', 'firstname', 'first']),
+                    last_name: findCol(headers, ['last_name', 'lastname', 'last']),
+                    name: findCol(headers, ['name', 'full_name', 'fullname', 'contact_name']),
+                    email: findCol(headers, ['email', 'email_address', 'e_mail']),
+                    phone: findCol(headers, ['phone', 'phone_number', 'mobile', 'cell', 'telephone']),
+                    source: findCol(headers, ['source', 'lead_source']),
+                    status: findCol(headers, ['status', 'stage', 'pipeline_stage']),
+                    credit_score: findCol(headers, ['credit_score', 'credit', 'fico', 'score']),
+                    property_address: findCol(headers, ['property_address', 'address', 'property']),
+                    home_value: findCol(headers, ['home_value', 'home_price', 'value']),
+                    mortgage_balance: findCol(headers, ['mortgage_balance', '1st_mortgage', 'mortgage', 'balance']),
+                    cash_out: findCol(headers, ['cash_out', 'cash_back', 'loan_amount', 'heloc_amount']),
+                };
+
+                if (colMap.email === -1 && colMap.phone === -1 && colMap.name === -1) {
+                    showToast('CSV must have at least an Email, Phone, or Name column', 'error');
+                    return;
+                }
+
+                var imported = 0, skipped = 0, errors = 0;
+                var rows = [];
+                for (var i = 1; i < lines.length; i++) {
+                    var vals = parseCSVRow(lines[i]);
+                    if (!vals || vals.length === 0) continue;
+
+                    var firstName = '', lastName = '';
+                    if (colMap.first_name >= 0) firstName = (vals[colMap.first_name] || '').trim();
+                    if (colMap.last_name >= 0) lastName = (vals[colMap.last_name] || '').trim();
+                    if (!firstName && !lastName && colMap.name >= 0) {
+                        var fullName = (vals[colMap.name] || '').trim();
+                        var parts = fullName.split(/\s+/);
+                        firstName = parts[0] || '';
+                        lastName = parts.slice(1).join(' ') || '';
+                    }
+
+                    var email = colMap.email >= 0 ? (vals[colMap.email] || '').trim().toLowerCase() : '';
+                    var phone = colMap.phone >= 0 ? (vals[colMap.phone] || '').trim() : '';
+
+                    if (!email && !phone && !firstName) { skipped++; continue; }
+
+                    var meta = {};
+                    if (colMap.credit_score >= 0 && vals[colMap.credit_score]) meta.credit_score = vals[colMap.credit_score].trim();
+                    if (colMap.property_address >= 0 && vals[colMap.property_address]) meta.property_address = vals[colMap.property_address].trim();
+                    if (colMap.home_value >= 0 && vals[colMap.home_value]) meta.home_value = vals[colMap.home_value].trim().replace(/[$,]/g, '');
+                    if (colMap.mortgage_balance >= 0 && vals[colMap.mortgage_balance]) meta.mortgage_balance = vals[colMap.mortgage_balance].trim().replace(/[$,]/g, '');
+                    if (colMap.cash_out >= 0 && vals[colMap.cash_out]) meta.cash_out = vals[colMap.cash_out].trim().replace(/[$,]/g, '');
+
+                    rows.push({
+                        user_id: userId,
+                        first_name: firstName || null,
+                        last_name: lastName || null,
+                        email: email || null,
+                        phone: phone || null,
+                        source: 'csv',
+                        status: colMap.status >= 0 ? (vals[colMap.status] || 'new').trim().toLowerCase() : 'new',
+                        metadata: Object.keys(meta).length > 0 ? meta : null,
+                    });
+                }
+
+                if (rows.length === 0) { showToast('No valid leads found in CSV', 'warning'); return; }
+
+                // Batch insert in chunks of 50
+                showToast('Importing ' + rows.length + ' leads...', 'info');
+                for (var c = 0; c < rows.length; c += 50) {
+                    var batch = rows.slice(c, c + 50);
+                    var { error } = await sb.from('leads').insert(batch);
+                    if (error) {
+                        console.warn('CSV batch error:', error.message);
+                        errors += batch.length;
+                    } else {
+                        imported += batch.length;
+                    }
+                }
+
+                showToast(imported + ' leads imported' + (skipped ? ', ' + skipped + ' skipped' : '') + (errors ? ', ' + errors + ' errors' : ''), imported > 0 ? 'success' : 'warning');
+                if (imported > 0) loadUserLeads();
+            };
+            fileInput.click();
+        }
+
+        // Parse a single CSV row handling quoted fields
+        function parseCSVRow(line) {
+            var result = [];
+            var current = '';
+            var inQuotes = false;
+            for (var i = 0; i < line.length; i++) {
+                var ch = line[i];
+                if (inQuotes) {
+                    if (ch === '"' && line[i + 1] === '"') { current += '"'; i++; }
+                    else if (ch === '"') { inQuotes = false; }
+                    else { current += ch; }
+                } else {
+                    if (ch === '"') { inQuotes = true; }
+                    else if (ch === ',') { result.push(current); current = ''; }
+                    else { current += ch; }
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        // Find column index by trying multiple possible names
+        function findCol(headers, names) {
+            for (var n = 0; n < names.length; n++) {
+                var idx = headers.indexOf(names[n]);
+                if (idx >= 0) return idx;
+            }
+            return -1;
+        }
+
         // Show lead analytics modal
         async function showLeadAnalytics(leadId, leadName) {
             var sb = window._supabase;
@@ -21573,6 +21573,103 @@ Sent via Above All Carbon HELOC Tool`;
             if (!sb || !userId) return;
             await sb.from('quote_view_notifications').update({ seen: true }).eq('user_id', userId).eq('seen', false);
             await fetchQuoteViewNotifs();
+        };
+
+        // ===== AUTOMATION ALERTS (Zero-config smart notifications) =====
+        var _autoAlertTimer = null;
+        var _lastAutoAlertCheck = null;
+
+        async function initAutomationAlerts() {
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) return;
+            // Only for Titanium+ (tier level >= 1)
+            var tier = (window.currentUserTier || 'carbon').toLowerCase();
+            var tierLevels = { carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 };
+            if ((tierLevels[tier] || 0) < 1 && window.currentUserRole !== 'super_admin') return;
+
+            await fetchAutomationAlerts();
+            _autoAlertTimer = setInterval(fetchAutomationAlerts, 30000);
+        }
+
+        async function fetchAutomationAlerts() {
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) return;
+
+            try {
+                var { data: alerts, error } = await sb
+                    .from('automation_alerts')
+                    .select('id, lead_id, event_type, title, body, payload, seen, created_at')
+                    .eq('user_id', userId)
+                    .eq('seen', false)
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                if (error || !alerts || alerts.length === 0) return;
+
+                var now = Date.now();
+                var eventIcons = {
+                    hot_lead: '\uD83D\uDD25',
+                    application_submitted: '\uD83C\uDF89',
+                    repeat_visitor: '\uD83D\uDC40',
+                    stale_lead: '\u23F0',
+                    quote_expiry: '\u26A0\uFE0F'
+                };
+
+                alerts.forEach(function(a) {
+                    var age = now - new Date(a.created_at).getTime();
+                    // Show toast for alerts created in the last 35 seconds (same window as quote view notifs)
+                    if (age < 35000 && (!_lastAutoAlertCheck || new Date(a.created_at) > _lastAutoAlertCheck)) {
+                        var icon = eventIcons[a.event_type] || '\uD83D\uDD14';
+                        var toastType = (a.event_type === 'hot_lead' || a.event_type === 'application_submitted') ? 'success' : 'info';
+                        showToast(icon + ' ' + a.title, toastType);
+                    }
+                });
+                _lastAutoAlertCheck = new Date();
+
+                // Update the notification badge count (add to existing quote view count)
+                var badge = document.getElementById('notif-badge');
+                if (badge) {
+                    var current = parseInt(badge.textContent) || 0;
+                    var total = current + alerts.length;
+                    if (total > 0) {
+                        badge.style.display = 'flex';
+                        badge.textContent = total > 9 ? '9+' : total;
+                    }
+                }
+
+                // Add automation alerts to the notification panel
+                var list = document.getElementById('notif-list');
+                if (list) {
+                    alerts.forEach(function(a) {
+                        var icon = eventIcons[a.event_type] || '\uD83D\uDD14';
+                        var time = timeAgo(new Date(a.created_at));
+                        var phone = a.payload && a.payload.phone ? a.payload.phone : '';
+                        var leadClick = a.lead_id ? ' onclick="markAutoAlertSeen(\'' + a.id + '\'); loadLeadIntoForm(\'' + a.lead_id + '\')"' : '';
+                        var callBtn = phone ? '<a href="tel:' + phone + '" style="font-size:8px;background:#10b981;color:white;padding:3px 8px;border-radius:4px;text-decoration:none;font-weight:700;" onclick="event.stopPropagation()">CALL</a>' : '';
+                        var div = document.createElement('div');
+                        div.style.cssText = 'padding:10px 18px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:10px;cursor:pointer;background:rgba(59,130,246,0.05);';
+                        div.setAttribute('onclick', leadClick.replace(' onclick="', '').replace('"', ''));
+                        div.innerHTML =
+                            '<span style="width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0;"></span>' +
+                            '<div style="flex:1;min-width:0;">' +
+                                '<div style="font-size:12px;font-weight:600;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + icon + ' ' + escapeHtml(a.title) + '</div>' +
+                                '<div style="font-size:10px;color:rgba(255,255,255,0.4);">' + time + '</div>' +
+                            '</div>' +
+                            callBtn;
+                        list.insertBefore(div, list.firstChild);
+                    });
+                }
+            } catch (e) {
+                console.debug('Auto alert fetch error:', e.message);
+            }
+        }
+
+        window.markAutoAlertSeen = async function(alertId) {
+            var sb = window._supabase;
+            if (!sb) return;
+            await sb.from('automation_alerts').update({ seen: true }).eq('id', alertId);
         };
 
         // Close notif panel when clicking outside
