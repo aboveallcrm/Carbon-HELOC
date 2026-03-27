@@ -5325,20 +5325,21 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         }
 
         // ── KB-FIRST: Try local knowledge base before any AI call ──
+        let kbTopScore = 0;
         const kbResults = EZRA_KNOWLEDGE.searchLocalKB(message);
         if (kbResults) {
             // Parse KB results — if top match score is high enough, use directly
             const kbLines = kbResults.split('\n').filter(l => l.trim());
             const scoreMatch = kbLines[0]?.match(/\(score:\s*([\d.]+)\)/);
-            const topScore = scoreMatch ? parseFloat(scoreMatch[1]) : 0;
-            if (topScore >= 0.55) {
+            kbTopScore = scoreMatch ? parseFloat(scoreMatch[1]) : 0;
+            if (kbTopScore >= 0.55) {
                 // KB match — respond without AI (saves API cost)
                 let kbContent = kbLines.map(l => l.replace(/\(score:.*?\)/g, '').trim()).join('\n\n');
                 // Lower-confidence matches get a follow-up prompt so users can dig deeper
-                if (topScore < 0.7) {
+                if (kbTopScore < 0.7) {
                     kbContent += '\n\n*Need more detail? Just ask and I\'ll dig deeper.*';
                 }
-                return { content: kbContent, metadata: { model: 'local-kb', intent: intent || 'kb_match', score: topScore } };
+                return { content: kbContent, metadata: { model: 'local-kb', intent: intent || 'kb_match', score: kbTopScore } };
             }
         }
 
@@ -5354,12 +5355,60 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
 
         const response = await callAIService(message, model, intent);
 
+        // Capture AI fallback as KB suggestion candidate (fire-and-forget)
+        captureKBSuggestion(message, response.content, intent, response.metadata?.provider || model, kbTopScore);
+
         return {
             content: response.content,
             metadata: { model: response.metadata?.provider || model, intent },
             autoFillFields: response.autoFillFields,
             usage: response.usage
         };
+    }
+
+    // ── KB SUGGESTION CAPTURE: Log AI fallbacks for admin review ──
+    function captureKBSuggestion(question, aiResponse, intent, model, kbScore) {
+        if (!EzraState.supabase || !aiResponse || aiResponse.length < 50) return;
+        if (!window.currentUserId) return;
+
+        // Calculate confidence score
+        let confidence = 1.0 - (kbScore || 0);
+        if (aiResponse.length < 100) confidence -= 0.2;
+        if (/i('m| am) not sure|i don't know|cannot help|I cannot/i.test(aiResponse)) confidence -= 0.3;
+        if (/heloc|equity|payment|rate|loan|borrower|mortgage|credit line/i.test(aiResponse)) confidence += 0.1;
+        confidence = Math.max(0, Math.min(1, parseFloat(confidence.toFixed(3))));
+
+        if (confidence < 0.3) return;
+
+        // Derive suggested fields
+        const suggestedCategory = intent || 'general';
+        const suggestedTitle = question.length > 120 ? question.substring(0, 117) + '...' : question;
+        const suggestedContent = aiResponse.replace(/\*\*/g, '').replace(/\*/g, '').trim();
+
+        // Dedup check + insert (fire-and-forget)
+        EzraState.supabase.from('kb_suggestions')
+            .select('id')
+            .eq('original_question', question)
+            .eq('status', 'pending')
+            .limit(1)
+            .then(({ data: existing }) => {
+                if (existing && existing.length > 0) return; // Already captured
+                return EzraState.supabase.from('kb_suggestions').insert({
+                    original_question: question,
+                    ai_response: aiResponse,
+                    suggested_category: suggestedCategory,
+                    suggested_title: suggestedTitle,
+                    suggested_content: suggestedContent,
+                    confidence_score: confidence,
+                    user_id: window.currentUserId,
+                    intent: intent,
+                    model_used: model
+                });
+            })
+            .then(result => {
+                if (result?.error) console.warn('KB suggestion capture failed:', result.error.message);
+            })
+            .catch(e => console.warn('KB suggestion capture error:', e.message));
     }
 
     // ============================================

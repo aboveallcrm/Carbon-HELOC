@@ -167,6 +167,145 @@
             gap: 10px;
             margin-top: 20px;
         }
+
+        /* Tab bar */
+        .tab-bar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 0;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .tab-btn:hover { color: var(--text-main); }
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+        .badge-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ef4444;
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            padding: 0 6px;
+            margin-left: 6px;
+        }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* KB Cards */
+        .kb-cards { display: flex; flex-direction: column; gap: 16px; }
+        .kb-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 20px;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .kb-card.fade-out {
+            opacity: 0;
+            transform: translateX(40px);
+        }
+        .kb-card-question {
+            background: rgba(197,160,89,0.08);
+            border-left: 3px solid var(--accent);
+            padding: 10px 14px;
+            border-radius: 0 6px 6px 0;
+            font-style: italic;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            font-size: 13px;
+        }
+        .kb-card-answer {
+            margin-bottom: 14px;
+            line-height: 1.6;
+            font-size: 13px;
+        }
+        .kb-card-answer h4 { margin: 0 0 6px; color: var(--accent); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kb-card-meta {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+            font-size: 12px;
+        }
+        .kb-badge-cat {
+            background: rgba(59,130,246,0.2);
+            color: #93c5fd;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .kb-score {
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .kb-score-high { background: rgba(34,197,94,0.2); color: #4ade80; }
+        .kb-score-mid { background: rgba(245,158,11,0.2); color: #fbbf24; }
+        .kb-score-low { background: rgba(239,68,68,0.2); color: #f87171; }
+        .kb-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .kb-btn {
+            padding: 7px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .kb-btn:hover { opacity: 0.85; }
+        .kb-btn-approve { background: #22c55e; color: white; }
+        .kb-btn-edit { background: #3b82f6; color: white; }
+        .kb-btn-reject { background: #ef4444; color: white; }
+        .kb-empty {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 60px 20px;
+            font-size: 14px;
+        }
+
+        /* KB Edit inline form */
+        .kb-edit-form { margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px; }
+        .kb-edit-form .form-group { margin-bottom: 10px; }
+        .kb-edit-form label { font-size: 12px; margin-bottom: 3px; }
+        .kb-edit-form textarea {
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 80px;
+        }
     </style>
 </head>
 
@@ -180,26 +319,43 @@
             </div>
         </header>
 
-        <div class="card">
-            <h3>User Management</h3>
-            <table id="users-table">
-                <thead>
-                    <tr>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Tier</th>
-                        <th>Status</th>
-                        <th>Quotes</th>
-                        <th>Joined</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td colspan="7">Loading users...</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="users" onclick="window.switchAdminTab('users')">Users</button>
+            <button class="tab-btn" data-tab="kb" onclick="window.switchAdminTab('kb')">Pending KB <span id="kb-badge" class="badge-count" style="display:none">0</span></button>
+        </div>
+
+        <div id="panel-users" class="tab-panel active">
+            <div class="card">
+                <h3>User Management</h3>
+                <table id="users-table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Tier</th>
+                            <th>Status</th>
+                            <th>Quotes</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="7">Loading users...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="panel-kb" class="tab-panel">
+            <div class="card">
+                <h3>Pending KB Suggestions</h3>
+                <p style="color:var(--text-muted);font-size:13px;margin-top:0;">AI-generated knowledge base candidates from real conversations. Approve to add to Ezra's knowledge base.</p>
+                <div id="kb-cards" class="kb-cards">
+                    <div class="kb-empty">Loading...</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -304,6 +460,7 @@
             }
 
             await loadUsers();
+            loadKBBadgeCount();
         }
 
         async function loadUsers() {
@@ -479,6 +636,195 @@
         window.impersonate = async (userId) => {
             if (!confirm("Are you sure you want to log in as this user?")) return;
             await impersonateUser(userId);
+        };
+
+        // ============================================
+        // TAB SWITCHING
+        // ============================================
+        window.switchAdminTab = (tab) => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+            if (tab === 'kb' && !kbLoaded) loadKBSuggestions();
+        };
+
+        // ============================================
+        // PENDING KB SUGGESTIONS
+        // ============================================
+        const KB_CATEGORIES = [
+            'product_structures', 'payment_rules', 'approval_process', 'objections',
+            'competitive', 'sales_scripts', 'heloc_guidelines', 'use_case_selling',
+            'closing', 'sales_psychology', 'data_privacy', 'first_contact',
+            'value_proposition', 'loan_programs', 'general'
+        ];
+
+        let kbSuggestions = [];
+        let kbLoaded = false;
+
+        async function loadKBBadgeCount() {
+            try {
+                const { count, error } = await supabase
+                    .from('kb_suggestions')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('status', 'pending');
+                if (!error && count > 0) {
+                    const badge = document.getElementById('kb-badge');
+                    badge.textContent = count;
+                    badge.style.display = 'inline-flex';
+                }
+            } catch (e) { /* table may not exist yet */ }
+        }
+
+        async function loadKBSuggestions() {
+            const container = document.getElementById('kb-cards');
+            try {
+                const { data, error } = await supabase.rpc('get_pending_kb_suggestions');
+                if (error) throw error;
+                kbSuggestions = data || [];
+                kbLoaded = true;
+                renderKBCards();
+            } catch (e) {
+                container.innerHTML = `<div class="kb-empty" style="color:#f87171;">Error loading suggestions: ${escapeHtml(e.message)}</div>`;
+            }
+        }
+
+        function renderKBCards() {
+            const container = document.getElementById('kb-cards');
+            if (!kbSuggestions.length) {
+                container.innerHTML = '<div class="kb-empty">No pending suggestions. Ezra will capture new KB candidates as users ask questions that fall through to AI.</div>';
+                return;
+            }
+            container.innerHTML = kbSuggestions.map(s => renderKBCard(s)).join('');
+        }
+
+        function renderKBCard(s) {
+            const scoreClass = s.confidence_score >= 0.7 ? 'kb-score-high' : s.confidence_score >= 0.5 ? 'kb-score-mid' : 'kb-score-low';
+            const scoreLabel = (s.confidence_score * 100).toFixed(0) + '%';
+            const timeAgo = formatTimeAgo(s.created_at);
+            const userEmail = s.user_id ? (allUsers.find(u => u.id === s.user_id)?.email || 'Unknown') : 'Anonymous';
+            return `<div class="kb-card" id="kb-card-${s.id}">
+                <div class="kb-card-question">"${escapeHtml(s.original_question)}"</div>
+                <div class="kb-card-answer">
+                    <h4>Suggested KB Entry</h4>
+                    <div><strong style="color:#93c5fd;">${escapeHtml(s.suggested_title)}</strong></div>
+                    <div style="margin-top:6px;color:var(--text-muted);">${escapeHtml(s.suggested_content).substring(0, 300)}${s.suggested_content.length > 300 ? '...' : ''}</div>
+                </div>
+                <div class="kb-card-meta">
+                    <span class="kb-badge-cat">${escapeHtml(s.suggested_category)}</span>
+                    <span class="kb-score ${scoreClass}">Confidence: ${scoreLabel}</span>
+                    <span style="color:var(--text-muted);">${escapeHtml(timeAgo)} &middot; ${escapeHtml(userEmail)}</span>
+                    ${s.model_used ? `<span style="color:var(--text-muted);opacity:0.6;">${escapeHtml(s.model_used)}</span>` : ''}
+                </div>
+                <div class="kb-card-actions">
+                    <button class="kb-btn kb-btn-approve" onclick="window.approveKB('${s.id}')">Approve</button>
+                    <button class="kb-btn kb-btn-edit" onclick="window.editKB('${s.id}')">Edit + Approve</button>
+                    <button class="kb-btn kb-btn-reject" onclick="window.rejectKB('${s.id}')">Reject</button>
+                </div>
+                <div id="kb-edit-${s.id}" style="display:none;"></div>
+            </div>`;
+        }
+
+        function formatTimeAgo(dateStr) {
+            const diff = Date.now() - new Date(dateStr).getTime();
+            const mins = Math.floor(diff / 60000);
+            if (mins < 60) return mins + 'm ago';
+            const hrs = Math.floor(mins / 60);
+            if (hrs < 24) return hrs + 'h ago';
+            const days = Math.floor(hrs / 24);
+            return days + 'd ago';
+        }
+
+        function updateBadge(delta) {
+            const badge = document.getElementById('kb-badge');
+            let count = parseInt(badge.textContent || '0') + delta;
+            if (count <= 0) {
+                badge.style.display = 'none';
+                count = 0;
+            } else {
+                badge.style.display = 'inline-flex';
+            }
+            badge.textContent = count;
+        }
+
+        function removeCard(id) {
+            const card = document.getElementById('kb-card-' + id);
+            if (card) {
+                card.classList.add('fade-out');
+                setTimeout(() => {
+                    card.remove();
+                    kbSuggestions = kbSuggestions.filter(s => s.id !== id);
+                    if (!kbSuggestions.length) renderKBCards();
+                }, 300);
+            }
+        }
+
+        window.approveKB = async (id) => {
+            const s = kbSuggestions.find(s => s.id === id);
+            if (!s) return;
+
+            // Check if there's an active edit form with modified values
+            const editForm = document.getElementById('kb-edit-' + id);
+            const catEl = editForm?.querySelector?.('.kb-edit-cat');
+            const titleEl = editForm?.querySelector?.('.kb-edit-title');
+            const contentEl = editForm?.querySelector?.('.kb-edit-content');
+
+            const category = catEl?.value || s.suggested_category;
+            const title = titleEl?.value || s.suggested_title;
+            const content = contentEl?.value || s.suggested_content;
+
+            try {
+                const { error } = await supabase.rpc('approve_kb_suggestion', {
+                    p_id: id, p_category: category, p_title: title, p_content: content
+                });
+                if (error) throw error;
+                showNotify('KB entry approved and added to Ezra knowledge base', 'success');
+                removeCard(id);
+                updateBadge(-1);
+            } catch (e) {
+                showNotify('Error approving: ' + e.message, 'error');
+            }
+        };
+
+        window.editKB = (id) => {
+            const s = kbSuggestions.find(s => s.id === id);
+            if (!s) return;
+            const editDiv = document.getElementById('kb-edit-' + id);
+            if (editDiv.style.display === 'block') { editDiv.style.display = 'none'; return; }
+
+            const catOptions = KB_CATEGORIES.map(c =>
+                `<option value="${c}" ${c === s.suggested_category ? 'selected' : ''}>${c}</option>`
+            ).join('');
+
+            editDiv.innerHTML = `<div class="kb-edit-form">
+                <div class="form-group">
+                    <label>Category</label>
+                    <select class="kb-edit-cat">${catOptions}</select>
+                </div>
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" class="kb-edit-title" value="${escapeHtml(s.suggested_title)}">
+                </div>
+                <div class="form-group">
+                    <label>Content</label>
+                    <textarea class="kb-edit-content" rows="5">${escapeHtml(s.suggested_content)}</textarea>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:10px;">
+                    <button class="kb-btn kb-btn-approve" onclick="window.approveKB('${s.id}')">Save + Approve</button>
+                    <button class="kb-btn" style="background:rgba(255,255,255,0.1);color:var(--text-muted);" onclick="document.getElementById('kb-edit-${s.id}').style.display='none'">Cancel</button>
+                </div>
+            </div>`;
+            editDiv.style.display = 'block';
+        };
+
+        window.rejectKB = async (id) => {
+            try {
+                const { error } = await supabase.rpc('reject_kb_suggestion', { p_id: id });
+                if (error) throw error;
+                showNotify('Suggestion rejected', 'info');
+                removeCard(id);
+                updateBadge(-1);
+            } catch (e) {
+                showNotify('Error rejecting: ' + e.message, 'error');
+            }
         };
 
         init();
