@@ -1,8 +1,5 @@
 {
   "trailingSlash": false,
-  "redirects": [
-    { "source": "/AboveAllCarbon_HELOC_v12_FIXED.html", "destination": "/", "statusCode": 308 }
-  ],
   "rewrites": [
     { "source": "/", "destination": "/AboveAllCarbon_HELOC_v12_FIXED.html" },
     { "source": "/app", "destination": "/AboveAllCarbon_HELOC_v12_FIXED.html" },

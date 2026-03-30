@@ -44,16 +44,16 @@ self.addEventListener('install', (event) => {
       })
   );
   
-  // Enable navigation preload if available
-  if (self.registration.navigationPreload) {
-    self.registration.navigationPreload.enable();
-  }
-  
   self.skipWaiting();
 });
 
 // Activate event - clean up old caches, then claim clients
 self.addEventListener('activate', (event) => {
+  // Enable navigation preload if available (must be in activate, not install)
+  if (self.registration.navigationPreload) {
+    self.registration.navigationPreload.enable();
+  }
+
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
