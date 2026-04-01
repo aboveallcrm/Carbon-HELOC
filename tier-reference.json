@@ -3,179 +3,73 @@
   "tagline": "The All-In-One HELOC Proposal Tool for Loan Officers",
   "tiers": [
     {
-      "name": "Carbon",
-      "slug": "carbon",
+      "name": "Starter",
+      "slug": "starter",
       "color": "#6b7280",
-      "label": "Starter",
-      "description": "Everything you need to build and share professional HELOC proposals.",
-      "price_monthly": 279,
-      "price_annual": 223,
-      "price_hint": "$279/mo",
+      "label": "Professional Quotes in Seconds",
+      "description": "2 tools in 1 — HELOC Quote Builder + Refinance Architect. 14-day free Pro trial included.",
+      "price_monthly": 79,
+      "price_annual": 63,
+      "price_hint": "$79/mo",
       "features": [
-        {
-          "name": "Core Quote Builder",
-          "description": "Full rate matrix with 3 tiers (10, 15, 20, 30-year terms), real-time snapshot, client info fields, credit score, home value, and mortgage balance inputs."
-        },
-        {
-          "name": "PDF Export",
-          "description": "Generate a clean, branded PDF of any proposal with one click."
-        },
-        {
-          "name": "Screenshot & Copy",
-          "description": "Capture the proposal as a high-res image and copy it to clipboard for easy sharing."
-        },
-        {
-          "name": "LO Profile / Branding",
-          "description": "Add your name, NMLS, company, headshot, and logo to every proposal. Your brand, your proposals."
-        },
-        {
-          "name": "Lead Parser",
-          "description": "Paste raw lead data (from Bonzo, email, or any source) and auto-fill client fields instantly."
-        },
-        {
-          "name": "Bonzo Lead Import",
-          "description": "Import leads directly from Bonzo CRM into the quote builder."
-        },
-        {
-          "name": "Email / Share",
-          "description": "Copy a shareable link or email the proposal to your client with basic sharing tools."
-        },
-        {
-          "name": "Cloud Sync",
-          "description": "Quotes auto-save to the cloud. Access your work from any device, never lose a proposal."
-        },
-        {
-          "name": "Saved Quotes",
-          "description": "View, reload, and manage your saved quote history."
-        }
+        { "name": "HELOC Quote Builder", "description": "Full rate matrix with 3 tiers, real-time snapshot, credit score, home value, and mortgage balance inputs." },
+        { "name": "Refinance Architect", "description": "Side-by-side refi comparison with monthly/yearly/lifetime savings projections." },
+        { "name": "PDF, Screenshot & HTML Email", "description": "Export proposals as PDF, screenshot, or branded HTML email." },
+        { "name": "Lender Parser (Figure/NFTYDoor)", "description": "Paste lender rate sheets and auto-extract rates, fees, and terms." },
+        { "name": "LO Profile & Branding", "description": "Your name, NMLS, company, headshot, and logo on every proposal." },
+        { "name": "URL Shortener", "description": "Shorten quote links for easy sharing via SMS and email." },
+        { "name": "Address Autocomplete", "description": "Smart address autocomplete for faster data entry." },
+        { "name": "Rate Configuration", "description": "Set and manage your HELOC rate matrix." }
       ],
       "locked_preview": [
-        "Debt Consolidation Analysis",
-        "Refi Comparison",
-        "Break-Even Analysis",
-        "AI Strategy Assistant",
-        "Client Apply Link",
-        "CRM Integrations"
+        "Leads Pipeline",
+        "Ezra AI Co-Pilot",
+        "CRM Sync (Bonzo/GHL/FUB)",
+        "Client Quote Pages"
       ]
     },
     {
-      "name": "Titanium",
-      "slug": "titanium",
-      "color": "#94a3b8",
-      "label": "Pro",
-      "description": "Unlock powerful analysis tools and integrations that close more deals.",
-      "price_monthly": 479,
-      "price_annual": 383,
-      "price_hint": "$479/mo",
-      "includes_previous": true,
-      "new_features": [
-        {
-          "name": "Debt Consolidation Analysis",
-          "description": "Add client debts (credit cards, auto loans, etc.), calculate blended rates, and show net monthly savings when consolidating into a HELOC."
-        },
-        {
-          "name": "Refi Comparison",
-          "description": "Side-by-side comparison of existing HELOC vs. new terms — old payment, new payment, monthly difference, 1-year, 5-year, and lifetime savings."
-        },
-        {
-          "name": "Break-Even Analysis",
-          "description": "Calculate exactly when a client breaks even on upfront costs vs. monthly savings between rate tiers."
-        },
-        {
-          "name": "Client Apply Link",
-          "description": "Add a branded 'Apply Now' button to your proposals with your custom application URL. Turn proposals into applications."
-        },
-        {
-          "name": "GHL Integration",
-          "description": "Send proposals and client data directly to GoHighLevel CRM. Keep your pipeline updated automatically."
-        },
-        {
-          "name": "AI Strategy Assistant (Basic)",
-          "description": "Generate an AI-powered strategy summary for any proposal — personalized talking points, objection handling, and follow-up suggestions."
-        },
-        {
-          "name": "Radar Address Autocomplete",
-          "description": "Smart address autocomplete powered by Radar. Faster data entry, fewer errors."
-        }
-      ]
-    },
-    {
-      "name": "Platinum",
-      "slug": "platinum",
+      "name": "Pro",
+      "slug": "pro",
       "color": "#a78bfa",
-      "label": "Business",
-      "description": "Advanced automation, full CRM sync, and AI that works as hard as you do.",
-      "price_monthly": 749,
-      "price_annual": 599,
-      "price_hint": "$749/mo",
+      "label": "Close More Deals",
+      "description": "The complete HELOC machine. Leads, AI, CRM sync — stop losing leads.",
+      "price_monthly": 179,
+      "price_annual": 143,
+      "price_hint": "$179/mo",
       "includes_previous": true,
       "new_features": [
-        {
-          "name": "n8n Workflow Automation",
-          "description": "Connect your HELOC tool to 400+ apps via n8n. Automate follow-ups, notifications, data sync, and custom workflows."
-        },
-        {
-          "name": "Bonzo / Follow Up Boss Full Sync",
-          "description": "Two-way sync with Bonzo and Follow Up Boss CRMs. Contacts, quotes, and activity flow seamlessly between systems."
-        },
-        {
-          "name": "Outbound Webhooks",
-          "description": "Push quote events (created, updated, sent) to any external URL. Build custom integrations with your existing tech stack."
-        },
-        {
-          "name": "Lender Info Parser",
-          "description": "Paste raw lender rate sheets and auto-extract tier rates, fees, and terms. Update your rate matrix in seconds."
-        },
-        {
-          "name": "AI Strategy Assistant (Full)",
-          "description": "Access all AI providers (OpenAI, Anthropic, Google) with custom prompts. Fine-tune strategy output to match your selling style."
-        }
+        { "name": "Leads Pipeline", "description": "Track every borrower from first contact to funded. Filter by status, source, or stage." },
+        { "name": "Ezra AI — Full Power (50/day)", "description": "AI-powered sales strategy, objection handling, scripts, and follow-up coaching." },
+        { "name": "Voice Input", "description": "Talk to Ezra hands-free. Voice-powered AI assistance." },
+        { "name": "CRM Auto-Sync (Bonzo, GHL, FUB)", "description": "Two-way sync with Bonzo, GoHighLevel, and Follow Up Boss." },
+        { "name": "Client Quote Pages + AI Chat", "description": "Shareable client-facing quote pages with Ezra AI chat." },
+        { "name": "Outbound Webhooks", "description": "Push quote events to any external URL for custom integrations." },
+        { "name": "Debt Consolidation & Break-Even", "description": "Analyze debt consolidation savings and break-even timelines." },
+        { "name": "Paste Rates Import", "description": "Import Figure rates with one paste." }
       ]
     },
     {
-      "name": "Obsidian",
-      "slug": "obsidian",
-      "color": "#334155",
-      "label": "Enterprise",
-      "description": "White-label the entire tool under your brand. Perfect for teams and brokerages.",
-      "price_monthly": 999,
-      "price_annual": 799,
-      "price_hint": "$999/mo",
-      "includes_previous": true,
-      "new_features": [
-        {
-          "name": "White Label Branding",
-          "description": "Remove all Carbon HELOC branding. Replace with your company name, colors, logo, and domain. Your clients never see our brand."
-        },
-        {
-          "name": "Company Settings",
-          "description": "Manage company-wide defaults — rate matrices, disclaimer text, compliance language, and LO profile templates for your entire team."
-        }
-      ]
-    },
-    {
-      "name": "Diamond",
-      "slug": "diamond",
+      "name": "Enterprise",
+      "slug": "enterprise",
       "color": "#06b6d4",
-      "label": "VIP",
-      "description": "Everything unlocked, plus priority support and early access to new features.",
-      "price_monthly": 1499,
-      "price_annual": 1199,
-      "price_hint": "$1,499/mo",
+      "label": "Your Brokerage, Powered by AI",
+      "description": "5 team seats, white label, unlimited AI. Scale your brokerage with your brand.",
+      "price_monthly": 497,
+      "price_annual": 397,
+      "price_hint": "$497/mo",
       "includes_previous": true,
       "new_features": [
-        {
-          "name": "Priority Support",
-          "description": "Direct access to our team. Issues resolved within 24 hours, feature requests prioritized."
-        },
-        {
-          "name": "Early Access",
-          "description": "Be the first to try new features before they roll out to other tiers."
-        },
-        {
-          "name": "All Future Features",
-          "description": "Every new feature we build is automatically included in your plan. No upgrade surprises."
-        }
+        { "name": "5 Team Seats (+$49/seat)", "description": "Include up to 5 LOs on your plan. Additional seats $49/mo each." },
+        { "name": "White Label", "description": "Your logo, colors, and custom domain. Clients see your brand, not ours." },
+        { "name": "Custom Domain for Client Links", "description": "Branded quote URLs under your own domain." },
+        { "name": "n8n Workflow Automation", "description": "Connect to 400+ apps. Automate follow-ups, notifications, and data sync." },
+        { "name": "Unlimited Ezra AI", "description": "No daily caps on AI usage." },
+        { "name": "Custom AI Prompts", "description": "Tune Ezra's responses to match your sales style." },
+        { "name": "HeyGen AI Video", "description": "Generate personalized AI video greetings for clients." },
+        { "name": "Analytics Dashboard", "description": "Track quote views, clicks, and lead engagement." },
+        { "name": "Priority Support (< 4hr)", "description": "Direct access to our team with fast response times." },
+        { "name": "All Future Features", "description": "Every new feature automatically included." }
       ]
     }
   ],
@@ -186,15 +80,15 @@
     },
     {
       "q": "Is there a free trial?",
-      "a": "Yes! Every plan comes with a 14-day free trial. No credit card required to start."
+      "a": "Yes! Every new account gets a 14-day free Pro trial — full access to leads, Ezra AI, CRM sync, and all Pro features. No credit card required."
     },
     {
-      "q": "Do I need my own API keys?",
-      "a": "For AI Strategy and some integrations, your admin can set API keys per user. No technical setup required on your end."
+      "q": "What happens after the trial?",
+      "a": "After 14 days, your account drops to Starter ($79/mo). You keep your quotes and data, but lose access to Pro features like leads, AI, and CRM sync. Upgrade anytime to get them back."
     },
     {
       "q": "Can I use this for my whole team?",
-      "a": "Yes! Obsidian and Diamond tiers include company-wide settings. Contact us for team pricing."
+      "a": "Yes! Enterprise includes 5 team seats. Additional seats are $49/mo each. Contact us for custom team pricing."
     }
   ]
 }

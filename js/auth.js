@@ -107,7 +107,7 @@ export async function register(email, password) {
         const user = data.user;
 
         if (user) {
-            // 2. Create Profile entry (defaults to 'user' role, 'carbon' tier)
+            // 2. Create Profile entry (defaults to 'user' role, 'pro' tier during 14-day trial)
             // Role/tier upgrades are managed via Super Admin panel, not hardcoded
             const { error: profileError } = await supabase
                 .from('profiles')
@@ -115,7 +115,8 @@ export async function register(email, password) {
                     id: user.id,
                     email: email,
                     role: 'user',
-                    tier: 'carbon',
+                    tier: 'pro',
+                    trial_original_tier: 'starter',
                     subscription_status: 'trialing'
                 }, { onConflict: 'id' });
 

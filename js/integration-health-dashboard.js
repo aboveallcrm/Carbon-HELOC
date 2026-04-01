@@ -235,10 +235,10 @@
             `,
             ghl: `
                 <ol>
-                    <li>Get API key from <a href="https://app.gohighlevel.com" target="_blank">GHL Settings → API</a></li>
-                    <li>Verify Location ID: <code>eVB3bUDr8bdQfRu6ae03</code></li>
+                    <li>Get API key from <a href="https://app.gohighlevel.com" target="_blank">GHL Settings → Integrations → Private Integrations</a></li>
+                    <li>Verify your Location ID matches your GHL sub-account URL</li>
                     <li>Check pipeline and stage IDs are configured</li>
-                    <li>Verify API version: 2021-07-28</li>
+                    <li>Verify API version: Contacts use 2021-07-28, Conversations use 2021-04-15</li>
                 </ol>
             `,
             automations: `

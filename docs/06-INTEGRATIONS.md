@@ -53,7 +53,7 @@ Before any Bonzo send, `checkBonzoDNC(email)` is called:
 ## GoHighLevel (GHL)
 
 **Tier**: Platinum+
-**Location ID**: `eVB3bUDr8bdQfRu6ae03`
+**Location ID**: `{YOUR_GHL_LOCATION_ID}`
 
 ### Keys Required
 | Setting | Where to find |

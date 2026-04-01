@@ -2,10 +2,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { getCorsHeaders } from "../_shared/cors.ts"
+import { fetchWithRetry } from "../_shared/retry.ts"
 
-// GoHighLevel API v2021-07-28
+// GoHighLevel API — version varies by endpoint group
 const GHL_API = "https://services.leadconnectorhq.com"
-const GHL_VERSION = "2021-07-28"
+const GHL_VERSION_CONTACTS = "2021-07-28"     // Contacts, Notes, Tasks, Workflows, Campaigns, Opportunities
+const GHL_VERSION_CONVERSATIONS = "2021-04-15" // Conversations, Calendars, Voice AI
 const GHL_FETCH_TIMEOUT_MS = 15_000
 
 let corsHeaders: Record<string, string> = {}
@@ -18,16 +20,11 @@ function jsonResponse(body: any, status = 200) {
 }
 
 async function timedFetch(url: string, options: RequestInit = {}): Promise<Response> {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), GHL_FETCH_TIMEOUT_MS)
-    try {
-        const resp = await fetch(url, { ...options, signal: controller.signal })
-        clearTimeout(timeout)
-        return resp
-    } catch (err) {
-        clearTimeout(timeout)
-        throw err
-    }
+    const { response } = await fetchWithRetry(url, options, {
+        timeoutMs: GHL_FETCH_TIMEOUT_MS,
+        maxRetries: 2,
+    })
+    return response
 }
 
 serve(async (req: Request) => {
@@ -87,9 +84,15 @@ serve(async (req: Request) => {
         // Use locationId from request body if provided, else from settings
         const locId = reqLocationId || ghlLocationId
 
+        // Select correct API version based on action
+        const conversationActions = ['send_email', 'send_sms']
+        const apiVersion = conversationActions.includes(action)
+            ? GHL_VERSION_CONVERSATIONS
+            : GHL_VERSION_CONTACTS
+
         const ghlHeaders: Record<string, string> = {
             'Authorization': `Bearer ${ghlApiKey}`,
-            'Version': GHL_VERSION,
+            'Version': apiVersion,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
         }
@@ -110,17 +113,21 @@ serve(async (req: Request) => {
             }
 
             case 'search_contacts': {
+                // POST /contacts/search (advanced search, replaces deprecated GET /contacts/)
                 if (!locId) return jsonResponse({ error: 'Missing locationId' }, 400)
-                const params = new URLSearchParams()
-                params.set('locationId', locId)
-                if (payload?.query) params.set('query', payload.query)
-                if (payload?.email) params.set('query', payload.email)
-                if (payload?.phone) params.set('query', payload.phone)
-                if (payload?.limit) params.set('limit', String(payload.limit))
-                ghlUrl = `${GHL_API}/contacts/?${params.toString()}`
+                const searchBody: any = { locationId: locId }
+                // Support simple query string or advanced filters
+                if (payload?.query || payload?.email || payload?.phone) {
+                    searchBody.query = payload.query || payload.email || payload.phone
+                }
+                if (payload?.filters) searchBody.filters = payload.filters
+                if (payload?.limit) searchBody.pageLimit = payload.limit
+                if (payload?.searchAfter) searchBody.searchAfter = payload.searchAfter
+                ghlUrl = `${GHL_API}/contacts/search`
                 ghlResp = await timedFetch(ghlUrl, {
-                    method: 'GET',
+                    method: 'POST',
                     headers: ghlHeaders,
+                    body: JSON.stringify(searchBody),
                 })
                 break
             }
@@ -148,11 +155,35 @@ serve(async (req: Request) => {
                 break
             }
 
+            case 'upsert_contact': {
+                // POST /contacts/upsert — atomic create-or-update, returns { contact, new: true/false }
+                if (!locId) return jsonResponse({ error: 'Missing locationId' }, 400)
+                ghlUrl = `${GHL_API}/contacts/upsert`
+                ghlResp = await timedFetch(ghlUrl, {
+                    method: 'POST',
+                    headers: ghlHeaders,
+                    body: JSON.stringify({ ...payload, locationId: locId }),
+                })
+                break
+            }
+
             case 'add_tags': {
                 if (!contactId) return jsonResponse({ error: 'Missing contactId for tags' }, 400)
                 ghlUrl = `${GHL_API}/contacts/${contactId}/tags`
                 ghlResp = await timedFetch(ghlUrl, {
                     method: 'POST',
+                    headers: ghlHeaders,
+                    body: JSON.stringify(payload),
+                })
+                break
+            }
+
+            case 'remove_tags': {
+                // DELETE /contacts/{id}/tags with body { tags: [...] }
+                if (!contactId) return jsonResponse({ error: 'Missing contactId for remove_tags' }, 400)
+                ghlUrl = `${GHL_API}/contacts/${contactId}/tags`
+                ghlResp = await timedFetch(ghlUrl, {
+                    method: 'DELETE',
                     headers: ghlHeaders,
                     body: JSON.stringify(payload),
                 })
@@ -180,6 +211,19 @@ serve(async (req: Request) => {
                 break
             }
 
+            case 'update_opportunity': {
+                if (!payload?.opportunityId) return jsonResponse({ error: 'Missing opportunityId for update_opportunity' }, 400)
+                const oppId = payload.opportunityId
+                const { opportunityId: _id, ...oppPayload } = payload
+                ghlUrl = `${GHL_API}/opportunities/${oppId}`
+                ghlResp = await timedFetch(ghlUrl, {
+                    method: 'PUT',
+                    headers: ghlHeaders,
+                    body: JSON.stringify(oppPayload),
+                })
+                break
+            }
+
             case 'create_task': {
                 if (!contactId) return jsonResponse({ error: 'Missing contactId for task' }, 400)
                 ghlUrl = `${GHL_API}/contacts/${contactId}/tasks`
@@ -192,23 +236,29 @@ serve(async (req: Request) => {
             }
 
             case 'send_email': {
-                // POST /conversations/messages with type=Email
+                // POST /conversations/messages with type=Email (Version: 2021-04-15)
+                if (!payload?.contactId && !contactId) return jsonResponse({ error: 'Missing contactId for send_email' }, 400)
+                if (!payload?.html && !payload?.message) return jsonResponse({ error: 'Missing html or message body for send_email' }, 400)
+                const emailPayload = { ...payload, type: 'Email', contactId: payload.contactId || contactId }
                 ghlUrl = `${GHL_API}/conversations/messages`
                 ghlResp = await timedFetch(ghlUrl, {
                     method: 'POST',
                     headers: ghlHeaders,
-                    body: JSON.stringify({ ...payload, type: 'Email' }),
+                    body: JSON.stringify(emailPayload),
                 })
                 break
             }
 
             case 'send_sms': {
-                // POST /conversations/messages with type=SMS
+                // POST /conversations/messages with type=SMS (Version: 2021-04-15)
+                if (!payload?.contactId && !contactId) return jsonResponse({ error: 'Missing contactId for send_sms' }, 400)
+                if (!payload?.message && !payload?.body) return jsonResponse({ error: 'Missing message body for send_sms' }, 400)
+                const smsPayload = { ...payload, type: 'SMS', contactId: payload.contactId || contactId }
                 ghlUrl = `${GHL_API}/conversations/messages`
                 ghlResp = await timedFetch(ghlUrl, {
                     method: 'POST',
                     headers: ghlHeaders,
-                    body: JSON.stringify({ ...payload, type: 'SMS' }),
+                    body: JSON.stringify(smsPayload),
                 })
                 break
             }

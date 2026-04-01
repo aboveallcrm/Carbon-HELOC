@@ -125,7 +125,7 @@ function AppContent() {
             >
               Quote Tool
             </button>
-            {hasTier('platinum') && (
+            {hasTier('pro') && (
               <button
                 onClick={() => setCurrentView('leads')}
                 className={`px-3 py-1 rounded text-sm font-medium transition ${currentView === 'leads' ? 'bg-blue-100 text-blue-800' : 'text-gray-600 hover:bg-gray-100'}`}
@@ -155,7 +155,7 @@ function AppContent() {
                 <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Demo:</span>
                 <select
                   className="text-xs border-transparent hover:border-gray-300 rounded bg-gray-100 hover:bg-white text-gray-700 font-medium py-1 px-2 cursor-pointer transition focus:ring-0 focus:border-blue-500 outline-none"
-                  value={tier === realTier ? 'real' : tier ?? 'carbon'}
+                  value={tier === realTier ? 'real' : tier ?? 'starter'}
                   onChange={(e) => {
                     if (e.target.value === 'real') {
                       setDemoTier(null);
@@ -164,19 +164,17 @@ function AppContent() {
                     }
                   }}
                 >
-                  <option value="real">Real Tier ({realTier || 'carbon'})</option>
-                  <option value="carbon">Carbon</option>
-                  <option value="platinum">Platinum</option>
-                  <option value="titanium">Titanium</option>
-                  <option value="obsidian">Obsidian</option>
-                  <option value="diamond">Diamond</option>
+                  <option value="real">Real Tier ({realTier || 'starter'})</option>
+                  <option value="starter">Starter</option>
+                  <option value="pro">Pro</option>
+                  <option value="enterprise">Enterprise</option>
                 </select>
               </div>
             )}
             <span className="text-sm text-gray-500">
               {session?.user?.email}
               <span className="ml-1 text-xs opacity-60">
-                ({tier ?? 'carbon'})
+                ({tier ?? 'starter'})
               </span>
             </span>
             <button
@@ -280,14 +278,14 @@ function AppContent() {
 
             {/* Recommendation — Platinum+ */}
             {sections.recommendation && (
-              <TierGate requires="platinum" message="Scenario recommendations and savings breakdown require the Platinum tier.">
+              <TierGate requires="pro" message="Scenario recommendations and savings breakdown require the Pro tier.">
                 <Recommendation quoteResult={quoteResult} netCash={inputs.netCash} />
               </TierGate>
             )}
 
             {/* Analysis Sections — Obsidian only */}
             {sections.analysis && (
-              <TierGate requires="obsidian" message="Deep financial analysis and AI-powered insights require the Obsidian tier.">
+              <TierGate requires="enterprise" message="Deep financial analysis and AI-powered insights require the Enterprise tier.">
                 <Analysis quoteResult={quoteResult} inputs={inputs} />
               </TierGate>
             )}

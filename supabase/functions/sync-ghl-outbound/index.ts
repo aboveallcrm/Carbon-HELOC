@@ -2,10 +2,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { getCorsHeaders } from "../_shared/cors.ts"
+import { fetchWithRetry } from "../_shared/retry.ts"
 
-// GoHighLevel API v2021-07-28 (matches ghl-proxy)
+// GoHighLevel API — version varies by endpoint group
 const GHL_API = "https://services.leadconnectorhq.com"
-const GHL_VERSION = "2021-07-28"
+const GHL_VERSION_CONTACTS = "2021-07-28"      // Contacts, Notes, Tasks, Opportunities
+const GHL_VERSION_CONVERSATIONS = "2021-04-15"  // Conversations (send SMS/email)
 const GHL_FETCH_TIMEOUT_MS = 15_000
 const BATCH_LIMIT = 10
 
@@ -40,16 +42,11 @@ async function recordSyncError(
 }
 
 async function timedFetch(url: string, options: RequestInit = {}): Promise<Response> {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), GHL_FETCH_TIMEOUT_MS)
-    try {
-        const resp = await fetch(url, { ...options, signal: controller.signal })
-        clearTimeout(timeout)
-        return resp
-    } catch (err) {
-        clearTimeout(timeout)
-        throw err
-    }
+    const { response } = await fetchWithRetry(url, options, {
+        timeoutMs: GHL_FETCH_TIMEOUT_MS,
+        maxRetries: 2,
+    })
+    return response
 }
 
 serve(async (req: Request) => {
@@ -104,11 +101,16 @@ serve(async (req: Request) => {
             return jsonResponse({ error: 'No GHL API key configured. Go to Settings → Integrations → GHL.' }, 400)
         }
 
+        // Contacts/Tasks/Opportunities use 2021-07-28; Conversations use 2021-04-15
         const ghlHeaders: Record<string, string> = {
             'Authorization': `Bearer ${ghlApiKey}`,
-            'Version': GHL_VERSION,
+            'Version': GHL_VERSION_CONTACTS,
             'Content-Type': 'application/json',
             'Accept': 'application/json',
+        }
+        const ghlConvHeaders: Record<string, string> = {
+            ...ghlHeaders,
+            'Version': GHL_VERSION_CONVERSATIONS,
         }
 
         // 3. Parse request body for optional filters
@@ -150,7 +152,7 @@ serve(async (req: Request) => {
                 .eq('id', item.id)
 
             try {
-                const result = await dispatchToGHL(ghlHeaders, ghlLocationId, item)
+                const result = await dispatchToGHL(ghlHeaders, ghlConvHeaders, ghlLocationId, item)
 
                 // Mark as dispatched
                 await supabaseAdmin
@@ -223,6 +225,7 @@ serve(async (req: Request) => {
  */
 async function dispatchToGHL(
     ghlHeaders: Record<string, string>,
+    ghlConvHeaders: Record<string, string>,
     locationId: string,
     item: any
 ): Promise<any> {
@@ -234,46 +237,25 @@ async function dispatchToGHL(
     let ghlContactId = item.metadata?.ghl_contact_id || ''
 
     if (!ghlContactId && lead) {
-        // Search for existing GHL contact
-        const searchParams = new URLSearchParams()
-        searchParams.set('locationId', locationId)
-        if (lead.email) searchParams.set('query', lead.email)
-        else if (lead.phone) searchParams.set('query', lead.phone)
+        // Upsert contact — atomic create-or-update, no race conditions
+        const upsertResp = await timedFetch(`${GHL_API}/contacts/upsert`, {
+            method: 'POST',
+            headers: ghlHeaders,
+            body: JSON.stringify({
+                locationId,
+                firstName: lead.first_name || '',
+                lastName: lead.last_name || '',
+                email: lead.email || '',
+                phone: lead.phone || '',
+            }),
+        })
 
-        const searchResp = await timedFetch(
-            `${GHL_API}/contacts/?${searchParams.toString()}`,
-            { method: 'GET', headers: ghlHeaders }
-        )
-
-        if (searchResp.ok) {
-            const searchData = await searchResp.json()
-            const contacts = searchData.contacts || []
-            if (contacts.length > 0) {
-                ghlContactId = contacts[0].id
-            }
-        }
-
-        // If no contact found, create one
-        if (!ghlContactId && lead) {
-            const createResp = await timedFetch(`${GHL_API}/contacts/`, {
-                method: 'POST',
-                headers: ghlHeaders,
-                body: JSON.stringify({
-                    locationId,
-                    firstName: lead.first_name || '',
-                    lastName: lead.last_name || '',
-                    email: lead.email || '',
-                    phone: lead.phone || '',
-                }),
-            })
-
-            if (createResp.ok) {
-                const createData = await createResp.json()
-                ghlContactId = createData.contact?.id || ''
-            } else {
-                const errText = await createResp.text()
-                throw new Error(`GHL create contact failed (${createResp.status}): ${errText}`)
-            }
+        if (upsertResp.ok) {
+            const upsertData = await upsertResp.json()
+            ghlContactId = upsertData.contact?.id || ''
+        } else {
+            const errText = await upsertResp.text()
+            throw new Error(`GHL upsert contact failed (${upsertResp.status}): ${errText}`)
         }
     }
 
@@ -296,7 +278,7 @@ async function dispatchToGHL(
 
     const msgResp = await timedFetch(`${GHL_API}/conversations/messages`, {
         method: 'POST',
-        headers: ghlHeaders,
+        headers: ghlConvHeaders,
         body: JSON.stringify(messagePayload),
     })
 
@@ -346,40 +328,17 @@ async function syncSingleLead(
         return jsonResponse({ error: 'Lead not found' }, 404)
     }
 
-    // Search for existing GHL contact by email or phone
+    // Use atomic upsert — eliminates race conditions from search-then-create
     let ghlContactId = lead.metadata?.ghl_contact_id || ''
-    let operation = 'create'
+    let operation = ghlContactId ? 'update' : 'upsert'
 
-    if (!ghlContactId) {
-        const searchParams = new URLSearchParams()
-        searchParams.set('locationId', locationId)
-        if (lead.email) searchParams.set('query', lead.email)
-        else if (lead.phone) searchParams.set('query', lead.phone)
-
-        const searchResp = await timedFetch(
-            `${GHL_API}/contacts/?${searchParams.toString()}`,
-            { method: 'GET', headers: ghlHeaders }
-        )
-
-        if (searchResp.ok) {
-            const searchData = await searchResp.json()
-            const contacts = searchData.contacts || []
-            if (contacts.length > 0) {
-                ghlContactId = contacts[0].id
-                operation = 'update'
-            }
-        }
-    } else {
-        operation = 'update'
-    }
-
-    // Build contact payload
+    // Build contact payload — do NOT include tags here (GHL overwrites all tags)
     const contactPayload: any = {
+        locationId,
         firstName: lead.first_name || '',
         lastName: lead.last_name || '',
         email: lead.email || '',
         phone: lead.phone || '',
-        tags: ['carbon-heloc'],
     }
 
     // Add metadata fields as custom fields if available
@@ -393,15 +352,17 @@ async function syncSingleLead(
     }
 
     let ghlResp: Response
-    if (operation === 'update' && ghlContactId) {
+    if (ghlContactId) {
+        // Known contact — direct update
+        const { locationId: _loc, ...updatePayload } = contactPayload
         ghlResp = await timedFetch(`${GHL_API}/contacts/${ghlContactId}`, {
             method: 'PUT',
             headers: ghlHeaders,
-            body: JSON.stringify(contactPayload),
+            body: JSON.stringify(updatePayload),
         })
     } else {
-        contactPayload.locationId = locationId
-        ghlResp = await timedFetch(`${GHL_API}/contacts/`, {
+        // Upsert — atomic create-or-update by email/phone match
+        ghlResp = await timedFetch(`${GHL_API}/contacts/upsert`, {
             method: 'POST',
             headers: ghlHeaders,
             body: JSON.stringify(contactPayload),
@@ -420,6 +381,21 @@ async function syncSingleLead(
             status: ghlResp.status,
             detail: ghlData,
         }, 502)
+    }
+
+    // Add tags via dedicated endpoint (won't overwrite existing tags)
+    const tagContactId = ghlData.contact?.id || ghlContactId
+    if (tagContactId) {
+        try {
+            await timedFetch(`${GHL_API}/contacts/${tagContactId}/tags`, {
+                method: 'POST',
+                headers: ghlHeaders,
+                body: JSON.stringify({ tags: ['carbon-heloc'] }),
+            })
+        } catch (_tagErr) {
+            // Non-fatal — tag add failed but contact was synced
+            console.warn('Failed to add tags to GHL contact:', tagContactId)
+        }
     }
 
     // Store GHL contact ID back on lead metadata

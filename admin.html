@@ -102,11 +102,9 @@
         .role-admin { background: rgba(197, 160, 89, 0.2); color: var(--accent); }
         .role-user { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
 
-        .tier-carbon { background: #334155; color: white; }
-        .tier-titanium { background: rgba(148,163,184,0.2); color: #cbd5e1; }
-        .tier-platinum { background: rgba(59,130,246,0.2); color: #93c5fd; }
-        .tier-obsidian { background: rgba(139,92,246,0.2); color: #c4b5fd; }
-        .tier-diamond { background: rgba(197,160,89,0.2); color: var(--accent); }
+        .tier-starter { background: #334155; color: white; }
+        .tier-pro { background: rgba(168,139,250,0.2); color: #a78bfa; }
+        .tier-enterprise { background: rgba(6,182,212,0.2); color: #06b6d4; }
 
         .btn-sm {
             padding: 4px 10px;
@@ -382,11 +380,9 @@
             <div class="form-group">
                 <label>Tier</label>
                 <select id="edit-tier">
-                    <option value="carbon">Carbon</option>
-                    <option value="titanium">Titanium</option>
-                    <option value="platinum">Platinum</option>
-                    <option value="obsidian">Obsidian</option>
-                    <option value="diamond">Diamond</option>
+                    <option value="starter">Starter</option>
+                    <option value="pro">Pro</option>
+                    <option value="enterprise">Enterprise</option>
                 </select>
             </div>
 
@@ -508,7 +504,7 @@
             users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
             users.forEach(u => {
-                const tier = u.tier || 'carbon';
+                const tier = u.tier || 'starter';
                 const role = u.role || 'user';
                 const status = u.subscription_status || 'trialing';
                 const quotes = quoteCounts[u.id] || 0;
@@ -543,7 +539,7 @@
             document.getElementById('edit-user-id').value = userId;
             document.getElementById('edit-email').value = user.email || '';
             document.getElementById('edit-role').value = user.role || 'user';
-            document.getElementById('edit-tier').value = user.tier || 'carbon';
+            document.getElementById('edit-tier').value = user.tier || 'starter';
             document.getElementById('edit-status').value = user.subscription_status || 'trialing';
 
             // Load integration keys from user_integrations table

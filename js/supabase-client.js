@@ -56,7 +56,8 @@ export async function getCurrentUser() {
                     id: user.id,
                     email: user.email,
                     role: 'user',
-                    tier: 'carbon',
+                    tier: 'pro',
+                    trial_original_tier: 'starter',
                     subscription_status: 'trialing'
                 }, { onConflict: 'id' })
                 .select()

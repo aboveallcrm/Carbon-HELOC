@@ -304,7 +304,7 @@ Served at `/client-quote.html?code={QUOTE_CODE}` — no auth required.
 - DNC: check tags for DNC/STOP/unsubscribed
 
 ### GHL (GoHighLevel)
-- Location ID: `eVB3bUDr8bdQfRu6ae03`
+- Location ID: `{YOUR_GHL_LOCATION_ID}`
 - Custom field keys: `contact.field_name` format
 - DND checking via `contact.dnd` / `dndSettings`
 
@@ -398,7 +398,7 @@ supabase/
 |---------|-----------|---------|
 | Supabase | Project `czzabvfzuxhpdcowgvam` | Database, auth, edge functions, storage |
 | Bonzo | API v3 at `app.getbonzo.com` | CRM sync, SMS/email sends |
-| GHL | Location `eVB3bUDr8bdQfRu6ae03` | CRM integration |
+| GHL | Location `{YOUR_GHL_LOCATION_ID}` | CRM integration |
 | n8n | `n8n.srv1290585.hstgr.cloud` | Workflow automation |
 | Resend | Domain `notifications.aboveallcrm.com` | Transactional email |
 | Google Sheets | Sheet `1AKNJF-oz7Smd...` | Rate center data |

@@ -9,38 +9,26 @@ type UserRow = {
     tier: Tier | null;
 };
 
-const TIERS: Tier[] = ['carbon', 'platinum', 'titanium', 'obsidian', 'diamond'];
+const TIERS: Tier[] = ['starter', 'pro', 'enterprise'];
 
 const TIER_CONFIG: Record<Tier, { label: string; color: string; emoji: string; description: string }> = {
-    carbon: {
-        label: 'Carbon',
+    starter: {
+        label: 'Starter',
         color: 'bg-gray-100 text-gray-700 border border-gray-300',
         emoji: '⚫',
-        description: 'Basic access — Quote Tool, Lead Capture',
+        description: 'Quote Builder, Refi Architect, Parser, PDF/Email',
     },
-    platinum: {
-        label: 'Platinum',
-        color: 'bg-blue-100 text-blue-800 border border-blue-300',
-        emoji: '🔷',
-        description: 'Everything in Carbon + Bulk Leads, Analytics',
-    },
-    titanium: {
-        label: 'Titanium',
-        color: 'bg-slate-100 text-slate-800 border border-slate-300',
-        emoji: '⚙️',
-        description: 'Everything in Platinum + API Access',
-    },
-    obsidian: {
-        label: 'Obsidian',
+    pro: {
+        label: 'Pro',
         color: 'bg-purple-100 text-purple-800 border border-purple-300',
-        emoji: '💎',
-        description: 'Everything in Titanium + AI Analysis, Priority Support',
+        emoji: '🔷',
+        description: 'Everything in Starter + Leads, Ezra AI, CRM Sync',
     },
-    diamond: {
-        label: 'Diamond',
+    enterprise: {
+        label: 'Enterprise',
         color: 'bg-teal-100 text-teal-800 border border-teal-300',
-        emoji: '💎',
-        description: 'The Ultimate Package, White-Glove Support',
+        emoji: '🌟',
+        description: '5 Team Seats, White Label, Unlimited AI, HeyGen',
     },
 };
 
@@ -79,7 +67,7 @@ export const TierManagement: React.FC = () => {
     };
 
     const tierBadge = (tier: Tier | null) => {
-        const config = TIER_CONFIG[tier ?? 'carbon'];
+        const config = TIER_CONFIG[tier ?? 'starter'];
         return (
             <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${config.color}`}>
                 {config.emoji} {config.label}
@@ -92,7 +80,7 @@ export const TierManagement: React.FC = () => {
     return (
         <div className="space-y-4">
             {/* Tier Legend */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
                 {TIERS.map(t => {
                     const config = TIER_CONFIG[t];
                     return (
@@ -126,7 +114,7 @@ export const TierManagement: React.FC = () => {
                                 </td>
                                 <td className="py-3">
                                     <select
-                                        value={user.tier ?? 'carbon'}
+                                        value={user.tier ?? 'starter'}
                                         disabled={savingId === user.id}
                                         onChange={e => updateTier(user.id, e.target.value as Tier)}
                                         className="text-xs border rounded px-2 py-1 bg-white disabled:opacity-50"

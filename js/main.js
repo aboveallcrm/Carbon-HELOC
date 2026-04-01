@@ -99,8 +99,8 @@ try {
     window.currentUserRole = effectiveUser.role || 'user';
     window.currentUserId = effectiveUser.id || null;
     window.currentUserEmail = effectiveUser.email || '';
-    window.currentUserTier = effectiveUser.tier || 'carbon';
-    window._loTierLevel = ({ carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 }[window.currentUserTier] ?? 0);
+    window.currentUserTier = effectiveUser.tier || 'starter';
+    window._loTierLevel = ({ starter: 0, pro: 1, enterprise: 2 }[window.currentUserTier] ?? 0);
     window.logoutUser = logout;
     window.stopImpersonation = stopImpersonation;
     window.impersonateUser = impersonateUser;
@@ -122,7 +122,7 @@ try {
         const label = document.createElement('span');
         label.textContent = isReadOnly
             ? `Viewing as: ${effectiveUser.email} (READ ONLY)`
-            : `Logged in as: ${effectiveUser.email} (${effectiveUser.role} / ${effectiveUser.tier || 'carbon'})`;
+            : `Logged in as: ${effectiveUser.email} (${effectiveUser.role} / ${effectiveUser.tier || 'starter'})`;
         const exitBtn = document.createElement('button');
         exitBtn.textContent = 'Exit';
         exitBtn.style.cssText = isReadOnly
@@ -213,7 +213,7 @@ try {
         detail: {
             role: effectiveUser.role,
             email: effectiveUser.email,
-            tier: effectiveUser.tier || 'carbon'
+            tier: effectiveUser.tier || 'starter'
         }
     }));
 

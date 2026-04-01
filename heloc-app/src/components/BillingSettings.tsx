@@ -3,11 +3,9 @@ import { useTier } from '../hooks/useTier';
 import type { Tier } from './AuthProvider';
 
 const TIER_PRICING: Record<Tier, { price: number; list: string[] }> = {
-    carbon: { price: 297, list: ['Quote Tool', 'Lead Capture'] },
-    platinum: { price: 597, list: ['Everything in Carbon', 'Bulk Leads', 'Analytics'] },
-    titanium: { price: 797, list: ['Everything in Platinum', 'API Access'] },
-    obsidian: { price: 1295, list: ['Everything in Titanium', 'AI Analysis', 'Priority Support'] },
-    diamond: { price: 1999, list: ['The Ultimate Package', 'White-Glove Support'] },
+    starter: { price: 79, list: ['HELOC Quote Builder', 'Refinance Architect', 'PDF/Screenshot/Email', 'Lender Parser', 'URL Shortener'] },
+    pro: { price: 179, list: ['Everything in Starter', 'Leads Pipeline', 'Ezra AI (50/day)', 'CRM Sync (Bonzo/GHL/FUB)', 'Client Quote Pages'] },
+    enterprise: { price: 497, list: ['Everything in Pro', '5 Team Seats', 'White Label', 'Unlimited AI', 'HeyGen Video', 'Priority Support'] },
 };
 
 export const BillingSettings: React.FC = () => {
@@ -24,7 +22,7 @@ export const BillingSettings: React.FC = () => {
                 <div>
                     <h3 className="text-lg font-bold text-gray-800 mb-1">Current Plan</h3>
                     <p className="text-gray-600 mb-0">
-                        You are currently on the <strong className="capitalize text-blue-700">{tier ?? 'carbon'}</strong> tier.
+                        You are currently on the <strong className="capitalize text-blue-700">{tier ?? 'starter'}</strong> tier.
                     </p>
                 </div>
                 <div className="mt-4 sm:mt-0">

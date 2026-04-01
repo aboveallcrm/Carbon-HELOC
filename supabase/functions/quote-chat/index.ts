@@ -323,10 +323,10 @@ serve(async (req: Request) => {
       .eq("id", link.user_id)
       .single();
 
-    const tiers = ["carbon", "titanium", "platinum", "obsidian", "diamond"];
-    const loTierLevel = tiers.indexOf(profile?.tier || "carbon");
+    const tiers = ["starter", "pro", "enterprise"];
+    const loTierLevel = tiers.indexOf(profile?.tier || "starter");
     if (loTierLevel < 1) {
-      return json({ error: "AI chat requires Titanium tier or above" }, 403);
+      return json({ error: "AI chat requires Pro tier or above" }, 403);
     }
 
     // 8. Build system prompt with real-time context from client page

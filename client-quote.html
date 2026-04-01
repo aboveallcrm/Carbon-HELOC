@@ -9005,10 +9005,10 @@
                     // Render preview without tracking
                     renderQuote(previewData, previewLo, 'preview', null);
                     
-                    // Preview tier gating — use LO tier from loInfo (super_admin sees diamond)
-                    var pvTier = previewLo.tier || 'diamond'; // default diamond in preview for backwards compat
-                    var pvTierMap = { carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 };
-                    var pvTierLevel = pvTierMap[pvTier] || 4;
+                    // Preview tier gating — use LO tier from loInfo (super_admin sees enterprise)
+                    var pvTier = previewLo.tier || 'enterprise'; // default enterprise in preview for backwards compat
+                    var pvTierMap = { starter: 0, pro: 1, enterprise: 2 };
+                    var pvTierLevel = pvTierMap[pvTier] || 2;
                     window._loTier = pvTier;
                     window._loTierLevel = pvTierLevel;
 
@@ -9126,8 +9126,8 @@
                 }
 
                 // Determine LO tier for feature gating
-                var loTier = link.lo_tier || (link.lo_info && link.lo_info.tier) || 'carbon';
-                var tierLevelMap = { carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 };
+                var loTier = link.lo_tier || (link.lo_info && link.lo_info.tier) || 'starter';
+                var tierLevelMap = { starter: 0, pro: 1, enterprise: 2 };
                 var tierLevel = tierLevelMap[loTier] || 0;
                 window._loTier = loTier;
                 window._loTierLevel = tierLevel;
@@ -9576,7 +9576,7 @@
                     fHtml += '</div>';
                 }
                 fHtml += '<div class="footer-legal">';
-                fHtml += '<img src="https://assets.cdn.filesafe.space/eVB3bUDr8bdQfRu6ae03/media/693bb403ed957f64da26426c.jpg" class="ehl-icon" alt="Equal Housing Lender" loading="lazy" decoding="async">';
+                fHtml += '<img src="assets/img/equal-housing-lender.jpg" class="ehl-icon" alt="Equal Housing Lender" loading="lazy" decoding="async">';
                 fHtml += '<div>';
                 if (lo.company) {
                     fHtml += '<strong style="color:#cbd5e1;">' + esc(lo.company) + '</strong>';

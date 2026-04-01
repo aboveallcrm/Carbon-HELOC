@@ -161,7 +161,7 @@ Per-user API keys and integration config. Keys are server-side only.
 ```json
 {
   "bonzo": { "apiKey": "xcode_hash", "apiKey2": "Bearer JWT" },
-  "ghl": { "apiKey": "...", "locationId": "eVB3bUDr8bdQfRu6ae03", "pipelineId": "...", "stageId": "..." },
+  "ghl": { "apiKey": "...", "locationId": "{YOUR_GHL_LOCATION_ID}", "pipelineId": "...", "stageId": "..." },
   "n8n": { "webhookUrl": "https://n8n.srv1290585.hstgr.cloud/webhook/...", "token": "..." },
   "fub": { "apiKey": "..." },
   "radar": { "enabled": true },

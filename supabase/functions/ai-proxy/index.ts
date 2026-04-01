@@ -29,12 +29,12 @@ const OR_GEMINI_MODEL  = "google/gemini-2.0-flash-001";
 const OR_CLAUDE_MODEL  = "anthropic/claude-sonnet-4-5";
 
 // ─── TIER CONFIG ─────────────────────────────────────────────────────────────
-const TIER_LEVEL: Record<string,number> = { carbon:0, titanium:1, platinum:2, obsidian:3, diamond:4 };
-const TIER_CASCADE_CUTOFF: Record<string,number> = { carbon:1, titanium:2, platinum:5, obsidian:7, diamond:7 };
+const TIER_LEVEL: Record<string,number> = { starter:0, pro:1, enterprise:2 };
+const TIER_CASCADE_CUTOFF: Record<string,number> = { starter:1, pro:5, enterprise:7 };
 
 function getFeatureRoute(feature: string, tier: string, isSuperAdmin: boolean): { provider:string; model:string } {
   const level = TIER_LEVEL[tier] || 0;
-  const premium = level >= 3 || isSuperAdmin;
+  const premium = level >= 2 || isSuperAdmin;
   if (isSuperAdmin) {
     switch (feature) {
       case "document_parse": case "rate_sheet":
@@ -238,8 +238,8 @@ serve(async(req:Request)=>{
       sb.from("profiles").select("tier,current_tier,preferred_ai_mode").eq("id",uid).maybeSingle(),
     ]);
     const intg=intRes.data;
-    const rawTier=profRes.data?.tier||profRes.data?.current_tier||"carbon";
-    const userTier=["carbon","titanium","platinum","obsidian","diamond"].includes(rawTier)?rawTier:"carbon";
+    const rawTier=profRes.data?.tier||profRes.data?.current_tier||"starter";
+    const userTier=["starter","pro","enterprise"].includes(rawTier)?rawTier:"starter";
     const tierLevel=TIER_LEVEL[userTier]||0;
     const aiMode = isAdmin ? (profRes.data?.preferred_ai_mode||"auto") : "auto";
     const userAiKey=intg?.metadata?.ai_api_key||"";
@@ -315,7 +315,7 @@ serve(async(req:Request)=>{
       const rl=await checkRL(sb,uid); if(!rl.allowed)return json({error:"Rate limited",retry_after_sec:rl.retryAfterSec},429);
 
       if(isAdmin && aiMode==="cascade"){
-        const r=await runCascade(sb,uid,"diamond",finalSysprompt,userMessage,maxTokens||2500,ftag,kbHit,kbIds,userAiKey);
+        const r=await runCascade(sb,uid,"enterprise",finalSysprompt,userMessage,maxTokens||2500,ftag,kbHit,kbIds,userAiKey);
         if(!r.ok)return json({error:"All cascade providers failed"},502);
         return json({success:true,...r,is_super_admin:true,ai_mode:"cascade",kb_hit:kbHit,kb_entries:kbCount});
       }

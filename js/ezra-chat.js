@@ -1333,7 +1333,7 @@ RESPONSE RULES
         conversationId: null,
         messages: [],
         currentModel: 'gemini',
-        userTier: 'diamond',
+        userTier: 'enterprise',
         autoFillEnabled: true,
         isTyping: false,
         supabase: null,
@@ -1374,12 +1374,12 @@ RESPONSE RULES
         // Pick up tier from app globals
         if (window.currentUserTier) EzraState.userTier = window.currentUserTier;
 
-        // Tier gate: Carbon users get local-only mode (KB + objections, no API)
-        const tier = (EzraState.userTier || 'carbon').toLowerCase();
+        // Tier gate: Starter users get local-only mode (KB + objections, no API)
+        const tier = (EzraState.userTier || 'starter').toLowerCase();
         const userLevel = TIER_LEVELS[tier] || 0;
         if (userLevel < 1 && window.currentUserRole !== 'super_admin') {
             EzraState._localOnlyMode = true;
-            console.debug('Ezra: Carbon tier — local-only mode (KB + objections active, no API)');
+            console.debug('Ezra: Starter tier — local-only mode (KB + objections active, no API)');
         }
 
         // Create widget DOM first so elements exist
@@ -1455,7 +1455,7 @@ RESPONSE RULES
     }
 
     // Tier level mapping — IIFE-scoped so all functions can access it
-    const TIER_LEVELS = { carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 };
+    const TIER_LEVELS = { starter: 0, pro: 1, enterprise: 2 };
 
     // Intent-to-tier mapping for granular feature gating
     const INTENT_TIER_MAP = {
@@ -3604,12 +3604,12 @@ RESPONSE RULES
     // TIER GATING FOR PLATINUM+ FEATURES
     // ============================================
     function requirePlatinum(featureName) {
-        const tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
-        const tier = window.currentUserTier || 'carbon';
+        const tiers = ['starter', 'pro', 'enterprise'];
+        const tier = window.currentUserTier || 'starter';
         const level = tiers.indexOf(tier);
         // super_admin always has access
         if (window.currentUserRole === 'super_admin') return true;
-        if (level >= 2) return true; // platinum+
+        if (level >= 1) return true; // pro+
 
         // Show upgrade prompt
         const hooks = {
@@ -5257,7 +5257,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
         // ── INTENT TIER GATING — check if user has access to this feature ──
         const requiredLevel = INTENT_TIER_MAP[intent];
         if (requiredLevel !== undefined && window.currentUserRole !== 'super_admin') {
-            const currentLevel = TIER_LEVELS[(EzraState.userTier || 'carbon').toLowerCase()] || 0;
+            const currentLevel = TIER_LEVELS[(EzraState.userTier || 'starter').toLowerCase()] || 0;
             if (currentLevel < requiredLevel) {
                 return { content: getIntentUpgradeMessage(intent), metadata: { model: 'local', intent: 'tier_gate' } };
             }
@@ -5837,7 +5837,7 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
                 EzraState._tokenBudget = { tokens_used: err.tokens_used, tokens_limit: err.tokens_limit, tier: err.tier };
                 updateTokenDisplay();
             }
-            const nextTier = { carbon: 'Titanium', titanium: 'Platinum', platinum: 'Obsidian', obsidian: 'Diamond' };
+            const nextTier = { starter: 'Pro', pro: 'Enterprise' };
             const upgrade = nextTier[err.tier] || 'a higher tier';
             return `\u26A0\uFE0F **Monthly AI token limit reached** (${(err.tokens_used || 0).toLocaleString()}/${(err.tokens_limit || 0).toLocaleString()})\n\nYou can still use **free local features**: Narrate Quote, Compare Scenarios, Draft Messages, Compliance Check, and Predict Questions.\n\nUpgrade to **${upgrade}** for more AI capacity.`;
         }

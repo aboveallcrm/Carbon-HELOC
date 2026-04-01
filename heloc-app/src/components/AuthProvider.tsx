@@ -3,7 +3,7 @@ import type { Session, User } from '@supabase/supabase-js';
 
 import { supabase } from '../lib/supabaseClient';
 
-export type Tier = 'carbon' | 'platinum' | 'obsidian' | 'titanium' | 'diamond';
+export type Tier = 'starter' | 'pro' | 'enterprise';
 
 interface AuthContextType {
     session: Session | null;
@@ -76,15 +76,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (error) {
                 console.error('Error fetching role:', error);
                 setRole('user');
-                setTier('carbon');
+                setTier('starter');
             } else {
                 setRole(data?.role || 'user');
-                setTier((data?.tier as Tier) || 'carbon');
+                setTier((data?.tier as Tier) || 'starter');
             }
         } catch (e) {
             console.error('Error fetching role:', e);
             setRole('user');
-            setTier('carbon');
+            setTier('starter');
         } finally {
             setLoading(false);
         }

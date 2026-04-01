@@ -68,10 +68,24 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Webhook error:', error)
+    // Always return 200 — GHL only retries on 429, not on 4xx/5xx.
+    // Log the error for debugging but don't lose the webhook.
+    console.error('Webhook processing error:', error)
+    try {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      )
+      await supabase.from('sync_errors').insert({
+        provider: 'ghl',
+        operation: 'handle-ghl-webhook',
+        error_message: error?.message || String(error),
+        details: { stack: error?.stack },
+      })
+    } catch (_logErr) { /* best-effort logging */ }
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ success: true, warning: 'Processed with errors' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
@@ -81,16 +95,19 @@ async function handleContactUpsert(supabase: any, payload: any) {
   const locationId = contact.locationId || payload.locationId
   
   // Find the user with this GHL integration (uses user_integrations table)
+  // Keys are stored under provider 'heloc_keys' (legacy) or 'heloc_settings' (current)
   const { data: integrations } = await supabase
     .from('user_integrations')
     .select('user_id, metadata')
-    .eq('provider', 'ghl')
-    .eq('is_active', true)
+    .in('provider', ['heloc_keys', 'heloc_settings'])
 
-  // Match by location ID in metadata
-  const integration = (integrations || []).find((i: any) =>
-    i.metadata?.location_id === locationId || i.metadata?.ghl_location_id === locationId
-  ) || (integrations && integrations.length === 1 ? integrations[0] : null)
+  // Match by location ID in metadata — check both storage formats
+  const integration = (integrations || []).find((i: any) => {
+    const meta = i.metadata || {}
+    return meta.ghl_location_id === locationId
+      || meta.location_id === locationId
+      || meta.ghl?.locationId === locationId
+  }) || (integrations && integrations.length === 1 ? integrations[0] : null)
 
   if (!integration) {
     // No active GHL integration for this location

@@ -3,27 +3,21 @@ import { useTier } from '../hooks/useTier';
 import type { Tier } from './AuthProvider';
 
 const TIER_LABELS: Record<Tier, string> = {
-    carbon: 'Carbon',
-    platinum: 'Platinum',
-    obsidian: 'Obsidian',
-    titanium: 'Titanium',
-    diamond: 'Diamond',
+    starter: 'Starter',
+    pro: 'Pro',
+    enterprise: 'Enterprise',
 };
 
 const TIER_COLORS: Record<Tier, string> = {
-    carbon: 'border-gray-300 bg-gray-50',
-    platinum: 'border-blue-300 bg-blue-50',
-    obsidian: 'border-purple-300 bg-purple-50',
-    titanium: 'border-slate-300 bg-slate-50',
-    diamond: 'border-teal-300 bg-teal-50',
+    starter: 'border-gray-300 bg-gray-50',
+    pro: 'border-purple-300 bg-purple-50',
+    enterprise: 'border-teal-300 bg-teal-50',
 };
 
 const TIER_BADGE: Record<Tier, string> = {
-    carbon: '⚫',
-    platinum: '🔷',
-    obsidian: '💎',
-    titanium: '⚙️',
-    diamond: '🌟',
+    starter: '⚫',
+    pro: '🔷',
+    enterprise: '🌟',
 };
 
 interface TierGateProps {
@@ -35,7 +29,7 @@ interface TierGateProps {
 }
 
 /**
- * Wrap any feature in <TierGate requires="platinum"> to restrict access.
+ * Wrap any feature in <TierGate requires="pro"> to restrict access.
  * Users below the required tier see a clean upgrade prompt instead.
  */
 export const TierGate: React.FC<TierGateProps> = ({ requires, children, message }) => {
@@ -45,7 +39,7 @@ export const TierGate: React.FC<TierGateProps> = ({ requires, children, message 
         return <>{children}</>;
     }
 
-    const currentLabel = TIER_LABELS[tier ?? 'carbon'];
+    const currentLabel = TIER_LABELS[tier ?? 'starter'];
     const requiredLabel = TIER_LABELS[requires];
     const colorClass = TIER_COLORS[requires];
     const badge = TIER_BADGE[requires];

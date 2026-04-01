@@ -30,8 +30,8 @@ Phone: (949) 795-2419
 Website: helocwitheddie.com
 Apply Link: https://heloc.westcapitallending.com/account/heloc/register?referrer=1748723f-4b74-4399-a79c-4cc2a4c8da20
 
-Headshot: https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/693bb3fdeac0a8d6852417e6.jpg
-Company Logo: https://storage.googleapis.com/msgsndr/eVB3bUDr8bdQfRu6ae03/media/696029737cc1b904fa792d8c.png
+Headshot: (stored in LO Profile, per-user)
+Company Logo: (stored in LO Profile, per-user)
 ```
 
 ## Output Standards

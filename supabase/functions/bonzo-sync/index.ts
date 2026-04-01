@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { getCorsHeaders } from "../_shared/cors.ts"
+import { fetchWithRetry } from "../_shared/retry.ts"
 
 // Bonzo API v3 — production base URL (api.getbonzo.com does NOT exist)
 const BONZO_API = "https://app.getbonzo.com/api/v3"
@@ -40,18 +41,13 @@ async function recordSyncError(
     }
 }
 
-// Helper: fetch with AbortController timeout
+// Helper: fetch with retry + timeout (retries on 429/5xx with exponential backoff)
 async function timedFetch(url: string, options: RequestInit = {}): Promise<Response> {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), BONZO_FETCH_TIMEOUT_MS)
-    try {
-        const resp = await fetch(url, { ...options, signal: controller.signal })
-        clearTimeout(timeout)
-        return resp
-    } catch (err) {
-        clearTimeout(timeout)
-        throw err
-    }
+    const { response } = await fetchWithRetry(url, options, {
+        timeoutMs: BONZO_FETCH_TIMEOUT_MS,
+        maxRetries: 2,
+    })
+    return response
 }
 
 // Extract array of prospects from any Bonzo response shape

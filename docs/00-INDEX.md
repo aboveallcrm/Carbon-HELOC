@@ -54,7 +54,7 @@
 | Service | Account | Notes |
 |---------|---------|-------|
 | Bonzo | Bonzo app | `app.getbonzo.com/api/v3` |
-| GHL | GoHighLevel | Location: `eVB3bUDr8bdQfRu6ae03` |
+| GHL | GoHighLevel | Location: `{YOUR_GHL_LOCATION_ID}` |
 | n8n | `https://n8n.srv1290585.hstgr.cloud/` | Self-hosted |
 | HeyGen | heygen.com | Diamond tier only |
 | Resend | notifications.aboveallcrm.com | Verified domain |

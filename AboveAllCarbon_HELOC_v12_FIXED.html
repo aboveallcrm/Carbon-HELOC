@@ -115,11 +115,9 @@
             --text-primary: #e2e8f0;
             --text-secondary: rgba(255, 255, 255, 0.6);
             /* Tier colors */
-            --tier-carbon: #64748b;
-            --tier-titanium: #94a3b8;
-            --tier-platinum: #a78bfa;
-            --tier-obsidian: #1e293b;
-            --tier-diamond: #c5a059;
+            --tier-starter: #6b7280;
+            --tier-pro: #a78bfa;
+            --tier-enterprise: #06b6d4;
             /* z-index scale */
             --z-dropdown: 100;
             --z-sticky: 200;
@@ -7731,11 +7729,9 @@ Best regards,
                         <div class="input-field">
                             <label>Tier</label>
                             <select id="edit-user-tier" style="border-color: var(--accent-color);">
-                                <option value="carbon">Carbon</option>
-                                <option value="titanium">Titanium</option>
-                                <option value="platinum">Platinum</option>
-                                <option value="obsidian">Obsidian</option>
-                                <option value="diamond">Diamond</option>
+                                <option value="starter">Starter</option>
+                                <option value="pro">Pro</option>
+                                <option value="enterprise">Enterprise</option>
                             </select>
                         </div>
                         <div class="input-field">
@@ -7906,11 +7902,9 @@ Best regards,
                         <div class="input-field">
                             <label>Tier</label>
                             <select id="invite-tier">
-                                <option value="carbon">Carbon</option>
-                                <option value="titanium">Titanium</option>
-                                <option value="platinum">Platinum</option>
-                                <option value="obsidian">Obsidian</option>
-                                <option value="diamond">Diamond</option>
+                                <option value="starter">Starter</option>
+                                <option value="pro">Pro</option>
+                                <option value="enterprise">Enterprise</option>
                             </select>
                         </div>
                     </div>
@@ -8547,7 +8541,7 @@ Best regards,
                 <img alt="Company Logo" class="company-logo-footer" id="company-logo-footer" loading="lazy" style="display:none;">
             </div>
             <div class="footer-legal">
-                <img src="https://assets.cdn.filesafe.space/eVB3bUDr8bdQfRu6ae03/media/693bb403ed957f64da26426c.jpg"
+                <img src="assets/img/equal-housing-lender.jpg"
                     class="ehl-logo" alt="Equal Housing Lender" loading="lazy">
                 <div><strong id="footer-company">—</strong> | NMLS# <span
                         id="footer-co-nmls">—</span> | DRE# <span id="footer-co-dre">—</span><br><span
@@ -8607,6 +8601,31 @@ Best regards,
                 if (!session || !session.access_token) return null;
                 return { 'Authorization': 'Bearer ' + session.access_token, 'Content-Type': 'application/json' };
             } catch (e) { return null; }
+        }
+
+        // Supabase Edge Function base URL (early declaration for callGHLProxy;
+        // also declared later in HeyGen section — var hoisting merges them)
+        var SUPABASE_FUNCTIONS_URL = (window.__PUBLIC_CONFIG__ && window.__PUBLIC_CONFIG__.supabaseFunctionsUrl)
+            || window.SUPABASE_FUNCTIONS_URL
+            || 'https://czzabvfzuxhpdcowgvam.supabase.co/functions/v1';
+
+        /**
+         * Call the ghl-proxy edge function. All GHL API calls go through here
+         * so API keys never leave the server.
+         */
+        async function callGHLProxy(action, payload, contactId, locationId) {
+            var authHeaders = await getAuthHeaders();
+            if (!authHeaders) throw new Error('Not authenticated — please log in again.');
+            var resp = await fetch(SUPABASE_FUNCTIONS_URL + '/ghl-proxy', {
+                method: 'POST',
+                headers: authHeaders,
+                body: JSON.stringify({ action: action, payload: payload || {}, contactId: contactId || undefined, locationId: locationId || undefined })
+            });
+            var result = await resp.json();
+            if (!resp.ok || !result.success) {
+                throw new Error(result.error || result.data?.message || ('GHL proxy error: HTTP ' + resp.status));
+            }
+            return result;
         }
 
         // Safe JSON parse — never throws, returns fallback on error
@@ -8861,9 +8880,9 @@ Best regards,
             // Check if this tab is tier-locked
             var lockInfo = _tierLockedTabs[tab];
             if (lockInfo) {
-                var tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
+                var tiers = ['starter', 'pro', 'enterprise'];
                 var effectiveTier = _demoTierOverride ? _demoTierOverride :
-                    (window.currentUserRole === 'super_admin') ? 'diamond' : (window.currentUserTier || 'carbon');
+                    (window.currentUserRole === 'super_admin') ? 'enterprise' : (window.currentUserTier || 'starter');
                 var userLevel = tiers.indexOf(effectiveTier);
                 if (userLevel < lockInfo.requiredLevel) {
                     // Show upgrade overlay instead of real content
@@ -8897,7 +8916,7 @@ Best regards,
             });
 
             var tierColors = TIER_COLORS;
-            var tierTimeSaved = { titanium: '30+ min/day', platinum: '2+ hours/day', obsidian: 'Unlimited' };
+            var tierTimeSaved = { pro: '2+ hours/day', enterprise: 'Unlimited' };
 
             var overlay = document.createElement('div');
             overlay.className = 'tab-upgrade-overlay';
@@ -9113,8 +9132,8 @@ Best regards,
         // Actual data security enforced by RLS policies on Supabase (not client-side checks)
 
         // Shared tier color palette (single source of truth)
-        const TIER_COLORS = { carbon: '#6b7280', titanium: '#94a3b8', platinum: '#a78bfa', obsidian: '#334155', diamond: '#06b6d4' };
-        const TIER_LABELS = { carbon: 'CARBON', titanium: 'TITANIUM', platinum: 'PLATINUM', obsidian: 'OBSIDIAN', diamond: 'DIAMOND' };
+        const TIER_COLORS = { starter: '#6b7280', pro: '#a78bfa', enterprise: '#06b6d4' };
+        const TIER_LABELS = { starter: 'STARTER', pro: 'PRO', enterprise: 'ENTERPRISE' };
 
         function isTrueSuperAdmin() {
             return window.realUserRole === 'super_admin' && !window.isImpersonatedReadOnly;
@@ -9132,19 +9151,19 @@ Best regards,
 
             // Define which sections each role can access
             // Diamond-tier users get parser + email even with 'user' role
-            var tierForAccess = window.currentUserTier || 'carbon';
-            var isDiamondUser = (tierForAccess === 'diamond' || tierForAccess === 'obsidian');
+            var tierForAccess = window.currentUserTier || 'starter';
+            var isEnterpriseUser = (tierForAccess === 'enterprise');
             const access = {
                 'super_admin': ['lo', 'whitelabel', 'parser', 'lenderparser', 'email', 'integrations'],
                 'admin': ['lo', 'parser', 'lenderparser', 'email', 'integrations'],
-                'user': isDiamondUser ? ['lo', 'parser', 'lenderparser', 'email', 'integrations'] : ['lo', 'lenderparser', 'integrations']
+                'user': isEnterpriseUser ? ['lo', 'parser', 'lenderparser', 'email', 'integrations'] : ['lo', 'lenderparser', 'integrations']
             };
 
             // Define which tabs each role can see
             const tabAccess = {
                 'super_admin': ['client', 'quotes', 'leads', 'rates', 'lo', 'whitelabel', 'parser', 'email', 'integrations', 'superadmin'],
                 'admin': ['client', 'quotes', 'leads', 'rates', 'lo', 'parser', 'email', 'integrations'],
-                'user': isDiamondUser ? ['client', 'quotes', 'leads', 'rates', 'lo', 'parser', 'email', 'integrations'] : ['client', 'quotes', 'leads', 'rates', 'lo', 'parser', 'integrations']
+                'user': isEnterpriseUser ? ['client', 'quotes', 'leads', 'rates', 'lo', 'parser', 'email', 'integrations'] : ['client', 'quotes', 'leads', 'rates', 'lo', 'parser', 'integrations']
             };
 
             const allowed = access[role] || [];
@@ -9213,8 +9232,8 @@ Best regards,
             if (role === 'super_admin' && !_demoTierOverride) return;
 
             var effectiveTier = _demoTierOverride || tier;
-            var tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
-            var level = tiers.indexOf(effectiveTier || 'carbon');
+            var tiers = ['starter', 'pro', 'enterprise'];
+            var level = tiers.indexOf(effectiveTier || 'starter');
             if (level === -1) level = 0;
 
             // Start by hiding ALL integration subsections
@@ -9234,50 +9253,36 @@ Best regards,
             var saveBtn = document.querySelector('#integrations-section > button[onclick="saveIntegrations()"]');
             if (saveBtn) saveBtn.style.display = 'none';
 
-            // ---- TITANIUM+ (level >= 1): Radar, AI, Gmail OAuth ----
+            // ---- PRO (level >= 1): Radar, AI, Gmail OAuth, GHL, Bonzo, CRM, FUB, Webhooks ----
             if (level >= 1) {
-                var intRadar = document.getElementById('int-radar');
-                if (intRadar) intRadar.style.display = '';
-                var intAi = document.getElementById('int-ai');
-                if (intAi) intAi.style.display = '';
-                var intGmail = document.getElementById('int-gmail');
-                if (intGmail) intGmail.style.display = '';
-                if (saveBtn) saveBtn.style.display = '';
-                // Load Gmail connection status
-                _checkGmailStatus();
-            }
-
-            // ---- PLATINUM+ (level >= 2): GHL, Bonzo, CRM inbound, FUB, Outbound Webhooks ----
-            if (level >= 2) {
-                ['int-ghl', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks'].forEach(function (id) {
+                ['int-radar', 'int-ai', 'int-gmail', 'int-ghl', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks'].forEach(function (id) {
                     var el = document.getElementById(id);
                     if (el) el.style.display = '';
                 });
+                if (saveBtn) saveBtn.style.display = '';
+                // Load Gmail connection status
+                _checkGmailStatus();
                 // Show webhook activity log
                 if (activityLog && activityLog.parentElement) {
                     activityLog.parentElement.style.display = '';
                 }
             }
 
-            // ---- OBSIDIAN+ (level >= 3): n8n Workflow Automation ----
-            if (level >= 3) {
+            // ---- ENTERPRISE (level >= 2): n8n + HeyGen ----
+            if (level >= 2) {
                 var intN8n = document.getElementById('int-n8n');
                 if (intN8n) intN8n.style.display = '';
-            }
-
-            // ---- DIAMOND (level >= 4): HeyGen AI Video ----
-            if (level >= 4) {
                 var intHeygen = document.getElementById('int-heygen');
                 if (intHeygen) intHeygen.style.display = '';
             }
 
-            // Show HeyGen video mode option in Presentation Controls for Diamond users
+            // Show HeyGen video mode option in Presentation Controls for Enterprise users
             var heygenModeLabel = document.getElementById('video-mode-heygen-label');
             if (heygenModeLabel) {
-                heygenModeLabel.style.display = level >= 4 ? 'flex' : 'none';
+                heygenModeLabel.style.display = level >= 2 ? 'flex' : 'none';
             }
-            // If not diamond and heygen was selected, force back to manual
-            if (level < 4) {
+            // If not enterprise and heygen was selected, force back to manual
+            if (level < 2) {
                 var heygenRadio = document.getElementById('video-mode-heygen');
                 var manualRadio = document.getElementById('video-mode-manual');
                 if (heygenRadio && heygenRadio.checked && manualRadio) {
@@ -9295,20 +9300,17 @@ Best regards,
             var existingTeaser = intSection ? intSection.querySelector('.integration-teaser') : null;
             if (existingTeaser) existingTeaser.remove();
 
-            if (level < 2 && intSection) {
-                // Show teaser for CRM/webhook features (need Platinum+)
-                var nextTier = level < 1 ? 'Titanium' : 'Platinum';
-                var lockedFeatures = [];
-                if (level < 1) lockedFeatures.push('AI Strategy Generator', 'Address Autocomplete');
-                lockedFeatures.push('GoHighLevel 2-way sync', 'Bonzo CRM sync', 'Outbound Webhooks', 'Follow Up Boss');
-                if (level < 3) lockedFeatures.push('n8n Workflows');
+            if (level < 1 && intSection) {
+                // Show teaser for Pro features
+                var lockedFeatures = ['AI Strategy Generator', 'Address Autocomplete', 'GoHighLevel 2-way sync', 'Bonzo CRM sync', 'Outbound Webhooks', 'Follow Up Boss'];
+                lockedFeatures.push('n8n Workflows');
 
                 var teaser = document.createElement('div');
                 teaser.className = 'integration-teaser';
                 teaser.style.cssText = 'background:linear-gradient(135deg,rgba(168,85,247,0.08),rgba(197,160,89,0.08));border:1px dashed rgba(168,85,247,0.3);border-radius:12px;padding:20px;margin-top:16px;text-align:center;';
                 teaser.innerHTML =
                     '<div style="font-size:24px;margin-bottom:8px;">🚀</div>' +
-                    '<div style="font-family:var(--font-heading);font-size:13px;font-weight:700;color:white;margin-bottom:6px;">Unlock More Integrations</div>' +
+                    '<div style="font-family:var(--font-heading);font-size:13px;font-weight:700;color:white;margin-bottom:6px;">Unlock Integrations</div>' +
                     '<div style="font-family:var(--font-heading);font-size:10px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:12px;">' +
                     lockedFeatures.join(' &bull; ') + '</div>' +
                     '<button onclick="showUpgradeModal()" style="background:linear-gradient(135deg,var(--accent-color),#a68543);color:#0f172a;border:none;padding:8px 24px;border-radius:6px;font-family:var(--font-heading);font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px;">View Plans</button>';
@@ -9320,87 +9322,70 @@ Best regards,
 
         // ===== UPGRADE MODAL =====
         function showUpgradeModal() {
-            const currentTier = window.currentUserTier || 'carbon';
-            const tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
+            const currentTier = window.currentUserTier || 'starter';
+            const tiers = ['starter', 'pro', 'enterprise'];
             const currentLevel = tiers.indexOf(currentTier);
             const tierColors = TIER_COLORS;
 
             const tierFeatures = {
-                carbon: {
-                    tagline: 'Get Started',
-                    pitch: 'Replace your spreadsheet. Look like a pro.',
-                    price: 297,
+                starter: {
+                    tagline: 'Professional Quotes in Seconds',
+                    pitch: '2 tools in 1 — HELOC + Refi Architect. More than Premier LO at half the price.',
+                    price: 79,
                     tools: ['HELOC Quote Builder', 'Refinance Architect'],
                     features: [
                         { name: 'HELOC quote builder — 3 tier pricing', has: true },
                         { name: 'Refinance Architect — refi analysis', has: true },
-                        { name: 'PDF & screenshot export', has: true },
+                        { name: 'PDF, screenshot & HTML email', has: true },
                         { name: 'LO profile & branding', has: true },
-                        { name: 'Rate sheets', has: true },
-                        { name: 'Email & share quotes', has: true },
+                        { name: 'Lender parser (Figure/NFTYDoor)', has: true },
+                        { name: 'URL shortener', has: true },
+                        { name: 'Address autocomplete', has: true },
                         { name: 'Leads pipeline', has: false },
-                        { name: 'AI deal structuring', has: false },
-                        { name: 'CRM sync & automation', has: false }
+                        { name: 'Ezra AI co-pilot', has: false },
+                        { name: 'CRM sync', has: false }
                     ]
                 },
-                titanium: {
+                pro: {
                     tagline: 'Close More Deals',
-                    pitch: 'Stop losing leads. Start closing them.',
-                    price: 597,
-                    timeSaved: 'Save 30+ min/day',
-                    tools: ['HELOC + Refi Tools', 'Everything in Carbon'],
-                    features: [
-                        { name: 'Everything in Carbon', has: true },
-                        { name: 'Leads pipeline — track every borrower', has: true, isNew: true },
-                        { name: 'Ezra AI — scripts & objections (15/day)', has: true, isNew: true },
-                        { name: 'Debt consolidation analyzer', has: true, isNew: true },
-                        { name: 'Refi vs. HELOC comparison', has: true, isNew: true },
-                        { name: 'Break-even calculator', has: true, isNew: true },
-                        { name: 'Client apply link', has: true, isNew: true },
-                        { name: 'Address autocomplete', has: true, isNew: true }
-                    ]
-                },
-                platinum: {
-                    tagline: 'Work Smarter, Not Harder',
-                    pitch: 'Every minute saved is another client you can call.',
-                    price: 797,
+                    pitch: 'The complete HELOC machine. Stop losing leads.',
+                    price: 179,
                     timeSaved: 'Save 2+ hours/day',
-                    tools: ['HELOC + Refi Tools', 'Everything in Titanium'],
+                    tools: ['Everything in Starter', 'Pipeline + AI + CRM'],
                     features: [
-                        { name: 'Everything in Titanium', has: true },
-                        { name: 'Paste Rates — import Figure in seconds', has: true, isNew: true },
-                        { name: 'Voice input — talk to Ezra hands-free', has: true, isNew: true },
+                        { name: 'Everything in Starter', has: true },
+                        { name: 'Leads pipeline — track every borrower', has: true, isNew: true },
+                        { name: 'Ezra AI — full power (50/day)', has: true, isNew: true },
+                        { name: 'Voice input — talk to Ezra', has: true, isNew: true },
+                        { name: 'Client quote pages + AI chat', has: true, isNew: true },
                         { name: 'CRM auto-sync — Bonzo, GHL, FUB', has: true, isNew: true },
-                        { name: 'Outbound webhooks & n8n', has: true, isNew: true },
-                        { name: 'Lender rate parser', has: true, isNew: true },
-                        { name: 'Ezra AI — full power (50/day)', has: true, isNew: true }
+                        { name: 'Outbound webhooks', has: true, isNew: true },
+                        { name: 'Debt consolidation analyzer', has: true, isNew: true },
+                        { name: 'Break-even calculator', has: true, isNew: true },
+                        { name: 'Paste rates import', has: true, isNew: true }
                     ]
                 },
-                obsidian: {
-                    tagline: 'Your Brand, Your Business',
-                    pitch: 'Make it yours. Scale it.',
-                    price: 1297,
+                enterprise: {
+                    tagline: 'Your Brokerage, Powered by AI',
+                    pitch: 'Your brand. Your team. No limits. Ever.',
+                    price: 497,
                     timeSaved: 'Unlimited AI',
-                    tools: ['HELOC + Refi Tools', 'Everything in Platinum'],
+                    tools: ['Everything in Pro', '5 Team Seats Included'],
                     features: [
-                        { name: 'Everything in Platinum', has: true },
+                        { name: 'Everything in Pro', has: true },
+                        { name: '5 team seats included (+$49/seat)', has: true, isNew: true },
                         { name: 'White label — your logo & colors', has: true, isNew: true },
+                        { name: 'Custom domain for client links', has: true, isNew: true },
                         { name: 'Company settings & team mgmt', has: true, isNew: true },
+                        { name: 'n8n workflow automation', has: true, isNew: true },
                         { name: 'Unlimited Ezra AI', has: true, isNew: true },
                         { name: 'Custom AI prompts', has: true, isNew: true },
-                        { name: 'Priority support', has: true, isNew: true }
-                    ]
-                },
-                diamond: {
-                    tagline: 'All Access',
-                    pitch: 'Everything. No limits. Ever.',
-                    price: 1999,
-                    tools: ['HELOC + Refi Tools', 'Everything in Obsidian'],
-                    features: [
-                        { name: 'Everything in Obsidian', has: true },
-                        { name: 'Admin dashboard', has: true, isNew: true },
-                        { name: 'All future tools & features', has: true, isNew: true },
-                        { name: 'Beta access & roadmap input', has: true, isNew: true }
+                        { name: 'HeyGen AI video', has: true, isNew: true },
+                        { name: 'Analytics dashboard', has: true, isNew: true },
+                        { name: 'Bulk CSV lead import', has: true, isNew: true },
+                        { name: 'Dedicated onboarding call', has: true, isNew: true },
+                        { name: 'Priority support (< 4hr)', has: true, isNew: true },
+                        { name: 'Early access to new features', has: true, isNew: true }
                     ]
                 }
             };
@@ -9520,16 +9505,17 @@ Best regards,
                 applyRoleAccess(window.currentUserRole || 'super_admin');
                 return;
             }
-            var tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
+            var tiers = ['starter', 'pro', 'enterprise'];
             var level = tiers.indexOf(_demoTierOverride);
 
             // Define what a regular "user" role at each tier would see
-            // All tiers: client, quotes, rates, lo, leads (leads shows upgrade overlay if locked)
+            // All tiers: client, quotes, rates, lo (leads needs Pro+)
             // All tiers see integrations tab (content gated by applyIntegrationAccess)
-            // Obsidian+ (>=3): + whitelabel
+            // Enterprise (>=2): + whitelabel
             // Parser, email, superadmin are role-only — hidden during all demo tiers
-            var demoTabs = ['client', 'quotes', 'rates', 'lo', 'integrations', 'leads'];
-            if (level >= 3) demoTabs.push('whitelabel');
+            var demoTabs = ['client', 'quotes', 'rates', 'lo', 'integrations'];
+            if (level >= 1) demoTabs.push('leads');
+            if (level >= 2) demoTabs.push('whitelabel');
 
             document.querySelectorAll('.settings-tab').forEach(function(tab) {
                 var onclick = tab.getAttribute('onclick') || '';
@@ -9547,10 +9533,10 @@ Best regards,
         }
 
         function applyTierAccess(tier) {
-            const tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
+            const tiers = ['starter', 'pro', 'enterprise'];
             // If super_admin has a demo tier override active, use that; otherwise full access
             const effectiveTier = _demoTierOverride ? _demoTierOverride :
-                (window.currentUserRole === 'super_admin') ? 'diamond' : tier;
+                (window.currentUserRole === 'super_admin') ? 'enterprise' : tier;
             const level = tiers.indexOf(effectiveTier);
             if (level === -1) return; // unknown tier, skip
 
@@ -9604,7 +9590,7 @@ Best regards,
                 if (badge) badge.remove();
             }
 
-            // ---- TITANIUM+ (level >= 1): Apply link, GHL, Radar, basic AI ----
+            // ---- PRO+ (level >= 1): Apply link, AI, client pages ----
             // Apply button in proposal output
             const applyBtn = document.getElementById('apply-btn');
             const applyText = document.getElementById('apply-link-text');
@@ -9621,21 +9607,21 @@ Best regards,
             const aiBtn = document.querySelector('button[onclick="generateAIStrategy()"]') || document.querySelector('button[onclick="generateAIStrategyKBOnly()"]');
             const aiCheckbox = document.getElementById('chk-show-ai');
             if (level >= 1) {
-                // Titanium+: Full AI strategy (KB + AI proxy)
+                // Pro+: Full AI strategy (KB + AI proxy)
                 if (aiBtn) { aiBtn.disabled = false; aiBtn.style.opacity = ''; aiBtn.title = ''; aiBtn.setAttribute('onclick', 'generateAIStrategy()'); }
                 if (aiCheckbox) { aiCheckbox.disabled = false; }
             } else {
-                // Carbon: KB-only strategy (no API call, instant response)
+                // Starter: No AI strategy
                 if (aiBtn) {
-                    aiBtn.disabled = false;
-                    aiBtn.style.opacity = '';
-                    aiBtn.title = 'Knowledge-based strategy (upgrade to Titanium for AI-enhanced)';
-                    aiBtn.setAttribute('onclick', 'generateAIStrategyKBOnly()');
+                    aiBtn.disabled = true;
+                    aiBtn.style.opacity = '0.4';
+                    aiBtn.title = 'Upgrade to Pro to unlock Ezra AI';
+                    aiBtn.setAttribute('onclick', 'showUpgradeModal()');
                 }
-                if (aiCheckbox) { aiCheckbox.disabled = false; }
+                if (aiCheckbox) { aiCheckbox.disabled = true; aiCheckbox.checked = false; }
             }
 
-            // AI Chat on client links — Titanium+ (level >= 1)
+            // AI Chat on client links — Pro+ (level >= 1)
             var aiChatCheckbox = document.getElementById('chk-link-ai-chat');
             if (aiChatCheckbox) {
                 if (level >= 1) {
@@ -9644,11 +9630,11 @@ Best regards,
                 } else {
                     aiChatCheckbox.disabled = true;
                     aiChatCheckbox.checked = false;
-                    if (aiChatCheckbox.parentElement) { aiChatCheckbox.parentElement.style.opacity = '0.4'; aiChatCheckbox.parentElement.title = 'Upgrade to Titanium to enable AI chat on client quotes'; }
+                    if (aiChatCheckbox.parentElement) { aiChatCheckbox.parentElement.style.opacity = '0.4'; aiChatCheckbox.parentElement.title = 'Upgrade to Pro to enable AI chat on client quotes'; }
                 }
             }
 
-            // ---- TITANIUM+ (level >= 1): Debt Consolidation, Refi Comparison, Break-Even ----
+            // ---- PRO+ (level >= 1): Debt Consolidation, Refi Comparison, Break-Even ----
             // Debt Consolidation input section + output
             const debtSection = document.getElementById('debt-section');
             const debtCheckbox = document.getElementById('chk-show-debt');
@@ -9657,23 +9643,18 @@ Best regards,
                 if (debtSection) { debtSection.style.opacity = ''; debtSection.style.pointerEvents = ''; const b = debtSection.querySelector('.tier-upgrade-badge'); if (b) b.remove(); }
                 if (debtCheckbox) { debtCheckbox.disabled = false; }
             } else {
-                if (debtSection) { debtSection.style.opacity = '0.35'; debtSection.style.pointerEvents = 'none'; debtSection.style.position = 'relative'; if (!debtSection.querySelector('.tier-upgrade-badge')) { const badge = document.createElement('div'); badge.className = 'tier-upgrade-badge'; badge.style.cssText = 'position:absolute;top:8px;right:8px;background:linear-gradient(135deg,' + tierColors.titanium + ',rgba(0,0,0,0.5));color:white;padding:3px 10px;border-radius:10px;font-family:var(--font-heading);font-size:8px;font-weight:700;text-transform:uppercase;z-index:5;pointer-events:auto;cursor:pointer;transition:transform 0.2s;'; badge.innerText = 'Show clients real savings'; badge.title = 'Upgrade to Titanium — show borrowers exactly how much they save'; badge.onclick = (e) => { e.stopPropagation(); showUpgradeModal(); }; badge.onmouseenter = () => badge.style.transform = 'scale(1.1)'; badge.onmouseleave = () => badge.style.transform = ''; debtSection.appendChild(badge); } }
+                if (debtSection) { debtSection.style.opacity = '0.35'; debtSection.style.pointerEvents = 'none'; debtSection.style.position = 'relative'; if (!debtSection.querySelector('.tier-upgrade-badge')) { const badge = document.createElement('div'); badge.className = 'tier-upgrade-badge'; badge.style.cssText = 'position:absolute;top:8px;right:8px;background:linear-gradient(135deg,' + tierColors.pro + ',rgba(0,0,0,0.5));color:white;padding:3px 10px;border-radius:10px;font-family:var(--font-heading);font-size:8px;font-weight:700;text-transform:uppercase;z-index:5;pointer-events:auto;cursor:pointer;transition:transform 0.2s;'; badge.innerText = 'Show clients real savings'; badge.title = 'Upgrade to Pro — show borrowers exactly how much they save'; badge.onclick = (e) => { e.stopPropagation(); showUpgradeModal(); }; badge.onmouseenter = () => badge.style.transform = 'scale(1.1)'; badge.onmouseleave = () => badge.style.transform = ''; debtSection.appendChild(badge); } }
                 if (debtCheckbox) { debtCheckbox.disabled = true; debtCheckbox.checked = false; }
                 if (debtOutput) debtOutput.style.display = 'none';
             }
 
-            // Refi Comparison input section + output
+            // Refi Comparison input section + output — STARTER+ (unlocked for all)
             const refiSection = document.getElementById('refi-section');
             const refiCheckbox = document.getElementById('chk-show-refi');
             const refiOutput = document.getElementById('refi-comparison-container');
-            if (level >= 1) {
-                if (refiSection) { refiSection.style.opacity = ''; refiSection.style.pointerEvents = ''; const b = refiSection.querySelector('.tier-upgrade-badge'); if (b) b.remove(); }
-                if (refiCheckbox) { refiCheckbox.disabled = false; }
-            } else {
-                if (refiSection) { refiSection.style.opacity = '0.35'; refiSection.style.pointerEvents = 'none'; refiSection.style.position = 'relative'; if (!refiSection.querySelector('.tier-upgrade-badge')) { const badge = document.createElement('div'); badge.className = 'tier-upgrade-badge'; badge.style.cssText = 'position:absolute;top:8px;right:8px;background:linear-gradient(135deg,' + tierColors.titanium + ',rgba(0,0,0,0.5));color:white;padding:3px 10px;border-radius:10px;font-family:var(--font-heading);font-size:8px;font-weight:700;text-transform:uppercase;z-index:5;pointer-events:auto;cursor:pointer;transition:transform 0.2s;'; badge.innerText = 'Win the refi objection'; badge.title = 'Upgrade to Titanium — show borrowers why a HELOC beats a refi'; badge.onclick = (e) => { e.stopPropagation(); showUpgradeModal(); }; badge.onmouseenter = () => badge.style.transform = 'scale(1.1)'; badge.onmouseleave = () => badge.style.transform = ''; refiSection.appendChild(badge); } }
-                if (refiCheckbox) { refiCheckbox.disabled = true; refiCheckbox.checked = false; }
-                if (refiOutput) refiOutput.style.display = 'none';
-            }
+            // Refi Architect is available at all tiers (Starter+)
+            if (refiSection) { refiSection.style.opacity = ''; refiSection.style.pointerEvents = ''; const b = refiSection.querySelector('.tier-upgrade-badge'); if (b) b.remove(); }
+            if (refiCheckbox) { refiCheckbox.disabled = false; }
 
             // Break-Even checkbox + output
             const breakCheckbox = document.getElementById('chk-show-break');
@@ -9685,14 +9666,15 @@ Best regards,
                 if (breakOutput) breakOutput.style.display = 'none';
             }
 
-            // ---- PLATINUM+ (level >= 2): Client Quote Link + URL Shortener ----
+            // ---- PRO+ (level >= 1): Client Quote Link ----
             var clientLinkSection = document.getElementById('client-link-section');
             if (clientLinkSection) {
-                clientLinkSection.style.display = level >= 2 ? '' : 'none';
+                clientLinkSection.style.display = level >= 1 ? '' : 'none';
             }
+            // URL Shortener — available to all tiers (Starter+)
             var urlShortenerSection = document.getElementById('url-shortener-section');
             if (urlShortenerSection) {
-                urlShortenerSection.style.display = level >= 2 ? '' : 'none';
+                urlShortenerSection.style.display = '';
             }
 
             // Integration subsections — tier-based visibility
@@ -9742,41 +9724,41 @@ Best regards,
                 lenderParser.onclick = null;
             }
 
-            // ---- OBSIDIAN+ (level >= 3): White Label ----
+            // ---- ENTERPRISE (level >= 2): White Label ----
             const whitelabel = document.getElementById('whitelabel-section');
             if (whitelabel) {
-                if (level >= 3) {
+                if (level >= 2) {
                     whitelabel.classList.remove('locked');
                     whitelabel.onclick = null;
                 }
             }
             // company-settings-section removed — fields moved into LO Profile for all users
 
-            // ---- PLATINUM+ (level >= 2): Rate Sheet Pre-Pricing ----
+            // ---- PRO+ (level >= 1): Rate Sheet Pre-Pricing ----
             var rateSheetSection = document.getElementById('ezra-rate-sheet-section');
             if (rateSheetSection) {
-                rateSheetSection.style.display = level >= 2 ? '' : 'none';
-                if (level >= 2) _loadRateSheetStatus();
+                rateSheetSection.style.display = level >= 1 ? '' : 'none';
+                if (level >= 1) _loadRateSheetStatus();
             }
 
-            // ---- OBSIDIAN+ (level >= 3): Custom AI System Prompt ----
+            // ---- ENTERPRISE (level >= 2): Custom AI System Prompt ----
             var customAiSection = document.getElementById('custom-ai-prompt-section');
             if (customAiSection) {
-                customAiSection.style.display = level >= 3 ? '' : 'none';
-                if (level >= 3) _loadCustomAIPrompt();
+                customAiSection.style.display = level >= 2 ? '' : 'none';
+                if (level >= 2) _loadCustomAIPrompt();
             }
 
-            // ---- DIAMOND (level >= 4): Quote Templates, Advanced Analytics ----
+            // ---- ENTERPRISE (level >= 2): Quote Templates, Advanced Analytics ----
             var templatesSection = document.getElementById('quote-templates-section');
             if (templatesSection) {
-                templatesSection.style.display = level >= 4 ? '' : 'none';
-                if (level >= 4) _loadTemplateList();
+                templatesSection.style.display = level >= 2 ? '' : 'none';
+                if (level >= 2) _loadTemplateList();
             }
 
             var advAnalytics = document.getElementById('advanced-analytics-section');
             if (advAnalytics) {
-                advAnalytics.style.display = level >= 4 ? '' : 'none';
-                if (level >= 4) loadAdvancedAnalytics();
+                advAnalytics.style.display = level >= 2 ? '' : 'none';
+                if (level >= 2) loadAdvancedAnalytics();
             }
 
             // ---- TIER BADGE IN TOOLBAR ----
@@ -9795,7 +9777,7 @@ Best regards,
                 }
             }
             tierBadge.style.background = tierColors[effectiveTier] || '#6b7280';
-            tierBadge.style.color = effectiveTier === 'obsidian' ? '#94a3b8' : 'white';
+            tierBadge.style.color = 'white';
             tierBadge.innerText = (_demoTierOverride ? '👁 ' : '') + (tierLabels[effectiveTier] || effectiveTier.toUpperCase());
 
             // ---- DEMO TIER SELECTOR (super_admin only) ----
@@ -9807,19 +9789,17 @@ Best regards,
                     demoSelect.title = 'Preview as different tier';
                     demoSelect.style.cssText = 'font-family:var(--font-heading);font-size:9px;font-weight:700;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);border:1px solid rgba(255,255,255,0.25);border-radius:6px;padding:4px 6px;cursor:pointer;outline:none;text-transform:uppercase;letter-spacing:0.5px;';
                     demoSelect.innerHTML = '<option value="">Demo As...</option>' +
-                        '<option value="carbon">Carbon</option>' +
-                        '<option value="titanium">Titanium</option>' +
-                        '<option value="platinum">Platinum</option>' +
-                        '<option value="obsidian">Obsidian</option>' +
-                        '<option value="diamond">Diamond (Full)</option>';
+                        '<option value="starter">Starter</option>' +
+                        '<option value="pro">Pro</option>' +
+                        '<option value="enterprise">Enterprise (Full)</option>';
                     demoSelect.onchange = function () {
                         _demoTierOverride = this.value || null;
-                        applyTierAccess(window.currentUserTier || 'diamond');
+                        applyTierAccess(window.currentUserTier || 'enterprise');
                         applyDemoTabVisibility();
                         if (_demoTierOverride) {
                             showToast('Previewing as ' + _demoTierOverride.toUpperCase() + ' tier', 'info', 2000);
                         } else {
-                            showToast('Restored full Diamond access', 'success', 2000);
+                            showToast('Restored full Enterprise access', 'success', 2000);
                         }
                     };
                     var toolbar = document.getElementById('floating-toolbar');
@@ -9833,14 +9813,14 @@ Best regards,
             // ---- TIER-LOCKED TABS: Register lockable tabs so switchTab() can show upgrade overlay ----
             _tierLockedTabs = {}; // Reset
 
-            // Leads tab — Titanium+ (level >= 1)
+            // Leads tab — Pro+ (level >= 1)
             var leadsTabBtn = document.querySelector('.settings-tab[onclick="switchTab(\'leads\')"]');
             if (level < 1) {
                 _tierLockedTabs['leads'] = {
-                    requiredLevel: 1, requiredTier: 'titanium',
+                    requiredLevel: 1, requiredTier: 'pro',
                     icon: '👥', title: 'Every Lead You Lose is a Deal Someone Else Closes',
                     description: 'Top producers never let a lead slip through the cracks. Your pipeline tracks every borrower from first contact to funded — automatically.',
-                    features: ['Auto-import leads — no more copy-pasting from email', 'See exactly where every deal stands at a glance', 'One click loads the borrower into your quote builder', 'Filter by status, source, or stage — find anyone in seconds', 'LOs on Titanium close 3x more HELOC deals']
+                    features: ['Auto-import leads — no more copy-pasting from email', 'See exactly where every deal stands at a glance', 'One click loads the borrower into your quote builder', 'Filter by status, source, or stage — find anyone in seconds', 'Pro users close 3x more HELOC deals']
                 };
                 if (leadsTabBtn) { leadsTabBtn.classList.add('tier-locked'); leadsTabBtn.style.display = ''; }
             } else {
@@ -9860,9 +9840,9 @@ Best regards,
             // White Label tab — Obsidian+ (level >= 3) — only visible for super_admin role anyway,
             // but if shown, register as tier-locked
             var wlTabBtn = document.querySelector('.settings-tab[onclick="switchTab(\'whitelabel\')"]');
-            if (wlTabBtn && wlTabBtn.style.display !== 'none' && level < 3) {
+            if (wlTabBtn && wlTabBtn.style.display !== 'none' && level < 2) {
                 _tierLockedTabs['whitelabel'] = {
-                    requiredLevel: 3, requiredTier: 'obsidian',
+                    requiredLevel: 2, requiredTier: 'enterprise',
                     icon: '🎨', title: 'Your Clients Should See YOUR Brand, Not Ours',
                     description: 'When a borrower opens your quote, they see your name, your logo, your colors. That\'s how you build a brand they remember and refer.',
                     features: ['Your logo and colors on every quote and email', 'Branded quote URLs — yourcompany.com, not ours', 'Clients think it\'s YOUR platform — because it is', 'Stand out from every other LO using generic tools']
@@ -9912,17 +9892,15 @@ Best regards,
             var totalSteps = 9;
             var isOpen = false;
             var wizardData = {};
-            var userTier = 'carbon';
+            var userTier = 'starter';
             var userTierLevel = 0;
-            var TIERS = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
-            var TIER_COLORS = { carbon: '#6b7280', titanium: '#94a3b8', platinum: '#a78bfa', obsidian: '#334155', diamond: '#06b6d4' };
-            var TIER_LABELS = { carbon: 'CARBON', titanium: 'TITANIUM', platinum: 'PLATINUM', obsidian: 'OBSIDIAN', diamond: 'DIAMOND' };
+            var TIERS = ['starter', 'pro', 'enterprise'];
+            var TIER_COLORS = { starter: '#6b7280', pro: '#a78bfa', enterprise: '#06b6d4' };
+            var TIER_LABELS = { starter: 'STARTER', pro: 'PRO', enterprise: 'ENTERPRISE' };
             var TIER_FEATURES = {
-                carbon: ['Core Quote Builder', 'PDF / Screenshot Export', 'LO Profile', 'Rate Configuration'],
-                titanium: ['Leads Pipeline', 'Debt Consolidation', 'Refi Comparison', 'Break-Even Analysis', 'Client Apply Link', 'AI Strategy (Basic)', 'Address Autocomplete'],
-                platinum: ['GHL Integration', 'n8n Workflows', 'Bonzo / FUB Full Sync', 'Outbound Webhooks', 'Lender Info Parser', 'AI Strategy (Full)'],
-                obsidian: ['White Label Branding', 'Company Settings', 'Custom AI Prompts'],
-                diamond: ['Priority Support', 'All Future Features']
+                starter: ['HELOC Quote Builder', 'Refinance Architect', 'PDF / Screenshot / HTML Email', 'Lender Parser', 'LO Profile', 'URL Shortener'],
+                pro: ['Leads Pipeline', 'Ezra AI (50/day + Voice)', 'CRM Sync (Bonzo/GHL/FUB)', 'Client Quote Pages', 'Debt Consolidation', 'Break-Even', 'Webhooks'],
+                enterprise: ['5 Team Seats', 'White Label', 'Unlimited AI', 'HeyGen Video', 'n8n Workflows', 'Analytics', 'Priority Support']
             };
             var PROFILE_FIELDS = [
                 { id: 'lo-name', label: 'Name', weight: 15, required: true },
@@ -10173,7 +10151,7 @@ Best regards,
             // ===== STEP 0: WELCOME =====
             function renderWelcome() {
                 var tierColor = TIER_COLORS[userTier] || '#6b7280';
-                var tierLabel = TIER_LABELS[userTier] || 'CARBON';
+                var tierLabel = TIER_LABELS[userTier] || 'STARTER';
                 var featureItems = '';
                 TIERS.forEach(function (t, idx) {
                     if (idx <= userTierLevel) {
@@ -10887,10 +10865,10 @@ Best regards,
             }
 
             async function init() {
-                userTier = window.currentUserTier || 'carbon';
+                userTier = window.currentUserTier || 'starter';
                 userTierLevel = TIERS.indexOf(userTier);
                 if (userTierLevel === -1) userTierLevel = 0;
-                if (window.currentUserRole === 'super_admin') { userTierLevel = 4; userTier = 'diamond'; }
+                if (window.currentUserRole === 'super_admin') { userTierLevel = 2; userTier = 'enterprise'; }
                 readFromFormFields();
                 var show = await shouldShow();
                 if (show) { setTimeout(function () { open(); }, 600); }
@@ -11820,19 +11798,13 @@ Best regards,
             }
 
             async function checkGHLDND(email) {
-                var apiKey = document.getElementById('ghl-api-key')?.value;
-                var locationId = document.getElementById('ghl-location-id')?.value;
-                if (!apiKey || !locationId || !email) return null;
+                if (!email) return null;
 
                 try {
-                    var resp = await fetch('https://services.leadconnectorhq.com/contacts/?locationId=' + locationId + '&query=' + encodeURIComponent(email), {
-                        method: 'GET',
-                        headers: { 'Authorization': 'Bearer ' + apiKey, 'Version': '2021-07-28', 'Content-Type': 'application/json' }
-                    });
-                    if (!resp.ok) return null;
-                    var data = await resp.json();
-                    if (data.contacts && data.contacts.length > 0) {
-                        var contact = data.contacts[0];
+                    var result = await callGHLProxy('search_contacts', { query: email });
+                    var contacts = result.data?.contacts || [];
+                    if (contacts.length > 0) {
+                        var contact = contacts[0];
                         if (contact.dnd === true || (contact.dndSettings && (
                             (contact.dndSettings.Call && contact.dndSettings.Call.status === 'active') ||
                             (contact.dndSettings.Email && contact.dndSettings.Email.status === 'active') ||
@@ -11990,12 +11962,56 @@ Best regards,
         })();
 
         // Listen for auth-ready from main.js module
+        // ===== TRIAL BANNER + EXPIRATION =====
+        async function showTrialBanner() {
+            // Don't show for super_admin or active subscribers
+            if (window.currentUserRole === 'super_admin') return;
+            var sb = window._supabase;
+            if (!sb || !window.currentUserId) return;
+            var res = await sb.from('profiles').select('subscription_status, trial_ends_at, trial_original_tier, tier').eq('id', window.currentUserId).single();
+            if (res.error || !res.data) return;
+            var status = res.data.subscription_status;
+            var trialEnd = res.data.trial_ends_at;
+            if (status === 'active') return; // Paid user, no banner
+
+            // Auto-downgrade if trial expired
+            if (status === 'trialing' && trialEnd && new Date(trialEnd) < new Date()) {
+                var dropTier = res.data.trial_original_tier || 'starter';
+                await sb.from('profiles').update({ tier: dropTier, subscription_status: 'expired' }).eq('id', window.currentUserId);
+                window.currentUserTier = dropTier;
+                // Re-apply access with downgraded tier
+                applyIntegrationAccess(window.currentUserRole, dropTier);
+                applyTierAccess(dropTier);
+                status = 'expired';
+            }
+
+            // Remove old banner if any
+            var old = document.getElementById('trial-banner');
+            if (old) old.remove();
+            var banner = document.createElement('div');
+            banner.id = 'trial-banner';
+            banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:100000;background:linear-gradient(135deg,#1e293b,#0f172a);border-bottom:1px solid rgba(168,85,247,0.3);padding:8px 16px;display:flex;align-items:center;justify-content:center;gap:12px;font-family:var(--font-heading);font-size:11px;color:rgba(255,255,255,0.85);';
+            if (status === 'trialing' && trialEnd) {
+                var daysLeft = Math.max(0, Math.ceil((new Date(trialEnd) - new Date()) / 86400000));
+                if (daysLeft > 0) {
+                    banner.innerHTML = '<span style="background:rgba(168,85,247,0.2);padding:2px 8px;border-radius:4px;color:#a78bfa;font-weight:700;">PRO TRIAL</span> <strong>' + daysLeft + ' day' + (daysLeft !== 1 ? 's' : '') + ' remaining</strong> <span style="opacity:0.5;">— all Pro features unlocked</span> <button onclick="showUpgradeModal()" style="background:linear-gradient(135deg,var(--accent-color),#a68543);color:#0f172a;border:none;padding:4px 16px;border-radius:4px;font-family:var(--font-heading);font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;">Subscribe</button> <button onclick="this.parentElement.remove()" style="background:none;border:none;color:rgba(255,255,255,0.4);cursor:pointer;font-size:14px;padding:0 4px;">&times;</button>';
+                }
+            } else if (status === 'expired') {
+                banner.innerHTML = '<span style="color:#f87171;font-weight:700;">Your Pro trial has ended.</span> <span style="opacity:0.6;">Upgrade to keep Leads, Ezra AI, and CRM sync.</span> <button onclick="showUpgradeModal()" style="background:linear-gradient(135deg,var(--accent-color),#a68543);color:#0f172a;border:none;padding:4px 16px;border-radius:4px;font-family:var(--font-heading);font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;">Choose a Plan</button>';
+            } else if (status !== 'active') {
+                banner.innerHTML = '<span style="color:#f87171;font-weight:700;">Subscription inactive.</span> <button onclick="showUpgradeModal()" style="background:linear-gradient(135deg,var(--accent-color),#a68543);color:#0f172a;border:none;padding:4px 16px;border-radius:4px;font-family:var(--font-heading);font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase;">Reactivate</button>';
+            }
+            if (banner.innerHTML) document.body.appendChild(banner);
+        }
+
         window.addEventListener('auth-ready', function (e) {
             const role = e.detail?.role || 'user';
-            const tier = e.detail?.tier || 'carbon';
+            const tier = e.detail?.tier || 'starter';
             applyRoleAccess(role);
             applyIntegrationAccess(role, tier);
             applyTierAccess(tier);
+            // Show trial banner if applicable
+            showTrialBanner();
             // Apply read-only mode if impersonating in View As mode
             if (window.isImpersonatedReadOnly) {
                 applyReadOnlyMode();
@@ -12083,7 +12099,7 @@ Best regards,
             var safeEmail = escapeAttr(p.email || '');
             var safeId = escapeAttr(p.id || '');
             var safeRole = escapeAttr(p.role || 'user');
-            var safeTier = escapeAttr(p.tier || 'carbon');
+            var safeTier = escapeAttr(p.tier || 'starter');
             var safeStatus = escapeAttr(p.subscription_status || 'trialing');
             var isSelf = p.id === currentId;
             var isSuspended = p.subscription_status === 'suspended';
@@ -12410,7 +12426,7 @@ Best regards,
             document.getElementById('invite-email').value = '';
             document.getElementById('invite-password').value = '';
             document.getElementById('invite-role').value = 'user';
-            document.getElementById('invite-tier').value = 'carbon';
+            document.getElementById('invite-tier').value = 'starter';
         }
 
         async function inviteUser() {
@@ -15098,7 +15114,7 @@ Generate the sales strategy and phone script now.`;
                 '</td></tr>') +
                 // Legal + EHL compliance + tracking pixel
                 '<tr><td style="padding:14px 30px;background:#f1f5f9;text-align:center;">' +
-                '<img src="https://assets.cdn.filesafe.space/eVB3bUDr8bdQfRu6ae03/media/693bb403ed957f64da26426c.jpg" alt="Equal Housing Lender" style="height:24px;margin-bottom:6px;display:block;margin-left:auto;margin-right:auto;">' +
+                '<img src="assets/img/equal-housing-lender.jpg" alt="Equal Housing Lender" style="height:24px;margin-bottom:6px;display:block;margin-left:auto;margin-right:auto;">' +
                 '<p style="font-size:9px;color:#94a3b8;margin:0;line-height:1.5;">Equal Housing Lender. All loan programs subject to credit approval. Rates, terms, and conditions are subject to change without notice. This is not a commitment to lend. NMLS #' + (document.getElementById('lo-nmls')?.value || '') + '</p>' +
                 trackingPixel +
                 '</td></tr>' +
@@ -15255,13 +15271,6 @@ Generate the sales strategy and phone script now.`;
             statusDiv.innerHTML = '<div style="font-size:24px;margin-bottom:10px;">🔄</div>Preparing quote...';
             document.body.appendChild(statusDiv);
 
-            const GHL_API = 'https://services.leadconnectorhq.com';
-            const headers = {
-                'Authorization': `Bearer ${apiKey}`,
-                'Version': '2021-07-28',
-                'Content-Type': 'application/json'
-            };
-
             try {
                 // Step 1: Capture proposal as image
                 let imageBase64 = null;
@@ -15271,22 +15280,12 @@ Generate the sales strategy and phone script now.`;
                     if (canvas) imageBase64 = canvas.toDataURL('image/jpeg', 0.85);
                 }
 
-                // Step 2: Create or find contact in GHL
+                // Step 2: Upsert contact via ghl-proxy (API key stays server-side)
                 statusDiv.innerHTML = '<div style="font-size:24px;margin-bottom:10px;">👤</div>Creating/updating contact...';
                 const nameParts = contactName.split(' ');
                 const firstName = nameParts[0] || '';
                 const lastName = nameParts.slice(1).join(' ') || '';
 
-                const searchResponse = await fetch(`${GHL_API}/contacts/?locationId=${locationId}&query=${encodeURIComponent(contactEmail)}`, {
-                    method: 'GET', headers: headers
-                });
-                if (!searchResponse.ok) {
-                    const errText = await searchResponse.text().catch(() => '');
-                    throw new Error('GHL contact search failed (HTTP ' + searchResponse.status + '): ' + (errText || 'Check API key and Location ID'));
-                }
-                const searchData = await searchResponse.json();
-
-                let contactId;
                 const customFields = [
                     { key: 'heloc_home_value', value: homeValue.toString() },
                     { key: 'heloc_mortgage_balance', value: mortgageBalance.toString() },
@@ -15302,43 +15301,20 @@ Generate the sales strategy and phone script now.`;
                     { key: 'heloc_quote_date', value: new Date().toLocaleDateString() }
                 ];
 
-                if (searchData.contacts && searchData.contacts.length > 0) {
-                    contactId = searchData.contacts[0].id;
-                    const updateResp = await fetch(`${GHL_API}/contacts/${contactId}`, {
-                        method: 'PUT', headers: headers,
-                        body: JSON.stringify({ firstName, lastName, email: contactEmail, customFields })
-                    });
-                    if (!updateResp.ok) console.warn('GHL contact update returned HTTP', updateResp.status);
-                } else {
-                    const createResponse = await fetch(`${GHL_API}/contacts/`, {
-                        method: 'POST', headers: headers,
-                        body: JSON.stringify({
-                            locationId, firstName, lastName, email: contactEmail,
-                            phone: contactPhone,
-                            source: 'HELOC Quote Tool',
-                            customFields
-                        })
-                    });
-                    if (!createResponse.ok) {
-                        const errText = await createResponse.text().catch(() => '');
-                        throw new Error('GHL contact creation failed (HTTP ' + createResponse.status + '): ' + (errText || 'Unknown error'));
-                    }
-                    const createData = await createResponse.json();
-                    contactId = createData.contact?.id;
-                }
-
+                const upsertResult = await callGHLProxy('upsert_contact', {
+                    firstName, lastName, email: contactEmail,
+                    phone: contactPhone,
+                    source: 'HELOC Quote Tool',
+                    customFields
+                });
+                const contactId = upsertResult.data?.contact?.id;
                 if (!contactId) throw new Error('Could not create or find contact');
 
-                // Step 3: Add tags to contact
+                // Step 3: Add tags to contact (dedicated endpoint, won't overwrite)
                 statusDiv.innerHTML = '<div style="font-size:24px;margin-bottom:10px;">🏷️</div>Adding tags...';
-                for (const tag of tags) {
-                    try {
-                        await fetch(`${GHL_API}/contacts/${contactId}/tags`, {
-                            method: 'POST', headers: headers,
-                            body: JSON.stringify({ tags: [tag] })
-                        });
-                    } catch (tagErr) { console.debug('Tag error:', tag, tagErr); }
-                }
+                try {
+                    await callGHLProxy('add_tags', { tags: tags }, contactId);
+                } catch (tagErr) { console.debug('Tag error:', tagErr); }
 
                 // Step 4: Add detailed note to contact
                 statusDiv.innerHTML = '<div style="font-size:24px;margin-bottom:10px;">📝</div>Adding quote note...';
@@ -15370,28 +15346,22 @@ Generate the sales strategy and phone script now.`;
 ━━━━━━━━━━━━━━━━━━━━
 Sent via Above All Carbon HELOC Tool`;
 
-                await fetch(`${GHL_API}/contacts/${contactId}/notes`, {
-                    method: 'POST', headers: headers,
-                    body: JSON.stringify({ body: noteBody })
-                });
+                await callGHLProxy('add_note', { body: noteBody }, contactId);
 
                 // Step 5: Create opportunity if pipeline configured
                 if (pipelineId) {
                     statusDiv.innerHTML = '<div style="font-size:24px;margin-bottom:10px;">💼</div>Creating opportunity...';
                     const loanValue = parseFloat(totalLoan.replace(/[^0-9.]/g, '')) || (cashBack + helocPayoff);
                     try {
-                        await fetch(`${GHL_API}/opportunities/`, {
-                            method: 'POST', headers: headers,
-                            body: JSON.stringify({
-                                locationId,
-                                pipelineId,
-                                pipelineStageId: stageId || undefined,
-                                contactId,
-                                name: `HELOC - ${contactName}`,
-                                status: 'open',
-                                monetaryValue: loanValue,
-                                source: 'HELOC Quote Tool'
-                            })
+                        await callGHLProxy('create_opportunity', {
+                            locationId,
+                            pipelineId,
+                            pipelineStageId: stageId || undefined,
+                            contactId,
+                            name: `HELOC - ${contactName}`,
+                            status: 'open',
+                            monetaryValue: loanValue,
+                            source: 'HELOC Quote Tool'
                         });
                     } catch (oppErr) { console.debug('Opportunity error:', oppErr); }
                 }
@@ -15401,15 +15371,12 @@ Sent via Above All Carbon HELOC Tool`;
                 const followupDate = new Date();
                 followupDate.setDate(followupDate.getDate() + followupDays);
                 try {
-                    await fetch(`${GHL_API}/contacts/${contactId}/tasks`, {
-                        method: 'POST', headers: headers,
-                        body: JSON.stringify({
-                            title: `Follow up on HELOC quote - ${contactName}`,
-                            body: `Follow up on HELOC quote sent on ${new Date().toLocaleDateString()}.\n\nQuote Details:\n• Cash Back: $${cashBack.toLocaleString()}\n• Rate: ${rate}%\n• Payment: ${payment}\n\nTags: ${tags.join(', ')}`,
-                            dueDate: followupDate.toISOString(),
-                            completed: false
-                        })
-                    });
+                    await callGHLProxy('create_task', {
+                        title: `Follow up on HELOC quote - ${contactName}`,
+                        body: `Follow up on HELOC quote sent on ${new Date().toLocaleDateString()}.\n\nQuote Details:\n• Cash Back: $${cashBack.toLocaleString()}\n• Rate: ${rate}%\n• Payment: ${payment}\n\nTags: ${tags.join(', ')}`,
+                        dueDate: followupDate.toISOString(),
+                        completed: false
+                    }, contactId);
                 } catch (taskErr) { console.debug('Task error:', taskErr); }
 
                 // Step 7: Send email via GHL (rich HTML template)
@@ -15438,28 +15405,23 @@ Sent via Above All Carbon HELOC Tool`;
                     calendarLink: calendarLink
                 });
 
-                const emailResponse = await fetch(`${GHL_API}/conversations/messages`, {
-                    method: 'POST', headers: headers,
-                    body: JSON.stringify({
-                        type: 'Email',
+                try {
+                    await callGHLProxy('send_email', {
                         contactId,
                         subject: emailSubject,
                         html: emailHtml,
                         emailFrom: fromEmail,
                         emailFromName: fromName || (document.getElementById('lo-company')?.value || 'Your Loan Officer')
-                    })
-                });
-
-                if (!emailResponse.ok) {
-                    const errData = await emailResponse.json().catch(() => ({}));
+                    }, contactId);
+                } catch (emailErr) {
                     sendFailureAlert('email_failure', {
                         provider: 'GHL',
                         recipient: contactEmail || 'Unknown',
                         emailSubject: emailSubject || 'HELOC Quote',
-                        error: errData.message || 'HTTP ' + emailResponse.status,
+                        error: emailErr.message || 'Unknown error',
                         timestamp: new Date().toISOString()
                     });
-                    throw new Error(errData.message || 'Email send failed');
+                    throw emailErr;
                 }
 
                 // Step 8: Send enhanced webhook payload
@@ -15894,7 +15856,7 @@ Sent via Above All Carbon HELOC Tool`;
                 reviewLink: g('lo-review-link'),
                 bio: (document.getElementById('lo-bio') || {}).value || '',
                 googleRating: '5.0',
-                tier: window.currentUserTier || 'carbon'
+                tier: window.currentUserTier || 'starter'
             };
 
             // Build preview URL with data encoded in query params
@@ -16031,7 +15993,7 @@ Sent via Above All Carbon HELOC Tool`;
                 reviewLink: g('lo-review-link'),
                 bio: (document.getElementById('lo-bio') || {}).value || '',
                 googleRating: '5.0',
-                tier: window.currentUserTier || 'carbon'
+                tier: window.currentUserTier || 'starter'
             };
 
             // Find matching lead ID
@@ -16126,7 +16088,7 @@ Sent via Above All Carbon HELOC Tool`;
                     lead_id: leadId,
                     quote_data: quoteData,
                     lo_info: loInfo,
-                    lo_tier: window.currentUserTier || 'carbon'
+                    lo_tier: window.currentUserTier || 'starter'
                 };
                 if (expiresAt) insertObj.expires_at = expiresAt;
 
@@ -16135,7 +16097,7 @@ Sent via Above All Carbon HELOC Tool`;
                 if (error) {
                     if (error.message && error.message.includes('unique')) {
                         code = Math.random().toString(36).substring(2, 10);
-                        var retryObj = { code: code, user_id: userId, lead_id: leadId, quote_data: quoteData, lo_info: loInfo, lo_tier: window.currentUserTier || 'carbon' };
+                        var retryObj = { code: code, user_id: userId, lead_id: leadId, quote_data: quoteData, lo_info: loInfo, lo_tier: window.currentUserTier || 'starter' };
                         if (expiresAt) retryObj.expires_at = expiresAt;
                         var retry = await sb.from('quote_links').insert(retryObj);
                         if (retry.error) throw retry.error;
@@ -16283,39 +16245,19 @@ Sent via Above All Carbon HELOC Tool`;
 
             if (!await ensureOutboundConsent('sms', contactEmail, contactPhone)) return;
 
-            var GHL_API = 'https://services.leadconnectorhq.com';
-            var headers = { 'Authorization': 'Bearer ' + apiKey, 'Version': '2021-07-28', 'Content-Type': 'application/json' };
-
             try {
                 showToast('Sending SMS via GHL...', 'info');
-                // Find or create contact
-                var searchResp = await fetch(GHL_API + '/contacts/?locationId=' + locationId + '&query=' + encodeURIComponent(contactPhone), { method: 'GET', headers: headers });
-                if (!searchResp.ok) throw new Error('GHL contact search failed (HTTP ' + searchResp.status + ')');
-                var searchData = await searchResp.json();
-                var contactId;
-                if (searchData.contacts && searchData.contacts.length > 0) {
-                    contactId = searchData.contacts[0].id;
-                } else {
-                    var nameParts = contactName.split(' ');
-                    var createResp = await fetch(GHL_API + '/contacts/', {
-                        method: 'POST', headers: headers,
-                        body: JSON.stringify({ locationId: locationId, firstName: nameParts[0] || '', lastName: nameParts.slice(1).join(' ') || '', phone: contactPhone, email: contactEmail, source: 'HELOC Quote Tool' })
-                    });
-                    if (!createResp.ok) throw new Error('GHL contact creation failed (HTTP ' + createResp.status + ')');
-                    var createData = await createResp.json();
-                    contactId = createData.contact?.id;
-                }
+                // Upsert contact via proxy (API key stays server-side)
+                var nameParts = contactName.split(' ');
+                var upsertResult = await callGHLProxy('upsert_contact', {
+                    firstName: nameParts[0] || '', lastName: nameParts.slice(1).join(' ') || '',
+                    phone: contactPhone, email: contactEmail, source: 'HELOC Quote Tool'
+                });
+                var contactId = upsertResult.data?.contact?.id;
                 if (!contactId) throw new Error('Could not find or create contact in GHL');
 
-                // Send SMS
-                var smsResp = await fetch(GHL_API + '/conversations/messages', {
-                    method: 'POST', headers: headers,
-                    body: JSON.stringify({ type: 'SMS', contactId: contactId, message: smsText })
-                });
-                if (!smsResp.ok) {
-                    var errData = await smsResp.json().catch(function() { return {}; });
-                    throw new Error(errData.message || 'SMS send failed (HTTP ' + smsResp.status + ')');
-                }
+                // Send SMS via proxy
+                await callGHLProxy('send_sms', { contactId: contactId, message: smsText }, contactId);
                 await logUsageEvent('client_link_sent', {
                     quote_code: window._lastGeneratedQuoteCode || null,
                     lead_id: window._lastGeneratedQuoteLeadId || null,
@@ -16459,8 +16401,8 @@ Sent via Above All Carbon HELOC Tool`;
 
         async function sendQuoteViaBonzo() {
             // Tier gate: Platinum+ required
-            var tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
-            var level = tiers.indexOf(window.currentUserTier || 'carbon');
+            var tiers = ['starter', 'pro', 'enterprise'];
+            var level = tiers.indexOf(window.currentUserTier || 'starter');
             if (level < 2 && window.currentUserRole !== 'super_admin') {
                 showUpgradeModal();
                 return;
@@ -16523,8 +16465,8 @@ Sent via Above All Carbon HELOC Tool`;
 
         async function sendQuoteViaGHL() {
             // Tier gate: Platinum+ required
-            var tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
-            var level = tiers.indexOf(window.currentUserTier || 'carbon');
+            var tiers = ['starter', 'pro', 'enterprise'];
+            var level = tiers.indexOf(window.currentUserTier || 'starter');
             if (level < 2 && window.currentUserRole !== 'super_admin') {
                 showUpgradeModal();
                 return;
@@ -16556,36 +16498,19 @@ Sent via Above All Carbon HELOC Tool`;
             if (!await ensureOutboundConsent('sms', contactEmail, contactPhone)) { statusDiv.innerHTML = ''; return; }
 
             statusDiv.innerHTML = '<span style="color:#f97316;">Sending via GHL...</span>';
-            var GHL_API = 'https://services.leadconnectorhq.com';
-            var headers = { 'Authorization': 'Bearer ' + apiKey, 'Version': '2021-07-28', 'Content-Type': 'application/json' };
 
             try {
-                var searchResp = await fetch(GHL_API + '/contacts/?locationId=' + locationId + '&query=' + encodeURIComponent(contactPhone), { method: 'GET', headers: headers });
-                if (!searchResp.ok) throw new Error('GHL contact search failed (HTTP ' + searchResp.status + ')');
-                var searchData = await searchResp.json();
-                var contactId;
-                if (searchData.contacts && searchData.contacts.length > 0) {
-                    contactId = searchData.contacts[0].id;
-                } else {
-                    var nameParts = contactName.split(' ');
-                    var createResp = await fetch(GHL_API + '/contacts/', {
-                        method: 'POST', headers: headers,
-                        body: JSON.stringify({ locationId: locationId, firstName: nameParts[0] || '', lastName: nameParts.slice(1).join(' ') || '', phone: contactPhone, email: contactEmail, source: 'HELOC Quote Tool' })
-                    });
-                    if (!createResp.ok) throw new Error('GHL contact creation failed (HTTP ' + createResp.status + ')');
-                    var createData = await createResp.json();
-                    contactId = createData.contact?.id;
-                }
+                // Upsert contact via proxy (API key stays server-side)
+                var nameParts = contactName.split(' ');
+                var upsertResult = await callGHLProxy('upsert_contact', {
+                    firstName: nameParts[0] || '', lastName: nameParts.slice(1).join(' ') || '',
+                    phone: contactPhone, email: contactEmail, source: 'HELOC Quote Tool'
+                });
+                var contactId = upsertResult.data?.contact?.id;
                 if (!contactId) throw new Error('Could not find or create contact in GHL');
 
-                var smsResp = await fetch(GHL_API + '/conversations/messages', {
-                    method: 'POST', headers: headers,
-                    body: JSON.stringify({ type: 'SMS', contactId: contactId, message: smsText })
-                });
-                if (!smsResp.ok) {
-                    var errData = await smsResp.json().catch(function() { return {}; });
-                    throw new Error(errData.message || 'SMS send failed (HTTP ' + smsResp.status + ')');
-                }
+                // Send SMS via proxy
+                await callGHLProxy('send_sms', { contactId: contactId, message: smsText }, contactId);
                 statusDiv.innerHTML = '<span style="color:#10b981;">✅ SMS sent via GHL!</span>';
                 await logUsageEvent('client_link_sent', {
                     quote_code: window._lastGeneratedQuoteCode || null,
@@ -16603,8 +16528,8 @@ Sent via Above All Carbon HELOC Tool`;
 
         function toggleQuoteEmailMenu(e) {
             // Tier gate: Titanium+ required for email
-            var tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
-            var level = tiers.indexOf(window.currentUserTier || 'carbon');
+            var tiers = ['starter', 'pro', 'enterprise'];
+            var level = tiers.indexOf(window.currentUserTier || 'starter');
             if (level < 1 && window.currentUserRole !== 'super_admin') {
                 showUpgradeModal();
                 return;
@@ -16685,35 +16610,35 @@ Sent via Above All Carbon HELOC Tool`;
 
         // Apply tier gating to Send Quote buttons
         function applyQuoteSendTierGating() {
-            var tiers = ['carbon', 'titanium', 'platinum', 'obsidian', 'diamond'];
-            var level = tiers.indexOf(window.currentUserTier || 'carbon');
-            if (window.currentUserRole === 'super_admin') level = 4;
+            var tiers = ['starter', 'pro', 'enterprise'];
+            var level = tiers.indexOf(window.currentUserTier || 'starter');
+            if (window.currentUserRole === 'super_admin') level = 2;
 
             var bonzoBtn = document.getElementById('sq-btn-bonzo');
             var ghlBtn = document.getElementById('sq-btn-ghl');
             var emailBtn = document.getElementById('sq-btn-email');
 
-            // Platinum+ for CRM sends
+            // Pro+ for CRM sends
             [bonzoBtn, ghlBtn].forEach(function(btn) {
                 if (!btn) return;
-                if (level < 2) {
+                if (level < 1) {
                     btn.classList.add('sq-btn-locked');
                     if (!btn.querySelector('.sq-lock-icon')) {
-                        btn.innerHTML = '<span class="sq-lock-icon">🔒</span>' + btn.textContent.trim() + '<span class="sq-tier-badge">PLATINUM</span>';
+                        btn.innerHTML = '<span class="sq-lock-icon">🔒</span>' + btn.textContent.trim() + '<span class="sq-tier-badge">PRO</span>';
                     }
                 } else {
                     btn.classList.remove('sq-btn-locked');
                 }
             });
 
-            // Titanium+ for email
+            // Pro+ for email
             if (emailBtn) {
                 if (level < 1) {
                     emailBtn.classList.add('sq-btn-locked');
                     if (!emailBtn.querySelector('.sq-lock-icon')) {
                         var dropdown = emailBtn.querySelector('.sq-email-dropdown');
                         var dropdownHTML = dropdown ? dropdown.outerHTML : '';
-                        emailBtn.innerHTML = '<span class="sq-lock-icon">🔒</span>Email Quote<span class="sq-tier-badge">TITANIUM</span>' + dropdownHTML;
+                        emailBtn.innerHTML = '<span class="sq-lock-icon">🔒</span>Email Quote<span class="sq-tier-badge">PRO</span>' + dropdownHTML;
                     }
                 } else {
                     emailBtn.classList.remove('sq-btn-locked');
@@ -16848,50 +16773,23 @@ Sent via Above All Carbon HELOC Tool`;
             // contact = { email, name, phone, firstName, lastName }
             // excludeCRM = 'ghl' or 'bonzo' (skip the CRM we just sent from to avoid duplicate work)
 
-            // Push to GHL if configured and not excluded
+            // Push to GHL if configured and not excluded (via server-side proxy)
             if (excludeCRM !== 'ghl') {
                 try {
                     const ghlApiKey = document.getElementById('ghl-api-key')?.value;
                     const ghlLocationId = document.getElementById('ghl-location-id')?.value;
                     if (ghlApiKey && ghlLocationId && contact.email) {
-                        const GHL_API = 'https://services.leadconnectorhq.com';
-                        const headers = { 'Authorization': 'Bearer ' + ghlApiKey, 'Version': '2021-07-28', 'Content-Type': 'application/json' };
-
-                        // Search for contact
-                        const searchResp = await fetch(GHL_API + '/contacts/?locationId=' + ghlLocationId + '&query=' + encodeURIComponent(contact.email), {
-                            method: 'GET', headers: headers
+                        // Upsert contact via proxy (API key stays server-side)
+                        var ghlUpsert = await callGHLProxy('upsert_contact', {
+                            firstName: contact.firstName || '', lastName: contact.lastName || '',
+                            email: contact.email, phone: contact.phone || '', source: 'HELOC Quote Tool'
                         });
-                        if (searchResp.ok) {
-                            const searchData = await searchResp.json();
-                            let ghlContactId = searchData.contacts?.[0]?.id;
+                        var ghlContactId = ghlUpsert.data?.contact?.id;
 
-                            // Create contact if not found
-                            if (!ghlContactId) {
-                                const createResp = await fetch(GHL_API + '/contacts/', {
-                                    method: 'POST', headers: headers,
-                                    body: JSON.stringify({
-                                        locationId: ghlLocationId, firstName: contact.firstName || '', lastName: contact.lastName || '',
-                                        email: contact.email, phone: contact.phone || '', source: 'HELOC Quote Tool'
-                                    })
-                                });
-                                if (createResp.ok) {
-                                    const createData = await createResp.json();
-                                    ghlContactId = createData.contact?.id;
-                                }
-                            }
-
-                            // Add tags
-                            if (ghlContactId) {
-                                for (const tag of tags) {
-                                    try {
-                                        await fetch(GHL_API + '/contacts/' + ghlContactId + '/tags', {
-                                            method: 'POST', headers: headers,
-                                            body: JSON.stringify({ tags: [tag] })
-                                        });
-                                    } catch (e) { /* tag error non-fatal */ }
-                                }
-                                console.debug('Cross-CRM: Pushed ' + tags.length + ' tags to GHL');
-                            }
+                        // Add all tags in one call (dedicated endpoint, won't overwrite)
+                        if (ghlContactId && tags.length > 0) {
+                            await callGHLProxy('add_tags', { tags: tags }, ghlContactId);
+                            console.debug('Cross-CRM: Pushed ' + tags.length + ' tags to GHL');
                         }
                     }
                 } catch (e) { console.debug('Cross-CRM GHL sync skipped:', e.message); }
@@ -17904,20 +17802,12 @@ Sent via Above All Carbon HELOC Tool`;
                 return;
             }
             try {
-                // Test by fetching location info
-                const response = await fetch(`https://services.leadconnectorhq.com/locations/${locationId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Version': '2021-07-28',
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await response.json();
-                if (response.ok && data.location) {
-                    showToast('GHL Connected! Location: ' + data.location.name + ', Email: ' + (data.location.email || 'Not set'), 'success');
+                // Test via ghl-proxy (API key stays server-side)
+                var result = await callGHLProxy('get_location', {}, null, locationId);
+                if (result.success && result.data?.location) {
+                    showToast('GHL Connected! Location: ' + result.data.location.name + ', Email: ' + (result.data.location.email || 'Not set'), 'success');
                 } else {
-                    showToast('GHL returned an error: ' + (data.message || 'Check your API key and Location ID'), 'warning');
+                    showToast('GHL returned an error: ' + (result.data?.message || 'Check your API key and Location ID'), 'warning');
                 }
             } catch (e) {
                 showToast('GHL connection failed: ' + e.message, 'error');
@@ -20290,21 +20180,17 @@ Sent via Above All Carbon HELOC Tool`;
                             // Find or use the lead's existing opportunity ID
                             var oppId = lead.crm_pipeline_id; // stored from inbound webhook
                             if (oppId) {
-                                var ghlResp = await fetch('https://services.leadconnectorhq.com/opportunities/' + oppId, {
-                                    method: 'PUT',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'Authorization': 'Bearer ' + ghlConfig.apiKey,
-                                        'Version': '2021-07-28'
-                                    },
-                                    body: JSON.stringify({
+                                try {
+                                    await callGHLProxy('update_opportunity', {
+                                        opportunityId: oppId,
                                         pipelineId: ghlConfig.ghl_pipeline_id,
                                         pipelineStageId: stageId,
                                         status: mapping.ghl
-                                    })
-                                });
-                                if (ghlResp.ok) console.debug('GHL opportunity updated:', mapping.ghl, '→ stage', stageId);
-                                else console.debug('GHL update failed:', ghlResp.status);
+                                    });
+                                    console.debug('GHL opportunity updated:', mapping.ghl, '→ stage', stageId);
+                                } catch (oppErr) {
+                                    console.debug('GHL update failed:', oppErr.message);
+                                }
                             }
                         }
                     }
@@ -21583,9 +21469,9 @@ Sent via Above All Carbon HELOC Tool`;
             var sb = window._supabase;
             var userId = window.currentUserId;
             if (!sb || !userId) return;
-            // Only for Titanium+ (tier level >= 1)
-            var tier = (window.currentUserTier || 'carbon').toLowerCase();
-            var tierLevels = { carbon: 0, titanium: 1, platinum: 2, obsidian: 3, diamond: 4 };
+            // Only for Pro+ (tier level >= 1)
+            var tier = (window.currentUserTier || 'starter').toLowerCase();
+            var tierLevels = { starter: 0, pro: 1, enterprise: 2 };
             if ((tierLevels[tier] || 0) < 1 && window.currentUserRole !== 'super_admin') return;
 
             await fetchAutomationAlerts();

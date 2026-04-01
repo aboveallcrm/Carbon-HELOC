@@ -31,11 +31,9 @@
             --font-heading: 'DM Sans', sans-serif;
             --font-body: 'Inter', sans-serif;
             --font-mono: 'Space Grotesk', sans-serif;
-            --carbon: #6b7280;
-            --titanium: #94a3b8;
-            --platinum: #a78bfa;
-            --obsidian: #475569;
-            --diamond: #06b6d4;
+            --starter: #6b7280;
+            --pro: #a78bfa;
+            --enterprise: #06b6d4;
             --radius-lg: 20px;
             --radius-xl: 28px;
         }
@@ -624,34 +622,22 @@
         .price-card:hover::before { opacity: 1; }
 
         /* Tier-specific gradient borders */
-        .price-card.tier-carbon::before {
+        .price-card.tier-starter::before {
             background: linear-gradient(180deg, rgba(107, 114, 128, 0.4), transparent 60%);
         }
-        .price-card.tier-carbon:hover {
+        .price-card.tier-starter:hover {
             box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4), 0 0 40px rgba(107, 114, 128, 0.05);
         }
-        .price-card.tier-titanium::before {
-            background: linear-gradient(180deg, rgba(148, 163, 184, 0.4), transparent 60%);
-        }
-        .price-card.tier-titanium:hover {
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4), 0 0 40px rgba(148, 163, 184, 0.05);
-        }
-        .price-card.tier-platinum::before {
+        .price-card.tier-pro::before {
             background: linear-gradient(180deg, rgba(167, 139, 250, 0.5), transparent 60%);
         }
-        .price-card.tier-platinum:hover {
+        .price-card.tier-pro:hover {
             box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4), 0 0 40px rgba(167, 139, 250, 0.08);
         }
-        .price-card.tier-obsidian::before {
-            background: linear-gradient(180deg, rgba(71, 85, 105, 0.5), transparent 60%);
-        }
-        .price-card.tier-obsidian:hover {
-            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4), 0 0 40px rgba(71, 85, 105, 0.05);
-        }
-        .price-card.tier-diamond::before {
+        .price-card.tier-enterprise::before {
             background: linear-gradient(180deg, rgba(6, 182, 212, 0.5), transparent 60%);
         }
-        .price-card.tier-diamond:hover {
+        .price-card.tier-enterprise:hover {
             box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4), 0 0 40px rgba(6, 182, 212, 0.08);
         }
 
@@ -668,7 +654,7 @@
 
         .popular-badge {
             position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--platinum), #8b5cf6);
+            background: linear-gradient(135deg, var(--pro), #8b5cf6);
             color: white; font-family: var(--font-heading); font-size: 10px; font-weight: 800;
             text-transform: uppercase; letter-spacing: 2px; padding: 6px 22px;
             border-radius: 100px; white-space: nowrap;
@@ -727,7 +713,7 @@
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
         .price-card.featured .card-btn {
-            background: linear-gradient(135deg, var(--platinum), #8b5cf6);
+            background: linear-gradient(135deg, var(--pro), #8b5cf6);
             color: white; border-color: transparent;
             box-shadow: 0 4px 16px rgba(167, 139, 250, 0.25);
         }
@@ -794,7 +780,7 @@
         .comparison-table thead th:first-child { text-align: left; padding-left: 28px; }
         .comparison-table thead th.highlight {
             background: rgba(167, 139, 250, 0.06);
-            color: var(--platinum);
+            color: var(--pro);
         }
 
         .comparison-table tbody td {
@@ -991,7 +977,7 @@
     <!-- Navigation -->
     <nav id="main-nav">
         <a href="#" class="nav-brand">
-            <img src="https://assets.cdn.filesafe.space/eVB3bUDr8bdQfRu6ae03/media/695439cf7483035b913df9fd.png" alt="Above All">
+            <img src="assets/img/above-all-logo.png" alt="Above All">
             <span>Above All <em>Carbon</em></span>
         </a>
         <div class="nav-links">
@@ -1168,95 +1154,67 @@
 
         <!-- Price Cards -->
         <div class="pricing-grid">
-            <!-- CARBON -->
-            <div class="price-card tier-carbon fade-in">
-                <div class="tier-icon" style="background:rgba(107,114,128,0.12);border:1px solid rgba(107,114,128,0.2);color:var(--carbon);">C</div>
-                <div class="tier-name" style="color:var(--carbon);">Carbon</div>
-                <div class="tier-label">Starter</div>
-                <div class="price" data-monthly="279" data-annual="223"><span class="dollar">$</span><span class="price-value">279</span></div>
+            <!-- STARTER -->
+            <div class="price-card tier-starter fade-in">
+                <div class="tier-icon" style="background:rgba(107,114,128,0.12);border:1px solid rgba(107,114,128,0.2);color:var(--starter);">S</div>
+                <div class="tier-name" style="color:var(--starter);">Starter</div>
+                <div class="tier-label">Professional Quotes in Seconds</div>
+                <div class="price" data-monthly="79" data-annual="63"><span class="dollar">$</span><span class="price-value">79</span></div>
                 <div class="price-period"><span class="period-text">per month</span></div>
-                <p class="price-desc">Everything you need to build and share professional HELOC proposals.</p>
-                <a href="register.html" class="card-btn">Start with Carbon</a>
+                <p class="price-desc">2 tools in 1 — HELOC Quote Builder + Refinance Architect. 14-day free Pro trial included.</p>
+                <a href="register.html" class="card-btn">Start Free Trial</a>
                 <ul class="features-list">
-                    <li><span class="check">✓</span> Core Quote Builder</li>
-                    <li><span class="check">✓</span> PDF Export & Screenshot</li>
+                    <li><span class="check">✓</span> HELOC Quote Builder (3-Tier)</li>
+                    <li><span class="check">✓</span> Refinance Architect</li>
+                    <li><span class="check">✓</span> PDF, Screenshot & HTML Email</li>
+                    <li><span class="check">✓</span> Lender Parser (Figure/NFTYDoor)</li>
                     <li><span class="check">✓</span> LO Profile & Branding</li>
-                    <li><span class="check">✓</span> Lead Parser & Bonzo Import</li>
-                    <li><span class="check">✓</span> Email & Share Tools</li>
-                    <li><span class="check">✓</span> Cloud Sync & Saved Quotes</li>
+                    <li><span class="check">✓</span> URL Shortener</li>
+                    <li><span class="check">✓</span> Address Autocomplete</li>
                 </ul>
             </div>
 
-            <!-- TITANIUM -->
-            <div class="price-card tier-titanium fade-in stagger-1">
-                <div class="tier-icon" style="background:rgba(148,163,184,0.12);border:1px solid rgba(148,163,184,0.2);color:var(--titanium);">T</div>
-                <div class="tier-name" style="color:var(--titanium);">Titanium</div>
-                <div class="tier-label">Pro</div>
-                <div class="price" data-monthly="479" data-annual="383"><span class="dollar">$</span><span class="price-value">479</span></div>
-                <div class="price-period"><span class="period-text">per month</span></div>
-                <p class="price-desc">Unlock powerful analysis tools and integrations that close more deals.</p>
-                <a href="register.html" class="card-btn">Start with Titanium</a>
-                <span class="includes-badge">Everything in Carbon, plus:</span>
-                <ul class="features-list">
-                    <li class="new-feat"><span class="check">★</span> Debt Consolidation Analysis</li>
-                    <li class="new-feat"><span class="check">★</span> Refi Comparison</li>
-                    <li class="new-feat"><span class="check">★</span> Break-Even Analysis</li>
-                    <li class="new-feat"><span class="check">★</span> Client Apply Link</li>
-                    <li class="new-feat"><span class="check">★</span> GHL Integration</li>
-                    <li class="new-feat"><span class="check">★</span> AI Strategy (Basic)</li>
-                    <li class="new-feat"><span class="check">★</span> Radar Address Autocomplete</li>
-                </ul>
-            </div>
-
-            <!-- PLATINUM (Featured) -->
-            <div class="price-card featured tier-platinum fade-in stagger-2">
+            <!-- PRO (Featured) -->
+            <div class="price-card featured tier-pro fade-in stagger-1">
                 <div class="popular-badge">Most Popular</div>
-                <div class="tier-icon" style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);color:var(--platinum);">P</div>
-                <div class="tier-name" style="color:var(--platinum);">Platinum</div>
-                <div class="tier-label">Business</div>
-                <div class="price" data-monthly="749" data-annual="599"><span class="dollar">$</span><span class="price-value">749</span></div>
+                <div class="tier-icon" style="background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.2);color:var(--pro);">P</div>
+                <div class="tier-name" style="color:var(--pro);">Pro</div>
+                <div class="tier-label">Close More Deals</div>
+                <div class="price" data-monthly="179" data-annual="143"><span class="dollar">$</span><span class="price-value">179</span></div>
                 <div class="price-period"><span class="period-text">per month</span></div>
-                <p class="price-desc">Advanced automation, full CRM sync, and AI that works as hard as you do.</p>
-                <a href="register.html" class="card-btn">Start with Platinum</a>
-                <span class="includes-badge">Everything in Titanium, plus:</span>
+                <p class="price-desc">The complete HELOC machine. Leads, AI, CRM sync — everything you need to close.</p>
+                <a href="register.html" class="card-btn">Start with Pro</a>
+                <span class="includes-badge">Everything in Starter, plus:</span>
                 <ul class="features-list">
-                    <li class="new-feat"><span class="check">★</span> n8n Workflow Automation</li>
-                    <li class="new-feat"><span class="check">★</span> Bonzo & FUB Full Sync</li>
+                    <li class="new-feat"><span class="check">★</span> Leads Pipeline</li>
+                    <li class="new-feat"><span class="check">★</span> Ezra AI — Full Power (50/day)</li>
+                    <li class="new-feat"><span class="check">★</span> Voice Input — Talk to Ezra</li>
+                    <li class="new-feat"><span class="check">★</span> CRM Auto-Sync (Bonzo, GHL, FUB)</li>
+                    <li class="new-feat"><span class="check">★</span> Client Quote Pages + AI Chat</li>
                     <li class="new-feat"><span class="check">★</span> Outbound Webhooks</li>
-                    <li class="new-feat"><span class="check">★</span> Lender Info Parser</li>
-                    <li class="new-feat"><span class="check">★</span> AI Strategy (Full — All Providers)</li>
+                    <li class="new-feat"><span class="check">★</span> Debt Consolidation & Break-Even</li>
+                    <li class="new-feat"><span class="check">★</span> Paste Rates Import</li>
                 </ul>
             </div>
 
-            <!-- OBSIDIAN -->
-            <div class="price-card tier-obsidian fade-in stagger-3">
-                <div class="tier-icon" style="background:rgba(71,85,105,0.2);border:1px solid rgba(71,85,105,0.3);color:#94a3b8;">O</div>
-                <div class="tier-name" style="color:#94a3b8;">Obsidian</div>
-                <div class="tier-label">Enterprise</div>
-                <div class="price" data-monthly="999" data-annual="799"><span class="dollar">$</span><span class="price-value">999</span></div>
+            <!-- ENTERPRISE -->
+            <div class="price-card tier-enterprise fade-in stagger-2">
+                <div class="tier-icon" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.2);color:var(--enterprise);">E</div>
+                <div class="tier-name" style="color:var(--enterprise);">Enterprise</div>
+                <div class="tier-label">Your Brokerage, Powered by AI</div>
+                <div class="price" data-monthly="497" data-annual="397"><span class="dollar">$</span><span class="price-value">497</span></div>
                 <div class="price-period"><span class="period-text">per month</span></div>
-                <p class="price-desc">White-label the entire tool under your brand. Perfect for teams and brokerages.</p>
-                <a href="register.html" class="card-btn">Start with Obsidian</a>
-                <span class="includes-badge">Everything in Platinum, plus:</span>
+                <p class="price-desc">5 team seats, white label, unlimited AI. Scale your brokerage with your brand.</p>
+                <a href="register.html" class="card-btn">Go Enterprise</a>
+                <span class="includes-badge">Everything in Pro, plus:</span>
                 <ul class="features-list">
-                    <li class="new-feat"><span class="check">★</span> White Label Branding</li>
-                    <li class="new-feat"><span class="check">★</span> Company-Wide Settings</li>
-                </ul>
-            </div>
-
-            <!-- DIAMOND -->
-            <div class="price-card tier-diamond fade-in stagger-4">
-                <div class="tier-icon" style="background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.2);color:var(--diamond);">D</div>
-                <div class="tier-name" style="color:var(--diamond);">Diamond</div>
-                <div class="tier-label">VIP</div>
-                <div class="price" data-monthly="1499" data-annual="1199"><span class="dollar">$</span><span class="price-value">1,499</span></div>
-                <div class="price-period"><span class="period-text">per month</span></div>
-                <p class="price-desc">Everything unlocked, plus priority support and early access to every new feature.</p>
-                <a href="register.html" class="card-btn">Go Diamond</a>
-                <span class="includes-badge">Everything in Obsidian, plus:</span>
-                <ul class="features-list">
-                    <li class="new-feat"><span class="check">★</span> Priority Support</li>
-                    <li class="new-feat"><span class="check">★</span> Early Access to New Features</li>
+                    <li class="new-feat"><span class="check">★</span> 5 Team Seats (+$49/seat)</li>
+                    <li class="new-feat"><span class="check">★</span> White Label — Your Logo & Colors</li>
+                    <li class="new-feat"><span class="check">★</span> Custom Domain for Client Links</li>
+                    <li class="new-feat"><span class="check">★</span> n8n Workflow Automation</li>
+                    <li class="new-feat"><span class="check">★</span> Unlimited Ezra AI</li>
+                    <li class="new-feat"><span class="check">★</span> HeyGen AI Video</li>
+                    <li class="new-feat"><span class="check">★</span> Priority Support (< 4hr)</li>
                     <li class="new-feat"><span class="check">★</span> All Future Features Included</li>
                 </ul>
             </div>
@@ -1275,12 +1233,10 @@
         <table class="comparison-table">
             <thead>
                 <tr>
-                    <th style="width:30%;">Feature</th>
-                    <th>Carbon</th>
-                    <th>Titanium</th>
-                    <th class="highlight">Platinum</th>
-                    <th>Obsidian</th>
-                    <th>Diamond</th>
+                    <th style="width:40%;">Feature</th>
+                    <th>Starter</th>
+                    <th class="highlight">Pro</th>
+                    <th>Enterprise</th>
                 </tr>
             </thead>
             <tbody>

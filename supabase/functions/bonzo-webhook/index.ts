@@ -68,6 +68,23 @@ serve(async (req: Request) => {
             )
         }
 
+        // Optional: verify Bonzo event hook x-bonzo-code header if source is bonzo
+        const bonzoCode = req.headers.get('x-bonzo-code')
+        if (bonzoCode && (source === 'bonzo' || source === 'webhook')) {
+            // Check against stored Bonzo Xcode (apiKey) for this user
+            const { data: bonzoInt } = await supabaseAdmin
+                .from('user_integrations')
+                .select('metadata')
+                .eq('user_id', user_id)
+                .in('provider', ['heloc_keys', 'heloc_settings'])
+                .maybeSingle()
+            const storedXcode = bonzoInt?.metadata?.bonzo?.apiKey || bonzoInt?.metadata?.bonzo_api_key
+            if (storedXcode && storedXcode !== bonzoCode) {
+                console.warn(`Bonzo x-bonzo-code mismatch for user ${user_id}`)
+                // Log but don't reject — webhook_token is the primary auth
+            }
+        }
+
         // Verify the user_id actually exists in auth.users
         const { data: userExists } = await supabaseAdmin.auth.admin.getUserById(user_id)
         if (!userExists?.user) {
