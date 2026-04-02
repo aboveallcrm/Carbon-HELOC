@@ -3477,15 +3477,26 @@ RESPONSE RULES
         let startX, startY, startLeft, startTop;
         let dragThreshold = 5;
 
-        // Load saved position
+        // Load saved position (with bounds checking)
         const savedPos = localStorage.getItem('ezraWidgetPosition');
         if (savedPos) {
-            const pos = JSON.parse(savedPos);
-            if (pos.custom) {
-                widget.style.left = pos.x + 'px';
-                widget.style.right = 'auto';
-                widget.style.bottom = 'auto';
-                widget.style.top = pos.y + 'px';
+            try {
+                const pos = JSON.parse(savedPos);
+                if (pos.custom) {
+                    const maxX = window.innerWidth - 80;
+                    const maxY = window.innerHeight - 80;
+                    if (pos.x >= 0 && pos.x <= maxX && pos.y >= 0 && pos.y <= maxY) {
+                        widget.style.left = pos.x + 'px';
+                        widget.style.right = 'auto';
+                        widget.style.bottom = 'auto';
+                        widget.style.top = pos.y + 'px';
+                    } else {
+                        localStorage.removeItem('ezraWidgetPosition');
+                        console.debug('Ezra: Saved position was off-screen, reset to default');
+                    }
+                }
+            } catch (e) {
+                localStorage.removeItem('ezraWidgetPosition');
             }
         }
 

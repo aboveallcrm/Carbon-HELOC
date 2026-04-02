@@ -3,7 +3,7 @@
  * Provides caching, offline functionality, push notifications, and background sync
  */
 
-const CACHE_NAME = 'aac-heloc-v13';
+const CACHE_NAME = 'aac-heloc-v14';
 const STATIC_ASSETS = [
   './js/main.js',
   './js/auth.js',

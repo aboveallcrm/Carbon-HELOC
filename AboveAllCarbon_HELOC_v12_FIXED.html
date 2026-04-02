@@ -21794,11 +21794,20 @@ Sent via Above All Carbon HELOC Tool`;
     <script>
     (function() {
         var loaded = false;
+        var retried = false;
         function loadEzra() {
             if (loaded) return;
             loaded = true;
             var s = document.createElement('script');
             s.src = './js/ezra-chat.js';
+            s.onerror = function() {
+                console.warn('Ezra: Script failed to load' + (retried ? ' (retry also failed)' : ', retrying...'));
+                if (!retried) {
+                    retried = true;
+                    loaded = false;
+                    setTimeout(loadEzra, 2000);
+                }
+            };
             document.body.appendChild(s);
         }
         document.addEventListener('click', function(e) {
