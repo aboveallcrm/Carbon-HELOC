@@ -240,6 +240,11 @@ serve(async (req: Request) => {
                 if (!payload?.contactId && !contactId) return jsonResponse({ error: 'Missing contactId for send_email' }, 400)
                 if (!payload?.html && !payload?.message) return jsonResponse({ error: 'Missing html or message body for send_email' }, 400)
                 const emailPayload = { ...payload, type: 'Email', contactId: payload.contactId || contactId }
+                // GHL expects `html` — remap `message` if caller used that field name
+                if (emailPayload.message && !emailPayload.html) {
+                    emailPayload.html = emailPayload.message
+                    delete emailPayload.message
+                }
                 ghlUrl = `${GHL_API}/conversations/messages`
                 ghlResp = await timedFetch(ghlUrl, {
                     method: 'POST',
@@ -254,6 +259,11 @@ serve(async (req: Request) => {
                 if (!payload?.contactId && !contactId) return jsonResponse({ error: 'Missing contactId for send_sms' }, 400)
                 if (!payload?.message && !payload?.body) return jsonResponse({ error: 'Missing message body for send_sms' }, 400)
                 const smsPayload = { ...payload, type: 'SMS', contactId: payload.contactId || contactId }
+                // GHL expects `body` for SMS — remap `message` if caller used that field name
+                if (smsPayload.message && !smsPayload.body) {
+                    smsPayload.body = smsPayload.message
+                    delete smsPayload.message
+                }
                 ghlUrl = `${GHL_API}/conversations/messages`
                 ghlResp = await timedFetch(ghlUrl, {
                     method: 'POST',

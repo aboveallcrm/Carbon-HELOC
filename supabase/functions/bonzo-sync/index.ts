@@ -179,6 +179,7 @@ serve(async (req: Request) => {
 
         let contacts: any[] = []
         let bonzoError = null
+        let bonzoStatusCode = 0
         let currentPage = 1
         let hasMore = true
         let rawResponseKeys = ''
@@ -204,6 +205,7 @@ serve(async (req: Request) => {
                 const errText = await listResp.text().catch(() => '')
                 let errDetail = ''
                 try { errDetail = JSON.parse(errText)?.message || JSON.parse(errText)?.error || '' } catch {}
+                bonzoStatusCode = listResp.status
                 bonzoError = `Bonzo API ${listResp.status}${errDetail ? ': ' + errDetail : ''}`
                 logs.push(`ERROR: ${bonzoError}`)
                 logs.push(`Response: ${errText.substring(0, 300)}`)
@@ -284,7 +286,12 @@ serve(async (req: Request) => {
                 pagination: paginationInfo,
                 response_keys: rawResponseKeys,
             })
-            return jsonResp({ error: bonzoError, logs }, 502)
+            const returnStatus = (bonzoStatusCode === 401 || bonzoStatusCode === 403) ? bonzoStatusCode
+                : bonzoError === 'Bonzo API timed out' ? 504 : 502
+            const userMessage = (bonzoStatusCode === 401 || bonzoStatusCode === 403)
+                ? 'Bonzo API key was rejected. Please verify your key is still active in Bonzo\'s dashboard, then re-enter it in Settings → Integrations → Bonzo.'
+                : bonzoError
+            return jsonResp({ error: userMessage, logs }, returnStatus)
         }
 
         // 5. Pre-fetch all existing leads for in-memory dedup (avoids N+1 queries)

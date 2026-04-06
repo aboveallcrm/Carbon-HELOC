@@ -5477,7 +5477,7 @@
                         placeholder="Generating client link...">
                     <button type="button"
                         style="flex-shrink:0;background:#10b981;color:white;border:none;padding:8px 12px;border-radius:8px;font-family:var(--font-heading);font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;"
-                        onclick="navigator.clipboard.writeText(document.getElementById('esm-quote-link').value);showToast('Link copied!','success')">📋
+                        onclick="var val=document.getElementById('esm-quote-link').value;if(!val){showToast('No link generated yet','warning');return;}navigator.clipboard.writeText(val);showToast('Link copied!','success')">📋
                         Copy</button>
                 </div>
                 <div class="esm-options" id="esm-options">
@@ -6154,7 +6154,7 @@
                         <button class="btn"
                             style="background: linear-gradient(135deg, #ef4444, #dc2626); font-size: 9px; padding: 5px 12px;"
                             onclick="document.getElementById('cleanup-dropdown').style.display = document.getElementById('cleanup-dropdown').style.display === 'block' ? 'none' : 'block'">🧹
-                            Clean Up ▾ <span class="help-tip" style="margin-left:2px;">?<span class="help-tip-text">Remove junk leads automatically. "Delete Unknowns" removes leads with no name AND no email. "Delete Duplicates" keeps the newest lead per email and removes older copies.</span></span></button>
+                            Clean Up ▾ <span class="help-tip" style="margin-left:2px;">?<span class="help-tip-text">Remove junk leads automatically. "Delete Unknowns" removes leads with no name AND no email. "Delete Duplicates" keeps newest per email. "Deduplicate by Name" keeps newest per full name (useful for CSV + CRM overlap).</span></span></button>
                         <div id="cleanup-dropdown"
                             style="display:none;position:absolute;top:100%;left:0;margin-top:4px;background:#1e293b;border:1px solid rgba(255,255,255,0.15);border-radius:6px;z-index:100;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,0.5);">
                             <button
@@ -6171,6 +6171,13 @@
                                 onmouseout="this.style.background='none'">🔁 Delete Duplicates<br><span
                                     style="font-size:7px;color:rgba(255,255,255,0.4);">Keeps newest, removes older by
                                     email</span></button>
+                            <button
+                                onclick="cleanupLeads('name-duplicates');document.getElementById('cleanup-dropdown').style.display='none'"
+                                style="display:block;width:100%;text-align:left;background:none;border:none;color:white;padding:8px 14px;font-family:var(--font-heading);font-size:9px;cursor:pointer;border-top:1px solid rgba(255,255,255,0.08);"
+                                onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+                                onmouseout="this.style.background='none'">👥 Deduplicate by Name<br><span
+                                    style="font-size:7px;color:rgba(255,255,255,0.4);">Keeps newest, removes older with
+                                    same full name</span></button>
                         </div>
                     </div>
                     <button class="btn"
@@ -8791,7 +8798,6 @@ Best regards,
                 var heroSeen = localStorage.getItem('heroSeen');
                 if (!heroSeen && (!clientName.value || clientName.value.trim() === '')) {
                     hero.style.display = 'block';
-                    rateLockNotice.innerHTML = '🔒 Rate locked through ' + escapeHtml(rateLockExpires.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })) + ' (' + escapeHtml(String(rateLockDays)) + ' days)';
                 } else {
                     hero.style.display = 'none';
                 }
@@ -15241,6 +15247,9 @@ Generate the sales strategy and phone script now.`;
                 return;
             }
 
+            // Ensure quote link exists so the email includes the interactive quote button
+            await ensureQuoteLink();
+
             // DNC Compliance Check
             const dncClearGHL = await DNCProtection.checkBeforeSend(contactEmail, contactPhone, contactName, 'ghl');
             if (!dncClearGHL) {
@@ -16217,8 +16226,16 @@ Sent via Above All Carbon HELOC Tool`;
         }
 
         // Copy SMS-ready text to clipboard
-        function copySmsText() {
+        async function copySmsText() {
+            // Auto-generate link if not yet created
+            if (!window._lastGeneratedQuoteLink) {
+                showToast('Generating quote link...', 'info');
+                var link = await ensureQuoteLink();
+                if (!link) { showToast('Could not generate quote link. Please try again.', 'error'); return; }
+                // sms-ready-text is updated by generateClientLink, re-read it
+            }
             var text = document.getElementById('sms-ready-text').value;
+            if (!text) { showToast('No SMS text to copy.', 'warning'); return; }
             navigator.clipboard.writeText(text).then(function () {
                 showToast('SMS text copied! Paste into your messaging app.', 'success');
             });
@@ -16226,9 +16243,16 @@ Sent via Above All Carbon HELOC Tool`;
 
         // Send SMS via GHL (uses conversations/messages endpoint with type SMS)
         async function sendSmsViaGHL() {
-            var smsText = document.getElementById('sms-ready-text').value;
-            if (!smsText) { showToast('Generate a client link first to create SMS text.', 'warning'); return; }
             if (!ensureWritableMode('send SMS')) return;
+
+            // Auto-generate link if not yet created
+            if (!window._lastGeneratedQuoteLink) {
+                showToast('Generating quote link...', 'info');
+                var link = await ensureQuoteLink();
+                if (!link) { showToast('Could not generate quote link. Please try again.', 'error'); return; }
+            }
+            var smsText = document.getElementById('sms-ready-text').value;
+            if (!smsText) { showToast('No SMS text available.', 'warning'); return; }
 
             var apiKey = document.getElementById('ghl-api-key').value;
             var locationId = document.getElementById('ghl-location-id').value;
@@ -16272,9 +16296,16 @@ Sent via Above All Carbon HELOC Tool`;
 
         // Send SMS via Bonzo (posts message to contact)
         async function sendSmsViaBonzo() {
-            var smsText = document.getElementById('sms-ready-text').value;
-            if (!smsText) { showToast('Generate a client link first to create SMS text.', 'warning'); return; }
             if (!ensureWritableMode('send SMS')) return;
+
+            // Auto-generate link if not yet created
+            if (!window._lastGeneratedQuoteLink) {
+                showToast('Generating quote link...', 'info');
+                var link = await ensureQuoteLink();
+                if (!link) { showToast('Could not generate quote link. Please try again.', 'error'); return; }
+            }
+            var smsText = document.getElementById('sms-ready-text').value;
+            if (!smsText) { showToast('No SMS text available.', 'warning'); return; }
 
             var teamId = document.getElementById('bonzo-team-id')?.value || '';
             var contactPhone = document.getElementById('client-phone')?.value || '';
@@ -16300,10 +16331,27 @@ Sent via Above All Carbon HELOC Tool`;
                 };
                 if (teamId) contactPayload.team_id = teamId;
 
-                // Create/update contact via proxy
-                var createResult = await _bonzoProxy('create_contact', { payload: contactPayload });
-                var bonzoContactId = createResult.data?.id || createResult.id;
-                if (!bonzoContactId) throw new Error('Could not create contact in Bonzo');
+                // Create/update contact via proxy (handle duplicates gracefully)
+                var contactData = null;
+                try {
+                    var createResult = await _bonzoProxy('create_contact', { payload: contactPayload });
+                    contactData = createResult.data || createResult;
+                } catch (createErr) {
+                    if (createErr.message && (createErr.message.includes('409') || createErr.message.includes('422') || createErr.message.includes('duplicate'))) {
+                        try {
+                            var searchResult = await _bonzoProxy('search_contact', { payload: { email: contactEmail } });
+                            var prospects = searchResult.data || searchResult;
+                            if (Array.isArray(prospects)) {
+                                contactData = prospects.find(function(p) { return p.email && p.email.toLowerCase() === contactEmail.toLowerCase(); }) || prospects[0];
+                            } else if (prospects && prospects.id) {
+                                contactData = prospects;
+                            }
+                        } catch (e2) { /* search failed */ }
+                    }
+                    if (!contactData) throw createErr;
+                }
+                var bonzoContactId = contactData?.id || contactData?.data?.id;
+                if (!bonzoContactId) throw new Error('Could not create or find contact in Bonzo');
 
                 // Send SMS message via proxy
                 await _bonzoProxy('send_sms', { contactId: bonzoContactId, payload: { message: smsText } });
@@ -16443,9 +16491,27 @@ Sent via Above All Carbon HELOC Tool`;
                 };
                 if (teamId) contactPayload.team_id = teamId;
 
-                var createResult = await _bonzoProxy('create_contact', { payload: contactPayload });
-                var bonzoContactId = createResult.data?.id || createResult.id;
-                if (!bonzoContactId) throw new Error('Could not create contact in Bonzo');
+                // Create/update contact via proxy (handle duplicates gracefully)
+                var contactData = null;
+                try {
+                    var createResult = await _bonzoProxy('create_contact', { payload: contactPayload });
+                    contactData = createResult.data || createResult;
+                } catch (createErr) {
+                    if (createErr.message && (createErr.message.includes('409') || createErr.message.includes('422') || createErr.message.includes('duplicate'))) {
+                        try {
+                            var searchResult = await _bonzoProxy('search_contact', { payload: { email: contactEmail } });
+                            var prospects = searchResult.data || searchResult;
+                            if (Array.isArray(prospects)) {
+                                contactData = prospects.find(function(p) { return p.email && p.email.toLowerCase() === contactEmail.toLowerCase(); }) || prospects[0];
+                            } else if (prospects && prospects.id) {
+                                contactData = prospects;
+                            }
+                        } catch (e2) { /* search failed */ }
+                    }
+                    if (!contactData) throw createErr;
+                }
+                var bonzoContactId = contactData?.id || contactData?.data?.id;
+                if (!bonzoContactId) throw new Error('Could not create or find contact in Bonzo');
 
                 await _bonzoProxy('send_sms', { contactId: bonzoContactId, payload: { message: smsText } });
                 statusDiv.innerHTML = '<span style="color:#10b981;">✅ SMS sent via Bonzo!</span>';
@@ -16873,6 +16939,9 @@ Sent via Above All Carbon HELOC Tool`;
             }
 
             if (!await ensureOutboundConsent('email', contactEmail, contactPhone)) return;
+
+            // Ensure quote link exists so the email includes the interactive quote button
+            await ensureQuoteLink();
 
             // Build status overlay
             const statusDiv = document.createElement('div');
@@ -19481,6 +19550,20 @@ Sent via Above All Carbon HELOC Tool`;
             document.getElementById('rec-tier-select').value = '2';
             document.getElementById('rec-term-select').value = '20';
 
+            // Clear generated quote link and SMS from previous quote
+            var linkOut = document.getElementById('client-link-output');
+            if (linkOut) linkOut.value = '';
+            var esmLink = document.getElementById('esm-quote-link');
+            if (esmLink) esmLink.value = '';
+            var smsSection = document.getElementById('sms-ready-section');
+            if (smsSection) smsSection.style.display = 'none';
+            var smsText = document.getElementById('sms-ready-text');
+            if (smsText) smsText.value = '';
+            window._lastGeneratedQuoteLink = null;
+            window._lastGeneratedQuoteCode = null;
+            window._lastGeneratedQuoteData = null;
+            window._lastGeneratedQuoteLeadId = null;
+
             // Recalculate
             updateQuote();
             switchTab('client');
@@ -20346,12 +20429,29 @@ Sent via Above All Carbon HELOC Tool`;
                     });
                     if (toDelete.length === 0) { showToast('No duplicate leads found', 'success'); return; }
                     if (!confirm('Delete ' + toDelete.length + ' duplicate lead' + (toDelete.length !== 1 ? 's' : '') + '? (Keeping newest by email)')) return;
+
+                } else if (type === 'name-duplicates') {
+                    // Group by full name (lowercase), keep newest, mark rest for deletion
+                    var nameMap = {};
+                    leads.forEach(function (l) {
+                        var fn = (l.first_name || '').toLowerCase().trim();
+                        var ln = (l.last_name || '').toLowerCase().trim();
+                        var key = fn + ' ' + ln;
+                        if (!key.trim()) return;
+                        if (!nameMap[key]) { nameMap[key] = l; }
+                        else { toDelete.push(l); }
+                    });
+                    if (toDelete.length === 0) { showToast('No name-duplicate leads found', 'success'); return; }
+                    if (!confirm('Delete ' + toDelete.length + ' lead' + (toDelete.length !== 1 ? 's' : '') + ' with duplicate names? (Keeping newest per name)')) return;
                 }
 
-                // Batch delete
+                // Batch delete (groups of 20 to avoid URL length limits)
                 var ids = toDelete.map(function (l) { return l.id; });
-                var { error: delErr } = await sb.from('leads').delete().in('id', ids);
-                if (delErr) throw delErr;
+                for (var i = 0; i < ids.length; i += 20) {
+                    var batch = ids.slice(i, i + 20);
+                    var { error: delErr } = await sb.from('leads').delete().in('id', batch);
+                    if (delErr) throw delErr;
+                }
 
                 showToast(toDelete.length + ' lead' + (toDelete.length !== 1 ? 's' : '') + ' deleted', 'success');
                 loadUserLeads();
