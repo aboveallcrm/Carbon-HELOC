@@ -7523,6 +7523,17 @@
             text-align: right;
         }
         #template-minimal .min-client strong { color: white; display: block; font-size: 13px; margin-bottom: 2px; }
+        #template-minimal .min-brand-row { display: flex; align-items: center; gap: 12px; }
+        #template-minimal .min-lo-photo { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(197,160,89,0.5); flex-shrink: 0; }
+        #template-minimal .min-brand-text { display: flex; flex-direction: column; gap: 2px; }
+        #template-minimal .min-lo-identity { font-size: 11px; color: rgba(226,232,240,0.7); letter-spacing: 0.3px; }
+        #template-minimal .min-lo-identity strong { color: rgba(226,232,240,0.95); font-weight: 600; }
+        #template-minimal .min-contact-row { display: flex; flex-wrap: wrap; gap: 14px 22px; justify-content: center; padding: 14px 8px; margin-top: 16px; border-top: 1px solid rgba(197,160,89,0.2); }
+        #template-minimal .min-contact-link { color: rgba(226,232,240,0.85); font-size: 12px; text-decoration: none; transition: color 0.15s; min-height: 32px; display: inline-flex; align-items: center; gap: 4px; }
+        #template-minimal .min-contact-link:hover { color: #c5a059; text-decoration: underline; }
+        #template-minimal .min-apply-cta { display: block; margin: 16px auto 8px; padding: 14px 28px; min-height: 44px; max-width: 360px; text-align: center; background: linear-gradient(135deg, #c5a059, #a68543); color: #0f172a; font-family: var(--font-heading, 'Playfair Display', serif); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; text-decoration: none; border-radius: 8px; box-shadow: 0 6px 18px rgba(197,160,89,0.3); transition: transform 0.15s, box-shadow 0.15s; }
+        #template-minimal .min-apply-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(197,160,89,0.45); }
+        #template-minimal .min-apply-cta:active { transform: translateY(0); }
         #template-minimal .min-valuation {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -7580,8 +7591,13 @@
             background: rgba(30,41,59,0.6);
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 10px;
-            overflow: hidden;
+            overflow: visible; /* allow .rate-tip tooltip to overflow */
+            position: relative;
         }
+        #template-minimal .min-tier-header { border-top-left-radius: 10px; border-top-right-radius: 10px; }
+        #template-minimal .min-rate-table { border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; overflow: hidden; }
+        #template-minimal .min-matrix-grid { overflow: visible; }
+        #template-minimal { overflow: visible !important; }
         #template-minimal .min-tier.recommended {
             border-color: #c5a059;
             box-shadow: 0 0 0 1px #c5a059, 0 8px 24px rgba(197,160,89,0.2);
@@ -7872,8 +7888,11 @@
         #template-original .orig-tier {
             border: 1px solid #e2e8f0;
             border-radius: 6px;
-            overflow: hidden;
+            overflow: visible; /* allow .rate-tip tooltip to overflow */
+            position: relative;
         }
+        #template-original .orig-matrix-grid { overflow: visible; }
+        #template-original { overflow: visible !important; }
         #template-original .orig-tier.recommended {
             border-color: #c5a059;
             box-shadow: 0 4px 12px rgba(197,160,89,0.2);
@@ -8938,6 +8957,32 @@
             <!-- Use of Funds Carousel -->
             <div class="funds-carousel reveal" id="sec-funds-carousel"></div>
 
+            <!-- BEST OF BOTH WORLDS — why this HELOC structure is uniquely valuable -->
+            <div class="section reveal" id="sec-best-of-both" style="display:block;">
+                <div class="section-title" data-icon="🏆">The Best of Both Worlds</div>
+                <div style="background: linear-gradient(135deg, rgba(197,160,89,0.10), rgba(197,160,89,0.03)); border: 1px solid rgba(197,160,89,0.3); border-radius: 14px; padding: 22px 26px;">
+                    <p style="font-size:15px; line-height:1.7; margin:0 0 14px 0; color:var(--text-muted, #1e293b);">
+                        You get the <strong style="color:var(--accent-color);">security of a fixed-rate lump sum</strong>
+                        with immediate access to your equity today — <em>plus</em> the
+                        <strong style="color:var(--accent-color);">flexibility of a line of credit with a draw period</strong>.
+                    </p>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-top:14px;">
+                        <div style="background:rgba(255,255,255,0.4); border-radius:10px; padding:12px 14px; border:1px solid rgba(197,160,89,0.2);">
+                            <div style="font-family:var(--font-heading,serif); font-size:11px; color:var(--accent-color); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">🔒 Predictable</div>
+                            <div style="font-size:13px; line-height:1.5;">Fixed-rate portion means your payment is locked. No rate surprises.</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.4); border-radius:10px; padding:12px 14px; border:1px solid rgba(197,160,89,0.2);">
+                            <div style="font-family:var(--font-heading,serif); font-size:11px; color:var(--accent-color); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">💧 Flexible</div>
+                            <div style="font-size:13px; line-height:1.5;">Pull what you need, pay it down, re-draw during the draw period — no re-application.</div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.4); border-radius:10px; padding:12px 14px; border:1px solid rgba(197,160,89,0.2);">
+                            <div style="font-family:var(--font-heading,serif); font-size:11px; color:var(--accent-color); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">💰 Efficient</div>
+                            <div style="font-size:13px; line-height:1.5;">Only pay interest on what you draw — not on the whole line.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Debt Consolidation Section (rendered by JS if data.debts exists) -->
             <div class="section reveal" id="sec-debt-consolidation" style="display:none;">
                 <div class="section-title" data-icon="✅">Your Debt Freedom Plan</div>
@@ -8963,6 +9008,37 @@
 
                 <div style="padding: 16px; background: rgba(197, 160, 89, 0.1); border-radius: 8px; border-left: 4px solid var(--accent-color);">
                     <p style="color: var(--text-light); font-size: 14px; margin: 0;"><strong>All fees are financed into your payment</strong> — nothing paid out of pocket. Move the slider above to see how each fee impacts YOUR specific scenario.</p>
+                </div>
+            </div>
+
+            <!-- WHY THIS BEATS THE ALTERNATIVES — HEL / Variable HELOC / HEA comparison -->
+            <div class="section reveal" id="sec-vs-alternatives" style="display:block;">
+                <div class="section-title" data-icon="⚖️">Why This Beats the Alternatives</div>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:14px;">
+                    <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.25); border-radius:12px; padding:16px 18px;">
+                        <div style="font-family:var(--font-heading,serif); font-size:12px; color:#ef4444; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">❌ vs Traditional Home Equity Loan</div>
+                        <div style="font-size:13px; line-height:1.6; color:var(--text-muted, #1e293b);">
+                            An HEL locks you into a single lump sum with a fixed payment from day one. Even as you pay the balance down, <strong>your monthly payment doesn't drop</strong> — you keep paying the same amount until it's fully paid off. And if you don't need all the cash today, you're paying interest on money you're not using.
+                        </div>
+                    </div>
+                    <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.25); border-radius:12px; padding:16px 18px;">
+                        <div style="font-family:var(--font-heading,serif); font-size:12px; color:#ef4444; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">❌ vs Standard (Variable-Only) HELOC</div>
+                        <div style="font-size:13px; line-height:1.6; color:var(--text-muted, #1e293b);">
+                            Traditional HELOCs adjust with Prime Rate — <strong>you never know what your rate or payment will be next month</strong>. When rates rise, your payment can jump by hundreds overnight. Budgeting becomes impossible.
+                        </div>
+                    </div>
+                    <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.25); border-radius:12px; padding:16px 18px;">
+                        <div style="font-family:var(--font-heading,serif); font-size:12px; color:#ef4444; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">❌ vs Home Equity Agreement (HEA)</div>
+                        <div style="font-size:13px; line-height:1.6; color:var(--text-muted, #1e293b);">
+                            Point, Unison, Hometap and similar HEAs don't charge monthly payments — but you <strong>give up a share of your home's future appreciation</strong>. If your home gains $200k over 10 years, the HEA company takes a large cut. That's your wealth walking out the door.
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top:16px; padding:16px 20px; background: linear-gradient(135deg, rgba(16,185,129,0.10), rgba(16,185,129,0.03)); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px;">
+                    <div style="font-family:var(--font-heading,serif); font-size:13px; font-weight:700; color:#10b981; margin-bottom:6px;">✅ This HELOC gives you all three:</div>
+                    <div style="font-size:13px; line-height:1.6; color:var(--text-muted, #1e293b);">
+                        Predictable payments with fixed-rate security, flexible draw-period access to re-borrow as you pay down, and <strong>100% of your home's appreciation stays in your pocket</strong>.
+                    </div>
                 </div>
             </div>
 
@@ -9841,11 +9917,8 @@
                         if (langBtnEn) langBtnEn.parentElement.style.display = 'none';
                     }
 
-                    // ── DIAMOND (level >= 4): HeyGen video (handled by renderQuote via linkOptions) ──
-                    if (tierLevel < 4) {
-                        var videoSec = document.getElementById('sec-personal-video');
-                        if (videoSec) videoSec.style.display = 'none';
-                    }
+                    // Video section visibility is governed by linkOptions.showVideo + videoUrl presence,
+                    // handled downstream at the renderQuote video block. Do not hide by tier here.
 
                     // ── COLLAPSIBLE "SHOW MORE" DIVIDER ──
                     // After the critical path (recommendation → rates → strategy), collapse lower sections
@@ -10340,6 +10413,8 @@
                     if (opts.showTestimonials === false) hide(sections.testimonials);
                     if (opts.showSalesPsych === false) hide(sections.socialProof);
                     if (opts.showAiChat === false) hide(document.getElementById('eq-orb'));
+                    if (opts.showBestOfBoth === false) hide(document.getElementById('sec-best-of-both'));
+                    if (opts.showVsAlternatives === false) hide(document.getElementById('sec-vs-alternatives'));
 
                     // Enable scroll reveal animations
                     document.querySelectorAll('.section, .quote-wrapper > div').forEach(function(el) {
@@ -10438,9 +10513,21 @@
                     var showFees = opts && opts.showFees !== false;
                     var tiers = _filterTiersByDisplayMode(data.tiers || [], recTierNum, tierDisplayMode, recCtx.rec2Tier);
 
-                    // LO + client info
+                    // LO + client info (full profile for CTAs)
                     var loInfo = (data.lo_info || data.loInfo || {});
                     var loCompany = loInfo.lenderName || loInfo.company || loInfo.loCompany || data.lenderName || data.companyName || 'Your Lender';
+                    var loName = loInfo.name || loInfo.loName || '';
+                    var loTitle = loInfo.title || loInfo.loTitle || '';
+                    var loNmls = loInfo.nmls || loInfo.loNmls || '';
+                    var loDre = loInfo.dre || loInfo.loDre || '';
+                    var loPhoneDisplay = loInfo.phone || loInfo.loPhone || '';
+                    var loPhoneHref = String(loPhoneDisplay).replace(/\D/g, '');
+                    var loEmail = loInfo.email || loInfo.loEmail || '';
+                    var loWebsiteRaw = loInfo.website || loInfo.loWebsite || '';
+                    var loWebsiteHref = loWebsiteRaw ? (/^https?:\/\//i.test(loWebsiteRaw) ? loWebsiteRaw : 'https://' + loWebsiteRaw) : '';
+                    var loApply = loInfo.applyLink || loInfo.applicationLink || loInfo.applyUrl || '';
+                    var loApplyHref = loApply ? (/^https?:\/\//i.test(loApply) ? loApply : 'https://' + loApply) : '';
+                    var loPhoto = loInfo.headshot || loInfo.photo || '';
                     var clientName = data.clientName || 'Client';
                     var dateStr = data.date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -10467,7 +10554,18 @@
                     html += '<button class="min-pdf-btn" onclick="downloadPDF()" title="Save as PDF" style="padding:6px 10px;font-size:10px;border:1px solid rgba(197,160,89,0.3);background:rgba(0,0,0,0.3);color:rgba(226,232,240,0.7);cursor:pointer;font-family:var(--font-heading,serif);">&#128196; PDF</button>';
                     html += '</div>';
                     html += '<header class="min-header">';
+                    html += '<div class="min-brand-row">';
+                    if (loPhoto) html += '<img class="min-lo-photo" src="' + esc(loPhoto) + '" alt="' + esc(loName || loCompany) + '" loading="lazy" onerror="this.style.display=\'none\'">';
+                    html += '<div class="min-brand-text">';
                     html += '<div class="min-brand">' + esc(loCompany) + '</div>';
+                    var loIdBits = [];
+                    if (loName) loIdBits.push('<strong>' + esc(loName) + '</strong>');
+                    if (loTitle) loIdBits.push(esc(loTitle));
+                    if (loNmls) loIdBits.push('NMLS# ' + esc(loNmls));
+                    if (loDre) loIdBits.push('DRE# ' + esc(loDre));
+                    if (loIdBits.length) html += '<div class="min-lo-identity">' + loIdBits.join(' &middot; ') + '</div>';
+                    html += '</div>';
+                    html += '</div>';
                     html += '<div class="min-client"><strong>' + esc(clientName) + '</strong>' + esc(dateStr) + '</div>';
                     html += '</header>';
 
@@ -10527,6 +10625,18 @@
                     html += '<div class="min-rec-payment-amt">' + esc(recPayment) + '</div>';
                     html += '</div>';
                     html += '</section>';
+
+                    // LO contact CTAs (clickable: tel, mailto, website, apply)
+                    var contactBits = [];
+                    if (loPhoneDisplay) contactBits.push('<a class="min-contact-link" href="tel:' + esc(loPhoneHref) + '">&#9742; ' + esc(loPhoneDisplay) + '</a>');
+                    if (loEmail) contactBits.push('<a class="min-contact-link" href="mailto:' + esc(loEmail) + '">&#9993; ' + esc(loEmail) + '</a>');
+                    if (loWebsiteHref) contactBits.push('<a class="min-contact-link" href="' + esc(loWebsiteHref) + '" target="_blank" rel="noopener">&#127760; ' + esc(loWebsiteRaw.replace(/^https?:\/\//i, '')) + '</a>');
+                    if (contactBits.length) {
+                        html += '<div class="min-contact-row">' + contactBits.join('') + '</div>';
+                    }
+                    if (loApplyHref) {
+                        html += '<a class="min-apply-cta" href="' + esc(loApplyHref) + '" target="_blank" rel="noopener">&#127968; Start Your Application</a>';
+                    }
 
                     // Footer with Equal Housing logo + disclaimer
                     html += '<div class="min-footer-legal">';
@@ -10602,10 +10712,21 @@
                     var loInfo = (data.lo_info || data.loInfo || {});
                     var loCompany = loInfo.lenderName || loInfo.company || loInfo.loCompany || data.lenderName || data.companyName || 'Your Lender';
                     var loName = loInfo.name || loInfo.loName || '';
-                    var loPhone = loInfo.phone || loInfo.loPhone || '';
-                    var loEmail = loInfo.email || loInfo.loEmail || '';
+                    var loTitle = loInfo.title || loInfo.loTitle || '';
                     var loNmls = loInfo.nmls || loInfo.loNmls || '';
+                    var loDre = loInfo.dre || loInfo.loDre || '';
+                    var loPhoneDisplay = loInfo.phone || loInfo.loPhone || '';
+                    var loPhoneHref = String(loPhoneDisplay).replace(/\D/g, '');
+                    var loEmail = loInfo.email || loInfo.loEmail || '';
+                    var loWebsiteRaw = loInfo.website || loInfo.loWebsite || '';
+                    var loWebsiteHref = loWebsiteRaw ? (/^https?:\/\//i.test(loWebsiteRaw) ? loWebsiteRaw : 'https://' + loWebsiteRaw) : '';
+                    var loAddress = loInfo.address || loInfo.loAddress || '';
+                    var loPhoto = loInfo.headshot || loInfo.photo || '';
+                    var loLogo = loInfo.logo || loInfo.lenderLogo || '';
+                    var loApply = loInfo.applyLink || loInfo.applicationLink || loInfo.applyUrl || '';
+                    var loApplyHref = loApply ? (/^https?:\/\//i.test(loApply) ? loApply : 'https://' + loApply) : '';
                     var clientName = data.clientName || 'Client';
+                    var creditScore = data.creditScore || '';
                     var dateStr = data.date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
                     var recTierObj = (data.tiers || []).find(function(t) { return parseInt(t.tier) === recTierNum; }) || (data.tiers || [])[1] || (data.tiers || [])[0];
@@ -10617,26 +10738,31 @@
                     var recTypeLabel = isVarRec ? 'Variable' : 'Fixed';
 
                     var html = '';
-                    html += '<div class="orig-header">';
-                    html += '<div class="orig-brand">' + esc(loCompany) + '</div>';
-                    html += '<div class="orig-subtitle">HELOC Proposal</div>';
+                    // Navy proposal header band
+                    html += '<div class="orig-proposal-header">';
+                    html += '<div class="orig-proposal-title">' + esc(String(loCompany).toUpperCase()) + ' HELOC PROPOSAL</div>';
+                    var tagline = loInfo.tagline || 'Unlock Your Wealth Without Selling';
+                    html += '<div class="orig-proposal-tagline">' + esc(tagline) + '</div>';
                     html += '</div>';
 
+                    // Client strip — 6-field grid
                     html += '<div class="orig-client-strip">';
                     html += '<div><div class="label">Prepared For</div><div class="value">' + esc(clientName) + '</div></div>';
-                    html += '<div><div class="label">Date</div><div class="value">' + esc(dateStr) + '</div></div>';
-                    if (data.propertyAddress) html += '<div><div class="label">Property</div><div class="value">' + esc(data.propertyAddress) + '</div></div>';
+                    if (creditScore) html += '<div><div class="label">Est. Credit Score</div><div class="value">' + esc(creditScore) + '</div></div>';
+                    html += '<div><div class="label">Date Prepared</div><div class="value">' + esc(dateStr) + '</div></div>';
+                    if (data.propertyAddress) html += '<div class="orig-cs-wide"><div class="label">Property Address</div><div class="value">' + esc(data.propertyAddress) + '</div></div>';
                     if (data.propertyType) html += '<div><div class="label">Occupancy</div><div class="value">' + esc(data.propertyType) + '</div></div>';
                     html += '</div>';
 
+                    html += '<h3 class="orig-section-title">Valuation &amp; Liquidity Summary</h3>';
                     html += '<div class="orig-valuation">';
-                    html += '<div class="orig-block"><div class="orig-block-label">Home Value</div><div class="orig-block-value">' + _fmtCurrency(data.homeValue) + '</div></div>';
-                    html += '<div class="orig-block"><div class="orig-block-label">1st Mortgage</div><div class="orig-block-value">' + _fmtCurrency(data.mortgageBalance) + '</div></div>';
+                    html += '<div class="orig-block"><div class="orig-block-label">Estimated Value</div><div class="orig-block-value">' + _fmtCurrency(data.homeValue) + '</div></div>';
+                    html += '<div class="orig-block"><div class="orig-block-label">Current Mortgage</div><div class="orig-block-value">' + _fmtCurrency(data.mortgageBalance) + '</div></div>';
                     html += '<div class="orig-block accent"><div class="orig-block-label">HELOC Amount</div><div class="orig-block-value">' + _fmtCurrency(netCash) + '</div></div>';
                     html += '<div class="orig-block"><div class="orig-block-label">Proposed CLTV</div><div class="orig-block-value">' + esc(data.cltv || '0%') + '</div></div>';
                     html += '</div>';
 
-                    html += '<h3 class="orig-section-title">' + recTypeLabel + ' Rate Options</h3>';
+                    html += '<h3 class="orig-section-title">' + recTypeLabel + ' Rate Funding Matrix</h3>';
                     var cols = tiers.length === 1 ? '1' : (tiers.length === 2 ? '2' : '3');
                     html += '<div class="orig-matrix-grid" data-cols="' + cols + '">';
                     tiers.forEach(function(tier) {
@@ -10671,23 +10797,71 @@
                     });
                     html += '</div>';
 
-                    html += '<div class="orig-rec-bar">';
-                    html += '<div><div class="orig-rec-label">Recommended Option</div><div class="orig-rec-offer">Tier ' + (recTierNum || 2) + ' &middot; ' + recTermYrs + '-Year ' + recTypeLabel + ' @ ' + esc(recRate) + '</div></div>';
-                    html += '<div style="text-align:right;"><div class="orig-rec-label">Monthly Payment</div><div class="orig-rec-payment-amt">' + esc(recPayment) + '</div></div>';
+                    // Recommended option callout (gold-bordered)
+                    var recOrigPts = recTierObj ? (parseFloat(recTierObj.origPts) || 0) : 0;
+                    var recFeeAmt = Math.round(netCash * (recOrigPts / 100));
+                    var totalLoanAmt = netCash + recFeeAmt;
+                    html += '<div class="orig-rec-callout">';
+                    html += '<div class="orig-rec-callout-label">Recommended ' + recTermYrs + '-Year ' + recTypeLabel + '</div>';
+                    html += '<div class="orig-rec-callout-offer">' + recTermYrs + '-Yr ' + (isVarRec ? 'Var' : 'Fix') + ' @ ' + esc(recRate) + ' &nbsp;|&nbsp; ' + recOrigPts.toFixed(2) + '% Orig &nbsp;|&nbsp; ' + esc(recPayment) + '</div>';
+                    html += '<div class="orig-rec-callout-sub">The "Sweet Spot" balancing rate + capital preservation.</div>';
                     html += '</div>';
 
-                    html += '<div class="orig-footer">';
-                    if (loName) html += '<div class="lo-line">' + esc(loName) + (loNmls ? ' &middot; NMLS# ' + esc(loNmls) : '') + '</div>';
-                    var contactBits = [];
-                    if (loPhone) contactBits.push(esc(loPhone));
-                    if (loEmail) contactBits.push(esc(loEmail));
-                    if (contactBits.length) html += '<div>' + contactBits.join(' &middot; ') + '</div>';
+                    // Monthly Payment Snapshot
+                    html += '<h3 class="orig-section-title">Monthly Payment Snapshot</h3>';
+                    html += '<table class="orig-snapshot">';
+                    html += '<tr><td class="label">HELOC Amount</td><td class="value">' + _fmtCurrency(netCash) + '</td></tr>';
+                    html += '<tr><td class="label">Origination Points</td><td class="value">' + recOrigPts.toFixed(2) + '% ($' + recFeeAmt.toLocaleString() + ')</td></tr>';
+                    html += '<tr><td class="label">Total Loan Amount</td><td class="value">$' + totalLoanAmt.toLocaleString() + '</td></tr>';
+                    html += '<tr><td class="label">Interest Rate</td><td class="value">' + esc(recRate) + ' ' + recTypeLabel + '</td></tr>';
+                    html += '<tr><td class="label">Loan Term</td><td class="value">' + recTermYrs + ' Years</td></tr>';
+                    html += '<tr class="orig-snapshot-payment"><td class="label">Your Payment</td><td class="value">' + esc(recPayment) + '</td></tr>';
+                    html += '</table>';
+
+                    // Apply CTA button
+                    if (loApplyHref) {
+                        html += '<a class="orig-apply-cta" href="' + esc(loApplyHref) + '" target="_blank" rel="noopener">&#127968; Start Your Application</a>';
+                    }
+
+                    // Important Disclosure yellow callout
+                    html += '<div class="orig-disclosure-callout">';
+                    html += '<div class="orig-disclosure-title">&#9888; Important Disclosure</div>';
+                    html += '<div class="orig-disclosure-body">This quote is for informational purposes only and does not constitute a commitment to lend. All loan programs are subject to credit approval, income verification, and underwriting guidelines. Rates and terms are subject to change without notice after rate expiration. Contact your loan officer for current rates and eligibility requirements.</div>';
+                    html += '</div>';
+
+                    // Footer: 2-column LO card + lender logo
+                    html += '<div class="orig-lo-footer">';
+                    html += '<div class="orig-lo-card">';
+                    if (loPhoto) html += '<img class="orig-lo-photo" src="' + esc(loPhoto) + '" alt="' + esc(loName) + '" loading="lazy" onerror="this.style.display=\'none\'">';
+                    html += '<div class="orig-lo-details">';
+                    if (loName) html += '<div class="orig-lo-name">' + esc(loName) + '</div>';
+                    if (loTitle) html += '<div class="orig-lo-title">' + esc(loTitle) + '</div>';
+                    var idBits = [];
+                    if (loNmls) idBits.push('NMLS# ' + esc(loNmls));
+                    if (loDre) idBits.push('DRE# ' + esc(loDre));
+                    if (idBits.length) html += '<div class="orig-lo-ids">' + idBits.join(' &middot; ') + '</div>';
+                    var contactRow = [];
+                    if (loPhoneDisplay) contactRow.push('<a class="orig-lo-link" href="tel:' + esc(loPhoneHref) + '">' + esc(loPhoneDisplay) + '</a>');
+                    if (loEmail) contactRow.push('<a class="orig-lo-link" href="mailto:' + esc(loEmail) + '">' + esc(loEmail) + '</a>');
+                    if (contactRow.length) html += '<div class="orig-lo-contact">' + contactRow.join(' &middot; ') + '</div>';
+                    var extraRow = [];
+                    if (loWebsiteHref) extraRow.push('<a class="orig-lo-link" href="' + esc(loWebsiteHref) + '" target="_blank" rel="noopener">' + esc(loWebsiteRaw.replace(/^https?:\/\//i, '')) + '</a>');
+                    if (loAddress) extraRow.push('<a class="orig-lo-link" href="https://maps.google.com/?q=' + encodeURIComponent(loAddress) + '" target="_blank" rel="noopener">' + esc(loAddress) + '</a>');
+                    if (extraRow.length) html += '<div class="orig-lo-extra">' + extraRow.join(' &middot; ') + '</div>';
+                    html += '</div>';
+                    html += '</div>';
+                    html += '<div class="orig-lender-card">';
+                    if (loLogo) html += '<img class="orig-lender-logo" src="' + esc(loLogo) + '" alt="' + esc(loCompany) + '" loading="lazy" onerror="this.style.display=\'none\'">';
+                    html += '<div class="orig-lender-name">' + esc(loCompany) + '</div>';
+                    html += '</div>';
+                    html += '</div>';
+
+                    // Footer legal + disclaimer
                     html += '<div class="orig-footer-legal">';
                     html += '<img src="assets/img/equal-housing-lender.jpg" class="ehl-icon-orig" alt="Equal Housing Lender" loading="lazy">';
                     html += '<div>Equal Housing Lender. ' + (loCompany ? esc(loCompany) + '. ' : '') + 'We support fair lending and equal access to credit.</div>';
                     html += '</div>';
                     html += '<div class="orig-disclaimer">Rates and payments are estimates. Final terms subject to full underwriting and property appraisal. This is not a commitment to lend.</div>';
-                    html += '</div>';
 
                     // PDF button (bottom-right floating, doesn't overlap content)
                     html += '<button class="orig-pdf-btn" onclick="downloadPDF()" title="Save as PDF" style="position:fixed;bottom:20px;right:20px;z-index:50;padding:10px 16px;font-size:11px;border-radius:8px;border:1px solid #c5a059;background:#c5a059;color:white;cursor:pointer;font-family:var(--font-heading,serif);font-weight:700;letter-spacing:0.5px;box-shadow:0 8px 24px rgba(197,160,89,0.4);">&#128196; SAVE PDF</button>';
@@ -10779,18 +10953,12 @@
                         strategyEl.innerText = (currentLanguage === 'es') ? window._strategyTextEs : window._strategyTextEn;
                         strategySection.style.display = 'block';
 
-                        // Inject action buttons: Discuss with Ezra + (Enterprise) Copy as HeyGen Script
+                        // Client-facing action: only "Discuss with Ezra" (HeyGen is LO-only, lives in builder)
                         if (!document.getElementById('strategy-action-row')) {
                             var actionRow = document.createElement('div');
                             actionRow.id = 'strategy-action-row';
                             actionRow.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;';
-                            var ezraBtn = '<button onclick="if(window.eqToggle){window.eqToggle();}else if(window.askQuestion){window.askQuestion();}" style="padding:10px 16px;background:linear-gradient(135deg,#06b6d4,#0891b2);color:#fff;border:none;border-radius:8px;font-family:var(--font-heading,serif);font-weight:700;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 12px rgba(6,182,212,0.3);">&#128172; Discuss with Ezra</button>';
-                            var loTier = (lo && (lo.tier || lo.subscription_tier || '')) || (data.lo_info && (data.lo_info.tier || data.lo_info.subscription_tier)) || '';
-                            var heygenBtn = '';
-                            if (String(loTier).toLowerCase() === 'enterprise') {
-                                heygenBtn = '<button onclick="copyHeyGenScript()" style="padding:10px 16px;background:linear-gradient(135deg,#c5a059,#d4af37);color:#fff;border:none;border-radius:8px;font-family:var(--font-heading,serif);font-weight:700;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 12px rgba(197,160,89,0.3);">&#128203; Copy as HeyGen Script</button>';
-                            }
-                            actionRow.innerHTML = ezraBtn + heygenBtn;
+                            actionRow.innerHTML = '<button onclick="if(window.eqToggle){window.eqToggle();}else if(window.askQuestion){window.askQuestion();}" style="padding:10px 16px;background:linear-gradient(135deg,#06b6d4,#0891b2);color:#fff;border:none;border-radius:8px;font-family:var(--font-heading,serif);font-weight:700;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 12px rgba(6,182,212,0.3);">&#128172; Discuss with Ezra</button>';
                             strategySection.appendChild(actionRow);
                         }
                     }
@@ -11230,8 +11398,13 @@
                 // === VIDEO SECTION: Only show if LO enabled it ===
                 var opts = data.linkOptions || {};
                 var videoSection = document.getElementById('sec-personal-video');
-                if (opts.showVideo) {
-                    if (videoSection) videoSection.style.display = '';
+                // Auto-enable: if the LO pasted a video URL but the toggle wasn't checked, still show it
+                var hasVideoUrl = !!(opts.videoUrl && String(opts.videoUrl).trim());
+                if (opts.showVideo || hasVideoUrl || opts.heygenVideoId) {
+                    if (videoSection) {
+                        videoSection.style.display = 'block';
+                        videoSection.style.setProperty('display', 'block', 'important');
+                    }
                     // Set LO Name in Video
                     var videoLoName = document.getElementById('pvf-lo-name');
                     if (videoLoName) videoLoName.textContent = lo.name ? lo.name : "Your Advisor";
@@ -11926,19 +12099,28 @@
                     var usableH = pageH - margin * 2;
 
                     var pdf = new jsPDF('p', 'mm', 'letter');
-                    var heightLeft = imgH;
-                    var yOffset = 0;
 
-                    // First page
-                    pdf.addImage(imgData, 'JPEG', margin, margin, contentW, imgH);
-                    heightLeft -= usableH;
-
-                    // Additional pages
-                    while (heightLeft > 0) {
-                        pdf.addPage();
-                        yOffset += usableH;
-                        pdf.addImage(imgData, 'JPEG', margin, margin - yOffset, contentW, imgH);
+                    // Single-page mode: if the natural render is within ~10% of one page, scale-to-fit.
+                    // This produces a clean single-page screenshot like the in-app quote preview.
+                    var singlePageThreshold = usableH * 1.10; // allow minor overflow to scale rather than spill
+                    if (imgH <= singlePageThreshold) {
+                        var fitScale = imgH > usableH ? (usableH / imgH) : 1;
+                        var renderW = contentW * fitScale;
+                        var renderH = imgH * fitScale;
+                        var xOffset = margin + (contentW - renderW) / 2;
+                        pdf.addImage(imgData, 'JPEG', xOffset, margin, renderW, renderH);
+                    } else {
+                        // Pathological overflow (very long quote): paginate
+                        var heightLeft = imgH;
+                        var yOffset = 0;
+                        pdf.addImage(imgData, 'JPEG', margin, margin, contentW, imgH);
                         heightLeft -= usableH;
+                        while (heightLeft > 0) {
+                            pdf.addPage();
+                            yOffset += usableH;
+                            pdf.addImage(imgData, 'JPEG', margin, margin - yOffset, contentW, imgH);
+                            heightLeft -= usableH;
+                        }
                     }
 
                     // Footer on each page
@@ -12434,8 +12616,16 @@
                 // ---- Borrow More section ----
                 var homeValue = parseFloat(String(data.homeValue || '500000').replace(/[$,]/g, '')) || 500000;
                 var mortBal = parseFloat(String(data.mortgageBalance || '0').replace(/[$,]/g, '')) || 0;
-                var maxHeloc = Math.min(750000, Math.round(homeValue * 0.9 - mortBal));
+                // Honor LO-set Max Qualifying Cash if provided; else fall back to 90% CLTV calc
+                var loMaxCash = parseFloat(data.maxQualCash) || 0;
+                var calcMax = Math.min(750000, Math.round(homeValue * 0.9 - mortBal));
+                var maxHeloc = loMaxCash > 0 ? loMaxCash : calcMax;
                 var minHeloc = Math.max(50000, Math.round(maxHeloc * 0.1));
+                // Hide the what-if borrow section entirely if there's no upsell room
+                var borrowSec = document.getElementById('sec-what-if-borrow');
+                if (borrowSec && maxHeloc <= (totalLoan + 5000)) {
+                    borrowSec.style.display = 'none';
+                }
 
                 var borrowSlider = document.getElementById('whatIfBorrowSlider');
                 if (borrowSlider) {
@@ -12620,7 +12810,25 @@
                 var originationSection = document.querySelector('.what-if-origination');
 
                 if (!slider || !amountDisplay) return;
-                
+
+                // Cap slider max to LO-provided Max Qualifying Cash (or 90% CLTV fallback)
+                (function applyWhatIfCap() {
+                    var hv = parseFloat(String(data.homeValue || '0').replace(/[$,]/g, '')) || 0;
+                    var mb = parseFloat(String(data.mortgageBalance || '0').replace(/[$,]/g, '')) || 0;
+                    var loCap = parseFloat(data.maxQualCash) || 0;
+                    var calcCap = Math.round(hv * 0.9 - mb);
+                    var cap = loCap > 0 ? loCap : calcCap;
+                    if (cap > 0) {
+                        var boundedMax = Math.max(50000, Math.min(cap, 2000000));
+                        slider.max = boundedMax;
+                        var rangeLabels = slider.parentElement?.querySelectorAll('.what-if-slider-range span');
+                        if (rangeLabels && rangeLabels.length >= 2) {
+                            rangeLabels[1].textContent = '$' + Math.round(boundedMax / 1000) + 'k';
+                        }
+                        if (parseFloat(slider.value) > boundedMax) slider.value = boundedMax;
+                    }
+                })();
+
                 // Show/hide sections based on options
                 if (breakdownSection && options.showClosingCostBreakdown === false) {
                     breakdownSection.style.display = 'none';

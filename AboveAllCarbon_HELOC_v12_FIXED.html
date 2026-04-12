@@ -5717,6 +5717,22 @@
                         <input type="number" id="in-net-cash" value="200000"
                             style="font-weight: 700; color: var(--accent-color); border-color: var(--accent-color);">
                     </div>
+                    <div class="input-field" data-simple-hide style="flex: 1.4;">
+                        <label>Max Qualifying Cash ($) <span class="help-tip">?<span class="help-tip-text">The maximum net cash this borrower actually qualifies for. Caps the "What If You Borrowed More" slider on the client quote so it doesn't show amounts they can't access. Use the presets or type a custom amount. Leave 0 to auto-calc (90% CLTV).</span></span></label>
+                        <input type="number" id="in-max-qual-cash" value="0" placeholder="Auto (90% CLTV)" step="5000" onchange="updateQuote()">
+                        <div style="display:flex; gap:3px; flex-wrap:wrap; margin-top:4px;">
+                            <button type="button" class="max-cash-preset" data-val="auto" onclick="applyMaxCashPreset(this)" style="font-size:8px; padding:3px 7px; border-radius:4px; border:1px solid rgba(197,160,89,0.4); background:rgba(197,160,89,0.15); color:var(--accent-color); cursor:pointer; font-family:var(--font-heading);">Auto</button>
+                            <button type="button" class="max-cash-preset" data-val="100000" onclick="applyMaxCashPreset(this)" style="font-size:8px; padding:3px 7px; border-radius:4px; border:1px solid rgba(139,92,246,0.4); background:rgba(139,92,246,0.15); color:#a78bfa; cursor:pointer; font-family:var(--font-heading);">$100k</button>
+                            <button type="button" class="max-cash-preset" data-val="250000" onclick="applyMaxCashPreset(this)" style="font-size:8px; padding:3px 7px; border-radius:4px; border:1px solid rgba(139,92,246,0.4); background:rgba(139,92,246,0.15); color:#a78bfa; cursor:pointer; font-family:var(--font-heading);">$250k</button>
+                            <button type="button" class="max-cash-preset" data-val="500000" onclick="applyMaxCashPreset(this)" style="font-size:8px; padding:3px 7px; border-radius:4px; border:1px solid rgba(139,92,246,0.4); background:rgba(139,92,246,0.15); color:#a78bfa; cursor:pointer; font-family:var(--font-heading);">$500k</button>
+                            <button type="button" class="max-cash-preset" data-val="750000" onclick="applyMaxCashPreset(this)" style="font-size:8px; padding:3px 7px; border-radius:4px; border:1px solid rgba(139,92,246,0.4); background:rgba(139,92,246,0.15); color:#a78bfa; cursor:pointer; font-family:var(--font-heading);">$750k</button>
+                            <button type="button" class="max-cash-preset" data-val="1000000" onclick="applyMaxCashPreset(this)" style="font-size:8px; padding:3px 7px; border-radius:4px; border:1px solid rgba(139,92,246,0.4); background:rgba(139,92,246,0.15); color:#a78bfa; cursor:pointer; font-family:var(--font-heading);">$1M</button>
+                            <button type="button" class="max-cash-preset" data-val="cltv80" onclick="applyMaxCashPreset(this)" style="font-size:8px; padding:3px 7px; border-radius:4px; border:1px solid rgba(16,185,129,0.4); background:rgba(16,185,129,0.15); color:#10b981; cursor:pointer; font-family:var(--font-heading);">80% CLTV</button>
+                            <button type="button" class="max-cash-preset" data-val="cltv85" onclick="applyMaxCashPreset(this)" style="font-size:8px; padding:3px 7px; border-radius:4px; border:1px solid rgba(16,185,129,0.4); background:rgba(16,185,129,0.15); color:#10b981; cursor:pointer; font-family:var(--font-heading);">85% CLTV</button>
+                            <button type="button" class="max-cash-preset" data-val="save" title="Save your own preset" onclick="saveCustomMaxCashPreset()" style="font-size:8px; padding:3px 7px; border-radius:4px; border:1px dashed rgba(255,255,255,0.3); background:transparent; color:rgba(255,255,255,0.55); cursor:pointer; font-family:var(--font-heading);">+ Save</button>
+                            <span id="custom-max-cash-presets" style="display:contents;"></span>
+                        </div>
+                    </div>
                 </div>
                 <div class="input-group" style="margin-top: 10px;">
                     <div class="input-field" data-simple-hide style="flex: 2; position: relative; z-index: 100;">
@@ -5756,6 +5772,14 @@
                     <div class="toggle-container">
                         <div class="toggle-switch active" id="toggle-show-fees" onclick="toggleSwitch(this)"></div><span
                             class="toggle-label">Show Fees <span class="help-tip">?<span class="help-tip-text">Displays origination fees and closing costs in the rate table on the client's quote page.</span></span></span>
+                    </div>
+                    <div class="toggle-container">
+                        <div class="toggle-switch active" id="toggle-show-best-of-both" onclick="toggleSwitch(this)"></div><span
+                            class="toggle-label">"Best of Both" Section <span class="help-tip">?<span class="help-tip-text">Shows the "Best of Both Worlds" explainer on the client quote: fixed-rate security + line-of-credit flexibility.</span></span></span>
+                    </div>
+                    <div class="toggle-container">
+                        <div class="toggle-switch active" id="toggle-show-vs-alternatives" onclick="toggleSwitch(this)"></div><span
+                            class="toggle-label">"Why Not HEL/HEA" Section <span class="help-tip">?<span class="help-tip-text">Shows the comparison section explaining why this HELOC beats a traditional Home Equity Loan, a variable HELOC, and a Home Equity Agreement (HEA).</span></span></span>
                     </div>
                     <div class="toggle-container" id="disclaimer-toggle-container" style="display:none;">
                         <div class="toggle-switch active" id="toggle-show-disclaimer" onclick="toggleSwitch(this)">
@@ -7078,7 +7102,7 @@ Best regards,
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <button class="btn"
                             style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); font-size: 9px; padding: 5px 14px; white-space: nowrap;"
-                            onclick="generateClientLink()">🔗 Generate Link</button>
+                            onclick="generateClientLink()">🔗 Generate / Update Link</button>
                         <button class="btn"
                             style="background: linear-gradient(135deg, #06b6d4, #0891b2); font-size: 9px; padding: 5px 14px; white-space: nowrap;"
                             onclick="previewQuote()">👁️ Preview</button>
@@ -7088,6 +7112,11 @@ Best regards,
                         <span id="client-link-views"
                             style="font-size: 8px; color: rgba(255,255,255,0.4); white-space: nowrap;"></span>
                     </div>
+                    <label style="display:flex; align-items:center; margin-top:6px; cursor:pointer; font-size:8px; color:rgba(255,255,255,0.65);">
+                        <input type="checkbox" id="chk-force-new-link" style="margin-right:6px; accent-color:#a78bfa;">
+                        Create a brand-new link (don't update the existing one)
+                        <span class="help-tip">?<span class="help-tip-text">By default, clicking Generate updates the last link you created for this client so the same URL reflects your latest changes. Check this box if you want a fresh, separate link instead.</span></span>
+                    </label>
                     <!-- SMS-Ready Copy Section (appears after link generation) -->
                     <div id="sms-ready-section"
                         style="display: none; margin-top: 12px; padding: 10px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); border-radius: 6px;">
@@ -8695,6 +8724,12 @@ Best regards,
                 <div class="analysis-title">🤖 AI-Generated Strategy</div>
                 <div class="ai-bubble" id="ai-output-text">Click "Generate AI Strategy" to create a personalized sales
                     script based on this client's data.</div>
+                <div id="ai-strategy-actions" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+                    <button type="button" class="btn" style="font-size:9px; background:linear-gradient(135deg,#06b6d4,#0891b2); padding:6px 12px;"
+                        onclick="copyAIStrategy()">📋 Copy Script</button>
+                    <button type="button" id="btn-copy-heygen-script" class="btn" style="display:none; font-size:9px; background:linear-gradient(135deg,#c5a059,#d4af37); color:#0f172a; padding:6px 12px;"
+                        onclick="copyHeyGenScriptFromStrategy()">🎬 Copy as HeyGen Script</button>
+                </div>
             </div>
 
             <div id="cta-section" class="cta-container">
@@ -14088,6 +14123,76 @@ Best regards,
             't3': "Minimizes upfront costs for maximum immediate liquidity."
         };
 
+        // ===== Max Qualifying Cash presets =====
+        window.applyMaxCashPreset = function(btn) {
+            var val = btn.getAttribute('data-val');
+            var input = document.getElementById('in-max-qual-cash');
+            if (!input) return;
+            var resolved = 0;
+            if (val === 'auto') {
+                resolved = 0;
+            } else if (val === 'cltv80' || val === 'cltv85') {
+                var hv = parseFloat(document.getElementById('in-home-value')?.value || '0') || 0;
+                var mb = parseFloat(document.getElementById('in-mortgage-balance')?.value || '0') || 0;
+                var pct = val === 'cltv80' ? 0.80 : 0.85;
+                resolved = Math.max(0, Math.round(hv * pct - mb));
+            } else {
+                resolved = parseInt(val, 10) || 0;
+            }
+            input.value = resolved;
+            // Visual: highlight active preset
+            document.querySelectorAll('.max-cash-preset').forEach(function(b) {
+                if (b === btn) {
+                    b.style.outline = '2px solid var(--accent-color)';
+                    b.style.fontWeight = '700';
+                } else {
+                    b.style.outline = '';
+                    b.style.fontWeight = '';
+                }
+            });
+            updateQuote();
+        };
+
+        // Save current Max Cash input as a custom preset (persisted in localStorage)
+        window.saveCustomMaxCashPreset = function() {
+            var input = document.getElementById('in-max-qual-cash');
+            var v = parseFloat(input?.value || '0') || 0;
+            if (v <= 0) { showToast('Enter a dollar amount first.', 'info'); return; }
+            var label = prompt('Label for this preset (e.g., "Tier 1 cap"):', '$' + (v >= 1000000 ? (v/1000000).toFixed(1) + 'M' : Math.round(v/1000) + 'k'));
+            if (!label) return;
+            var list = [];
+            try { list = JSON.parse(localStorage.getItem('aboveAll_maxCashPresets') || '[]'); } catch(e) {}
+            list.push({ label: label.substring(0, 20), val: v });
+            try { localStorage.setItem('aboveAll_maxCashPresets', JSON.stringify(list)); } catch(e) {}
+            renderCustomMaxCashPresets();
+            showToast('Preset saved.', 'success');
+        };
+
+        function renderCustomMaxCashPresets() {
+            var host = document.getElementById('custom-max-cash-presets');
+            if (!host) return;
+            var list = [];
+            try { list = JSON.parse(localStorage.getItem('aboveAll_maxCashPresets') || '[]'); } catch(e) {}
+            host.innerHTML = list.map(function(p, i) {
+                var safeLabel = String(p.label || '').replace(/[<>&"]/g, '');
+                return '<span style="display:inline-flex; align-items:center; gap:2px; font-size:8px; padding:3px 5px 3px 7px; border-radius:4px; border:1px solid rgba(245,158,11,0.4); background:rgba(245,158,11,0.15); color:#f59e0b; font-family:var(--font-heading);">'
+                    + '<button type="button" class="max-cash-preset" data-val="' + p.val + '" onclick="applyMaxCashPreset(this)" style="border:none; background:transparent; color:inherit; cursor:pointer; padding:0; font:inherit;">' + safeLabel + '</button>'
+                    + '<button type="button" onclick="deleteCustomMaxCashPreset(' + i + ')" title="Remove" style="border:none; background:transparent; color:rgba(255,255,255,0.5); cursor:pointer; padding:0 2px; font-size:10px; line-height:1;">&times;</button>'
+                    + '</span>';
+            }).join('');
+        }
+
+        window.deleteCustomMaxCashPreset = function(idx) {
+            var list = [];
+            try { list = JSON.parse(localStorage.getItem('aboveAll_maxCashPresets') || '[]'); } catch(e) {}
+            list.splice(idx, 1);
+            try { localStorage.setItem('aboveAll_maxCashPresets', JSON.stringify(list)); } catch(e) {}
+            renderCustomMaxCashPresets();
+        };
+
+        // Restore custom presets on page load
+        document.addEventListener('DOMContentLoaded', renderCustomMaxCashPresets);
+
         function enforceRec2DifferentTier() {
             var primary = document.getElementById('rec-tier-select');
             var secondary = document.getElementById('rec2-tier-select');
@@ -14326,12 +14431,93 @@ Best regards,
         function generateAIStrategy() {
             var ctx = _gatherFullQuoteContext();
             var kbStrategy = _generateKBStrategy(ctx);
+            // Keep a copy in the inline output box for backward compat (PDF capture, exports, hidden fallback)
             var outputEl = document.getElementById('ai-output-text');
-            outputEl.innerText = kbStrategy;
-            // Store KB response, then enhance with AI proxy in background
+            if (outputEl) outputEl.innerText = kbStrategy;
             window._lastKBStrategy = kbStrategy;
+
+            // Primary surface: push into the Ezra chat panel so the LO sees it in context
+            var tierLabel = String(window.currentUserTier || 'starter');
+            var header = '✨ **AI Strategy** (generated from current quote)\n\n';
+            var footer = '\n\n---\n*AI-enhanced version with HeyGen-ready script coming in a moment…*';
+            if (window.Ezra && typeof window.Ezra.open === 'function' && typeof window.Ezra.pushAssistantMessage === 'function') {
+                window.Ezra.open();
+                // Small delay so the panel is mounted before we push the message
+                setTimeout(function() {
+                    window.Ezra.pushAssistantMessage(header + kbStrategy + footer, {
+                        model: 'kb',
+                        tier: tierLabel,
+                        actions: [
+                            { icon: '📋', label: 'Copy', onClick: function(content) { copyMessageText(content); } },
+                            { icon: '🎬', label: 'Copy as HeyGen Script', enterpriseOnly: true, onClick: function() { window.copyHeyGenScriptFromStrategy(); } }
+                        ]
+                    });
+                }, 150);
+                if (window.showToast) showToast('AI Strategy sent to Ezra chat.', 'success');
+            } else {
+                // Fallback: Ezra not loaded yet — reveal the inline output container so the user sees something
+                var showAiChk = document.getElementById('chk-show-ai');
+                if (showAiChk && !showAiChk.checked) {
+                    showAiChk.checked = true;
+                    showAiChk.dispatchEvent(new Event('change'));
+                }
+                var container = document.getElementById('ai-assistant-container');
+                if (container) {
+                    container.classList.add('visible');
+                    container.style.display = '';
+                    setTimeout(function() { container.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
+                }
+                if (window.showToast) showToast('AI Strategy generated — see the output box.', 'success');
+            }
+
+            // Reveal the Enterprise-gated HeyGen copy button now that a strategy exists (inline output still has it)
+            var hgBtn = document.getElementById('btn-copy-heygen-script');
+            if (hgBtn) {
+                var tier = String(window.currentUserTier || '').toLowerCase();
+                hgBtn.style.display = (tier === 'enterprise' || window.currentUserRole === 'super_admin') ? 'inline-block' : 'none';
+            }
+            // Kick off AI proxy enhancement in background (will also land in Ezra chat when it returns, per existing generateCustomAIStrategy wiring)
             generateCustomAIStrategy();
         }
+
+        // Copy an arbitrary message's raw text (used by Ezra per-message action chips).
+        // Strips our UI-only decorators (header/footer hints) for cleaner paste.
+        window.copyMessageText = function(raw) {
+            var txt = String(raw || '').trim();
+            // Strip the footer hint line we append, if present
+            txt = txt.replace(/\n+---\n\*[^*]*HeyGen[^*]*\*\s*$/i, '').trim();
+            if (!txt) { if (window.showToast) showToast('Nothing to copy.', 'info'); return; }
+            navigator.clipboard.writeText(txt).then(function() {
+                if (window.showToast) showToast('Copied to clipboard.', 'success');
+            }).catch(function() { if (window.showToast) showToast('Copy failed.', 'error'); });
+        };
+
+        // LO-side: copy AI strategy text to clipboard
+        window.copyAIStrategy = function() {
+            var txt = (document.getElementById('ai-output-text')?.innerText || '').trim();
+            if (!txt) { showToast('No strategy generated yet.', 'info'); return; }
+            navigator.clipboard.writeText(txt).then(function() {
+                showToast('Strategy copied to clipboard.', 'success');
+            }).catch(function() { showToast('Copy failed.', 'error'); });
+        };
+
+        // LO-side: copy HeyGen script. Prefer the dedicated narration generated alongside the AI strategy
+        // (Enterprise dual-output prompt). Fall back to truncated phone script for non-Enterprise users.
+        window.copyHeyGenScriptFromStrategy = function() {
+            var txt = String(window._lastHeyGenScript || '').trim();
+            if (!txt) {
+                // Fallback: truncate the phone-script output
+                txt = (document.getElementById('ai-output-text')?.innerText || '').trim();
+                // Strip the KB + AI-enhanced divider blocks so the truncation is meaningful
+                txt = txt.replace(/^.*━{5,}\s*🤖 AI-ENHANCED STRATEGY[^\n]*\n━{5,}\s*\n*/ms, '');
+                txt = txt.replace(/\n*━{5,}\s*🎬 HEYGEN VIDEO SCRIPT[\s\S]*$/m, '').trim();
+                if (txt.length > 1500) txt = txt.slice(0, 1497) + '...';
+            }
+            if (!txt) { if (window.showToast) showToast('Generate an AI Strategy first.', 'info'); return; }
+            navigator.clipboard.writeText(txt).then(function() {
+                if (window.showToast) showToast('HeyGen script copied — paste into HeyGen, then put the share URL in the quote\'s video field.', 'success');
+            }).catch(function() { if (window.showToast) showToast('Copy failed.', 'error'); });
+        };
 
         // Carbon tier: KB-only strategy — instant, no API call
         function generateAIStrategyKBOnly() {
@@ -14826,9 +15012,13 @@ Best regards,
             // Gather comprehensive quote data from the live tool
             const ctx = _gatherFullQuoteContext();
 
+            // Tier gate — Enterprise (and super_admin) gets a dual-output prompt: phone script + HeyGen narration in one call
+            var _aiTierLower = String(window.currentUserTier || '').toLowerCase();
+            var _isEnterpriseAI = _aiTierLower === 'enterprise' || window.currentUserRole === 'super_admin';
+
             // Check for custom AI prompt (Obsidian+ feature)
             var customPrompt = localStorage.getItem('heloc_custom_ai_prompt') || '';
-            const systemPrompt = customPrompt.trim() || `You are an expert HELOC mortgage sales strategist for ${ctx.loCompany || 'a mortgage company'}. You generate personalized, persuasive sales scripts and talking points based on real quote data.
+            const _phoneOnlyPrompt = `You are an expert HELOC mortgage sales strategist for ${ctx.loCompany || 'a mortgage company'}. You generate personalized, persuasive sales scripts and talking points based on real quote data.
 
 RULES:
 - Use the EXACT numbers from the data — never make up or round figures
@@ -14841,6 +15031,30 @@ RULES:
 - Keep the tone professional but conversational — this is a phone script
 - Structure: Opening Hook → Key Benefits → Numbers → Objection Handlers → Close/CTA
 - Keep it under 400 words`;
+
+            const _dualOutputPrompt = `You are an expert HELOC mortgage sales strategist for ${ctx.loCompany || 'a mortgage company'}. Generate TWO outputs based on the quote data, separated by the literal divider "===HEYGEN===" on its own line.
+
+OUTPUT 1 — PHONE SCRIPT (for the loan officer to use on calls):
+- Conversational tone, professional but warm
+- Use the EXACT numbers from the data — never make up or round figures
+- Structure: Opening Hook → Key Benefits → Numbers → Objection Handlers → Close/CTA
+- Include objection handlers based on credit score, property type, and scenario
+- If credit score is below 700, include credit improvement talking points
+- Under 400 words
+- Use markdown headings and bullet points freely
+
+After OUTPUT 1, on its own line, write exactly: ===HEYGEN===
+
+OUTPUT 2 — HEYGEN VIDEO NARRATION (for the borrower, spoken on camera by an AI avatar):
+- First-person from the loan officer's perspective ("I put this together for you...", "Here's what stands out...")
+- Address the borrower by their first name
+- Conversational, warm, ≤180 words AND ≤1500 characters
+- NO headings, NO bullet points, NO emojis, NO markdown, NO section labels — pure continuous prose
+- Read aloud naturally — no parenthetical asides, no lists
+- Mention the key numbers (loan amount, rate, payment) in a natural spoken way
+- End with one clear next step ("Reply to this video or tap the apply button below this message")`;
+
+            const systemPrompt = customPrompt.trim() || (_isEnterpriseAI ? _dualOutputPrompt : _phoneOnlyPrompt);
 
             const userMessage = `Generate a personalized HELOC sales strategy and phone script for this client using the EXACT data below:
 
@@ -14898,15 +15112,64 @@ Generate the sales strategy and phone script now.`;
 
                 if (data.success && data.text) {
                     var aiText = data.text;
-                    var finalText = kbText + '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🤖 AI-ENHANCED STRATEGY (' + (data.provider || 'AI') + ')\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' + aiText;
+                    // Dual-output parsing: split on ===HEYGEN=== divider (Enterprise path)
+                    var _phoneScript = aiText;
+                    var _heygenScript = '';
+                    var _divMatch = aiText.split(/^\s*=+\s*HEYGEN\s*=+\s*$/m);
+                    if (_isEnterpriseAI && _divMatch.length >= 2) {
+                        _phoneScript = _divMatch[0].trim();
+                        _heygenScript = _divMatch.slice(1).join('').trim();
+                        // Hard safety: cap at 1500 chars
+                        if (_heygenScript.length > 1500) _heygenScript = _heygenScript.slice(0, 1497) + '...';
+                        window._lastHeyGenScript = _heygenScript;
+                    } else {
+                        window._lastHeyGenScript = '';
+                    }
+
+                    var finalText = kbText + '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🤖 AI-ENHANCED STRATEGY (' + (data.provider || 'AI') + ')\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' + _phoneScript
+                        + (_heygenScript ? '\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🎬 HEYGEN VIDEO SCRIPT (ready for camera)\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' + _heygenScript : '');
+
+                    var _pushEnhancedToEzra = function(finalRendered) {
+                        if (!(window.Ezra && typeof window.Ezra.pushAssistantMessage === 'function')) return;
+                        // Phone script message — with Copy + Copy as HeyGen Script chips
+                        window.Ezra.pushAssistantMessage(
+                            '🤖 **AI-Enhanced Strategy** (' + (data.provider || 'AI') + ')\n\n' + _phoneScript,
+                            {
+                                model: data.provider || 'ai',
+                                actions: [
+                                    { icon: '📋', label: 'Copy', onClick: function(content) { window.copyMessageText(content); } },
+                                    { icon: '🎬', label: 'Copy as HeyGen Script', enterpriseOnly: true, onClick: function() { window.copyHeyGenScriptFromStrategy(); } }
+                                ]
+                            }
+                        );
+                        // Separate HeyGen narration message (Enterprise only)
+                        if (_heygenScript) {
+                            window.Ezra.pushAssistantMessage(
+                                '🎬 **HeyGen Video Script** (ready for camera, ≤1500 chars)\n\n' + _heygenScript,
+                                {
+                                    model: data.provider || 'ai',
+                                    actions: [
+                                        { icon: '📋', label: 'Copy Script', onClick: function() {
+                                            navigator.clipboard.writeText(_heygenScript).then(function() {
+                                                if (window.showToast) showToast('HeyGen script copied — paste into HeyGen.', 'success');
+                                            });
+                                        } }
+                                    ]
+                                }
+                            );
+                        }
+                    };
                     if (typeof autoShortenUrls === 'function') {
                         autoShortenUrls(finalText).then(function (shortened) {
                             outputEl.innerText = shortened;
+                            _pushEnhancedToEzra(shortened);
                         }).catch(function () {
                             outputEl.innerText = finalText;
+                            _pushEnhancedToEzra(finalText);
                         });
                     } else {
                         outputEl.innerText = finalText;
+                        _pushEnhancedToEzra(finalText);
                     }
                 } else {
                     // AI failed — keep KB response as-is (don't show error over useful content)
@@ -16208,6 +16471,9 @@ Sent via Above All Carbon HELOC Tool`;
         // ===== CLIENT QUOTE LINK GENERATOR (with auto-shorten + lead attribution) =====
         // ===== LINK STYLE PRESETS =====
         function applyLinkPreset(preset) {
+            // Guard: suppress checkbox change-listener side effects that would flip preset back to 'custom'
+            window._applyingPreset = true;
+            try {
             var chkLo = document.getElementById('chk-link-lo-info');
             var chkAi = document.getElementById('chk-link-ai-chat');
             var chkApply = document.getElementById('chk-link-apply');
@@ -16226,8 +16492,8 @@ Sent via Above All Carbon HELOC Tool`;
                 if (!on && el.classList.contains('active')) el.classList.remove('active');
             }
 
-            if (preset === 'custom') return; // user sets their own
-            if (preset === 'enhanced') {
+            if (preset === 'custom') { /* user sets their own; fall through to persist */ }
+            else if (preset === 'enhanced') {
                 if (chkLo) chkLo.checked = true;
                 if (chkAi) chkAi.checked = true;
                 if (chkApply) chkApply.checked = true;
@@ -16240,7 +16506,7 @@ Sent via Above All Carbon HELOC Tool`;
                 setToggle(togTestimonials, true);
             } else if (preset === 'original') {
                 if (chkLo) chkLo.checked = true;
-                if (chkAi) chkAi.checked = true;
+                if (chkAi) chkAi.checked = false;
                 if (chkApply) chkApply.checked = true;
                 if (chkVideo) chkVideo.checked = false;
                 if (chkSales) chkSales.checked = false;
@@ -16264,6 +16530,49 @@ Sent via Above All Carbon HELOC Tool`;
             // Toggle video options wrapper visibility
             var optWrap = document.getElementById('link-video-options-wrap');
             if (optWrap) optWrap.style.display = chkVideo && chkVideo.checked ? 'block' : 'none';
+            } finally {
+                window._applyingPreset = false;
+            }
+            // Persist the selected preset (outside guard so autoSave writes the final value)
+            var presetEl = document.getElementById('link-style-preset');
+            if (presetEl && presetEl.value !== preset) presetEl.value = preset;
+            try { if (typeof autoSave === 'function') autoSave(); } catch(e) {}
+            // If a quote link already exists, silently update it so the shared URL reflects the new preset
+            try {
+                if (typeof updateExistingQuoteLinkPreset === 'function') updateExistingQuoteLinkPreset(preset);
+            } catch(e) { console.warn('Silent preset link update skipped:', e); }
+        }
+
+        // Silently update the existing quote_links row's linkOptions.preset (and mirror checkbox state).
+        // This lets the shared short URL reflect a preset change without re-running generateClientLink().
+        async function updateExistingQuoteLinkPreset(preset) {
+            try {
+                var sb = window._supabase;
+                var userId = window.currentUserId;
+                var code = window._lastGeneratedQuoteCode;
+                if (!sb || !userId || !code) return; // no existing link; nothing to update
+                var { data: rows, error: selErr } = await sb.from('quote_links')
+                    .select('code, quote_data')
+                    .eq('code', code)
+                    .eq('user_id', userId)
+                    .limit(1);
+                if (selErr || !rows || !rows.length) return;
+                var qd = rows[0].quote_data || {};
+                qd.linkOptions = qd.linkOptions || {};
+                qd.linkOptions.preset = preset;
+                // Mirror the checkbox state from the freshly-applied preset
+                qd.linkOptions.showLoInfo = document.getElementById('chk-link-lo-info')?.checked ?? qd.linkOptions.showLoInfo;
+                qd.linkOptions.showAiChat = document.getElementById('chk-link-ai-chat')?.checked ?? qd.linkOptions.showAiChat;
+                qd.linkOptions.showApply = document.getElementById('chk-link-apply')?.checked ?? qd.linkOptions.showApply;
+                qd.linkOptions.showSalesPsych = document.getElementById('chk-link-sales-psych')?.checked ?? qd.linkOptions.showSalesPsych;
+                await sb.from('quote_links')
+                    .update({ quote_data: qd })
+                    .eq('code', code)
+                    .eq('user_id', userId);
+                if (typeof showToast === 'function') showToast('Client link updated to "' + preset + '" style', 'success', 2500);
+            } catch (e) {
+                console.warn('updateExistingQuoteLinkPreset failed:', e);
+            }
         }
 
         // Wire up video checkbox to toggle options + radio mode switching
@@ -16273,6 +16582,7 @@ Sent via Above All Carbon HELOC Tool`;
                 chkVideo.addEventListener('change', function() {
                     var optWrap = document.getElementById('link-video-options-wrap');
                     if (optWrap) optWrap.style.display = this.checked ? 'block' : 'none';
+                    if (window._applyingPreset) return;
                     var presetEl = document.getElementById('link-style-preset');
                     if (presetEl) presetEl.value = 'custom';
                 });
@@ -16300,6 +16610,7 @@ Sent via Above All Carbon HELOC Tool`;
             ['chk-link-lo-info', 'chk-link-ai-chat', 'chk-link-apply', 'chk-link-sales-psych', 'chk-link-expiry'].forEach(function(id) {
                 var el = document.getElementById(id);
                 if (el) el.addEventListener('change', function() {
+                    if (window._applyingPreset) return;
                     var presetEl = document.getElementById('link-style-preset');
                     if (presetEl) presetEl.value = 'custom';
                     autoSave();
@@ -16309,6 +16620,7 @@ Sent via Above All Carbon HELOC Tool`;
             ['link-expiry-days', 'rate-lock-days'].forEach(function(id) {
                 var el = document.getElementById(id);
                 if (el) el.addEventListener('change', function() {
+                    if (window._applyingPreset) return;
                     var presetEl = document.getElementById('link-style-preset');
                     if (presetEl) presetEl.value = 'custom';
                     autoSave();
@@ -16318,6 +16630,7 @@ Sent via Above All Carbon HELOC Tool`;
             var chkRateLock = document.getElementById('chk-rate-lock');
             if (chkRateLock) {
                 chkRateLock.addEventListener('change', function() {
+                    if (window._applyingPreset) return;
                     var presetEl = document.getElementById('link-style-preset');
                     if (presetEl) presetEl.value = 'custom';
                     autoSave();
@@ -16427,6 +16740,7 @@ Sent via Above All Carbon HELOC Tool`;
                 propertyAddress: g('custom-address-input'),
                 propertyType: g('in-property-type'),
                 homeValue: g('in-home-value'),
+                maxQualCash: parseFloat(document.getElementById('in-max-qual-cash')?.value || '0') || 0,
                 mortgageBalance: g('in-mortgage-balance'),
                 helocPayoff: g('in-refi-balance'),
                 cashBack: g('in-net-cash'),
@@ -16460,6 +16774,8 @@ Sent via Above All Carbon HELOC Tool`;
                     aiAssistant: (document.querySelector('input[name="link-ai-assistant"]:checked')?.value || 'default'),
                     // Fee visibility — synced from LO toggle
                     showFees: document.getElementById('toggle-show-fees')?.classList.contains('active') !== false,
+                    showBestOfBoth: document.getElementById('toggle-show-best-of-both')?.classList.contains('active') !== false,
+                    showVsAlternatives: document.getElementById('toggle-show-vs-alternatives')?.classList.contains('active') !== false,
                     // Tier display mode (all / rec / rec-plus) — governs which tier tables appear on client quote
                     recTierDisplay: document.getElementById('rec-tier-display')?.value || 'all',
                     // Titanium v5.9.3 - Client Quote Features
@@ -16590,6 +16906,7 @@ Sent via Above All Carbon HELOC Tool`;
                 propertyAddress: g('custom-address-input'),
                 propertyType: g('in-property-type'),
                 homeValue: g('in-home-value'),
+                maxQualCash: parseFloat(document.getElementById('in-max-qual-cash')?.value || '0') || 0,
                 mortgageBalance: g('in-mortgage-balance'),
                 helocPayoff: g('in-refi-balance'),
                 cashBack: g('in-net-cash'),
@@ -16623,6 +16940,8 @@ Sent via Above All Carbon HELOC Tool`;
                     aiAssistant: (document.querySelector('input[name="link-ai-assistant"]:checked')?.value || 'default'),
                     // Fee visibility — synced from LO toggle
                     showFees: document.getElementById('toggle-show-fees')?.classList.contains('active') !== false,
+                    showBestOfBoth: document.getElementById('toggle-show-best-of-both')?.classList.contains('active') !== false,
+                    showVsAlternatives: document.getElementById('toggle-show-vs-alternatives')?.classList.contains('active') !== false,
                     // Tier display mode (all / rec / rec-plus) — governs which tier tables appear on client quote
                     recTierDisplay: document.getElementById('rec-tier-display')?.value || 'all',
                     // Titanium v5.9.3 - Client Quote Features
@@ -16728,8 +17047,15 @@ Sent via Above All Carbon HELOC Tool`;
                 if (match) leadId = match.id;
             }
 
-            // Generate short code
-            var code = Math.random().toString(36).substring(2, 10);
+            // Generate short code — or reuse the last code to update in place
+            var forceNew = document.getElementById('chk-force-new-link')?.checked === true;
+            var clientEmailKey = (g('client-email') || '').toLowerCase().trim();
+            var lastCodeKey = clientEmailKey ? ('aboveAll_lastQuoteCode_' + clientEmailKey) : 'aboveAll_lastQuoteCode';
+            var lastCode = window._lastGeneratedQuoteCode || (function() {
+                try { return localStorage.getItem(lastCodeKey); } catch(e) { return null; }
+            })();
+            var code = (!forceNew && lastCode) ? lastCode : Math.random().toString(36).substring(2, 10);
+            var _isUpdate = (!forceNew && lastCode && code === lastCode);
 
             // Determine expiration from Presentation Controls
             var expiryEnabled = document.getElementById('chk-link-expiry') && document.getElementById('chk-link-expiry').checked;
@@ -16797,29 +17123,51 @@ Sent via Above All Carbon HELOC Tool`;
             }
 
             try {
-                var insertObj = {
-                    code: code,
-                    user_id: userId,
-                    lead_id: leadId,
+                var payloadObj = {
                     quote_data: quoteData,
                     lo_info: loInfo,
                     lo_tier: window.currentUserTier || 'starter'
                 };
-                if (expiresAt) insertObj.expires_at = expiresAt;
+                if (expiresAt) payloadObj.expires_at = expiresAt;
 
-                var { error } = await sb.from('quote_links').insert(insertObj);
-
-                if (error) {
-                    if (error.message && error.message.includes('unique')) {
-                        code = Math.random().toString(36).substring(2, 10);
-                        var retryObj = { code: code, user_id: userId, lead_id: leadId, quote_data: quoteData, lo_info: loInfo, lo_tier: window.currentUserTier || 'starter' };
-                        if (expiresAt) retryObj.expires_at = expiresAt;
-                        var retry = await sb.from('quote_links').insert(retryObj);
-                        if (retry.error) throw retry.error;
+                var _updateWorked = false;
+                if (_isUpdate) {
+                    // Try updating the existing row in place so the same URL reflects the new quote
+                    var { data: upData, error: upErr } = await sb.from('quote_links')
+                        .update(payloadObj)
+                        .eq('code', code)
+                        .eq('user_id', userId)
+                        .select('code');
+                    if (!upErr && upData && upData.length > 0) {
+                        _updateWorked = true;
+                        showToast('Client link updated with the latest changes.', 'success');
                     } else {
-                        throw error;
+                        console.warn('Update-in-place failed, falling back to new insert:', upErr || 'no row matched');
+                        code = Math.random().toString(36).substring(2, 10);
                     }
                 }
+
+                if (!_updateWorked) {
+                    var insertObj = Object.assign({ code: code, user_id: userId, lead_id: leadId }, payloadObj);
+                    var { error } = await sb.from('quote_links').insert(insertObj);
+                    if (error) {
+                        if (error.message && error.message.includes('unique')) {
+                            code = Math.random().toString(36).substring(2, 10);
+                            var retryObj = Object.assign({ code: code, user_id: userId, lead_id: leadId }, payloadObj);
+                            var retry = await sb.from('quote_links').insert(retryObj);
+                            if (retry.error) throw retry.error;
+                        } else {
+                            throw error;
+                        }
+                    }
+                }
+
+                // Remember for future update-in-place
+                window._lastGeneratedQuoteCode = code;
+                try { localStorage.setItem(lastCodeKey, code); } catch(e) {}
+                // Reset force-new-link checkbox so the next click updates this freshly-created link
+                var forceNewChk = document.getElementById('chk-force-new-link');
+                if (forceNewChk) forceNewChk.checked = false;
 
                 // Build the raw link
                 var baseUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
@@ -22697,7 +23045,18 @@ Sent via Above All Carbon HELOC Tool`;
     <script src="./js/token-system-init.js"></script>
     <!-- Quote Builder v2 -->
     <link rel="stylesheet" href="./js/quote-builder-v2-styles.css">
+    <link rel="stylesheet" href="./js/quote-builder-phase2-styles.css">
+    <link rel="stylesheet" href="./js/quote-builder-phase3-styles.css">
     <script src="./js/quote-builder-v2.js"></script>
+    <script src="./js/quote-builder-followup.js"></script>
+    <script src="./js/quote-builder-objections.js"></script>
+    <script src="./js/quote-builder-voice.js"></script>
+    <script src="./js/quote-builder-presentation.js"></script>
+    <script src="./js/quote-builder-compare.js"></script>
+    <script src="./js/quote-builder-quick-actions.js"></script>
+    <!-- Quote Builder Test Suite (remove in production) -->
+    <script src="./js/quote-builder-test.js"></script>
+    <script src="./js/quote-builder-debug.js"></script>
     <!-- Ezra AI Loan Structuring Assistant -->
     <!-- Ezra AI: lazy-loaded after 5s or on first interaction (saves 435KB parse on initial load) -->
     <script>

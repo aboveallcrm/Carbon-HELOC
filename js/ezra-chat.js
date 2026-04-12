@@ -1306,10 +1306,14 @@ RESPONSE RULES
             { label: 'Tier 2', icon: '2️⃣', action: 'tier2', prompt: 'Go with tier 2' },
             { label: 'Tier 3', icon: '3️⃣', action: 'tier3', prompt: 'Go with tier 3' },
             { label: 'Handle Objection', icon: '🛡️', action: 'handle_objection', prompt: 'How do I handle common HELOC objections?' },
+            { label: 'Objection Finder', icon: '🔍', action: 'objection_finder', prompt: '' },
             { label: 'Client Script', icon: '📝', action: 'client_script', prompt: 'How should I explain this HELOC to my client?' },
             { label: 'Narrate Quote', icon: '🗣️', action: 'narrate_quote', prompt: 'Explain this quote in plain English for the client' },
             { label: 'Draft Message', icon: '✉️', action: 'draft_message', prompt: 'Draft a personalized SMS and email for this client' },
+            { label: 'Quote Follow-ups', icon: '🔔', action: 'quote_followups', prompt: '' },
             { label: 'Compare Scenarios', icon: '⚖️', action: 'compare_scenarios', prompt: 'Compare the different rate and term scenarios in plain English' },
+            { label: 'Presentation Mode', icon: '📺', action: 'presentation_mode', prompt: '' },
+            { label: 'Voice Input', icon: '🎤', action: 'voice_input', prompt: '' },
             { label: 'Lead Briefing', icon: '📋', action: 'lead_briefing', prompt: '' },
             { label: 'Compliance Check', icon: '⚠️', action: 'compliance_check', prompt: '' },
             { label: 'Predict Questions', icon: '❓', action: 'predict_questions', prompt: 'What questions will my client likely ask about this quote?' },
@@ -1627,6 +1631,11 @@ RESPONSE RULES
                             <div class="ezra-welcome-cap"><span>\u2726</span> Recommend best program</div>
                             <div class="ezra-welcome-cap"><span>\u2726</span> Client scripts & coaching</div>
                             `}
+                        </div>
+                        <!-- Quick actions: AI Strategy + HeyGen script (LO side) -->
+                        <div class="ezra-quick-actions" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:14px;">
+                            <button type="button" class="ezra-quick-btn" onclick="(function(){ if(typeof window.generateAIStrategy==='function'){ window.generateAIStrategy(); try{ var c=document.getElementById('chk-show-ai'); if(c&&!c.checked){ c.checked=true; c.dispatchEvent(new Event('change')); } var cont=document.getElementById('ai-assistant-container'); if(cont) cont.classList.add('visible'); var el=document.getElementById('ai-assistant-container'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){} } else { if(window.eqSend){ window.eqSend('Generate a full sales strategy for the current quote context: opening hook, client talking points, handling objections, and next-step CTA.'); } } })()" style="padding:8px 14px;background:linear-gradient(135deg,#c5a059,#d4af37);color:#0f172a;border:none;border-radius:8px;font-family:var(--font-heading,serif);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;box-shadow:0 4px 12px rgba(197,160,89,0.3);">✨ Generate AI Strategy</button>
+                            <button type="button" class="ezra-quick-btn" onclick="if(typeof window.copyHeyGenScriptFromStrategy==='function'){window.copyHeyGenScriptFromStrategy();}else{if(window.showToast)window.showToast('Generate an AI Strategy first.','info');}" style="padding:8px 14px;background:linear-gradient(135deg,#06b6d4,#0891b2);color:#fff;border:none;border-radius:8px;font-family:var(--font-heading,serif);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;box-shadow:0 4px 12px rgba(6,182,212,0.3);">🎬 Copy as HeyGen Script</button>
                         </div>
                         <!-- Onboarding Section for First-Time Users -->
                         <div class="ezra-onboarding" id="ezra-onboarding" style="display:none;">
@@ -2200,6 +2209,7 @@ RESPONSE RULES
                 align-items: center;
                 border-bottom: 1px solid rgba(255,255,255,0.04);
                 background: linear-gradient(180deg, rgba(15,23,42,0.5) 0%, rgba(15,23,42,0) 100%);
+                min-width: 0;
             }
 
             .ezra-quick-commands {
@@ -2210,13 +2220,28 @@ RESPONSE RULES
                 scrollbar-width: none;
                 scroll-behavior: smooth;
                 -webkit-overflow-scrolling: touch;
-                flex: 1;
-                mask-image: linear-gradient(90deg, transparent 0%, black 20px, black calc(100% - 20px), transparent 100%);
-                -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 20px, black calc(100% - 20px), transparent 100%);
+                /* Allow the strip to shrink below its content and let overflow-x do its job */
+                flex: 1 1 0;
+                min-width: 0;
+                mask-image: linear-gradient(90deg, transparent 0%, black 14px, black calc(100% - 14px), transparent 100%);
+                -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 14px, black calc(100% - 14px), transparent 100%);
             }
 
             .ezra-quick-commands::-webkit-scrollbar {
                 display: none;
+            }
+
+            /* Keep each button at its natural width so the strip actually overflows */
+            .ezra-quick-commands .ezra-quick-btn {
+                flex: 0 0 auto;
+                white-space: nowrap;
+            }
+
+            /* Arrow visibility driven by JS via data-attrs on the wrapper */
+            .ezra-quick-commands-wrapper[data-can-left="false"] .ezra-scroll-left,
+            .ezra-quick-commands-wrapper[data-can-right="false"] .ezra-scroll-right {
+                opacity: 0;
+                pointer-events: none;
             }
 
             .ezra-scroll-btn {
@@ -2548,6 +2573,35 @@ RESPONSE RULES
                 opacity: 0.7;
                 font-weight: 500;
             }
+
+            /* Per-message action chips (Copy, Copy as HeyGen Script, etc.) */
+            .ezra-msg-actions {
+                display: flex;
+                gap: 6px;
+                flex-wrap: wrap;
+                margin-top: 8px;
+            }
+            .ezra-msg-action {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 5px 10px;
+                font-size: 10px;
+                font-weight: 600;
+                letter-spacing: 0.3px;
+                color: #e2e8f0;
+                background: rgba(148, 163, 184, 0.12);
+                border: 1px solid rgba(148, 163, 184, 0.25);
+                border-radius: 999px;
+                cursor: pointer;
+                font-family: inherit;
+                transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+            }
+            .ezra-msg-action:hover {
+                background: rgba(197, 160, 89, 0.18);
+                border-color: rgba(197, 160, 89, 0.45);
+            }
+            .ezra-msg-action:active { transform: scale(0.97); }
 
             /* Auto-fill Block (dark emerald) */
             .ezra-autofill-block {
@@ -4102,6 +4156,7 @@ Would you like me to fill in the quote form with these details?`, { model: 'loca
             container.classList.add('open');
             document.getElementById('ezra-orb').style.display = 'none';
             setTimeout(() => document.getElementById('ezra-input')?.focus(), 100);
+            try { window.dispatchEvent(new Event('ezra:opened')); } catch(_) {}
         } else {
             container.classList.remove('open');
             document.getElementById('ezra-orb').style.display = 'flex';
@@ -4620,13 +4675,49 @@ File name: ${fileName}`;
         const avatar = role === 'assistant' ? '\u2726' : '\u2726';
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+        // Tier gate for Enterprise-only actions
+        const _loTier = String(window.currentUserTier || '').toLowerCase();
+        const _isEnterprise = _loTier === 'enterprise' || window.currentUserRole === 'super_admin';
+        const _visibleActions = (Array.isArray(metadata.actions) ? metadata.actions : [])
+            .filter(a => !a.enterpriseOnly || _isEnterprise);
+
+        let actionsHtml = '';
+        if (_visibleActions.length) {
+            actionsHtml = '<div class="ezra-msg-actions">' + _visibleActions.map((a, i) => {
+                const icon = a.icon ? (String(a.icon) + ' ') : '';
+                const label = String(a.label || 'Action').replace(/[<>&"]/g, '');
+                return `<button type="button" class="ezra-msg-action" data-msg-action-idx="${i}">${icon}${label}</button>`;
+            }).join('') + '</div>';
+        }
+
         messageDiv.innerHTML = `
             <div class="ezra-message-avatar">${avatar}</div>
             <div>
                 <div class="ezra-message-content">${formatMessage(content)}</div>
                 <div class="ezra-message-time">${time}${metadata.model ? ` · ${EZRA_CONFIG.models[metadata.model]?.name || 'AI'}` : ''}</div>
+                ${actionsHtml}
             </div>
         `;
+
+        // Wire up action chip handlers (closure captures the visible actions array + the rendered content)
+        if (_visibleActions.length) {
+            messageDiv.querySelectorAll('.ezra-msg-action').forEach((btn) => {
+                const idx = parseInt(btn.getAttribute('data-msg-action-idx'), 10);
+                const action = _visibleActions[idx];
+                if (!action) return;
+                btn.addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    try {
+                        if (typeof action.onClick === 'function') {
+                            action.onClick(content, metadata, messageDiv);
+                        }
+                    } catch (err) {
+                        console.warn('[Ezra] per-message action failed:', err);
+                    }
+                });
+            });
+        }
 
         messagesContainer.appendChild(messageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -4680,25 +4771,43 @@ File name: ${fileName}`;
         setTimeout(updateScrollButtons, 300);
     };
 
-    // Update scroll button visibility based on scroll position
+    // Update scroll arrow visibility based on actual scroll state.
+    // CSS consumes data-can-left / data-can-right on the wrapper to fade the arrows.
     function updateScrollButtons() {
         const container = document.getElementById('ezra-quick-commands');
         if (!container) return;
-        
-        const leftBtn = document.querySelector('.ezra-scroll-left');
-        const rightBtn = document.querySelector('.ezra-scroll-right');
-        
-        if (leftBtn) {
-            leftBtn.classList.toggle('hidden', container.scrollLeft <= 5);
-        }
-        if (rightBtn) {
-            const maxScroll = container.scrollWidth - container.clientWidth;
-            rightBtn.classList.toggle('hidden', container.scrollLeft >= maxScroll - 5);
-        }
+        const wrapper = container.parentElement;
+        if (!wrapper) return;
+
+        const maxScroll = container.scrollWidth - container.clientWidth;
+        const canLeft = container.scrollLeft > 4;
+        // If there's no overflow at all, both arrows stay hidden
+        const canRight = maxScroll > 4 && container.scrollLeft < (maxScroll - 4);
+
+        wrapper.setAttribute('data-can-left', canLeft ? 'true' : 'false');
+        wrapper.setAttribute('data-can-right', canRight ? 'true' : 'false');
+
+        // Keep the legacy .hidden toggling in sync for any other consumers
+        const leftBtn = wrapper.querySelector('.ezra-scroll-left');
+        const rightBtn = wrapper.querySelector('.ezra-scroll-right');
+        if (leftBtn) leftBtn.classList.toggle('hidden', !canLeft);
+        if (rightBtn) rightBtn.classList.toggle('hidden', !canRight);
     }
 
-    // Initialize scroll button visibility
-    setTimeout(updateScrollButtons, 100);
+    // Debounced resize handler
+    let _ezraQCResizeT = null;
+    function _scheduleScrollBtnUpdate() {
+        if (_ezraQCResizeT) clearTimeout(_ezraQCResizeT);
+        _ezraQCResizeT = setTimeout(updateScrollButtons, 80);
+    }
+    window.addEventListener('resize', _scheduleScrollBtnUpdate);
+    // Recompute whenever the Ezra panel opens (width changes when it slides in)
+    window.addEventListener('ezra:opened', _scheduleScrollBtnUpdate);
+    // Expose for internal callers
+    window._ezraUpdateScrollButtons = updateScrollButtons;
+
+    // Initialize scroll button visibility (retry because the container mounts after this script)
+    [100, 400, 1000].forEach(t => setTimeout(updateScrollButtons, t));
 
     // Update on scroll and setup touch swipe
     document.addEventListener('DOMContentLoaded', function() {
@@ -4774,6 +4883,51 @@ File name: ${fileName}`;
                 window.QuoteBuilder.start();
             } else {
                 addMessage('assistant', 'Quote Builder is loading... Please try again in a moment.', { model: 'local' });
+            }
+            return;
+        }
+
+        // Objection Finder - Open objection lookup tool
+        if (action === 'objection_finder') {
+            if (window.QuoteBuilderObjections) {
+                window.QuoteBuilderObjections.showObjectionFinder();
+            } else {
+                addMessage('assistant', 'Objection Finder is loading... Please try again in a moment.', { model: 'local' });
+            }
+            return;
+        }
+
+        // Quote Follow-ups - Open follow-up dashboard
+        if (action === 'quote_followups') {
+            if (window.QuoteBuilderFollowUp) {
+                window.QuoteBuilderFollowUp.showFollowUpDashboard();
+            } else {
+                addMessage('assistant', 'Follow-up system is loading... Please try again in a moment.', { model: 'local' });
+            }
+            return;
+        }
+
+        // Presentation Mode - Open full-screen presentation
+        if (action === 'presentation_mode') {
+            if (window.QuoteBuilderPresentation) {
+                window.QuoteBuilderPresentation.start();
+            } else {
+                addMessage('assistant', 'Presentation mode is loading... Please try again in a moment.', { model: 'local' });
+            }
+            return;
+        }
+
+        // Voice Input - Start voice recognition
+        if (action === 'voice_input') {
+            if (window.QuoteBuilderVoice) {
+                if (window.QuoteBuilderVoice.isSupported()) {
+                    window.QuoteBuilderVoice.start();
+                    addMessage('assistant', '🎤 Voice input activated. Hold the microphone button and speak your commands.', { model: 'local' });
+                } else {
+                    addMessage('assistant', 'Voice input is not supported in your browser. Try Chrome or Edge.', { model: 'local' });
+                }
+            } else {
+                addMessage('assistant', 'Voice input is loading... Please try again in a moment.', { model: 'local' });
             }
             return;
         }
@@ -7148,6 +7302,8 @@ What would you like to do?`;
         // Onboarding API
         startOnboarding: window.ezraStartOnboarding,
         checkIfNewUser: checkIfNewUser,
+        // Push a pre-composed assistant message into the chat (used by external callers like generateAIStrategy)
+        pushAssistantMessage: (content, metadata) => { addMessage('assistant', content, metadata || { model: 'local' }); },
         // Intelligence Suite API
         narrateQuote: () => { const ctx = getFormContext(); addMessage('assistant', narrateQuote(ctx), { model: 'local' }); },
         draftMessage: () => { const ctx = getFormContext(); addMessage('assistant', generateMessageDrafts(ctx), { model: 'local' }); },
