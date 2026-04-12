@@ -1465,6 +1465,202 @@
             margin: 4px 6px;
         }
 
+        /* ===== AI Quote Builder wizard (Pro+) ===== */
+        .aiqb-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: aiqb-fade-in 0.2s ease-out;
+        }
+        @keyframes aiqb-fade-in { from { opacity: 0; } to { opacity: 1; } }
+        .aiqb-shell {
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 16px;
+            max-width: 640px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(139, 92, 246, 0.1);
+        }
+        .aiqb-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 22px;
+            background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+            color: white;
+            flex-shrink: 0;
+        }
+        .aiqb-title {
+            flex: 1;
+            font-family: var(--font-heading);
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .aiqb-close {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 4px;
+            color: white;
+            padding: 4px 10px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .aiqb-close:hover { background: rgba(255, 255, 255, 0.25); }
+        .aiqb-progress {
+            height: 3px;
+            background: rgba(139, 92, 246, 0.2);
+            position: relative;
+            flex-shrink: 0;
+        }
+        .aiqb-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+            transition: width 0.3s ease;
+        }
+        .aiqb-progress-label {
+            padding: 8px 22px;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            font-family: var(--font-heading);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+        .aiqb-body {
+            padding: 22px;
+            overflow-y: auto;
+            flex: 1;
+            color: white;
+        }
+        .aiqb-step-title {
+            margin: 0 0 6px 0;
+            font-family: var(--font-heading);
+            font-size: 16px;
+            color: white;
+        }
+        .aiqb-step-hint {
+            margin: 0 0 18px 0;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.55);
+            line-height: 1.5;
+        }
+        .aiqb-field { margin-bottom: 12px; }
+        .aiqb-field label {
+            display: block;
+            font-family: var(--font-heading);
+            font-size: 9px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.65);
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+        .aiqb-field input, .aiqb-field select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 12px;
+            color: white;
+            font-family: var(--font-body);
+        }
+        .aiqb-field input:focus, .aiqb-field select:focus {
+            outline: none;
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+        }
+        .aiqb-field-row { display: flex; gap: 10px; margin-bottom: 12px; }
+        .aiqb-field-row .aiqb-field { flex: 1; margin-bottom: 0; }
+        .aiqb-review-card {
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+        }
+        .aiqb-rev-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .aiqb-rev-row:last-child { border-bottom: 0; }
+        .aiqb-rev-row span { color: rgba(255, 255, 255, 0.6); }
+        .aiqb-rev-row strong { color: white; }
+        .aiqb-rev-highlight {
+            background: rgba(16, 185, 129, 0.1);
+            margin: 4px -8px;
+            padding: 8px 8px;
+            border-radius: 5px;
+        }
+        .aiqb-rev-highlight strong { color: #10b981; }
+        .aiqb-tp-section { margin: 14px 0; padding: 14px 16px; background: rgba(251, 191, 36, 0.08); border-left: 3px solid #fbbf24; border-radius: 6px; }
+        .aiqb-tp-label { font-family: var(--font-heading); font-size: 10px; color: #fbbf24; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .aiqb-tp-list { margin: 0; padding-left: 18px; font-size: 12px; color: rgba(255, 255, 255, 0.85); line-height: 1.6; }
+        .aiqb-tp-list li { margin-bottom: 4px; }
+        .aiqb-script-section { margin: 14px 0; padding: 14px 16px; background: rgba(16, 185, 129, 0.08); border-left: 3px solid #10b981; border-radius: 6px; }
+        .aiqb-script-label { font-family: var(--font-heading); font-size: 10px; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px; }
+        .aiqb-script-text { font-size: 12px; color: white; line-height: 1.6; font-style: italic; white-space: pre-wrap; }
+        .aiqb-footer {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+        .aiqb-btn {
+            padding: 9px 16px;
+            border-radius: 6px;
+            border: none;
+            font-family: var(--font-heading);
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .aiqb-btn-primary { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
+        .aiqb-btn-primary:hover { filter: brightness(1.1); }
+        .aiqb-btn-secondary { background: rgba(255, 255, 255, 0.08); color: white; border: 1px solid rgba(255, 255, 255, 0.15); }
+        .aiqb-btn-secondary:hover { background: rgba(255, 255, 255, 0.12); }
+        .aiqb-btn-magic { background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; }
+        .aiqb-btn-magic:hover { filter: brightness(1.08); }
+        .aiqb-btn-tiny { padding: 4px 10px; font-size: 9px; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .aiqb-loading { text-align: center; padding: 40px 20px; }
+        .aiqb-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(139, 92, 246, 0.2);
+            border-top-color: #8b5cf6;
+            border-radius: 50%;
+            margin: 0 auto 16px auto;
+            animation: aiqb-spin 0.8s linear infinite;
+        }
+        @keyframes aiqb-spin { to { transform: rotate(360deg); } }
+        .aiqb-loading-text { font-size: 13px; color: white; margin-bottom: 4px; }
+        .aiqb-loading-hint { font-size: 10px; color: rgba(255, 255, 255, 0.5); }
+        .aiqb-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 6px;
+            padding: 14px 16px;
+            color: #fca5a5;
+            font-size: 12px;
+            margin-bottom: 14px;
+        }
+        .aiqb-locked { position: relative; }
+
         /* Integrations collapsibles (native <details>/<summary>) */
         .int-collapsible { margin-bottom: 12px; }
         .int-collapsible > summary {
@@ -5733,8 +5929,9 @@
                     <button class="btn" style="background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); font-size: 10px; padding: 6px 12px;" onclick="startNewQuote()">+ New Quote</button>
                     <button class="btn" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); font-size: 10px; padding: 6px 12px;" onclick="openLeadPicker()">📥 Pull from Leads</button>
                     <button class="btn" style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; font-size: 10px; padding: 6px 12px;" onclick="switchTab('parser')">📧 Paste Email</button>
+                    <button class="btn" id="btn-ai-quote-builder" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); font-size: 10px; padding: 6px 14px; color: white; font-weight: 700;" onclick="openAIQuoteBuilder()" data-tier-feature="ai-quote-builder">🪄 AI Quote Builder</button>
                     <span style="flex:1;"></span>
-                    <span style="font-size: 9px; color: rgba(255,255,255,0.4);">Tip: Pull from Leads pre-fills name, email, phone &amp; address.</span>
+                    <span style="font-size: 9px; color: rgba(255,255,255,0.4);">Tip: AI Builder auto-writes your call script + talking points.</span>
                 </div>
             </div>
             <div class="control-section">
@@ -5940,6 +6137,7 @@
                         <option value="minimal" data-tier-feature="quote-preset-pro">Minimal — Just the numbers, fast loading (Pro)</option>
                         <option value="enhanced" data-tier-feature="quote-preset-pro" selected>Enhanced — Full sales psychology, animations, AI chat (Pro)</option>
                         <option value="compare" data-tier-feature="quote-preset-pro">Compare — 3-tier card view with "How to choose" guide (Pro)</option>
+                        <option value="walkthrough" data-tier-feature="quote-preset-enterprise">Walkthrough — Mobile 5-step interactive experience (Enterprise)</option>
                         <option value="custom" data-tier-feature="quote-preset-pro">Custom — Set each option below (Pro)</option>
                     </select>
                 </div>
@@ -10214,6 +10412,29 @@ Best regards,
             proLoanOpts.forEach(function (el) {
                 el.style.display = (level >= 1) ? '' : 'none';
             });
+            // Gate AI Quote Builder button — Pro+. Starter gets the button visible with a lock badge
+            // and an upgrade-modal click handler; Pro/Enterprise get the real wizard.
+            var aiqbBtns = document.querySelectorAll('[data-tier-feature="ai-quote-builder"]');
+            aiqbBtns.forEach(function (btn) {
+                if (level >= 1) {
+                    btn.classList.remove('aiqb-locked');
+                    btn.onclick = null;
+                    btn.setAttribute('onclick', 'openAIQuoteBuilder()');
+                    btn.innerHTML = '🪄 AI Quote Builder';
+                    btn.title = 'Let Ezra draft talking points + a call script for this quote';
+                } else {
+                    btn.classList.add('aiqb-locked');
+                    btn.removeAttribute('onclick');
+                    btn.onclick = function (e) {
+                        e.preventDefault();
+                        if (typeof showUpgradeModal === 'function') showUpgradeModal('ai-quote-builder');
+                        else alert('AI Quote Builder is a Pro feature. Upgrade to let Ezra auto-draft your call script.');
+                    };
+                    btn.innerHTML = '🪄 AI Quote Builder 🔒 Pro';
+                    btn.title = 'Pro feature — upgrade to let Ezra auto-draft your call script';
+                    btn.style.opacity = '0.75';
+                }
+            });
             // Gate Pro-only quote presets (Minimal, Enhanced, Compare, Custom) — Starter gets Original only.
             // <option> elements ignore CSS display in most browsers, so also disable for Starter
             // and force the Starter selector to 'original' if it was on a Pro-only value.
@@ -10233,6 +10454,26 @@ Best regards,
                 if (presetSel && presetSel.value !== 'original') {
                     presetSel.value = 'original';
                     if (typeof applyLinkPreset === 'function') applyLinkPreset('original');
+                }
+            }
+            // Enterprise-only quote presets (Walkthrough). Pro users see a disabled option;
+            // Enterprise users see the live option. Starter already has the Pro-gate above.
+            var entPresets = document.querySelectorAll('[data-tier-feature="quote-preset-enterprise"]');
+            entPresets.forEach(function (el) {
+                var isOption = el.tagName === 'OPTION';
+                if (level >= 2) {
+                    el.style.display = '';
+                    if (isOption) el.disabled = false;
+                } else {
+                    el.style.display = 'none';
+                    if (isOption) el.disabled = true;
+                }
+            });
+            if (level < 2) {
+                var presetSelEnt = document.getElementById('link-style-preset');
+                if (presetSelEnt && presetSelEnt.value === 'walkthrough') {
+                    presetSelEnt.value = (level >= 1) ? 'enhanced' : 'original';
+                    if (typeof applyLinkPreset === 'function') applyLinkPreset(presetSelEnt.value);
                 }
             }
 
@@ -15444,6 +15685,362 @@ Generate the sales strategy and phone script now.`;
             var modal = document.getElementById('lead-picker-modal');
             if (modal) modal.remove();
             if (typeof showToast === 'function') showToast('Loaded ' + (name || 'lead') + ' into quote builder', 'success');
+        }
+
+        // =====================================================================
+        // AI QUOTE BUILDER (Pro+) — 5-step wizard that ghostwrites talking points
+        // + "What to Say When You Call" script via ai-proxy (feature=call_script).
+        // =====================================================================
+        window._aiqbState = null;
+
+        function openAIQuoteBuilder() {
+            // Seed wizard state from whatever's already on the Client tab
+            var seed = {
+                clientName: document.getElementById('in-client-name')?.value || '',
+                clientEmail: document.getElementById('client-email')?.value || '',
+                clientPhone: document.getElementById('client-phone')?.value || '',
+                creditScore: document.getElementById('in-client-credit')?.value || '',
+                homeValue: document.getElementById('in-home-value')?.value || '',
+                mortgageBalance: document.getElementById('in-mortgage-balance')?.value || '',
+                helocAmount: document.getElementById('in-net-cash')?.value || '',
+                recTier: document.getElementById('rec-tier-select')?.value || '2',
+                recTerm: document.getElementById('rec-term-select')?.value || '20',
+                recType: document.getElementById('rec-type-select')?.value || 'fixed',
+                step: 1,
+                talkingPoints: null,
+                callScript: null,
+                generatedAt: null
+            };
+            window._aiqbState = seed;
+            _aiqbRenderModal();
+        }
+
+        function closeAIQuoteBuilder() {
+            var m = document.getElementById('aiqb-modal');
+            if (m) m.remove();
+            window._aiqbState = null;
+        }
+
+        function _aiqbRenderModal() {
+            var existing = document.getElementById('aiqb-modal');
+            if (existing) existing.remove();
+            var s = window._aiqbState;
+            if (!s) return;
+
+            var modal = document.createElement('div');
+            modal.id = 'aiqb-modal';
+            modal.className = 'aiqb-modal';
+            var inner = document.createElement('div');
+            inner.className = 'aiqb-shell';
+            inner.innerHTML =
+                '<div class="aiqb-header">' +
+                    '<div class="aiqb-title">🪄 Build a professional HELOC quote in 5 minutes</div>' +
+                    '<button class="aiqb-close" onclick="closeAIQuoteBuilder()">✕</button>' +
+                '</div>' +
+                '<div class="aiqb-progress"><div class="aiqb-progress-bar" style="width:' + ((s.step / 5) * 100) + '%"></div></div>' +
+                '<div class="aiqb-progress-label">Step ' + s.step + ' of 5</div>' +
+                '<div class="aiqb-body" id="aiqb-body"></div>';
+            modal.appendChild(inner);
+            document.body.appendChild(modal);
+
+            var body = document.getElementById('aiqb-body');
+            if (s.step === 1) body.innerHTML = _aiqbStep1();
+            else if (s.step === 2) body.innerHTML = _aiqbStep2();
+            else if (s.step === 3) body.innerHTML = _aiqbStep3();
+            else if (s.step === 4) body.innerHTML = _aiqbStep4();
+            else if (s.step === 5) _aiqbStep5Render();
+        }
+
+        // Step 1: Lead info
+        function _aiqbStep1() {
+            var s = window._aiqbState;
+            return '' +
+            '<h3 class="aiqb-step-title">Step 1: Who is this quote for?</h3>' +
+            '<p class="aiqb-step-hint">Pre-filled from your Client tab if you already entered data.</p>' +
+            '<div class="aiqb-field"><label>Client Name</label><input type="text" id="aiqb-client-name" value="' + _aiqbEsc(s.clientName) + '" placeholder="e.g. John Harris"></div>' +
+            '<div class="aiqb-field-row">' +
+                '<div class="aiqb-field"><label>Client Email</label><input type="email" id="aiqb-client-email" value="' + _aiqbEsc(s.clientEmail) + '" placeholder="client@example.com"></div>' +
+                '<div class="aiqb-field"><label>Client Phone</label><input type="text" id="aiqb-client-phone" value="' + _aiqbEsc(s.clientPhone) + '" placeholder="(555) 555-5555"></div>' +
+            '</div>' +
+            '<div class="aiqb-field"><label>Credit Score (optional)</label><input type="text" id="aiqb-credit" value="' + _aiqbEsc(s.creditScore) + '" placeholder="740"></div>' +
+            '<div class="aiqb-footer">' +
+                '<button class="aiqb-btn aiqb-btn-secondary" onclick="closeAIQuoteBuilder()">Cancel</button>' +
+                '<button class="aiqb-btn aiqb-btn-primary" onclick="_aiqbNext(1)">Next: Loan Details →</button>' +
+            '</div>';
+        }
+
+        // Step 2: Loan amount
+        function _aiqbStep2() {
+            var s = window._aiqbState;
+            return '' +
+            '<h3 class="aiqb-step-title">Step 2: How much HELOC?</h3>' +
+            '<p class="aiqb-step-hint">Property value + existing mortgage determine the max available. HELOC amount is what the client wants to borrow.</p>' +
+            '<div class="aiqb-field-row">' +
+                '<div class="aiqb-field"><label>Home Value ($)</label><input type="number" id="aiqb-home-value" value="' + _aiqbEsc(s.homeValue) + '" placeholder="750000"></div>' +
+                '<div class="aiqb-field"><label>1st Mortgage Balance ($)</label><input type="number" id="aiqb-mtg-bal" value="' + _aiqbEsc(s.mortgageBalance) + '" placeholder="0"></div>' +
+            '</div>' +
+            '<div class="aiqb-field"><label>HELOC Amount Client Wants ($)</label><input type="number" id="aiqb-heloc-amt" value="' + _aiqbEsc(s.helocAmount) + '" placeholder="200000" style="font-size:16px; font-weight:700; color:var(--accent-color);"></div>' +
+            '<div class="aiqb-footer">' +
+                '<button class="aiqb-btn aiqb-btn-secondary" onclick="_aiqbPrev(2)">← Back</button>' +
+                '<button class="aiqb-btn aiqb-btn-primary" onclick="_aiqbNext(2)">Next: Product →</button>' +
+            '</div>';
+        }
+
+        // Step 3: Product + term
+        function _aiqbStep3() {
+            var s = window._aiqbState;
+            var opt = function(val, label, sel) { return '<option value="' + val + '"' + (String(sel) === String(val) ? ' selected' : '') + '>' + label + '</option>'; };
+            return '' +
+            '<h3 class="aiqb-step-title">Step 3: Recommended product</h3>' +
+            '<p class="aiqb-step-hint">Ezra will pitch this tier + term as your top pick on the call.</p>' +
+            '<div class="aiqb-field-row">' +
+                '<div class="aiqb-field"><label>Tier</label><select id="aiqb-rec-tier">' + opt(1, 'Tier 1 — Best rates, highest fees', s.recTier) + opt(2, 'Tier 2 — Balanced (recommended for most)', s.recTier) + opt(3, 'Tier 3 — Lowest fees, slightly higher rate', s.recTier) + '</select></div>' +
+                '<div class="aiqb-field"><label>Term</label><select id="aiqb-rec-term">' + opt(30, '30-Year', s.recTerm) + opt(20, '20-Year', s.recTerm) + opt(15, '15-Year', s.recTerm) + opt(10, '10-Year', s.recTerm) + '</select></div>' +
+                '<div class="aiqb-field"><label>Type</label><select id="aiqb-rec-type">' + opt('fixed', 'Fixed', s.recType) + opt('variable', 'Variable', s.recType) + '</select></div>' +
+            '</div>' +
+            '<div class="aiqb-footer">' +
+                '<button class="aiqb-btn aiqb-btn-secondary" onclick="_aiqbPrev(3)">← Back</button>' +
+                '<button class="aiqb-btn aiqb-btn-primary" onclick="_aiqbNext(3)">Next: Review →</button>' +
+            '</div>';
+        }
+
+        // Step 4: Review
+        function _aiqbStep4() {
+            var s = window._aiqbState;
+            var fmt = function (n) { var v = parseFloat(String(n || 0).replace(/[$,]/g, '')); return isNaN(v) ? '—' : '$' + Math.round(v).toLocaleString(); };
+            return '' +
+            '<h3 class="aiqb-step-title">Step 4: Review the quote</h3>' +
+            '<p class="aiqb-step-hint">Make sure this looks right. Ezra will use these numbers to draft the script.</p>' +
+            '<div class="aiqb-review-card">' +
+                '<div class="aiqb-rev-row"><span>Client</span><strong>' + _aiqbEsc(s.clientName || '—') + '</strong></div>' +
+                '<div class="aiqb-rev-row"><span>Home value</span><strong>' + fmt(s.homeValue) + '</strong></div>' +
+                '<div class="aiqb-rev-row"><span>1st mortgage</span><strong>' + fmt(s.mortgageBalance) + '</strong></div>' +
+                '<div class="aiqb-rev-row aiqb-rev-highlight"><span>HELOC requested</span><strong>' + fmt(s.helocAmount) + '</strong></div>' +
+                '<div class="aiqb-rev-row"><span>Recommendation</span><strong>Tier ' + _aiqbEsc(s.recTier) + ' · ' + _aiqbEsc(s.recTerm) + '-Year · ' + _aiqbEsc(s.recType) + '</strong></div>' +
+                (s.creditScore ? '<div class="aiqb-rev-row"><span>Credit score</span><strong>' + _aiqbEsc(s.creditScore) + '</strong></div>' : '') +
+            '</div>' +
+            '<div class="aiqb-footer">' +
+                '<button class="aiqb-btn aiqb-btn-secondary" onclick="_aiqbPrev(4)">← Back</button>' +
+                '<button class="aiqb-btn aiqb-btn-primary aiqb-btn-magic" onclick="_aiqbNext(4)">🪄 Generate talking points + call script</button>' +
+            '</div>';
+        }
+
+        // Step 5: Generate & Present (AI-powered)
+        async function _aiqbStep5Render() {
+            var s = window._aiqbState;
+            var body = document.getElementById('aiqb-body');
+            if (!body) return;
+
+            // If we already generated for this session, skip re-fetching
+            if (s.talkingPoints && s.callScript) {
+                _aiqbStep5Paint();
+                return;
+            }
+
+            body.innerHTML =
+                '<h3 class="aiqb-step-title">Step 5: Generate &amp; Present</h3>' +
+                '<div class="aiqb-loading">' +
+                    '<div class="aiqb-spinner"></div>' +
+                    '<div class="aiqb-loading-text">Ezra is drafting your talking points + call script…</div>' +
+                    '<div class="aiqb-loading-hint">Uses your LO profile + quote details to write a 60-second pitch tailored to this client.</div>' +
+                '</div>';
+
+            try {
+                var prompt = _aiqbBuildPrompt(s);
+                var headers = await getAuthHeaders();
+                if (!headers) throw new Error('Not authenticated');
+                var res = await fetch(SUPABASE_FUNCTIONS_URL + '/ai-proxy', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ action: 'generate', feature: 'call_script', systemPrompt: prompt.system, userMessage: prompt.user })
+                });
+                var data = await res.json();
+                if (!data || !data.success || !data.text) throw new Error((data && data.error) || 'AI did not return content');
+                var parsed = _aiqbParseAIResponse(data.text);
+                s.talkingPoints = parsed.talkingPoints;
+                s.callScript = parsed.callScript;
+                s.generatedAt = new Date().toISOString();
+                _aiqbStep5Paint();
+            } catch (err) {
+                console.warn('[aiqb] generation failed', err);
+                body.innerHTML =
+                    '<h3 class="aiqb-step-title">Step 5: Generate &amp; Present</h3>' +
+                    '<div class="aiqb-error">' +
+                        '<strong>Could not generate script:</strong> ' + _aiqbEsc(err.message || String(err)) + '<br>' +
+                        '<span style="opacity:0.7; font-size:11px;">Your quote data is still saved. You can retry or close this wizard.</span>' +
+                    '</div>' +
+                    '<div class="aiqb-footer">' +
+                        '<button class="aiqb-btn aiqb-btn-secondary" onclick="_aiqbPrev(5)">← Back</button>' +
+                        '<button class="aiqb-btn aiqb-btn-primary" onclick="_aiqbStep5Render()">Retry</button>' +
+                    '</div>';
+            }
+        }
+
+        function _aiqbStep5Paint() {
+            var s = window._aiqbState;
+            var body = document.getElementById('aiqb-body');
+            if (!body || !s) return;
+            var fmtPay = '$505/mo'; // placeholder; actual calc happens on save via updateQuote
+            body.innerHTML =
+                '<h3 class="aiqb-step-title">Step 5: Generate &amp; Present</h3>' +
+                '<p class="aiqb-step-hint">Here\'s what Ezra built for ' + _aiqbEsc(s.clientName || 'this client') + '.</p>' +
+                '<div class="aiqb-review-card">' +
+                    '<div class="aiqb-rev-row"><span>' + _aiqbEsc(s.clientName || 'Client') + '</span><strong style="color:#10b981;">$' + Math.round(parseFloat(s.helocAmount) || 0).toLocaleString() + ' HELOC</strong></div>' +
+                    '<div class="aiqb-rev-row"><span>Tier ' + _aiqbEsc(s.recTier) + ' · ' + _aiqbEsc(s.recTerm) + '-Year ' + _aiqbEsc(s.recType) + '</span><strong></strong></div>' +
+                '</div>' +
+                '<div class="aiqb-tp-section">' +
+                    '<div class="aiqb-tp-label">Your Talking Points for ' + _aiqbEsc(s.clientName || 'this client') + ':</div>' +
+                    '<ul class="aiqb-tp-list">' + (s.talkingPoints || []).map(function (tp) { return '<li>' + _aiqbEsc(tp) + '</li>'; }).join('') + '</ul>' +
+                '</div>' +
+                '<div class="aiqb-script-section">' +
+                    '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">' +
+                        '<div class="aiqb-script-label">What to Say When You Call:</div>' +
+                        '<button class="aiqb-btn aiqb-btn-tiny" onclick="_aiqbCopyScript()">📋 Copy</button>' +
+                    '</div>' +
+                    '<div class="aiqb-script-text" id="aiqb-script-text">' + _aiqbEsc(s.callScript || '') + '</div>' +
+                '</div>' +
+                '<div class="aiqb-footer">' +
+                    '<button class="aiqb-btn aiqb-btn-secondary" onclick="_aiqbAction(\'pdf\')">📄 Generate PDF</button>' +
+                    '<button class="aiqb-btn aiqb-btn-secondary" onclick="_aiqbAction(\'email\')">✉️ Email ' + _aiqbEsc((s.clientName || 'Client').split(' ')[0]) + '</button>' +
+                    '<button class="aiqb-btn aiqb-btn-secondary" onclick="_aiqbAction(\'sms\')">📱 Text ' + _aiqbEsc((s.clientName || 'Client').split(' ')[0]) + '</button>' +
+                    '<button class="aiqb-btn aiqb-btn-primary aiqb-btn-magic" onclick="_aiqbAction(\'save\')">✓ Save &amp; Close</button>' +
+                '</div>';
+        }
+
+        // Step navigation: pull form values into state, then re-render
+        function _aiqbNext(from) {
+            var s = window._aiqbState; if (!s) return;
+            if (from === 1) {
+                s.clientName = (document.getElementById('aiqb-client-name') || {}).value || '';
+                s.clientEmail = (document.getElementById('aiqb-client-email') || {}).value || '';
+                s.clientPhone = (document.getElementById('aiqb-client-phone') || {}).value || '';
+                s.creditScore = (document.getElementById('aiqb-credit') || {}).value || '';
+            } else if (from === 2) {
+                s.homeValue = (document.getElementById('aiqb-home-value') || {}).value || '';
+                s.mortgageBalance = (document.getElementById('aiqb-mtg-bal') || {}).value || '';
+                s.helocAmount = (document.getElementById('aiqb-heloc-amt') || {}).value || '';
+                if (!s.helocAmount || parseFloat(s.helocAmount) <= 0) {
+                    if (typeof showToast === 'function') showToast('Enter a HELOC amount to continue', 'warning');
+                    return;
+                }
+            } else if (from === 3) {
+                s.recTier = (document.getElementById('aiqb-rec-tier') || {}).value || '2';
+                s.recTerm = (document.getElementById('aiqb-rec-term') || {}).value || '20';
+                s.recType = (document.getElementById('aiqb-rec-type') || {}).value || 'fixed';
+            }
+            s.step = from + 1;
+            _aiqbRenderModal();
+        }
+        function _aiqbPrev(from) {
+            var s = window._aiqbState; if (!s) return;
+            s.step = Math.max(1, from - 1);
+            _aiqbRenderModal();
+        }
+
+        // Build prompts for ai-proxy (feature=call_script)
+        function _aiqbBuildPrompt(s) {
+            var lo = {
+                name: document.getElementById('lo-name')?.value || 'the loan officer',
+                company: document.getElementById('lo-company')?.value || ''
+            };
+            var fmt = function (v) { var n = parseFloat(String(v || 0).replace(/[$,]/g, '')); return isNaN(n) ? '—' : '$' + Math.round(n).toLocaleString(); };
+            var firstName = (s.clientName || 'Client').split(' ')[0];
+            var system = 'You are Ezra, a mortgage loan officer\'s AI assistant. Write concise, benefit-driven talking points and a short call script to help ' + lo.name + ' present a HELOC quote over the phone. Keep it conversational, warm, and focused on what matters to the borrower. Avoid jargon. Return STRICT JSON with two keys: "talking_points" (array of 3-5 bullet strings, each 1 short sentence) and "call_script" (one paragraph of 60-90 words the LO can read aloud, starting with "Hi {firstName}, ..."). Do not include markdown fences or any text outside the JSON.';
+            var user = 'Quote details:\n' +
+                '- Client first name: ' + firstName + '\n' +
+                '- HELOC amount requested: ' + fmt(s.helocAmount) + '\n' +
+                '- Recommended: Tier ' + s.recTier + ', ' + s.recTerm + '-Year ' + s.recType + '\n' +
+                '- Home value: ' + fmt(s.homeValue) + '\n' +
+                '- 1st mortgage balance: ' + fmt(s.mortgageBalance) + '\n' +
+                (s.creditScore ? '- Credit score: ' + s.creditScore + '\n' : '') +
+                '\nWrite the talking_points (3-5 bullets emphasizing savings, speed, no upfront cost if applicable) and the call_script (60-90 words, conversational, starts with "Hi ' + firstName + ', I\'ve got your HELOC quote ready...").';
+            return { system: system, user: user };
+        }
+
+        function _aiqbParseAIResponse(raw) {
+            var talkingPoints = [];
+            var callScript = '';
+            try {
+                // Strip markdown fences if present
+                var txt = String(raw || '').replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+                var parsed = JSON.parse(txt);
+                if (parsed && Array.isArray(parsed.talking_points)) talkingPoints = parsed.talking_points.map(String);
+                if (parsed && typeof parsed.call_script === 'string') callScript = parsed.call_script;
+            } catch (e) {
+                // Fallback: try to extract bullets + paragraph from plain text
+                var lines = String(raw || '').split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+                lines.forEach(function (l) {
+                    if (/^[-•*]\s/.test(l) || /^\d+\.\s/.test(l)) {
+                        talkingPoints.push(l.replace(/^[-•*\d.\s]+/, ''));
+                    }
+                });
+                callScript = lines.filter(function (l) { return !/^[-•*\d.]/.test(l); }).join(' ');
+            }
+            return { talkingPoints: talkingPoints, callScript: callScript };
+        }
+
+        function _aiqbCopyScript() {
+            var s = window._aiqbState;
+            if (!s || !s.callScript) return;
+            navigator.clipboard.writeText(s.callScript).then(function () {
+                if (typeof showToast === 'function') showToast('Call script copied to clipboard', 'success', 2500);
+            });
+        }
+
+        function _aiqbAction(which) {
+            var s = window._aiqbState; if (!s) return;
+            // First, push the wizard data onto the Client tab so the real quote builder is in sync.
+            _aiqbSyncToClientTab();
+            if (which === 'save') {
+                closeAIQuoteBuilder();
+                if (typeof autoSave === 'function') autoSave();
+                if (typeof showToast === 'function') showToast('Quote saved. Script + talking points attached.', 'success', 4000);
+                return;
+            }
+            if (which === 'pdf') {
+                closeAIQuoteBuilder();
+                if (typeof exportBrandedPDF === 'function') exportBrandedPDF();
+                else if (typeof showToast === 'function') showToast('PDF export not available in this session.', 'warning');
+                return;
+            }
+            if (which === 'email') {
+                closeAIQuoteBuilder();
+                if (typeof openEmailSendModal === 'function') openEmailSendModal();
+                else if (typeof switchTab === 'function') switchTab('email');
+                return;
+            }
+            if (which === 'sms') {
+                closeAIQuoteBuilder();
+                if (typeof toggleSendQuotePanel === 'function') toggleSendQuotePanel();
+                return;
+            }
+        }
+
+        function _aiqbSyncToClientTab() {
+            var s = window._aiqbState; if (!s) return;
+            var set = function (id, v) { var el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
+            set('in-client-name', s.clientName);
+            set('client-email', s.clientEmail);
+            set('client-phone', s.clientPhone);
+            set('in-client-credit', s.creditScore);
+            set('in-home-value', s.homeValue);
+            set('in-mortgage-balance', s.mortgageBalance);
+            set('in-net-cash', s.helocAmount);
+            set('rec-tier-select', s.recTier);
+            set('rec-term-select', s.recTerm);
+            set('rec-type-select', s.recType);
+            // Stash talking points + call script in global so email/sms paths can include them
+            window._aiqbLastTalkingPoints = s.talkingPoints;
+            window._aiqbLastCallScript = s.callScript;
+            // Tag the quote data with built_via so analytics can measure AI-Builder adoption
+            try { window._lastQuoteBuiltVia = 'ai_quote_builder'; } catch (_) {}
+            if (typeof updateQuote === 'function') updateQuote();
+        }
+
+        function _aiqbEsc(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
         // ===== LEAD PARSER =====
@@ -23397,20 +23994,9 @@ Sent via Above All Carbon HELOC Tool`;
     <!-- Token System -->
     <script src="./js/token-system.js"></script>
     <script src="./js/token-system-init.js"></script>
-    <!-- Quote Builder v2 -->
-    <link rel="stylesheet" href="./js/quote-builder-v2-styles.css">
-    <link rel="stylesheet" href="./js/quote-builder-phase2-styles.css">
-    <link rel="stylesheet" href="./js/quote-builder-phase3-styles.css">
-    <script src="./js/quote-builder-v2.js"></script>
-    <script src="./js/quote-builder-followup.js"></script>
-    <script src="./js/quote-builder-objections.js"></script>
-    <script src="./js/quote-builder-voice.js"></script>
-    <script src="./js/quote-builder-presentation.js"></script>
-    <script src="./js/quote-builder-compare.js"></script>
-    <script src="./js/quote-builder-quick-actions.js"></script>
-    <!-- Quote Builder Test Suite (remove in production) -->
-    <script src="./js/quote-builder-test.js"></script>
-    <script src="./js/quote-builder-debug.js"></script>
+    <!-- Quote Builder (Refactored) -->
+    <link rel="stylesheet" href="./js/quote-builder-refactored.css">
+    <script src="./js/quote-builder-refactored.js"></script>
     <!-- Ezra AI Loan Structuring Assistant -->
     <!-- Ezra AI: lazy-loaded after 5s or on first interaction (saves 435KB parse on initial load) -->
     <script>

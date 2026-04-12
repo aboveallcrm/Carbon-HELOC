@@ -7488,6 +7488,238 @@
             transition: all 0.3s ease;
         }
 
+        /* =================================================== */
+        /* ===== PRESET TEMPLATE: WALKTHROUGH (Enterprise) === */
+        /* =================================================== */
+        body.theme-walkthrough {
+            background: linear-gradient(160deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        #template-walkthrough {
+            max-width: 560px;
+            margin: 0 auto;
+            padding: 20px 18px 30px 18px;
+            font-family: var(--font-body, 'Inter', sans-serif);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .wt-brand-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 2px 14px 2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 14px;
+        }
+        .wt-brand-logo {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, #c5a059, #a68543);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; flex-shrink: 0;
+        }
+        .wt-brand-name { font-family: var(--font-heading, 'Playfair Display', serif); font-size: 14px; font-weight: 700; color: white; }
+        .wt-progress {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 22px;
+        }
+        .wt-dot {
+            flex: 1;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            transition: background 0.3s;
+        }
+        .wt-dot.active { background: linear-gradient(90deg, #10b981, #34d399); }
+        .wt-step-num {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.45);
+            font-family: var(--font-heading);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .wt-step-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            animation: wt-slide-in 0.4s ease-out;
+            padding: 10px 0 30px 0;
+        }
+        @keyframes wt-slide-in {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .wt-headline {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 26px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin: 0 0 14px 0;
+            color: white;
+        }
+        .wt-bignum {
+            font-size: 54px;
+            font-weight: 800;
+            line-height: 1;
+            margin: 8px 0;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .wt-subtle { font-size: 13px; color: rgba(255, 255, 255, 0.6); line-height: 1.55; margin: 4px 0 10px 0; }
+        .wt-tier-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 6px 0 16px 0;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .wt-tier-scroll::-webkit-scrollbar { display: none; }
+        .wt-tier-card {
+            min-width: 80%;
+            scroll-snap-align: center;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 18px 16px;
+            flex-shrink: 0;
+        }
+        .wt-tier-card.rec {
+            border-color: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+            background: rgba(16, 185, 129, 0.06);
+        }
+        .wt-tier-label {
+            font-size: 10px;
+            font-family: var(--font-heading);
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .wt-tier-rate {
+            font-size: 30px;
+            font-weight: 800;
+            margin: 4px 0;
+            color: white;
+        }
+        .wt-tier-pay { font-size: 13px; color: rgba(255, 255, 255, 0.7); }
+        .wt-tier-fee { font-size: 11px; color: rgba(255, 255, 255, 0.5); margin-top: 3px; }
+        .wt-tier-rec-badge {
+            display: inline-block;
+            background: #10b981;
+            color: #0f172a;
+            font-size: 9px;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            margin-top: 6px;
+        }
+        .wt-qa-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 14px 0;
+        }
+        .wt-qa-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: white;
+            font-size: 13px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font-body);
+        }
+        .wt-qa-btn:hover, .wt-qa-btn:active {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+        .wt-qa-answer {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 13px;
+            line-height: 1.55;
+            margin-top: 8px;
+            display: none;
+        }
+        .wt-qa-answer.open { display: block; animation: wt-slide-in 0.25s; }
+        .wt-cta-primary {
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 16px;
+            font-family: var(--font-heading);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+            margin-top: 16px;
+            transition: transform 0.15s;
+        }
+        .wt-cta-primary:active { transform: scale(0.98); }
+        .wt-cta-secondary {
+            display: block;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 14px;
+            font-family: var(--font-heading);
+            font-size: 13px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            margin-top: 10px;
+        }
+        .wt-nav {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 14px;
+            gap: 10px;
+        }
+        .wt-nav-btn {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 12px;
+            font-family: var(--font-heading);
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .wt-nav-btn:hover { background: rgba(255, 255, 255, 0.1); }
+        .wt-nav-btn.primary { background: linear-gradient(135deg, #10b981, #059669); border-color: transparent; }
+        .wt-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        @media (min-width: 780px) {
+            #template-walkthrough { max-width: 600px; padding: 40px 24px; }
+            .wt-headline { font-size: 32px; }
+            .wt-bignum { font-size: 64px; }
+        }
+
         /* ============================================= */
         /* ===== PRESET TEMPLATE: COMPARE (LIGHT) ====== */
         /* ============================================= */
@@ -9540,6 +9772,8 @@
     <div id="template-original" class="preset-template" style="display:none;"></div>
     <!-- Compare preset: clean 3-tier card layout with "How to choose" guide (Pro+) -->
     <div id="template-compare" class="preset-template" style="display:none;"></div>
+    <!-- Walkthrough preset: mobile-first 5-step interactive experience (Enterprise only) -->
+    <div id="template-walkthrough" class="preset-template" style="display:none;"></div>
 
     <!-- Ezra Chat Widget (injected by JS) -->
     <div id="eq-root"></div>
@@ -10315,6 +10549,17 @@
                 // Template mode: simple, standard, enhanced
                 var linkOpts = data.linkOptions || {};
                 var templateMode = linkOpts.preset || linkOpts.templateMode || 'enhanced'; // default to enhanced
+                // Enterprise auto-route: when LO is on Enterprise tier AND client is on mobile,
+                // default to the immersive walkthrough unless the LO explicitly picked another preset.
+                // The LO can still override by picking any other preset in the generator.
+                try {
+                    var _loTier = String((data.lo_info && (data.lo_info.tier || data.lo_info.loTier)) || data.lo_tier || '').toLowerCase();
+                    var _isMobile = (window.matchMedia && window.matchMedia('(max-width: 780px)').matches);
+                    var _presetExplicit = !!(linkOpts.preset || linkOpts.templateMode);
+                    if (_loTier === 'enterprise' && _isMobile && !_presetExplicit) {
+                        templateMode = 'walkthrough';
+                    }
+                } catch (_) {}
 
                 var loadingEl = document.getElementById('loading');
                 if (loadingEl) loadingEl.style.display = 'none';
@@ -10433,7 +10678,7 @@
                 // Apply template mode - hide/show sections based on mode
                 applyTemplateMode(templateMode, linkOpts);
                 // Re-hide floating bar for non-enhanced presets (it was shown above before template applied)
-                if (templateMode === 'minimal' || templateMode === 'simple' || templateMode === 'original' || templateMode === 'standard' || templateMode === 'compare') {
+                if (templateMode === 'minimal' || templateMode === 'simple' || templateMode === 'original' || templateMode === 'standard' || templateMode === 'compare' || templateMode === 'walkthrough') {
                     var fbOther = document.getElementById('floating-bar');
                     if (fbOther) fbOther.style.display = 'none';
                     var pfbOther = document.getElementById('preview-floating-bar');
@@ -10695,6 +10940,25 @@
                         document.body.classList.add('theme-compare');
                         hide(document.getElementById('floating-bar'));
                         renderCompare(data, opts);
+                        return;
+                    }
+
+                    if (mode === 'walkthrough') {
+                        // Mobile-first 5-step interactive experience (Enterprise only)
+                        var walkEl = document.getElementById('template-walkthrough');
+                        hide(enhancedContent);
+                        hide(minimalEl);
+                        hide(originalEl);
+                        var compareEl2 = document.getElementById('template-compare');
+                        if (compareEl2) hide(compareEl2);
+                        show(walkEl, 'block');
+                        document.body.classList.add('theme-walkthrough');
+                        hide(document.getElementById('floating-bar'));
+                        hide(document.getElementById('preview-floating-bar'));
+                        hide(document.getElementById('eq-orb'));
+                        hide(document.getElementById('eq-tour-hl'));
+                        hide(document.getElementById('objection-popup'));
+                        renderWalkthrough(data, opts);
                         return;
                     }
 
@@ -11116,6 +11380,203 @@
                     return String(s == null ? '' : s)
                         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                }
+
+                // ===== WALKTHROUGH RENDERER (Enterprise only) =====
+                // Mobile-first 5-step swipeable card experience for the borrower.
+                function renderWalkthrough(data, opts) {
+                    var container = document.getElementById('template-walkthrough');
+                    if (!container) return;
+
+                    var cbAmt = parseFloat(String(data.cashBack || 0).replace(/[$,]/g, '')) || 0;
+                    var hpAmt = parseFloat(String(data.helocPayoff || 0).replace(/[$,]/g, '')) || 0;
+                    var netCash = cbAmt + hpAmt;
+                    var recCtx = _buildRecCtx(data);
+                    var recTierNum = recCtx.recTier || 2;
+                    var recTermKey = recCtx.recTerm;
+                    if (recTermKey.indexOf('yr') === -1) recTermKey += 'yr';
+
+                    var loInfo = (data.lo_info || data.loInfo || {});
+                    var loName = loInfo.name || loInfo.loName || 'Your Loan Officer';
+                    var loCompany = loInfo.lenderName || loInfo.company || loInfo.loCompany || data.lenderName || 'Your Lender';
+                    var loPhone = loInfo.phone || loInfo.loPhone || '';
+                    var loEmail = loInfo.email || loInfo.loEmail || '';
+                    var loApply = loInfo.applyLink || loInfo.applicationLink || loInfo.applyUrl || '';
+                    var loApplyHref = loApply ? (/^https?:\/\//i.test(loApply) ? loApply : 'https://' + loApply) : '';
+                    var loCalendar = loInfo.calendarLink || loInfo.calendar_link || '';
+                    var loCalendarHref = loCalendar ? (/^https?:\/\//i.test(loCalendar) ? loCalendar : 'https://' + loCalendar) : '';
+                    var clientName = data.clientName || 'there';
+                    var firstName = String(clientName).split(' ')[0] || 'there';
+
+                    // Pick up to 3 tiers sorted ascending
+                    var allTiers = (data.tiers || []).slice().sort(function(a, b) { return parseInt(a.tier) - parseInt(b.tier); });
+                    var threeTiers = allTiers.slice(0, 3);
+                    function pickTermData(tier) {
+                        var rates = tier.rates || {};
+                        var r = rates[recTermKey] || rates['20yr'] || rates['30yr'] || rates['15yr'] || {};
+                        return {
+                            rate: r.rate || r.fixedRate || tier.rate || '—',
+                            payment: r.payment || r.monthlyPayment || tier.payment || '—',
+                            fee: tier.originationFee || tier.fee || r.fee || '—'
+                        };
+                    }
+                    function fmtRate(r) {
+                        if (r === '—' || r == null) return '—';
+                        var n = typeof r === 'number' ? r : parseFloat(String(r).replace('%', ''));
+                        if (isNaN(n)) return String(r);
+                        return n.toFixed(3).replace(/\.?0+$/, '') + '%';
+                    }
+                    function fmtPay(p) {
+                        if (p === '—' || p == null) return '—';
+                        var n = typeof p === 'number' ? p : parseFloat(String(p).replace(/[$,/mo]/g, ''));
+                        if (isNaN(n)) return String(p);
+                        return '$' + Math.round(n).toLocaleString() + '/mo';
+                    }
+                    // Pull recommended tier's payment for the big number on Step 3
+                    var recTier = threeTiers.find(function(t) { return parseInt(t.tier) === recTierNum; }) || threeTiers[0] || {};
+                    var recTd = pickTermData(recTier);
+
+                    // State for walkthrough navigation
+                    window._wtStep = 1;
+                    var TOTAL = 5;
+
+                    // Brand header (always visible)
+                    var brandHtml =
+                        '<div class="wt-brand-header">' +
+                            '<div class="wt-brand-logo">⚡</div>' +
+                            '<div class="wt-brand-name">' + _esc(loCompany) + '</div>' +
+                        '</div>';
+
+                    // Progress dots
+                    function renderProgress() {
+                        var dots = '';
+                        for (var i = 1; i <= TOTAL; i++) {
+                            dots += '<div class="wt-dot' + (i <= window._wtStep ? ' active' : '') + '"></div>';
+                        }
+                        return '<div class="wt-progress">' + dots + '</div>';
+                    }
+
+                    // Step renderers
+                    function step1() {
+                        return '<div class="wt-step-wrap">' +
+                            '<div class="wt-step-num">Step 1 of ' + TOTAL + '</div>' +
+                            '<h2 class="wt-headline">👋 Hi ' + _esc(firstName) + ', here\'s your HELOC quote.</h2>' +
+                            '<p class="wt-subtle">Prepared by ' + _esc(loName) + ' at ' + _esc(loCompany) + '. Tap through to see your rate options, payment, and next steps.</p>' +
+                            '<div class="wt-bignum">$' + Math.round(netCash).toLocaleString() + '</div>' +
+                            '<p class="wt-subtle">Your requested HELOC amount.</p>' +
+                            '<div class="wt-nav">' +
+                                '<button class="wt-nav-btn primary" onclick="_wtGo(2)">See my rate options →</button>' +
+                            '</div>' +
+                        '</div>';
+                    }
+
+                    function step2() {
+                        var cards = threeTiers.map(function(tier) {
+                            var num = parseInt(tier.tier) || 0;
+                            var isRec = num === recTierNum;
+                            var td = pickTermData(tier);
+                            return '<div class="wt-tier-card' + (isRec ? ' rec' : '') + '">' +
+                                '<div class="wt-tier-label">Tier ' + num + '</div>' +
+                                '<div class="wt-tier-rate">' + fmtRate(td.rate) + '</div>' +
+                                '<div class="wt-tier-pay">' + fmtPay(td.payment) + '</div>' +
+                                '<div class="wt-tier-fee">Origination: ' + _esc(String(td.fee)) + '</div>' +
+                                (isRec ? '<div class="wt-tier-rec-badge">✓ Recommended for you</div>' : '') +
+                            '</div>';
+                        }).join('');
+                        return '<div class="wt-step-wrap">' +
+                            '<div class="wt-step-num">Step 2 of ' + TOTAL + '</div>' +
+                            '<h2 class="wt-headline">💰 Your rate options.</h2>' +
+                            '<p class="wt-subtle">Swipe left to see all three tiers. We picked one we think works best for you.</p>' +
+                            '<div class="wt-tier-scroll">' + cards + '</div>' +
+                            '<div class="wt-nav">' +
+                                '<button class="wt-nav-btn" onclick="_wtGo(1)">← Back</button>' +
+                                '<button class="wt-nav-btn primary" onclick="_wtGo(3)">See my payment →</button>' +
+                            '</div>' +
+                        '</div>';
+                    }
+
+                    function step3() {
+                        return '<div class="wt-step-wrap">' +
+                            '<div class="wt-step-num">Step 3 of ' + TOTAL + '</div>' +
+                            '<h2 class="wt-headline">📅 Your monthly payment.</h2>' +
+                            '<div class="wt-bignum">' + fmtPay(recTd.payment) + '</div>' +
+                            '<p class="wt-subtle">At ' + fmtRate(recTd.rate) + ' fixed. That\'s the payment on our recommended tier for you — fully amortized over ' + (recTermKey.replace('yr', '') || '20') + ' years.</p>' +
+                            '<div class="wt-nav">' +
+                                '<button class="wt-nav-btn" onclick="_wtGo(2)">← Back</button>' +
+                                '<button class="wt-nav-btn primary" onclick="_wtGo(4)">I have questions →</button>' +
+                            '</div>' +
+                        '</div>';
+                    }
+
+                    function step4() {
+                        var qas = [
+                            { q: 'How fast can I get the money?', a: 'Most HELOCs fund in 2–3 weeks. ' + _esc(loName) + ' will walk you through the timeline on your call.' },
+                            { q: 'What credit score do I need?', a: 'Typically 660+. Your tier assignment is based on your credit, home equity, and loan-to-value — we already factored that in.' },
+                            { q: 'Are there any upfront costs?', a: 'Tier 3 has no origination fee, just a slightly higher rate. Tier 1 has the best rate but higher upfront cost. Tier 2 is the balanced middle option.' },
+                            { q: 'Can I pay it off early?', a: 'Yes. No prepayment penalty on any tier. Pay extra principal anytime.' }
+                        ];
+                        var qaHtml = qas.map(function(item, i) {
+                            return '<button class="wt-qa-btn" onclick="_wtToggleQA(' + i + ')">' + _esc(item.q) + ' →</button>' +
+                                '<div class="wt-qa-answer" id="wt-qa-' + i + '">' + _esc(item.a) + '</div>';
+                        }).join('');
+                        return '<div class="wt-step-wrap">' +
+                            '<div class="wt-step-num">Step 4 of ' + TOTAL + '</div>' +
+                            '<h2 class="wt-headline">❓ Got questions?</h2>' +
+                            '<p class="wt-subtle">Tap any question for a quick answer. Want to chat with a real person? Hit Apply Now or schedule a call on the last step.</p>' +
+                            '<div class="wt-qa-grid">' + qaHtml + '</div>' +
+                            '<div class="wt-nav">' +
+                                '<button class="wt-nav-btn" onclick="_wtGo(3)">← Back</button>' +
+                                '<button class="wt-nav-btn primary" onclick="_wtGo(5)">I\'m ready →</button>' +
+                            '</div>' +
+                        '</div>';
+                    }
+
+                    function step5() {
+                        var applyBtn = loApplyHref ?
+                            '<a class="wt-cta-primary" href="' + _esc(loApplyHref) + '" target="_blank">🚀 Apply Now</a>' :
+                            '<button class="wt-cta-primary" onclick="alert(\'Contact your loan officer at ' + _esc(loEmail || loPhone || 'the number on the quote') + ' to apply.\')">🚀 Apply Now</button>';
+                        var scheduleBtn = loCalendarHref ?
+                            '<a class="wt-cta-secondary" href="' + _esc(loCalendarHref) + '" target="_blank">📅 Schedule a call with ' + _esc(String(loName).split(' ')[0]) + '</a>' :
+                            (loPhone ? '<a class="wt-cta-secondary" href="tel:' + _esc(String(loPhone).replace(/\D/g, '')) + '">📞 Call ' + _esc(loName) + '</a>' : '');
+                        var emailLink = loEmail ?
+                            '<a class="wt-cta-secondary" href="mailto:' + _esc(loEmail) + '?subject=' + encodeURIComponent('My HELOC quote — $' + Math.round(netCash).toLocaleString()) + '">✉️ Email ' + _esc(loName) + '</a>' : '';
+                        return '<div class="wt-step-wrap">' +
+                            '<div class="wt-step-num">Step 5 of ' + TOTAL + '</div>' +
+                            '<h2 class="wt-headline">🚀 Ready to move forward?</h2>' +
+                            '<p class="wt-subtle">Three ways to take the next step, ' + _esc(firstName) + '. Pick whichever works best for you.</p>' +
+                            applyBtn + scheduleBtn + emailLink +
+                            '<div class="wt-nav" style="margin-top:20px;">' +
+                                '<button class="wt-nav-btn" onclick="_wtGo(4)">← Back</button>' +
+                            '</div>' +
+                        '</div>';
+                    }
+
+                    function paint() {
+                        var step = window._wtStep;
+                        var stepHtml = step === 1 ? step1() :
+                                       step === 2 ? step2() :
+                                       step === 3 ? step3() :
+                                       step === 4 ? step4() :
+                                       step5();
+                        container.innerHTML = brandHtml + renderProgress() + stepHtml;
+                    }
+
+                    // Expose navigators globally so onclick attrs can reach them
+                    window._wtGo = function(n) {
+                        window._wtStep = n;
+                        paint();
+                        try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (_) { window.scrollTo(0, 0); }
+                        // Track progression for analytics (fire-and-forget, non-blocking)
+                        try {
+                            if (typeof trackQuoteView === 'function') trackQuoteView({ walkthrough_step: n });
+                        } catch (_) {}
+                    };
+                    window._wtToggleQA = function(i) {
+                        var el = document.getElementById('wt-qa-' + i);
+                        if (el) el.classList.toggle('open');
+                    };
+
+                    paint();
                 }
 
                 // ===== ORIGINAL TEMPLATE RENDERER =====
