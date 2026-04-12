@@ -5758,7 +5758,10 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
     async function callAIService(message, model, intent) {
         // ── TOKEN CONSUMPTION CHECK ──
         // Check and consume tokens before making AI call
-        if (window.TokenSystem && !EzraState._localOnlyMode) {
+        // ENTERPRISE TIER BYPASS: Enterprise users get unlimited AI
+        const isEnterprise = EzraState.userTier === 'enterprise' || EzraState.userTier === 'diamond';
+        
+        if (window.TokenSystem && !EzraState._localOnlyMode && !isEnterprise) {
             const featureType = intent === 'strategy' ? 'strategy' :
                                intent === 'sales_script' ? 'sales_script' :
                                intent === 'objection_handler' ? 'objection_handler' :
@@ -5779,6 +5782,17 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
                     metadata: { model: 'local', intent: 'token_insufficient', feature: featureType }
                 };
             }
+        } else if (isEnterprise && window.TokenSystem) {
+            // Enterprise: Still track usage but don't block
+            const featureType = intent === 'strategy' ? 'strategy' :
+                               intent === 'sales_script' ? 'sales_script' :
+                               intent === 'objection_handler' ? 'objection_handler' :
+                               intent === 'email_template' ? 'email_template' :
+                               intent === 'competitive_analysis' ? 'competitive_analysis' :
+                               'chat_message';
+            
+            // Log usage for analytics but don't deduct
+            console.log(`🔑 Enterprise AI Usage: ${featureType} - ${intent}`);
         }
 
         // ── LOCAL-ONLY MODE GUARD (Carbon tier) ──
