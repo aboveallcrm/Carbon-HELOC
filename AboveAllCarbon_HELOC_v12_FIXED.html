@@ -10295,7 +10295,6 @@ Best regards,
 
             async function _populateBonzoWebhookUrl(el) {
                 var userId = window.currentUserId || 'USER_ID';
-                var baseUrl = SUPABASE_FUNCTIONS_URL + '/bonzo-webhook';
                 var token = _webhookToken || '';
                 if (!token && window._supabase && userId !== 'USER_ID') {
                     try {
@@ -10314,7 +10313,9 @@ Best regards,
                     } catch (e) { console.warn('Could not generate webhook token:', e); }
                 }
                 var tokenParam = token ? '&token=' + token : '';
-                el.value = baseUrl + '?user_id=' + userId + '&source=bonzo' + tokenParam;
+                // Onboarding wizard now hands out the gated n8n Carbon HELOC URL,
+                // not the legacy Supabase edge function URL.
+                el.value = N8N_LEAD_ROUTER_BASE + '?source=bonzo&user_id=' + userId + tokenParam;
             }
 
             function _copyBonzoUrl() {
@@ -18800,10 +18801,14 @@ Sent via Above All Carbon HELOC Tool`;
 
         let _webhookToken = '';
 
+        // n8n carbon-heloc-lead-router base URL.
+        // This is the gated, Carbon HELOC-specific lead intake — completely separate from
+        // any other AAC n8n workflow. See plan addendum 2026-04-12.
+        const N8N_LEAD_ROUTER_BASE = 'https://n8n.srv1290585.hstgr.cloud/webhook/carbon-heloc/lead-in';
+
         async function initWebhookUrls() {
             const userId = window.currentUserId || 'USER_ID';
             const baseUrl = SUPABASE_FUNCTIONS_URL + '/bonzo-webhook';
-            const staticBonzoWebhook = SUPABASE_FUNCTIONS_URL + '/bonzo-webhook';
             const staticGhlWebhook = SUPABASE_FUNCTIONS_URL + '/handle-ghl-webhook';
             const staticLeadWebhook = SUPABASE_FUNCTIONS_URL + '/inbound-lead';
 
@@ -18828,18 +18833,29 @@ Sent via Above All Carbon HELOC Tool`;
             }
 
             const tokenParam = _webhookToken ? '&token=' + _webhookToken : '';
+            // Carbon HELOC-specific n8n routes (subscription-gated, app_id tagged)
+            const carbonBonzoUrl = N8N_LEAD_ROUTER_BASE + '?source=bonzo&user_id=' + userId + tokenParam;
+            const carbonGhlUrl = N8N_LEAD_ROUTER_BASE + '?source=ghl&user_id=' + userId + tokenParam;
+
             const inboundEl = document.getElementById('inbound-webhook-url');
             const bonzoEl = document.getElementById('bonzo-inbound-url');
             const ghlInboundEl = document.getElementById('ghl-inbound-webhook-url');
             const staticBonzoEl = document.getElementById('static-bonzo-webhook-url');
             const staticGhlEl = document.getElementById('static-ghl-webhook-url');
             const staticLeadEl = document.getElementById('static-lead-webhook-url');
-            if (inboundEl) inboundEl.value = baseUrl + '?user_id=' + userId + tokenParam;
-            if (bonzoEl) bonzoEl.value = baseUrl + '?user_id=' + userId + '&source=bonzo' + tokenParam;
-            if (ghlInboundEl) ghlInboundEl.value = staticGhlWebhook;
-            if (staticBonzoEl) staticBonzoEl.value = staticBonzoWebhook;
-            if (staticGhlEl) staticGhlEl.value = staticGhlWebhook;
+
+            // Static "Your Webhook URLs" cards now point at the gated n8n router.
+            if (staticBonzoEl) staticBonzoEl.value = carbonBonzoUrl;
+            if (staticGhlEl) staticGhlEl.value = carbonGhlUrl;
+            // Lead Source / LeadMailbox stays on Supabase (parser/email-only flow, no CRM gating needed)
             if (staticLeadEl) staticLeadEl.value = staticLeadWebhook;
+
+            // Bonzo CRM config block + GHL config block ALSO use the n8n route so the LO sees
+            // a single, consistent Carbon HELOC URL regardless of where in Integrations they look.
+            if (bonzoEl) bonzoEl.value = carbonBonzoUrl;
+            if (ghlInboundEl) ghlInboundEl.value = carbonGhlUrl;
+            // Generic inbound-webhook-url (kept for backward compat with copyWebhookUrl button)
+            if (inboundEl) inboundEl.value = carbonBonzoUrl;
         }
 
         async function regenerateWebhookToken() {
