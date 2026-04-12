@@ -1571,7 +1571,7 @@ RESPONSE RULES
                                 <span class="ezra-status-dot"></span>
                                 <span class="ezra-status-text">${EzraState._localOnlyMode ? 'Local Mode' : 'Online'}</span>
                             </span>
-                            <span id="ezra-token-budget" class="ezra-token-budget" style="display:none;font-size:9px;color:#94a3b8;"></span>
+                            <span id="ezra-token-balance" class="ezra-token-badge healthy" onclick="window.TokenSystem.showPurchaseModal()" title="Click to purchase tokens">⚡ 0</span>
                         </div>
                     </div>
                     <div class="ezra-header-actions">
@@ -4766,6 +4766,16 @@ File name: ${fileName}`;
             return;
         }
 
+        // Handle Build Quote - Open Interactive Quote Builder
+        if (action === 'build_quote') {
+            if (window.QuoteBuilder) {
+                window.QuoteBuilder.start();
+            } else {
+                addMessage('assistant', 'Quote Builder is loading... Please try again in a moment.', { model: 'local' });
+            }
+            return;
+        }
+
         // Upload Rate Sheet — trigger file picker for rate sheet PDF/image
         if (action === 'upload_rate_sheet') {
             handleRateSheetUpload();
@@ -5746,6 +5756,31 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
     }
 
     async function callAIService(message, model, intent) {
+        // ── TOKEN CONSUMPTION CHECK ──
+        // Check and consume tokens before making AI call
+        if (window.TokenSystem && !EzraState._localOnlyMode) {
+            const featureType = intent === 'strategy' ? 'strategy' :
+                               intent === 'sales_script' ? 'sales_script' :
+                               intent === 'objection_handler' ? 'objection_handler' :
+                               intent === 'email_template' ? 'email_template' :
+                               intent === 'competitive_analysis' ? 'competitive_analysis' :
+                               'chat_message';
+            
+            const tokenResult = await window.TokenSystem.consumeTokens(featureType, {
+                model: model,
+                intent: intent,
+                message: message.substring(0, 100) // Truncate for metadata
+            });
+            
+            if (!tokenResult.success) {
+                // Return token purchase prompt
+                return {
+                    content: `⚡ **Insufficient Tokens**\n\nYou need ${window.TokenSystem.getTokenCost(featureType)} tokens for this feature.\n\nYour balance: ${window.TokenSystem.getBalance()} tokens\n\n[Click here to purchase tokens](/settings?tab=billing)`,
+                    metadata: { model: 'local', intent: 'token_insufficient', feature: featureType }
+                };
+            }
+        }
+
         // ── LOCAL-ONLY MODE GUARD (Carbon tier) ──
         // KB search already ran in routeToAI (score >= 0.55 returns directly).
         // If we reached here, KB didn't match well. Try a lower threshold

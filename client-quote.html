@@ -13247,7 +13247,55 @@
                     }
                 }
 
-                tourSteps = tourSteps.filter(function(step) {
+                // ===== TOUR TARGET REMAP FOR NON-ENHANCED PRESETS =====
+                // When the original or minimal template is active, the enhanced #sec-* sections are hidden.
+                // Map each step's target to the equivalent element in the active preset template so the tour highlights real content.
+                function getActivePresetMode() {
+                    var origEl = document.getElementById('template-original');
+                    var minEl = document.getElementById('template-minimal');
+                    if (origEl && origEl.style.display && origEl.style.display !== 'none') return 'original';
+                    if (minEl && minEl.style.display && minEl.style.display !== 'none') return 'minimal';
+                    return 'enhanced';
+                }
+                var TOUR_TARGET_MAP = {
+                    original: {
+                        '#sec-client': '#template-original .orig-client-strip',
+                        '#sec-prequal': null, // pre-qual not in original template
+                        '#sec-recommendation': '#template-original .orig-rec-bar',
+                        '#sec-tier-compare': '#template-original .orig-matrix-grid',
+                        '#sec-rates': '#template-original .orig-matrix-grid',
+                        '#sec-dti-calc': null,
+                        '#sec-what-if-payback': null,
+                        '#sec-footer': '#template-original .orig-footer'
+                    },
+                    minimal: {
+                        '#sec-client': '#template-minimal .min-header',
+                        '#sec-prequal': null,
+                        '#sec-recommendation': '#template-minimal .min-rec',
+                        '#sec-tier-compare': '#template-minimal .min-matrix-grid',
+                        '#sec-rates': '#template-minimal .min-matrix-grid',
+                        '#sec-dti-calc': null,
+                        '#sec-what-if-payback': null,
+                        '#sec-footer': '#template-minimal .min-disclaimer'
+                    }
+                };
+                window.resolveTourTarget = function(selector) {
+                    var preset = getActivePresetMode();
+                    if (preset === 'enhanced') return selector;
+                    var map = TOUR_TARGET_MAP[preset] || {};
+                    if (selector in map) return map[selector]; // explicit map (may be null = skip)
+                    return selector; // unmapped — try original selector
+                };
+
+                // Filter steps: remap target, then drop ones that resolve to null or have no matching DOM element
+                tourSteps = tourSteps.map(function(step) {
+                    var resolved = window.resolveTourTarget(step.target);
+                    if (resolved && resolved !== step.target) {
+                        return Object.assign({}, step, { target: resolved, originalTarget: step.target });
+                    }
+                    return step;
+                }).filter(function(step) {
+                    if (!step.target) return false;
                     var target = document.querySelector(step.target);
                     if (!target) return false;
                     var style = window.getComputedStyle(target);

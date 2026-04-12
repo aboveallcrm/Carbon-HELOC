@@ -1,0 +1,426 @@
+/**
+ * Token System Styles
+ * CSS for token balance display, modals, and UI components
+ */
+
+/* Token Badge in Ezra Header */
+.ezra-token-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font-body, 'Inter', sans-serif);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.ezra-token-badge.healthy {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+    border: 1px solid #b1dfbb;
+}
+
+.ezra-token-badge.low {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.ezra-token-badge.critical {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+    border: 1px solid #f1b0b7;
+    animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.ezra-token-badge:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Token Modal Overlay */
+.token-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Token Modal */
+.token-modal {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+}
+
+.token-modal.purchase-modal {
+    max-width: 600px;
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.token-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    border-radius: 16px 16px 0 0;
+}
+
+.token-modal-header h3 {
+    margin: 0;
+    font-family: var(--font-heading, 'DM Sans', sans-serif);
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.token-modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.token-modal-close:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+.token-modal-body {
+    padding: 24px;
+}
+
+/* Token Packages Grid */
+.token-packages {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+}
+
+@media (max-width: 480px) {
+    .token-packages {
+        grid-template-columns: 1fr;
+    }
+}
+
+.token-package {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: #fff;
+}
+
+.token-package:hover {
+    border-color: #8b5cf6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+}
+
+.token-package.selected {
+    border-color: #8b5cf6;
+    background: #f5f3ff;
+}
+
+.package-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.package-header h4 {
+    margin: 0;
+    font-family: var(--font-heading, 'DM Sans', sans-serif);
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.package-bonus {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.package-tokens {
+    margin-bottom: 8px;
+}
+
+.token-amount {
+    font-size: 28px;
+    font-weight: 800;
+    color: #111827;
+    font-family: var(--font-heading, 'DM Sans', sans-serif);
+}
+
+.token-label {
+    font-size: 12px;
+    color: #6b7280;
+    margin-left: 4px;
+}
+
+.bonus-amount {
+    display: block;
+    font-size: 11px;
+    color: #10b981;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.package-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 12px;
+}
+
+.btn-purchase {
+    width: 100%;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-purchase:hover {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* Token Info Section */
+.token-info {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 20px;
+}
+
+.token-info h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.token-intro {
+    color: #6b7280;
+    font-size: 13px;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.token-features {
+    font-size: 11px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* Insufficient Tokens Modal */
+.token-modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.token-modal-actions button {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+}
+
+.btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+/* Token Toast Notification */
+.token-toast {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 10001;
+    animation: slideInRight 0.3s ease;
+    max-width: 400px;
+}
+
+.token-toast.warning {
+    border-left: 4px solid #f59e0b;
+}
+
+.token-toast.critical {
+    border-left: 4px solid #ef4444;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.token-toast span {
+    font-size: 14px;
+    color: #374151;
+    flex: 1;
+}
+
+.token-toast button {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.token-toast button:hover {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+}
+
+/* Token Cost Badge on Features */
+.token-cost-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 8px;
+    background: rgba(139, 92, 246, 0.1);
+    color: #7c3aed;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 12px;
+    margin-left: 8px;
+}
+
+.token-cost-badge.insufficient {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+/* Generate Button with Token Cost */
+.btn-generate {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-generate:hover:not(:disabled) {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    transform: translateY(-1px);
+}
+
+.btn-generate:disabled {
+    background: #d1d5db;
+    cursor: not-allowed;
+}
+
+.btn-generate .token-cost {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+}
