@@ -45,6 +45,7 @@ export interface TierResult {
     totalLoan: number;
     payments: { [term: number]: PaymentData };
     varPayments: { [term: number]: PaymentData };
+    cltv: number; // CLTV for this tier including origination fees
 }
 
 export interface QuoteResult {

@@ -1206,7 +1206,8 @@
             font-weight: 700;
         }
 
-        #address-results {
+        #address-results,
+        .address-autocomplete-results {
             position: absolute;
             top: 100%;
             left: 0;
@@ -1221,14 +1222,16 @@
             z-index: 1000;
         }
 
-        #address-results li {
+        #address-results li,
+        .address-autocomplete-results li {
             padding: 8px;
             cursor: pointer;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             font-size: 11px;
         }
 
-        #address-results li:hover {
+        #address-results li:hover,
+        .address-autocomplete-results li:hover {
             background: rgba(197, 160, 89, 0.2);
         }
 
@@ -1288,6 +1291,41 @@
             font-weight: 700;
             color: rgba(255, 255, 255, 0.8);
         }
+
+        /* === SIMPLE MODE === */
+        /* Staggered collapse animation — each [data-simple-hide] element fades + collapses one by one */
+        [data-simple-hide] {
+            transition: opacity 0.35s ease, max-height 0.45s ease, margin 0.35s ease, padding 0.35s ease, border-width 0.35s ease;
+            overflow: hidden;
+            max-height: 800px;
+            opacity: 1;
+        }
+        [data-simple-hide].sm-collapsing {
+            opacity: 0;
+            max-height: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            border-top-width: 0 !important;
+            border-bottom-width: 0 !important;
+        }
+        [data-simple-hide].sm-hidden { display: none !important; }
+        body.simple-mode .simple-mode-banner { display: flex !important; }
+        .simple-mode-banner {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05));
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 10px;
+            color: #6ee7b7;
+            font-family: var(--font-heading);
+        }
+        .simple-mode-banner a { color: #6ee7b7; text-decoration: underline; cursor: pointer; }
 
         /* Password modal styles removed — role-based access via Supabase auth */
         .modal-content {
@@ -5267,20 +5305,42 @@
             
             /* Prevent awkward page breaks */
             .matrix-container,
+            .matrix-container > div,
+            #fixed-matrix-section,
+            #variable-matrix,
+            #recommendation-section,
+            #break-even-container,
+            #refi-comparison-container,
+            #debt-consolidation-container,
             .certificate-box,
             .snapshot-container,
             .heloc-table {
                 page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
-            
+
+            /* Keep tier headers attached to their tables */
+            .tier-header,
             h3,
+            h4,
             .premium-header {
                 page-break-after: avoid !important;
+                break-after: avoid !important;
             }
-            
+
             .snapshot-row,
             tr {
                 page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Ensure gold tier headers render in PDF */
+            .tier-header,
+            .matrix-container th {
+                background: #c5a059 !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             
             /* Hide interactive elements */
@@ -5585,7 +5645,13 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h2 style="font-family: var(--font-heading); margin: 0; color: var(--accent-color); font-size: 16px;">⚡️
                 Above All Carbon HELOC</h2>
-            <button class="btn" style="background: #ef4444;" onclick="toggleAdminPanel()">✕ Close</button>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="display:flex;align-items:center;gap:6px;" title="Simple Mode: fewer fields, guided flow for quick quoting">
+                    <div class="toggle-switch" id="toggle-simple-mode" onclick="toggleSimpleMode(this)"></div>
+                    <span style="font-size:10px;color:rgba(255,255,255,0.7);font-family:var(--font-heading);font-weight:600;text-transform:uppercase;">Simple</span>
+                </div>
+                <button class="btn" style="background: #ef4444;" onclick="toggleAdminPanel()">✕ Close</button>
+            </div>
         </div>
 
         <div class="settings-tabs">
@@ -5607,13 +5673,17 @@
 
         <!-- CLIENT TAB -->
         <div id="tab-client" class="settings-content active">
+            <div class="simple-mode-banner">
+                <span>🎯 Simple Mode is ON — only essential fields are shown.</span>
+                <a onclick="toggleSimpleMode(document.getElementById('toggle-simple-mode'))">Switch to Full Control</a>
+            </div>
             <div class="control-section">
                 <h4 style="font-family: var(--font-heading); color: white; margin: 0 0 10px 0; font-size: 11px;">📋
                     Client Info</h4>
                 <div class="input-group">
                     <div class="input-field" style="flex: 2;"><label>Client Name</label><input type="text"
                             id="in-client-name" placeholder="Enter Client Name"></div>
-                    <div class="input-field"><label>Credit Score <span class="help-tip">?<span class="help-tip-text">The client's FICO score. Affects tier eligibility and rate pricing. Leave blank if unknown — it won't appear on the quote.</span></span></label><input type="text" id="in-client-credit"
+                    <div class="input-field" data-simple-hide><label>Credit Score <span class="help-tip">?<span class="help-tip-text">The client's FICO score. Affects tier eligibility and rate pricing. Leave blank if unknown — it won't appear on the quote.</span></span></label><input type="text" id="in-client-credit"
                             placeholder="740"></div>
                     <div class="input-field"
                         style="background: rgba(197,160,89,0.2); border-radius: 5px; padding: 4px;">
@@ -5623,12 +5693,12 @@
                     </div>
                 </div>
                 <div class="input-group" style="margin-top: 10px;">
-                    <div class="input-field" style="flex: 2; position: relative; z-index: 100;">
+                    <div class="input-field" data-simple-hide style="flex: 2; position: relative; z-index: 100;">
                         <label>Property Address</label>
                         <input type="text" id="custom-address-input" placeholder="Start typing..." autocomplete="off">
                         <ul id="address-results"></ul>
                     </div>
-                    <div class="input-field"><label>Occupancy</label><select id="in-property-type">
+                    <div class="input-field" data-simple-hide><label>Occupancy</label><select id="in-property-type">
                             <option>Primary Residence</option>
                             <option>Investment Property</option>
                         </select></div>
@@ -5639,7 +5709,7 @@
                 </div>
             </div>
 
-            <div class="control-section"
+            <div class="control-section" data-simple-hide
                 style="background: linear-gradient(135deg, rgba(197,160,89,0.15), rgba(166,133,67,0.15)); border-color: var(--accent-color);">
                 <h4
                     style="font-family: var(--font-heading); color: var(--accent-color); margin: 0 0 12px 0; font-size: 11px;">
@@ -5658,7 +5728,7 @@
                         </div><span class="toggle-label">Show Recommendation <span class="help-tip">?<span class="help-tip-text">Highlights your recommended tier on the client's quote page with a gold badge.</span></span></span>
                     </div>
                     <div class="toggle-container">
-                        <div class="toggle-switch" id="toggle-show-fees" onclick="toggleSwitch(this)"></div><span
+                        <div class="toggle-switch active" id="toggle-show-fees" onclick="toggleSwitch(this)"></div><span
                             class="toggle-label">Show Fees <span class="help-tip">?<span class="help-tip-text">Displays origination fees and closing costs in the rate table on the client's quote page.</span></span></span>
                     </div>
                     <div class="toggle-container" id="disclaimer-toggle-container" style="display:none;">
@@ -5668,7 +5738,7 @@
                 </div>
             </div>
 
-            <div id="debt-section" class="control-section"
+            <div id="debt-section" class="control-section" data-simple-hide
                 style="background: rgba(249,115,22,0.1); border-color: #f97316;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <h4 style="font-family: var(--font-heading); color: #fb923c; margin:0; font-size: 11px;">💳 Debt
@@ -5682,7 +5752,7 @@
                 </label>
             </div>
 
-            <div id="refi-section" class="control-section"
+            <div id="refi-section" class="control-section" data-simple-hide
                 style="background: rgba(59,130,246,0.1); border-color: #3b82f6;">
                 <h4 style="font-family: var(--font-heading); color: #60a5fa; margin:0 0 8px 0; font-size: 11px;">🔄
                     Existing HELOC Payoff <span class="help-tip">?<span class="help-tip-text">If the client already has a HELOC being refinanced, enter it here. The quote will show a side-by-side comparison of old vs new terms.</span></span></h4>
@@ -5719,12 +5789,18 @@
                             <option value="15">15-Year</option>
                             <option value="10">10-Year</option>
                         </select></div>
-                    <div class="input-field"><label style="color: var(--accent-color);">Rec. Type <span class="help-tip">?<span class="help-tip-text">Fixed = locked rate for the life of the loan. Variable = rate may adjust periodically. Choose which type to recommend to the client.</span></span></label><select
+                    <div class="input-field"><label style="color: var(--accent-color);">Rec. Type <span class="help-tip">?<span class="help-tip-text">Fixed = locked rate for the life of the loan. Variable = rate may adjust periodically. Choose which type to recommend and highlight to the client — works for both fixed and variable rate tables.</span></span></label><select
                             id="rec-type-select" style="border-color: var(--accent-color);" onchange="updateQuote()">
                             <option value="fixed" selected>Fixed</option>
                             <option value="variable">Variable</option>
                         </select></div>
-                    <div style="display: flex; gap: 15px; align-items: center; padding-top: 15px;">
+                    <div class="input-field"><label style="color: var(--accent-color);">Tier Display <span class="help-tip">?<span class="help-tip-text">Controls which tier tables are shown to the client. "All Tiers" shows everything. "Recommended Only" shows just the tier you selected above — perfect for clients who shouldn't see every option.</span></span></label><select
+                            id="rec-tier-display" style="border-color: var(--accent-color);" onchange="updateQuote()">
+                            <option value="all" selected>All Tiers</option>
+                            <option value="rec">Recommended Only</option>
+                            <option value="rec-plus">Recommended + 1</option>
+                        </select></div>
+                    <div data-simple-hide style="display: flex; gap: 15px; align-items: center; padding-top: 15px;">
                         <label
                             style="display: flex; align-items: center; cursor: pointer; font-family: var(--font-heading); font-size: 9px; text-transform: uppercase; font-weight: 700; color: white;"><input
                                 type="checkbox" id="chk-show-break"
@@ -5735,13 +5811,13 @@
                             Strategy</label>
                     </div>
                 </div>
-                <button class="btn btn-print" onclick="generateAIStrategy()"
+                <button data-simple-hide class="btn btn-print" onclick="generateAIStrategy()"
                     style="margin-top:8px; width:100%; justify-content: center; background: linear-gradient(135deg, #8b5cf6, #7c3aed);">🤖
                     Generate AI Strategy</button>
             </div>
 
             <!-- OUTPUt CONTROLS (Link & PDF) -->
-            <div class="control-section" style="background: rgba(6,182,212,0.1); border-color: #06b6d4;">
+            <div class="control-section" data-simple-hide style="background: rgba(6,182,212,0.1); border-color: #06b6d4;">
                 <h4 style="font-family: var(--font-heading); color: #06b6d4; margin: 0 0 12px 0; font-size: 11px;">📄
                     Presentation Output Controls <span class="help-tip">?<span class="help-tip-text">Control what appears on the client-facing link vs the PDF export. Client Link = the web page they see. PDF = the downloaded document.</span></span></h4>
                 <div style="margin-bottom: 12px;">
@@ -6250,8 +6326,8 @@
                     <div class="input-group" style="margin-top: 8px;">
                         <div class="input-field"><label>Credit Score</label><input type="number" id="add-lead-credit"
                                 placeholder="740"></div>
-                        <div class="input-field" style="flex: 2;"><label>Property Address</label><input type="text"
-                                id="add-lead-address" placeholder="123 Main St, City, ST 12345"></div>
+                        <div class="input-field" style="flex: 2; position: relative;"><label>Property Address</label><input type="text"
+                                id="add-lead-address" placeholder="123 Main St, City, ST 12345" autocomplete="off"><ul id="add-lead-address-results" class="address-autocomplete-results"></ul></div>
                         <div class="input-field"><label>Home Value ($)</label><input type="number"
                                 id="add-lead-home-value" placeholder="750000"></div>
                         <div class="input-field"><label>1st Mortgage ($)</label><input type="number"
@@ -6656,9 +6732,9 @@
                     <h5 style="font-family: var(--font-heading); font-size: 10px; color: #a78bfa; margin: 0 0 8px 0;">🏢
                         Company & Office</h5>
                     <div class="input-group">
-                        <div class="input-field" style="flex: 2;"><label>Office Address</label><input type="text"
+                        <div class="input-field" style="flex: 2; position: relative;"><label>Office Address</label><input type="text"
                                 id="lo-address" value=""
-                                placeholder="123 Main St, Suite 100, City, ST 12345" oninput="debouncedUpdateProfile()"></div>
+                                placeholder="123 Main St, Suite 100, City, ST 12345" autocomplete="off" oninput="debouncedUpdateProfile()"><ul id="lo-address-results" class="address-autocomplete-results"></ul></div>
                         <div class="input-field"><label>Lender Logo URL</label>
                             <div style="display:flex;gap:6px;"><input type="text" id="lo-logo-url"
                                     value=""
@@ -8790,6 +8866,10 @@ Best regards,
             setupEventListeners();
             updateQuote();
             setupAddressAutocomplete();
+            setupAddressAutocomplete('add-lead-address', 'add-lead-address-results');
+            setupAddressAutocomplete('lo-address', 'lo-address-results', () => {
+                if (typeof debouncedUpdateProfile === 'function') debouncedUpdateProfile();
+            });
 
             // Show welcome hero only on very first visit (never seen before)
             var hero = document.getElementById('welcome-hero');
@@ -8836,12 +8916,75 @@ Best regards,
             });
         }
 
+        // ===== SIMPLE MODE =====
+        var SIMPLE_STAGGER_MS = 120; // delay between each element hiding
+
+        function _collectSimpleHideTargets() {
+            // Only visible ones in the currently-active tab, in DOM order (top to bottom)
+            var activeTab = document.querySelector('.settings-content.active') || document;
+            return Array.from(activeTab.querySelectorAll('[data-simple-hide]'));
+        }
+
+        function _staggerHide(instant) {
+            var targets = _collectSimpleHideTargets();
+            targets.forEach(function (el, i) {
+                var delay = instant ? 0 : i * SIMPLE_STAGGER_MS;
+                setTimeout(function () {
+                    el.classList.add('sm-collapsing');
+                    // After transition, set display:none so it doesn't reserve space on reflow
+                    setTimeout(function () { el.classList.add('sm-hidden'); }, 450);
+                }, delay);
+            });
+        }
+
+        function _staggerShow(instant) {
+            // Reveal in reverse order (bottom to top) so the form "builds up" naturally
+            var targets = document.querySelectorAll('[data-simple-hide]');
+            var arr = Array.from(targets).reverse();
+            arr.forEach(function (el, i) {
+                var delay = instant ? 0 : i * SIMPLE_STAGGER_MS;
+                setTimeout(function () {
+                    el.classList.remove('sm-hidden');
+                    // Force reflow so the max-height transition runs
+                    void el.offsetHeight;
+                    el.classList.remove('sm-collapsing');
+                }, delay);
+            });
+        }
+
+        function toggleSimpleMode(el) {
+            var isSimple = document.body.classList.toggle('simple-mode');
+            if (el) el.classList.toggle('active', isSimple);
+            var key = 'aboveAllSimpleMode_' + (window.currentUserId || 'anon');
+            localStorage.setItem(key, isSimple ? '1' : '0');
+            if (isSimple) {
+                _staggerHide(false);
+                applyLinkPreset('minimal');
+                var presetEl = document.getElementById('link-style-preset');
+                if (presetEl) presetEl.value = 'minimal';
+            } else {
+                _staggerShow(false);
+            }
+        }
+
+        function loadSimpleMode() {
+            var key = 'aboveAllSimpleMode_' + (window.currentUserId || 'anon');
+            if (localStorage.getItem(key) === '1') {
+                document.body.classList.add('simple-mode');
+                var tog = document.getElementById('toggle-simple-mode');
+                if (tog) tog.classList.add('active');
+                // Hide instantly on load (no animation on page refresh)
+                _staggerHide(true);
+            }
+        }
+
         function setupEventListeners() {
             document.querySelectorAll('#admin-panel input, #admin-panel select, #admin-panel textarea').forEach(el => {
                 if (el.tagName === 'SELECT') {
                     el.addEventListener('change', () => { debouncedUpdateQuote(); debouncedAutoSave(); });
                 } else {
                     el.addEventListener('input', () => { debouncedUpdateQuote(); debouncedAutoSave(); });
+                    el.addEventListener('change', () => { debouncedUpdateQuote(); debouncedAutoSave(); });
                 }
             });
             document.querySelectorAll('#chk-show-debt, #chk-show-refi, #chk-show-break, #chk-show-ai').forEach(chk => {
@@ -8903,6 +9046,14 @@ Best regards,
             if (existingOverlay) existingOverlay.remove();
 
             tabContent.classList.add('active');
+
+            // If Simple Mode is on, hide advanced sections in the newly-shown tab
+            if (document.body.classList.contains('simple-mode')) {
+                tabContent.querySelectorAll('[data-simple-hide]').forEach(function (el) {
+                    el.classList.add('sm-collapsing');
+                    el.classList.add('sm-hidden');
+                });
+            }
         }
 
         function showTabUpgradeOverlay(tab, lockInfo) {
@@ -10166,6 +10317,7 @@ Best regards,
                         });
                     }
                 });
+                var simpleActive = document.body.classList.contains('simple-mode');
                 return '<div class="ob-header">' +
                     '<div style="font-size:48px;margin-bottom:12px;">&#9878;</div>' +
                     '<div class="ob-title">Welcome to Above All Carbon</div>' +
@@ -10173,6 +10325,19 @@ Best regards,
                     '<div class="ob-tier-badge" style="background:' + tierColor + ';color:white;">' + tierLabel + ' Tier</div>' +
                     '</div>' +
                     '<div class="ob-body">' +
+                    '<p style="font-family:var(--font-heading);font-size:10px;color:var(--accent-color);text-transform:uppercase;letter-spacing:1px;text-align:center;margin:0 0 8px 0;">Choose Your Experience</p>' +
+                    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">' +
+                    '<div onclick="OnboardingWizard.setMode(\'simple\')" style="cursor:pointer;padding:16px;border-radius:10px;border:2px solid ' + (simpleActive ? 'var(--accent-color)' : 'rgba(255,255,255,0.1)') + ';background:' + (simpleActive ? 'rgba(197,160,89,0.15)' : 'rgba(255,255,255,0.03)') + ';text-align:center;">' +
+                    '<div style="font-size:28px;margin-bottom:8px;">&#127919;</div>' +
+                    '<div style="font-family:var(--font-heading);font-size:12px;font-weight:700;color:white;margin-bottom:4px;">Simple Mode</div>' +
+                    '<div style="font-size:10px;color:rgba(255,255,255,0.6);line-height:1.4;">4 fields, smart defaults, guided flow. Perfect for getting started fast.</div>' +
+                    '</div>' +
+                    '<div onclick="OnboardingWizard.setMode(\'full\')" style="cursor:pointer;padding:16px;border-radius:10px;border:2px solid ' + (!simpleActive ? 'var(--accent-color)' : 'rgba(255,255,255,0.1)') + ';background:' + (!simpleActive ? 'rgba(197,160,89,0.15)' : 'rgba(255,255,255,0.03)') + ';text-align:center;">' +
+                    '<div style="font-size:28px;margin-bottom:8px;">&#9881;&#65039;</div>' +
+                    '<div style="font-family:var(--font-heading);font-size:12px;font-weight:700;color:white;margin-bottom:4px;">Full Control</div>' +
+                    '<div style="font-size:10px;color:rgba(255,255,255,0.6);line-height:1.4;">All features visible. Rate customization, debt tools, integrations, and more.</div>' +
+                    '</div>' +
+                    '</div>' +
                     '<p style="font-family:var(--font-heading);font-size:10px;color:var(--accent-color);text-transform:uppercase;letter-spacing:1px;text-align:center;margin:0 0 8px 0;">Your Features</p>' +
                     '<ul class="ob-benefit-list">' + featureItems + '</ul>' +
                     '</div>' +
@@ -10890,9 +11055,21 @@ Best regards,
                 });
             }
 
+            function setMode(mode) {
+                var tog = document.getElementById('toggle-simple-mode');
+                if (mode === 'simple') {
+                    if (!document.body.classList.contains('simple-mode')) toggleSimpleMode(tog);
+                } else {
+                    if (document.body.classList.contains('simple-mode')) toggleSimpleMode(tog);
+                }
+                // Re-render the welcome step to update selection highlight
+                renderStep(0);
+            }
+
             return {
                 init: init, next: next, back: back, skipStep: skipStep,
                 complete: complete, minimize: minimize, reopen: reopen,
+                setMode: setMode,
                 _updatePreview: _updatePreview, _selectPreset: _selectPreset,
                 _syncAndTest: _syncAndTest, _selectCRM: _selectCRM,
                 _testConnection: _testConnection, _uploadFile: _uploadFile,
@@ -13183,9 +13360,20 @@ Best regards,
         }
 
         // ===== ADDRESS AUTOCOMPLETE =====
-        function setupAddressAutocomplete() {
-            const input = document.getElementById('custom-address-input');
-            const results = document.getElementById('address-results');
+        function setupAddressAutocomplete(inputId, resultsId, onSelect) {
+            // Backwards-compat: original signature was setupAddressAutocomplete() targeting the quote builder field
+            if (inputId === undefined) {
+                inputId = 'custom-address-input';
+                resultsId = 'address-results';
+                onSelect = (addr) => {
+                    const out = document.getElementById('out-property-address');
+                    if (out) out.innerText = addr;
+                    autoSave();
+                };
+            }
+            const input = document.getElementById(inputId);
+            const results = document.getElementById(resultsId);
+            if (!input || !results) return;
             let debounceTimer;
             input.addEventListener('input', function () {
                 clearTimeout(debounceTimer);
@@ -13193,7 +13381,8 @@ Best regards,
                 if (query.length < 3) { results.style.display = 'none'; return; }
                 debounceTimer = setTimeout(async () => {
                     // Address autocomplete via radar-proxy edge function (key stays server-side)
-                    const radarKey = document.getElementById('radar-api-key') ? document.getElementById('radar-api-key').value : '';
+                    const radarKeyEl = document.getElementById('radar-api-key');
+                    const radarKey = radarKeyEl ? radarKeyEl.value : '';
                     if (!radarKey) {
                         // No API key configured - skip autocomplete
                         results.style.display = 'none';
@@ -13214,9 +13403,8 @@ Best regards,
                             results.querySelectorAll('li').forEach(li => {
                                 li.addEventListener('click', function () {
                                     input.value = this.dataset.address;
-                                    document.getElementById('out-property-address').innerText = this.dataset.address;
                                     results.style.display = 'none';
-                                    autoSave();
+                                    if (onSelect) onSelect(this.dataset.address);
                                 });
                             });
                         } else { results.style.display = 'none'; }
@@ -13224,9 +13412,12 @@ Best regards,
                 }, 300);
             });
             input.addEventListener('blur', () => setTimeout(() => results.style.display = 'none', 200));
-            input.addEventListener('change', function () {
-                document.getElementById('out-property-address').innerText = this.value;
-            });
+            if (inputId === 'custom-address-input') {
+                input.addEventListener('change', function () {
+                    const out = document.getElementById('out-property-address');
+                    if (out) out.innerText = this.value;
+                });
+            }
         }
 
         // ===== STORAGE =====
@@ -13282,6 +13473,7 @@ Best regards,
                 recTier: getVal('rec-tier-select'),
                 recTerm: getVal('rec-term-select'),
                 recType: getVal('rec-type-select'),
+                recTierDisplay: getVal('rec-tier-display'),
                 isInterestOnly: isInterestOnly,
                 manualRatesEnabled: manualRatesEnabled,
                 t1Orig: getVal('t1-orig'),
@@ -13529,6 +13721,7 @@ Best regards,
                     if (data.recTier) document.getElementById('rec-tier-select').value = normalizeRecTierValue(data.recTier);
                     if (data.recTerm) document.getElementById('rec-term-select').value = data.recTerm;
                     if (data.recType) document.getElementById('rec-type-select').value = data.recType;
+                    if (data.recTierDisplay) { var rtd = document.getElementById('rec-tier-display'); if (rtd) rtd.value = data.recTierDisplay; }
                     if (data.t1Orig) document.getElementById('t1-orig').value = data.t1Orig;
                     if (data.t2Orig) document.getElementById('t2-orig').value = data.t2Orig;
                     if (data.t3Orig) document.getElementById('t3-orig').value = data.t3Orig;
@@ -13672,8 +13865,10 @@ Best regards,
                         var el = document.getElementById('chk-pdf-logo');
                         if (el) el.checked = data.pdfLogo;
                     }
+                    updateQuote();
                     updateProfile();
                     applyWhiteLabel();
+                    loadSimpleMode();
                 } catch (e) { console.error('Error loading saved data:', e); }
             }
         }
@@ -15571,8 +15766,8 @@ Sent via Above All Carbon HELOC Tool`;
                 setToggle(togTestimonials, false);
             } else if (preset === 'minimal') {
                 if (chkLo) chkLo.checked = false;
-                if (chkAi) chkAi.checked = true;
-                if (chkApply) chkApply.checked = true;
+                if (chkAi) chkAi.checked = false;
+                if (chkApply) chkApply.checked = false;
                 if (chkVideo) chkVideo.checked = false;
                 if (chkSales) chkSales.checked = false;
                 if (chkExpiry) chkExpiry.checked = false;
@@ -15771,7 +15966,9 @@ Sent via Above All Carbon HELOC Tool`;
                     preset: document.getElementById('link-style-preset')?.value || 'enhanced',
                     voiceNoteUrl: document.getElementById('link-voice-note-url')?.value?.trim() || '',
                     // Fee visibility — synced from LO toggle
-                    showFees: document.getElementById('toggle-show-fees')?.classList.contains('active') || false,
+                    showFees: document.getElementById('toggle-show-fees')?.classList.contains('active') !== false,
+                    // Tier display mode (all / rec / rec-plus) — governs which tier tables appear on client quote
+                    recTierDisplay: document.getElementById('rec-tier-display')?.value || 'all',
                     // Titanium v5.9.3 - Client Quote Features
                     showPrequal: document.getElementById('chk-show-prequal')?.classList.contains('active') !== false,
                     showDocUpload: document.getElementById('chk-show-doc-upload')?.classList.contains('active') !== false,
@@ -15921,7 +16118,9 @@ Sent via Above All Carbon HELOC Tool`;
                     preset: document.getElementById('link-style-preset')?.value || 'enhanced',
                     voiceNoteUrl: document.getElementById('link-voice-note-url')?.value?.trim() || '',
                     // Fee visibility — synced from LO toggle
-                    showFees: document.getElementById('toggle-show-fees')?.classList.contains('active') || false,
+                    showFees: document.getElementById('toggle-show-fees')?.classList.contains('active') !== false,
+                    // Tier display mode (all / rec / rec-plus) — governs which tier tables appear on client quote
+                    recTierDisplay: document.getElementById('rec-tier-display')?.value || 'all',
                     // Titanium v5.9.3 - Client Quote Features
                     showPrequal: document.getElementById('chk-show-prequal')?.classList.contains('active') !== false,
                     showDocUpload: document.getElementById('chk-show-doc-upload')?.classList.contains('active') !== false,
@@ -17276,11 +17475,24 @@ Sent via Above All Carbon HELOC Tool`;
             }
         }
 
+        // Single source of truth for capture exclusions — anything UI-chrome or overlay that shouldn't appear in PDF/screenshot
+        var CAPTURE_EXCLUDE_SELECTOR = [
+            '#ai-assistant-container', '#send-quote-section',
+            '#eq-root', '.eq-orb', '.eq-panel', '#eq-tour-hl',
+            '#carbon-prediction-bar', '#carbon-quick-widget',
+            '#email-send-modal', '.toast-container', '.modal-overlay',
+            '#screen-share-preview', '#welcome-hero',
+            '.tab-upgrade-overlay', '.simple-mode-banner',
+            '#floating-bar', '#floating-toolbar', '#notif-panel',
+            '.help-tip-text', '.help-tip', '#ob-overlay', '#ob-completeness-badge',
+            '.dnc-modal', '#dnc-modal'
+        ].join(', ');
+
         async function captureProposalSafe(opts) {
             opts = opts || {};
-            var captureWidth = opts.width || 950;
-            var scale = opts.scale || 2;
-            var settle = opts.settle || 100;
+            var captureWidth = opts.width || 1000;
+            var scale = opts.scale || 2.5;
+            var settle = opts.settle || 250;
             if (typeof html2canvas === 'undefined') return null;
             var container = document.getElementById('proposal-container');
             if (!container) return null;
@@ -17317,10 +17529,7 @@ Sent via Above All Carbon HELOC Tool`;
                             clonedContainer.style.width = captureWidth + 'px';
                             clonedContainer.style.maxWidth = captureWidth + 'px';
                         }
-                        sanitizeCaptureClone(
-                            clonedDoc,
-                            '#ai-assistant-container, #send-quote-section, #eq-root, .eq-orb, .eq-panel, #carbon-prediction-bar, #carbon-quick-widget, #email-send-modal, .toast-container, .modal-overlay, #screen-share-preview'
-                        );
+                        sanitizeCaptureClone(clonedDoc, CAPTURE_EXCLUDE_SELECTOR);
                     }
                 });
                 container.style.width = origWidth;
@@ -17528,7 +17737,7 @@ Sent via Above All Carbon HELOC Tool`;
 
             try {
                 const canvas = requireProposalCanvas(
-                    await captureProposalSafe({ settle: 150 }),
+                    await captureProposalSafe({ settle: 250 }),
                     'Could not capture quote preview for branded PDF export.'
                 );
                 pdfHiddenEls.forEach(el => el.classList.remove('print-exclude'));
@@ -17537,37 +17746,44 @@ Sent via Above All Carbon HELOC Tool`;
                 const { jsPDF } = window.jspdf;
 
                 // Letter size in mm (8.5 x 11 inches)
-                var pageW = 215.9, pageH = 279.4, margin = 6;
+                var pageW = 215.9, pageH = 279.4, margin = 8;
                 var contentW = pageW - margin * 2;
-                var contentH = pageH - margin * 2;
+                var usableH = pageH - margin * 2;
 
-                // Calculate image dimensions to fit on single page
-                var imgAspect = canvas.height / canvas.width;
+                // Width-fit, paginate if taller than one page (never squish)
+                var imgRatio = canvas.height / canvas.width;
                 var imgW = contentW;
-                var imgH = imgW * imgAspect;
-
-                // If image height exceeds page, scale down to fit
-                if (imgH > contentH) {
-                    imgH = contentH;
-                    imgW = imgH / imgAspect;
-                }
-
-                // Center the image on the page
-                var xOffset = margin + (contentW - imgW) / 2;
-                var yOffset = margin + (contentH - imgH) / 2;
+                var imgH = imgW * imgRatio;
 
                 var pdf = new jsPDF('p', 'mm', 'letter');
+                var heightLeft = imgH;
+                var yPageOffset = 0;
 
-                // Add image scaled to fit single page
-                pdf.addImage(imgData, 'JPEG', xOffset, yOffset, imgW, imgH);
+                // First page
+                pdf.addImage(imgData, 'JPEG', margin, margin, imgW, imgH);
+                heightLeft -= usableH;
 
-                // Add footer
+                // Additional pages — shift image up by full page height per slice
+                while (heightLeft > 0) {
+                    pdf.addPage();
+                    yPageOffset += usableH;
+                    pdf.addImage(imgData, 'JPEG', margin, margin - yPageOffset, imgW, imgH);
+                    heightLeft -= usableH;
+                }
+
+                // Footer on every page
                 var loName = document.getElementById('lo-name')?.value || '';
                 var loPhone = document.getElementById('lo-phone')?.value || '';
                 var company = document.getElementById('lo-company')?.value || '';
-                pdf.setFontSize(7);
-                pdf.setTextColor(150);
-                pdf.text(company + (loName ? ' | ' + loName : '') + (loPhone ? ' | ' + loPhone : ''), margin, pageH - 4);
+                var totalPages = pdf.getNumberOfPages();
+                var footerLine = company + (loName ? ' | ' + loName : '') + (loPhone ? ' | ' + loPhone : '');
+                for (var p = 1; p <= totalPages; p++) {
+                    pdf.setPage(p);
+                    pdf.setFontSize(7);
+                    pdf.setTextColor(150);
+                    pdf.text(footerLine, margin, pageH - 4);
+                    pdf.text('Page ' + p + ' of ' + totalPages, pageW - margin, pageH - 4, { align: 'right' });
+                }
 
                 var clientName = document.getElementById('in-client-name')?.value || 'Client';
                 var dateStr = new Date().toISOString().slice(0, 10);

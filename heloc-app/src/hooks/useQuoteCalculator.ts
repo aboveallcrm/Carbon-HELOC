@@ -16,17 +16,15 @@ export const useQuoteCalculator = (inputs: LoanInputs, rates: RatesData): QuoteR
 
     const baseNeeded = netCash + helocPayoff;
 
-    // CLTV calculation (using baseNeeded? Original uses mortgageBalance + baseNeeded to get ratio vs Home Value)
-    // Original: let cltv = homeValue > 0 ? ((mortgageBalance + baseNeeded) / homeValue) * 100 : 0;
-    // Note: Original code text says "CLTV includes the full loan amount (cash + payoff + fees will be calculated per tier)"
-    // But logic line 1220: ((mortgageBalance + baseNeeded) / homeValue) * 100. It uses baseNeeded, NOT totalLoan (w/ fees).
-    const cltv = homeValue > 0 ? ((mortgageBalance + baseNeeded) / homeValue) * 100 : 0;
-
     const calculateTier = (tierName: keyof RatesData): TierResult => {
         const tierRates = rates[tierName];
         const origPercent = tierRates.origination;
         const feeAmt = baseNeeded * (origPercent / 100);
         const totalLoanAmount = baseNeeded + feeAmt;
+        
+        // CLTV calculation - uses totalLoanAmount which includes origination fees
+        // This is the correct CLTV for this specific tier
+        const tierCltv = homeValue > 0 ? ((mortgageBalance + totalLoanAmount) / homeValue) * 100 : 0;
 
         const terms = [30, 20, 15, 10];
         const payments: { [term: number]: { rate: number, pmt: number } } = {};
@@ -53,7 +51,8 @@ export const useQuoteCalculator = (inputs: LoanInputs, rates: RatesData): QuoteR
             feeAmt,
             totalLoan: totalLoanAmount,
             payments,
-            varPayments
+            varPayments,
+            cltv: tierCltv, // Per-tier CLTV including origination fees
         };
     };
 
@@ -63,13 +62,12 @@ export const useQuoteCalculator = (inputs: LoanInputs, rates: RatesData): QuoteR
         t3: calculateTier('tier3'),
     };
 
-    // Break Even Calculation (Rec Term vs T3)
-    // This usually depends on the *selected* recommendation term. 
-    // For the hook, we might just return the raw data and let the UI calculate break-even based on selection.
-    // Or we can helper method. The original calculates Rec vs T3.
+    // Overall CLTV is based on the base needed (before fees) for initial assessment
+    // But each tier has its own CLTV including fees
+    const baseCltv = homeValue > 0 ? ((mortgageBalance + baseNeeded) / homeValue) * 100 : 0;
 
     return {
-        cltv,
+        cltv: baseCltv,
         baseNeeded,
         results
     };

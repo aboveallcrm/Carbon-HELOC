@@ -7421,6 +7421,466 @@
         [data-tour-highlight] {
             transition: all 0.3s ease;
         }
+
+        /* ============================================= */
+        /* ===== PRESET TEMPLATE: MINIMAL (DARK) ======= */
+        /* ============================================= */
+        #template-minimal {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 28px 32px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            font-family: var(--font-body, 'Inter', sans-serif);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        #template-minimal .min-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(197,160,89,0.3);
+        }
+        #template-minimal .min-brand {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 18px;
+            font-weight: 700;
+            color: #c5a059;
+            letter-spacing: 0.5px;
+        }
+        #template-minimal .min-client {
+            font-size: 12px;
+            color: rgba(226,232,240,0.7);
+            text-align: right;
+        }
+        #template-minimal .min-client strong { color: white; display: block; font-size: 13px; margin-bottom: 2px; }
+        #template-minimal .min-valuation {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        #template-minimal .min-block {
+            background: rgba(30,41,59,0.6);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 14px 16px;
+            text-align: center;
+        }
+        #template-minimal .min-block-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(226,232,240,0.55);
+            margin-bottom: 6px;
+        }
+        #template-minimal .min-block-value {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+        }
+        #template-minimal .min-block.accent .min-block-value { color: #c5a059; }
+        #template-minimal .min-matrix-title {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #c5a059;
+            margin: 0 0 14px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #template-minimal .min-matrix-title::before,
+        #template-minimal .min-matrix-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(197,160,89,0.3);
+        }
+        #template-minimal .min-matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        #template-minimal .min-matrix-grid[data-cols="1"] { grid-template-columns: 1fr; max-width: 500px; margin-left: auto; margin-right: auto; }
+        #template-minimal .min-matrix-grid[data-cols="2"] { grid-template-columns: 1fr 1fr; }
+        #template-minimal .min-tier {
+            background: rgba(30,41,59,0.6);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        #template-minimal .min-tier.recommended {
+            border-color: #c5a059;
+            box-shadow: 0 0 0 1px #c5a059, 0 8px 24px rgba(197,160,89,0.2);
+        }
+        #template-minimal .min-tier-header {
+            background: linear-gradient(135deg, #c5a059, #a68543);
+            color: #0f172a;
+            padding: 10px 14px;
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #template-minimal .min-tier-header .min-tier-fee {
+            font-size: 11px;
+            opacity: 0.8;
+            font-weight: 600;
+        }
+        #template-minimal .min-rate-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #template-minimal .min-rate-table th,
+        #template-minimal .min-rate-table td {
+            padding: 9px 10px;
+            font-size: 12px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        #template-minimal .min-rate-table th {
+            background: rgba(0,0,0,0.2);
+            color: rgba(226,232,240,0.6);
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+        #template-minimal .min-rate-table tbody tr {
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        #template-minimal .min-rate-table tbody tr:hover {
+            background: rgba(197,160,89,0.08);
+        }
+        #template-minimal .min-rate-table tbody tr.highlight-row {
+            background: rgba(197,160,89,0.18);
+            color: #c5a059;
+            font-weight: 700;
+        }
+        #template-minimal .min-rate-table tbody tr.highlight-row td {
+            color: #c5a059;
+        }
+        #template-minimal .min-rate-table tr.min-detail-row td {
+            background: rgba(15,23,42,0.8);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 11px;
+            color: rgba(226,232,240,0.85);
+        }
+        #template-minimal .min-rate-table tr.min-detail-row .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        #template-minimal .min-rate-table tr.min-detail-row .dg-label {
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(226,232,240,0.5);
+            margin-bottom: 2px;
+        }
+        #template-minimal .min-rate-table tr.min-detail-row .dg-value {
+            font-weight: 700;
+            color: white;
+        }
+        #template-minimal .min-rec {
+            background: linear-gradient(135deg, rgba(197,160,89,0.15), rgba(197,160,89,0.05));
+            border: 1px solid rgba(197,160,89,0.4);
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+        #template-minimal .min-rec-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #c5a059;
+            margin-bottom: 4px;
+        }
+        #template-minimal .min-rec-offer {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 17px;
+            font-weight: 700;
+            color: white;
+        }
+        #template-minimal .min-rec-payment {
+            text-align: right;
+        }
+        #template-minimal .min-rec-payment-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(226,232,240,0.6);
+        }
+        #template-minimal .min-rec-payment-amt {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 26px;
+            font-weight: 700;
+            color: #c5a059;
+        }
+        #template-minimal .min-lang {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 0;
+        }
+        #template-minimal .min-lang button {
+            padding: 6px 10px;
+            font-size: 10px;
+            border: 1px solid rgba(197,160,89,0.3);
+            background: rgba(0,0,0,0.3);
+            color: rgba(226,232,240,0.7);
+            cursor: pointer;
+            font-family: var(--font-heading, 'Playfair Display', serif);
+        }
+        #template-minimal .min-lang button:first-child { border-radius: 4px 0 0 4px; }
+        #template-minimal .min-lang button:last-child { border-radius: 0 4px 4px 0; }
+        #template-minimal .min-lang button.active {
+            background: #c5a059;
+            color: #0f172a;
+            border-color: #c5a059;
+        }
+        #template-minimal .min-disclaimer {
+            margin-top: 20px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            font-size: 9px;
+            color: rgba(226,232,240,0.4);
+            line-height: 1.5;
+            text-align: center;
+        }
+        @media (max-width: 780px) {
+            #template-minimal .min-valuation { grid-template-columns: repeat(2, 1fr); }
+            #template-minimal .min-matrix-grid { grid-template-columns: 1fr !important; }
+            #template-minimal .min-rec { flex-direction: column; text-align: center; }
+            #template-minimal .min-rec-payment { text-align: center; }
+            #template-minimal .min-header { flex-direction: column; gap: 8px; text-align: center; }
+            #template-minimal .min-client { text-align: center; }
+        }
+
+        /* ============================================= */
+        /* ===== PRESET TEMPLATE: ORIGINAL (LIGHT) ===== */
+        /* ============================================= */
+        #template-original {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 40px 50px;
+            background: #ffffff;
+            color: #1e293b;
+            font-family: var(--font-body, 'Inter', sans-serif);
+            border-radius: 6px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+            line-height: 1.55;
+            position: relative;
+        }
+        #template-original .orig-header {
+            text-align: center;
+            padding-bottom: 24px;
+            margin-bottom: 28px;
+            border-bottom: 2px solid #c5a059;
+        }
+        #template-original .orig-brand {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 26px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+        #template-original .orig-subtitle {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        #template-original .orig-client-strip {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 16px 20px;
+            background: #f8fafc;
+            border-left: 4px solid #c5a059;
+            border-radius: 4px;
+        }
+        #template-original .orig-client-strip .label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 3px;
+        }
+        #template-original .orig-client-strip .value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+        #template-original .orig-valuation {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 30px;
+        }
+        #template-original .orig-block {
+            text-align: center;
+            padding: 14px 8px;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+        #template-original .orig-block-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        #template-original .orig-block-value {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        #template-original .orig-block.accent .orig-block-value { color: #c5a059; }
+        #template-original .orig-section-title {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #0f172a;
+            margin: 28px 0 14px 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        #template-original .orig-matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        #template-original .orig-matrix-grid[data-cols="1"] { grid-template-columns: 1fr; max-width: 500px; margin-left: auto; margin-right: auto; }
+        #template-original .orig-matrix-grid[data-cols="2"] { grid-template-columns: 1fr 1fr; }
+        #template-original .orig-tier {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        #template-original .orig-tier.recommended {
+            border-color: #c5a059;
+            box-shadow: 0 4px 12px rgba(197,160,89,0.2);
+        }
+        #template-original .orig-tier-header {
+            background: #c5a059;
+            color: white;
+            padding: 9px 12px;
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #template-original .orig-tier-header .orig-tier-fee { font-size: 10px; opacity: 0.9; }
+        #template-original .orig-rate-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #template-original .orig-rate-table th,
+        #template-original .orig-rate-table td {
+            padding: 8px 10px;
+            font-size: 11px;
+            text-align: center;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        #template-original .orig-rate-table th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        #template-original .orig-rate-table tr.highlight-row {
+            background: rgba(197,160,89,0.12);
+            font-weight: 700;
+            color: #c5a059;
+        }
+        #template-original .orig-rate-table tr.highlight-row td {
+            color: #c5a059;
+        }
+        #template-original .orig-rec-bar {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: white;
+            padding: 18px 24px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+        }
+        #template-original .orig-rec-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #c5a059;
+            margin-bottom: 4px;
+        }
+        #template-original .orig-rec-offer {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 16px;
+            font-weight: 700;
+        }
+        #template-original .orig-rec-payment-amt {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 24px;
+            font-weight: 700;
+            color: #c5a059;
+        }
+        #template-original .orig-footer {
+            margin-top: 36px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 11px;
+            color: #64748b;
+        }
+        #template-original .orig-footer .lo-line {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+        #template-original .orig-disclaimer {
+            margin-top: 18px;
+            font-size: 9px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+        @media (max-width: 780px) {
+            #template-original { padding: 24px 20px; }
+            #template-original .orig-client-strip { grid-template-columns: 1fr; }
+            #template-original .orig-valuation { grid-template-columns: repeat(2, 1fr); }
+            #template-original .orig-matrix-grid { grid-template-columns: 1fr !important; }
+            #template-original .orig-rec-bar { flex-direction: column; text-align: center; gap: 10px; }
+        }
     </style>
 </head>
 
@@ -8593,6 +9053,12 @@
         <div class="footer-powered" id="footer-powered">Powered by <span class="powered-by-name">your lending team</span></div>
     </div>
 
+    <!-- ===== DISTINCT PRESET TEMPLATES ===== -->
+    <!-- Minimal preset: interactive copy of the tool's proposal-container (rate matrix + recommendation) -->
+    <div id="template-minimal" class="preset-template" style="display:none;"></div>
+    <!-- Original preset: clean PDF-style document (light theme, single column) -->
+    <div id="template-original" class="preset-template" style="display:none;"></div>
+
     <!-- Ezra Chat Widget (injected by JS) -->
     <div id="eq-root"></div>
     <!-- Tour Highlight Overlay -->
@@ -9451,6 +9917,13 @@
                 
                 // Apply template mode - hide/show sections based on mode
                 applyTemplateMode(templateMode, linkOpts);
+                // Re-hide floating bar for non-enhanced presets (it was shown above before template applied)
+                if (templateMode === 'minimal' || templateMode === 'simple' || templateMode === 'original' || templateMode === 'standard') {
+                    var fbOther = document.getElementById('floating-bar');
+                    if (fbOther) fbOther.style.display = 'none';
+                    var pfbOther = document.getElementById('preview-floating-bar');
+                    if (pfbOther) pfbOther.style.display = 'none';
+                }
 
                 // === ORIGINATION FEE CARDS — Dynamic from actual tiers ===
                 renderOriginationCards(data);
@@ -9602,13 +10075,26 @@
                     var grid = document.getElementById('fee-tier-grid-dynamic');
                     if (!grid || !data.tiers || data.tiers.length === 0) return;
 
-                    var netCash = parseFloat(String(data.cashBack || data.totalLoan || 0).replace(/[$,]/g, '')) || 100000;
+                    var cbAmt = parseFloat(String(data.cashBack || 0).replace(/[$,]/g, '')) || 0;
+                    var hpAmt = parseFloat(String(data.helocPayoff || 0).replace(/[$,]/g, '')) || 0;
+                    var netCash = (cbAmt + hpAmt) || parseFloat(String(data.totalLoan || 0).replace(/[$,]/g, '')) || 100000;
                     var recTerm = (data.recTerm || data.term || '20');
                     if (recTerm.indexOf('yr') === -1) recTerm += 'yr';
                     var recTierNum = parseInt(data.recTier) || 0;
 
                     // Sort tiers by origPts ascending (lowest fee first)
                     var sorted = data.tiers.slice().sort(function(a, b) { return parseFloat(a.origPts) - parseFloat(b.origPts); });
+                    // Apply recTierDisplay filter (same as main rate tables)
+                    var tierDisplayMode = (linkOpts && linkOpts.recTierDisplay) || data.recTierDisplay || 'all';
+                    if (tierDisplayMode === 'rec' && recTierNum > 0) {
+                        sorted = sorted.filter(function(t) { return parseInt(t.tier) === recTierNum; });
+                    } else if (tierDisplayMode === 'rec-plus' && recTierNum > 0) {
+                        var neighborCard = recTierNum > 1 ? recTierNum - 1 : recTierNum + 1;
+                        sorted = sorted.filter(function(t) {
+                            var n = parseInt(t.tier);
+                            return n === recTierNum || n === neighborCard;
+                        });
+                    }
 
                     var tierStyles = [
                         { color: '#c5a059', bg: 'rgba(197,160,89,0.1)', bg2: 'rgba(197,160,89,0.05)', label: 'Lowest Fee', labelEs: 'Menor Costo', desc: '"I want to minimize fees" — Lower origination, higher rate. Best if you plan to pay off early.', tags: 'Lowest Fee | Highest Rate' },
@@ -9646,120 +10132,339 @@
                 function applyTemplateMode(mode, opts) {
                     opts = opts || {};
 
-                    // Sections to control
+                    var enhancedContent = document.getElementById('content');
+                    var minimalEl = document.getElementById('template-minimal');
+                    var originalEl = document.getElementById('template-original');
+
+                    function hide(el) { if (el) el.style.display = 'none'; }
+                    function show(el, display) { if (el) el.style.display = display || ''; }
+
+                    // Reset theme class
+                    document.body.classList.remove('theme-light');
+                    document.body.classList.remove('theme-minimal');
+                    document.body.classList.remove('theme-original');
+
+                    if (mode === 'minimal' || mode === 'simple') {
+                        // Hide enhanced layout entirely, render interactive minimal template
+                        hide(enhancedContent);
+                        hide(originalEl);
+                        show(minimalEl, 'block');
+                        document.body.classList.add('theme-minimal');
+                        // Also hide global overlays
+                        hide(document.getElementById('eq-orb'));
+                        hide(document.getElementById('floating-bar'));
+                        renderMinimal(data, opts);
+                        return;
+                    }
+
+                    if (mode === 'original' || mode === 'standard') {
+                        // Hide enhanced layout, render clean PDF-style doc
+                        hide(enhancedContent);
+                        hide(minimalEl);
+                        show(originalEl, 'block');
+                        document.body.classList.add('theme-original');
+                        hide(document.getElementById('eq-orb'));
+                        hide(document.getElementById('floating-bar'));
+                        renderOriginal(data, opts);
+                        return;
+                    }
+
+                    // enhanced / custom / default: keep existing rich layout
+                    show(enhancedContent);
+                    hide(minimalEl);
+                    hide(originalEl);
+                    document.body.classList.add('theme-light');
+
+                    // Section-level overrides for enhanced (respect individual linkOptions)
                     var sections = {
                         video: document.getElementById('sec-personal-video'),
                         socialProof: document.getElementById('sec-social-proof'),
                         whatIf: document.getElementById('sec-what-if'),
-                        interactiveSavings: document.getElementById('sec-interactive-savings'),
-                        paymentScenario: document.getElementById('sec-payment-scenario'),
-                        savingsCompare: document.getElementById('sec-savings'),
-                        fundsCarousel: document.getElementById('sec-funds-carousel'),
-                        faq: document.getElementById('sec-faq'),
-                        equityChart: document.getElementById('sec-equity-chart'),
                         tierCompare: document.getElementById('sec-tier-compare'),
                         dtiCalc: document.getElementById('sec-dti-calc'),
-                        testimonials: document.getElementById('sec-testimonials'),
-                        debtConsolidation: document.getElementById('sec-debt-consolidation'),
-                        originationCards: document.getElementById('originationFeeTiers'),
-                        borrowerStrategy: document.getElementById('sec-borrower-strategy')
+                        testimonials: document.getElementById('sec-testimonials')
                     };
-
-                    function hide(el) { if (el) el.style.display = 'none'; }
-                    function show(el) { if (el) el.style.display = ''; }
-
-                    // Remove any previous theme class
-                    document.body.classList.remove('theme-light');
-
-                    switch(mode) {
-                        case 'minimal':
-                        case 'simple':
-                            // Minimal: Dark theme, numbers only — rate table + recommended option only
-                            // (Do NOT add theme-light — keep the dark background)
-                            hide(sections.video);
-                            hide(sections.socialProof);
-                            hide(sections.whatIf);
-                            hide(sections.interactiveSavings);
-                            hide(sections.paymentScenario);
-                            hide(sections.savingsCompare);
-                            hide(sections.fundsCarousel);
-                            hide(sections.faq);
-                            hide(sections.equityChart);
-                            hide(sections.tierCompare);
-                            hide(sections.dtiCalc);
-                            hide(sections.testimonials);
-                            hide(sections.debtConsolidation);
-                            hide(sections.originationCards);
-                            hide(sections.borrowerStrategy);
-                            // Hide Ezra
-                            hide(document.getElementById('eq-orb'));
-                            break;
-
-                        case 'original':
-                        case 'standard':
-                            // Original: Light PDF-like theme, clean layout, subtle animations
-                            document.body.classList.add('theme-light');
-                            hide(sections.video);
-                            hide(sections.socialProof);
-                            hide(sections.interactiveSavings);
-                            hide(sections.savingsCompare);
-                            hide(sections.fundsCarousel);
-                            hide(sections.tierCompare);
-                            hide(sections.dtiCalc);
-                            hide(sections.testimonials);
-                            hide(sections.whatIf);
-                            hide(sections.paymentScenario);
-                            // Hide Ezra for original preset
-                            hide(document.getElementById('eq-orb'));
-                            // Keep: header, client info, valuation, rate matrix, recommended, payment snapshot, debt table, FAQ, LO footer, disclaimer
-                            // Enable scroll reveal animations
-                            document.querySelectorAll('.section, .quote-wrapper > div').forEach(function(el) {
-                                el.classList.add('reveal');
-                            });
-                            var revealObserver = new IntersectionObserver(function(entries) {
-                                entries.forEach(function(entry) {
-                                    if (entry.isIntersecting) {
-                                        entry.target.classList.add('visible');
-                                    }
-                                });
-                            }, { threshold: 0.1 });
-                            document.querySelectorAll('.reveal').forEach(function(el) {
-                                revealObserver.observe(el);
-                            });
-                            break;
-
-                        case 'enhanced':
-                        case 'custom':
-                        default:
-                            // Enhanced: Light theme + full sales psychology suite
-                            document.body.classList.add('theme-light');
-                            // Everything visible, respect individual linkOptions
-                            if (opts.showVideo === false) hide(sections.video);
-                            if (opts.showWhatIfPayoff === false) hide(sections.whatIf);
-                            if (opts.showTierCompare === false) hide(sections.tierCompare);
-                            if (opts.showDtiCalc === false) hide(sections.dtiCalc);
-                            if (opts.showTestimonials === false) hide(sections.testimonials);
-                            // Enable scroll reveal animations
-                            document.querySelectorAll('.section, .quote-wrapper > div').forEach(function(el) {
-                                el.classList.add('reveal');
-                            });
-                            var revealObs = new IntersectionObserver(function(entries) {
-                                entries.forEach(function(entry) {
-                                    if (entry.isIntersecting) {
-                                        entry.target.classList.add('visible');
-                                    }
-                                });
-                            }, { threshold: 0.1 });
-                            document.querySelectorAll('.reveal').forEach(function(el) {
-                                revealObs.observe(el);
-                            });
-                            break;
-                    }
-                    // Respect individual linkOptions flags regardless of mode
+                    if (opts.showVideo === false) hide(sections.video);
+                    if (opts.showWhatIfPayoff === false) hide(sections.whatIf);
+                    if (opts.showTierCompare === false) hide(sections.tierCompare);
+                    if (opts.showDtiCalc === false) hide(sections.dtiCalc);
+                    if (opts.showTestimonials === false) hide(sections.testimonials);
                     if (opts.showSalesPsych === false) hide(sections.socialProof);
-                    if (opts.showAiChat === false) {
-                        hide(document.getElementById('eq-orb'));
+                    if (opts.showAiChat === false) hide(document.getElementById('eq-orb'));
+
+                    // Enable scroll reveal animations
+                    document.querySelectorAll('.section, .quote-wrapper > div').forEach(function(el) {
+                        el.classList.add('reveal');
+                    });
+                    var revealObs = new IntersectionObserver(function(entries) {
+                        entries.forEach(function(entry) {
+                            if (entry.isIntersecting) entry.target.classList.add('visible');
+                        });
+                    }, { threshold: 0.1 });
+                    document.querySelectorAll('.reveal').forEach(function(el) {
+                        revealObs.observe(el);
+                    });
+                }
+
+                // ===== Shared helpers for minimal/original templates =====
+                function _fmtCurrency(n) {
+                    var num = typeof n === 'number' ? n : parseFloat(String(n || 0).replace(/[$,\/mo]/g, '')) || 0;
+                    return '$' + Math.round(num).toLocaleString();
+                }
+                function _filterTiersByDisplayMode(tiers, recTierNum, mode) {
+                    if (!tiers || tiers.length === 0) return [];
+                    var sorted = tiers.slice().sort(function(a, b) { return parseInt(a.tier) - parseInt(b.tier); });
+                    if (mode === 'rec' && recTierNum > 0) {
+                        return sorted.filter(function(t) { return parseInt(t.tier) === recTierNum; });
                     }
+                    if (mode === 'rec-plus' && recTierNum > 0) {
+                        var neighbor = recTierNum > 1 ? recTierNum - 1 : recTierNum + 1;
+                        return sorted.filter(function(t) {
+                            var n = parseInt(t.tier);
+                            return n === recTierNum || n === neighbor;
+                        });
+                    }
+                    return sorted;
+                }
+
+                // ===== MINIMAL TEMPLATE RENDERER =====
+                function renderMinimal(data, opts) {
+                    var container = document.getElementById('template-minimal');
+                    if (!container) return;
+                    var cbAmt = parseFloat(String(data.cashBack || 0).replace(/[$,]/g, '')) || 0;
+                    var hpAmt = parseFloat(String(data.helocPayoff || 0).replace(/[$,]/g, '')) || 0;
+                    var netCash = cbAmt + hpAmt;
+                    var recType = data.recType || 'fixed';
+                    var isVarRec = recType === 'variable';
+                    var recTierNum = parseInt(data.recTier) || 0;
+                    var recTermKey = (data.recTerm || '20');
+                    if (recTermKey.indexOf('yr') === -1) recTermKey += 'yr';
+                    var tierDisplayMode = (opts && opts.recTierDisplay) || data.recTierDisplay || 'all';
+                    var showFees = opts && opts.showFees !== false;
+                    var tiers = _filterTiersByDisplayMode(data.tiers || [], recTierNum, tierDisplayMode);
+
+                    // LO + client info
+                    var loInfo = (data.lo_info || data.loInfo || {});
+                    var loCompany = loInfo.company || loInfo.loCompany || data.companyName || 'Above All Carbon HELOC';
+                    var clientName = data.clientName || 'Client';
+                    var dateStr = data.date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+                    // Valuation blocks
+                    var homeValue = _fmtCurrency(data.homeValue);
+                    var mortgageBalance = _fmtCurrency(data.mortgageBalance);
+                    var helocAmount = _fmtCurrency(netCash);
+                    var cltv = data.cltv || '0%';
+
+                    // Recommended offer line
+                    var recTierObj = (data.tiers || []).find(function(t) { return parseInt(t.tier) === recTierNum; }) || (data.tiers || [])[1] || (data.tiers || [])[0];
+                    var recRates = isVarRec && recTierObj && recTierObj.varRates ? recTierObj.varRates : (recTierObj ? recTierObj.rates : {});
+                    var recEntry = recRates && recRates[recTermKey] ? recRates[recTermKey] : null;
+                    var recRate = recEntry ? recEntry.rate : (data.rate ? data.rate + '%' : '—');
+                    var recPayment = recEntry ? recEntry.payment : (data.payment || '—');
+                    var recTermYrs = parseInt(recTermKey) || 20;
+                    var recTypeLabel = isVarRec ? 'Variable' : 'Fixed';
+
+                    // Build HTML
+                    var html = '';
+                    html += '<div class="min-lang">';
+                    html += '<button onclick="setLanguage(\'en\')" id="minLangEn" class="active">EN</button>';
+                    html += '<button onclick="setLanguage(\'es\')" id="minLangEs">ES</button>';
+                    html += '<button onclick="downloadPDF()" title="Save as PDF" style="margin-left:8px;padding:6px 10px;font-size:10px;border-radius:4px;border:1px solid rgba(197,160,89,0.3);background:rgba(0,0,0,0.3);color:rgba(226,232,240,0.7);cursor:pointer;font-family:var(--font-heading,serif);">&#128196; PDF</button>';
+                    html += '</div>';
+                    html += '<header class="min-header">';
+                    html += '<div class="min-brand">' + esc(loCompany) + '</div>';
+                    html += '<div class="min-client"><strong>' + esc(clientName) + '</strong>' + esc(dateStr) + '</div>';
+                    html += '</header>';
+
+                    // Valuation strip
+                    html += '<section class="min-valuation">';
+                    html += '<div class="min-block"><div class="min-block-label">Home Value</div><div class="min-block-value">' + homeValue + '</div></div>';
+                    html += '<div class="min-block"><div class="min-block-label">1st Mortgage</div><div class="min-block-value">' + mortgageBalance + '</div></div>';
+                    html += '<div class="min-block accent"><div class="min-block-label">HELOC Amount</div><div class="min-block-value">' + helocAmount + '</div></div>';
+                    html += '<div class="min-block"><div class="min-block-label">Proposed CLTV</div><div class="min-block-value">' + esc(cltv) + '</div></div>';
+                    html += '</section>';
+
+                    // Matrix title + grid
+                    html += '<h3 class="min-matrix-title">' + recTypeLabel + ' Rate Funding Matrix</h3>';
+                    var cols = tiers.length === 1 ? '1' : (tiers.length === 2 ? '2' : '3');
+                    html += '<div class="min-matrix-grid" data-cols="' + cols + '">';
+                    tiers.forEach(function(tier) {
+                        var tierN = parseInt(tier.tier);
+                        var isRec = tierN === recTierNum;
+                        var origPts = parseFloat(tier.origPts) || 0;
+                        var feeAmt = Math.round(netCash * (origPts / 100));
+                        var rates = isVarRec && tier.varRates && Object.keys(tier.varRates).length ? tier.varRates : tier.rates;
+                        html += '<div class="min-tier' + (isRec ? ' recommended' : '') + '">';
+                        html += '<h4 class="min-tier-header"><span>TIER ' + tierN + '</span><span class="min-tier-fee">' + origPts.toFixed(2) + '% ' + (showFees ? '($' + feeAmt.toLocaleString() + ')' : '') + '</span></h4>';
+                        html += '<table class="min-rate-table"><thead><tr><th>Term</th><th>Rate</th><th>Payment</th>' + (showFees ? '<th>Fee</th>' : '') + '</tr></thead><tbody>';
+                        // Stable term order: 30, 20, 15, 10
+                        ['30yr', '20yr', '15yr', '10yr'].forEach(function(tk) {
+                            if (!rates || !rates[tk]) return;
+                            var r = rates[tk];
+                            var termNum = parseInt(tk);
+                            var isHighlight = isRec && tk === recTermKey;
+                            html += '<tr class="min-term-row' + (isHighlight ? ' highlight-row' : '') + '" data-tier="' + tierN + '" data-term="' + tk + '" onclick="toggleMinimalDetail(this)">';
+                            html += '<td>' + termNum + '-Yr</td>';
+                            html += '<td>' + esc(r.rate || '—') + '</td>';
+                            html += '<td>' + esc(r.payment || '—') + '</td>';
+                            if (showFees) html += '<td>$' + feeAmt.toLocaleString() + '</td>';
+                            html += '</tr>';
+                        });
+                        html += '</tbody></table>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+
+                    // Recommended bar
+                    html += '<section class="min-rec">';
+                    html += '<div>';
+                    html += '<div class="min-rec-label">Recommended for You</div>';
+                    html += '<div class="min-rec-offer">Tier ' + (recTierNum || 2) + ' &middot; ' + recTermYrs + '-Year ' + recTypeLabel + ' @ ' + esc(recRate) + '</div>';
+                    html += '</div>';
+                    html += '<div class="min-rec-payment">';
+                    html += '<div class="min-rec-payment-label">Monthly Payment</div>';
+                    html += '<div class="min-rec-payment-amt">' + esc(recPayment) + '</div>';
+                    html += '</div>';
+                    html += '</section>';
+
+                    // Disclaimer
+                    html += '<div class="min-disclaimer">Rates and payments shown are estimates based on the information provided. Final terms subject to underwriting approval. Not a commitment to lend.</div>';
+
+                    container.innerHTML = html;
+                }
+
+                // Toggle expandable detail row in minimal template
+                window.toggleMinimalDetail = function(row) {
+                    var existing = row.nextElementSibling;
+                    if (existing && existing.classList.contains('min-detail-row')) {
+                        existing.remove();
+                        return;
+                    }
+                    // Remove any other open detail rows in the same table
+                    var table = row.closest('table');
+                    if (table) {
+                        table.querySelectorAll('.min-detail-row').forEach(function(dr) { dr.remove(); });
+                    }
+                    var cells = row.children;
+                    var term = row.getAttribute('data-term');
+                    var rate = cells[1] ? cells[1].innerText : '—';
+                    var payment = cells[2] ? cells[2].innerText : '—';
+                    var fee = cells[3] ? cells[3].innerText : '—';
+                    var colspan = cells.length;
+                    var detail = document.createElement('tr');
+                    detail.className = 'min-detail-row';
+                    detail.innerHTML = '<td colspan="' + colspan + '">' +
+                        '<div class="detail-grid">' +
+                        '<div><div class="dg-label">Term</div><div class="dg-value">' + (parseInt(term) || '—') + ' years</div></div>' +
+                        '<div><div class="dg-label">Interest Rate</div><div class="dg-value">' + rate + '</div></div>' +
+                        '<div><div class="dg-label">Monthly Payment</div><div class="dg-value">' + payment + '</div></div>' +
+                        '<div><div class="dg-label">Origination Fee</div><div class="dg-value">' + fee + '</div></div>' +
+                        '</div>' +
+                        '</td>';
+                    row.parentNode.insertBefore(detail, row.nextSibling);
+                };
+
+                // ===== ORIGINAL TEMPLATE RENDERER =====
+                function renderOriginal(data, opts) {
+                    var container = document.getElementById('template-original');
+                    if (!container) return;
+                    var cbAmt = parseFloat(String(data.cashBack || 0).replace(/[$,]/g, '')) || 0;
+                    var hpAmt = parseFloat(String(data.helocPayoff || 0).replace(/[$,]/g, '')) || 0;
+                    var netCash = cbAmt + hpAmt;
+                    var recType = data.recType || 'fixed';
+                    var isVarRec = recType === 'variable';
+                    var recTierNum = parseInt(data.recTier) || 0;
+                    var recTermKey = (data.recTerm || '20');
+                    if (recTermKey.indexOf('yr') === -1) recTermKey += 'yr';
+                    var tierDisplayMode = (opts && opts.recTierDisplay) || data.recTierDisplay || 'all';
+                    var showFees = opts && opts.showFees !== false;
+                    var tiers = _filterTiersByDisplayMode(data.tiers || [], recTierNum, tierDisplayMode);
+
+                    var loInfo = (data.lo_info || data.loInfo || {});
+                    var loCompany = loInfo.company || loInfo.loCompany || data.companyName || 'Above All Carbon HELOC';
+                    var loName = loInfo.name || loInfo.loName || '';
+                    var loPhone = loInfo.phone || loInfo.loPhone || '';
+                    var loEmail = loInfo.email || loInfo.loEmail || '';
+                    var loNmls = loInfo.nmls || loInfo.loNmls || '';
+                    var clientName = data.clientName || 'Client';
+                    var dateStr = data.date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+                    var recTierObj = (data.tiers || []).find(function(t) { return parseInt(t.tier) === recTierNum; }) || (data.tiers || [])[1] || (data.tiers || [])[0];
+                    var recRates = isVarRec && recTierObj && recTierObj.varRates ? recTierObj.varRates : (recTierObj ? recTierObj.rates : {});
+                    var recEntry = recRates && recRates[recTermKey] ? recRates[recTermKey] : null;
+                    var recRate = recEntry ? recEntry.rate : (data.rate ? data.rate + '%' : '—');
+                    var recPayment = recEntry ? recEntry.payment : (data.payment || '—');
+                    var recTermYrs = parseInt(recTermKey) || 20;
+                    var recTypeLabel = isVarRec ? 'Variable' : 'Fixed';
+
+                    var html = '';
+                    html += '<div class="orig-header">';
+                    html += '<div class="orig-brand">' + esc(loCompany) + '</div>';
+                    html += '<div class="orig-subtitle">HELOC Proposal</div>';
+                    html += '</div>';
+
+                    html += '<div class="orig-client-strip">';
+                    html += '<div><div class="label">Prepared For</div><div class="value">' + esc(clientName) + '</div></div>';
+                    html += '<div><div class="label">Date</div><div class="value">' + esc(dateStr) + '</div></div>';
+                    if (data.propertyAddress) html += '<div><div class="label">Property</div><div class="value">' + esc(data.propertyAddress) + '</div></div>';
+                    if (data.propertyType) html += '<div><div class="label">Occupancy</div><div class="value">' + esc(data.propertyType) + '</div></div>';
+                    html += '</div>';
+
+                    html += '<div class="orig-valuation">';
+                    html += '<div class="orig-block"><div class="orig-block-label">Home Value</div><div class="orig-block-value">' + _fmtCurrency(data.homeValue) + '</div></div>';
+                    html += '<div class="orig-block"><div class="orig-block-label">1st Mortgage</div><div class="orig-block-value">' + _fmtCurrency(data.mortgageBalance) + '</div></div>';
+                    html += '<div class="orig-block accent"><div class="orig-block-label">HELOC Amount</div><div class="orig-block-value">' + _fmtCurrency(netCash) + '</div></div>';
+                    html += '<div class="orig-block"><div class="orig-block-label">Proposed CLTV</div><div class="orig-block-value">' + esc(data.cltv || '0%') + '</div></div>';
+                    html += '</div>';
+
+                    html += '<h3 class="orig-section-title">' + recTypeLabel + ' Rate Options</h3>';
+                    var cols = tiers.length === 1 ? '1' : (tiers.length === 2 ? '2' : '3');
+                    html += '<div class="orig-matrix-grid" data-cols="' + cols + '">';
+                    tiers.forEach(function(tier) {
+                        var tierN = parseInt(tier.tier);
+                        var isRec = tierN === recTierNum;
+                        var origPts = parseFloat(tier.origPts) || 0;
+                        var feeAmt = Math.round(netCash * (origPts / 100));
+                        var rates = isVarRec && tier.varRates && Object.keys(tier.varRates).length ? tier.varRates : tier.rates;
+                        html += '<div class="orig-tier' + (isRec ? ' recommended' : '') + '">';
+                        html += '<h4 class="orig-tier-header"><span>TIER ' + tierN + '</span><span class="orig-tier-fee">' + origPts.toFixed(2) + '% ' + (showFees ? '($' + feeAmt.toLocaleString() + ')' : '') + '</span></h4>';
+                        html += '<table class="orig-rate-table"><thead><tr><th>Term</th><th>Rate</th><th>Payment</th>' + (showFees ? '<th>Fee</th>' : '') + '</tr></thead><tbody>';
+                        ['30yr', '20yr', '15yr', '10yr'].forEach(function(tk) {
+                            if (!rates || !rates[tk]) return;
+                            var r = rates[tk];
+                            var termNum = parseInt(tk);
+                            var isHighlight = isRec && tk === recTermKey;
+                            html += '<tr class="' + (isHighlight ? 'highlight-row' : '') + '">';
+                            html += '<td>' + termNum + '-Yr</td>';
+                            html += '<td>' + esc(r.rate || '—') + '</td>';
+                            html += '<td>' + esc(r.payment || '—') + '</td>';
+                            if (showFees) html += '<td>$' + feeAmt.toLocaleString() + '</td>';
+                            html += '</tr>';
+                        });
+                        html += '</tbody></table>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+
+                    html += '<div class="orig-rec-bar">';
+                    html += '<div><div class="orig-rec-label">Recommended Option</div><div class="orig-rec-offer">Tier ' + (recTierNum || 2) + ' &middot; ' + recTermYrs + '-Year ' + recTypeLabel + ' @ ' + esc(recRate) + '</div></div>';
+                    html += '<div style="text-align:right;"><div class="orig-rec-label">Monthly Payment</div><div class="orig-rec-payment-amt">' + esc(recPayment) + '</div></div>';
+                    html += '</div>';
+
+                    html += '<div class="orig-footer">';
+                    if (loName) html += '<div class="lo-line">' + esc(loName) + (loNmls ? ' &middot; NMLS# ' + esc(loNmls) : '') + '</div>';
+                    var contactBits = [];
+                    if (loPhone) contactBits.push(esc(loPhone));
+                    if (loEmail) contactBits.push(esc(loEmail));
+                    if (contactBits.length) html += '<div>' + contactBits.join(' &middot; ') + '</div>';
+                    html += '<div class="orig-disclaimer">Rates and payments are estimates. Final terms subject to full underwriting and property appraisal. This is not a commitment to lend.</div>';
+                    html += '</div>';
+
+                    // PDF button (top-right, unobtrusive)
+                    html += '<button onclick="downloadPDF()" title="Save as PDF" style="position:absolute;top:20px;right:20px;padding:8px 14px;font-size:11px;border-radius:4px;border:1px solid #c5a059;background:#c5a059;color:white;cursor:pointer;font-family:var(--font-heading,serif);font-weight:600;letter-spacing:0.5px;">&#128196; SAVE PDF</button>';
+
+                    container.style.position = 'relative';
+                    container.innerHTML = html;
                 }
 
                 // Client Grid
@@ -9851,8 +10556,10 @@
                 // Rate Tiers with expandable rows
                 var recPayment = parseFloat((data.payment || '').replace(/[$,\/mo]/g, '')) || 0;
                 var loanAmt = parseFloat((data.totalLoan || data.cashBack || '').toString().replace(/[$,]/g, '')) || 0;
-                // Net cash (before fees) — origination fee is calculated on this, NOT on totalLoan
-                var netCash = parseFloat((data.cashBack || data.totalLoan || '').toString().replace(/[$,]/g, '')) || loanAmt;
+                // Net cash (before fees) — origination fee is calculated on cashBack + helocPayoff, NOT on totalLoan
+                var cbVal = parseFloat((data.cashBack || '0').toString().replace(/[$,]/g, '')) || 0;
+                var hpVal = parseFloat((data.helocPayoff || '0').toString().replace(/[$,]/g, '')) || 0;
+                var netCash = (cbVal + hpVal) || loanAmt;
                 var hasVarRates = data.tiers && data.tiers.some(function (t) { return t.varRates && Object.keys(t.varRates).length > 0; });
                 var recType = data.recType || 'fixed';
                 var isVarRec = recType === 'variable';
@@ -9867,6 +10574,18 @@
                     var displayTiers = data.tiers.slice().sort(function(a, b) {
                         return parseInt(a.tier) - parseInt(b.tier);
                     });
+                    // Apply recTierDisplay filter: 'all' (default), 'rec' (only recommended tier), 'rec-plus' (recommended + closest neighbor)
+                    var tierDisplayMode = (linkOpts && linkOpts.recTierDisplay) || data.recTierDisplay || 'all';
+                    if (tierDisplayMode === 'rec' && recTierNum > 0) {
+                        displayTiers = displayTiers.filter(function(t) { return parseInt(t.tier) === recTierNum; });
+                    } else if (tierDisplayMode === 'rec-plus' && recTierNum > 0) {
+                        // Show recommended + the tier adjacent to it (prefer lower tier number if exists, else higher)
+                        var neighbor = recTierNum > 1 ? recTierNum - 1 : recTierNum + 1;
+                        displayTiers = displayTiers.filter(function(t) {
+                            var n = parseInt(t.tier);
+                            return n === recTierNum || n === neighbor;
+                        });
+                    }
                     displayTiers.forEach(function (tier) {
                         // Fee calculated on net cash (before fees), NOT on totalLoan
                         var origDollars = Math.round((parseFloat(tier.origPts) / 100) * netCash);
@@ -10834,7 +11553,7 @@
 
             function sanitizeQuoteCaptureClone(clonedDoc) {
                 if (!clonedDoc) return;
-                var hideSelectors = '#decision-banner, #floating-bar, .floating-bar, #exit-modal, #eq-root, .eq-orb, .eq-panel, .eq-hint, .eq-nudge, .sticky-cta-bar, .toast-container, .theme-toggle, .no-print, .command-palette, .kbd-hint, .key-hint, #scroll-progress, #particle-canvas, #apply-modal, #contact-modal, #share-modal, .modal-overlay, #sec-personal-video, .pvf-play-btn, .pvf-pulse-ring, .pvf-play-label, .pvf-duration-badge, .pvf-video-pattern, .fc-dots, .fc-cta, .confetti';
+                var hideSelectors = '#decision-banner, #floating-bar, .floating-bar, #exit-modal, #eq-root, .eq-orb, .eq-panel, .eq-hint, .eq-nudge, .sticky-cta-bar, .toast-container, .theme-toggle, .no-print, .command-palette, .kbd-hint, .key-hint, #scroll-progress, #particle-canvas, #apply-modal, #contact-modal, #share-modal, .modal-overlay, #sec-personal-video, .pvf-play-btn, .pvf-pulse-ring, .pvf-play-label, .pvf-duration-badge, .pvf-video-pattern, .fc-dots, .fc-cta, .confetti, .min-lang, #template-original > button[onclick*="downloadPDF"], .min-detail-row';
                 clonedDoc.querySelectorAll(hideSelectors).forEach(function(el) {
                     el.style.display = 'none';
                 });
@@ -10918,7 +11637,17 @@
                 showToast('Generating PDF...', 'info');
 
                 try {
-                    var quotePage = document.querySelector('.quote-page');
+                    // Target the currently-active preset container so PDF matches what the client sees
+                    var quotePage = null;
+                    var tplMinimal = document.getElementById('template-minimal');
+                    var tplOriginal = document.getElementById('template-original');
+                    if (tplMinimal && tplMinimal.style.display !== 'none' && tplMinimal.offsetHeight > 0) {
+                        quotePage = tplMinimal;
+                    } else if (tplOriginal && tplOriginal.style.display !== 'none' && tplOriginal.offsetHeight > 0) {
+                        quotePage = tplOriginal;
+                    } else {
+                        quotePage = document.querySelector('.quote-page');
+                    }
                     if (!quotePage) { window.print(); return; }
                     var canvas = await captureQuotePageForPdf(quotePage);
                     if (!canvas) { window.print(); return; }

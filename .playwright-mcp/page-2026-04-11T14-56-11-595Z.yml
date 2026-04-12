@@ -1,0 +1,12 @@
+- generic [ref=e4]:
+  - heading "Create Account" [level=2] [ref=e17]
+  - generic [ref=e16]: Invalid login credentials
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - generic [ref=e8]: Email
+      - textbox [ref=e9]: test@example.com
+    - generic [ref=e10]:
+      - generic [ref=e11]: Password
+      - textbox [ref=e12]: password123
+    - button "Sign Up" [ref=e18]
+    - button "Already have an account? Login" [active] [ref=e19]
