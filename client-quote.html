@@ -8536,6 +8536,151 @@
             #template-original .orig-lo-footer { grid-template-columns: 1fr; text-align: center; }
             #template-original .orig-lo-card { flex-direction: column; text-align: center; }
         }
+
+        /* ============================================= */
+        /* ===== ORIGINAL PRESET: PDF CAPTURE MODE ===== */
+        /* ============================================= */
+        /* Same tightening as @media print, applied via .pdf-capture-mode class before
+           html2canvas snapshots. Ensures the captured pixels fit one Letter page. */
+        body.pdf-capture-mode #template-original {
+            padding: 18px 24px !important;
+            max-width: none !important;
+            margin: 0 !important;
+            font-size: 11px;
+        }
+        body.pdf-capture-mode #template-original .orig-proposal-header {
+            margin: -18px -24px 14px -24px !important;
+            padding: 14px 30px 10px !important;
+            border-bottom-width: 2px !important;
+        }
+        body.pdf-capture-mode #template-original .orig-proposal-title { font-size: 17px !important; letter-spacing: 1.2px !important; }
+        body.pdf-capture-mode #template-original .orig-proposal-tagline { margin-top: 3px !important; font-size: 9px !important; letter-spacing: 1.8px !important; }
+        body.pdf-capture-mode #template-original h2,
+        body.pdf-capture-mode #template-original h3,
+        body.pdf-capture-mode #template-original .orig-section-title { margin-top: 10px !important; margin-bottom: 6px !important; }
+        body.pdf-capture-mode #template-original .orig-section { margin: 10px 0 !important; }
+        body.pdf-capture-mode #template-original .orig-rec-callout { margin: 10px 0 6px !important; padding: 10px 14px !important; }
+        body.pdf-capture-mode #template-original .orig-rec-callout-offer { font-size: 14px !important; margin-top: 3px !important; }
+        body.pdf-capture-mode #template-original .orig-rec-callout-sub { font-size: 10px !important; margin-top: 2px !important; }
+        body.pdf-capture-mode #template-original .orig-snapshot { margin-bottom: 12px !important; }
+        body.pdf-capture-mode #template-original .orig-snapshot td { padding: 6px 10px !important; font-size: 11px !important; }
+        body.pdf-capture-mode #template-original .orig-snapshot tr.orig-snapshot-payment td { padding: 8px 12px !important; font-size: 12px !important; }
+        body.pdf-capture-mode #template-original .orig-snapshot tr.orig-snapshot-payment td.value { font-size: 16px !important; }
+        body.pdf-capture-mode #template-original .orig-apply-cta {
+            max-width: 320px !important; margin: 10px auto !important; padding: 10px 20px !important;
+            min-height: 38px !important; font-size: 12px !important; letter-spacing: 1.5px !important; box-shadow: none !important;
+        }
+        body.pdf-capture-mode #template-original .orig-disclosure-callout { margin: 10px 0 !important; padding: 8px 12px !important; font-size: 10px !important; }
+        body.pdf-capture-mode #template-original .orig-disclosure-title { font-size: 9px !important; margin-bottom: 2px !important; }
+        body.pdf-capture-mode #template-original .orig-lo-footer {
+            margin-top: 12px !important; padding: 10px !important; gap: 12px !important;
+        }
+        body.pdf-capture-mode #template-original .orig-lo-photo { width: 50px !important; height: 50px !important; }
+        body.pdf-capture-mode #template-original .orig-lo-name { font-size: 13px !important; }
+        body.pdf-capture-mode #template-original .orig-lo-title { font-size: 10px !important; }
+        body.pdf-capture-mode #template-original .orig-lo-ids,
+        body.pdf-capture-mode #template-original .orig-lo-contact,
+        body.pdf-capture-mode #template-original .orig-lo-extra { font-size: 10px !important; }
+        body.pdf-capture-mode #template-original .orig-lender-logo { max-width: 90px !important; max-height: 48px !important; }
+        body.pdf-capture-mode #template-original .orig-lender-name { font-size: 11px !important; }
+        body.pdf-capture-mode #template-original .orig-footer-legal { margin-top: 8px !important; font-size: 9px !important; }
+        body.pdf-capture-mode #template-original .orig-disclaimer { margin-top: 6px !important; font-size: 9px !important; }
+        body.pdf-capture-mode #template-original .orig-matrix-grid { gap: 8px !important; }
+        body.pdf-capture-mode #template-original .orig-matrix-card { padding: 8px 10px !important; }
+        body.pdf-capture-mode #template-original .orig-matrix-card th,
+        body.pdf-capture-mode #template-original .orig-matrix-card td { padding: 3px 6px !important; font-size: 10px !important; }
+        body.pdf-capture-mode .orig-pdf-btn,
+        body.pdf-capture-mode #floating-bar,
+        body.pdf-capture-mode #preview-floating-bar,
+        body.pdf-capture-mode #eq-orb,
+        body.pdf-capture-mode #eq-tour-hl,
+        body.pdf-capture-mode .objection-popup { display: none !important; }
+
+        /* ============================================= */
+        /* ===== ORIGINAL PRESET: PDF PRINT FIT ======== */
+        /* ============================================= */
+        /* Tightens header/footer/spacing so the Original preset fits on one Letter page. */
+        @media print {
+            @page { size: letter; margin: 0.25in; }
+            body.theme-original { background: #ffffff !important; }
+            body.theme-original * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            #template-original {
+                padding: 18px 24px !important;
+                max-width: none !important;
+                margin: 0 !important;
+                font-size: 11px;
+            }
+            /* Hero — shrink the tall navy banner */
+            #template-original .orig-proposal-header {
+                margin: -18px -24px 14px -24px !important;
+                padding: 14px 30px 10px !important;
+                border-bottom-width: 2px !important;
+            }
+            #template-original .orig-proposal-title { font-size: 17px !important; letter-spacing: 1.2px !important; }
+            #template-original .orig-proposal-tagline { margin-top: 3px !important; font-size: 9px !important; letter-spacing: 1.8px !important; }
+
+            /* Section spacing */
+            #template-original h2, #template-original h3, #template-original .orig-section-title { margin-top: 10px !important; margin-bottom: 6px !important; }
+            #template-original .orig-section { margin: 10px 0 !important; page-break-inside: avoid; }
+            #template-original .orig-rec-callout { margin: 10px 0 6px !important; padding: 10px 14px !important; page-break-inside: avoid; }
+            #template-original .orig-rec-callout-offer { font-size: 14px !important; margin-top: 3px !important; }
+            #template-original .orig-rec-callout-sub { font-size: 10px !important; margin-top: 2px !important; }
+
+            /* Snapshot table — tighter rows */
+            #template-original .orig-snapshot { margin-bottom: 12px !important; page-break-inside: avoid; }
+            #template-original .orig-snapshot td { padding: 6px 10px !important; font-size: 11px !important; }
+            #template-original .orig-snapshot tr.orig-snapshot-payment td { padding: 8px 12px !important; font-size: 12px !important; }
+            #template-original .orig-snapshot tr.orig-snapshot-payment td.value { font-size: 16px !important; }
+
+            /* Apply CTA — smaller in print, no gradient glow */
+            #template-original .orig-apply-cta {
+                max-width: 320px !important;
+                margin: 10px auto !important;
+                padding: 10px 20px !important;
+                min-height: 38px !important;
+                font-size: 12px !important;
+                letter-spacing: 1.5px !important;
+                box-shadow: none !important;
+            }
+
+            /* Important disclosure — keep in flow, smaller */
+            #template-original .orig-disclosure-callout { margin: 10px 0 !important; padding: 8px 12px !important; font-size: 10px !important; }
+            #template-original .orig-disclosure-title { font-size: 9px !important; margin-bottom: 2px !important; }
+
+            /* LO footer — keep together, shrink padding */
+            #template-original .orig-lo-footer {
+                margin-top: 12px !important;
+                padding: 10px !important;
+                gap: 12px !important;
+                page-break-inside: avoid;
+            }
+            #template-original .orig-lo-photo { width: 50px !important; height: 50px !important; }
+            #template-original .orig-lo-name { font-size: 13px !important; }
+            #template-original .orig-lo-title { font-size: 10px !important; }
+            #template-original .orig-lo-ids,
+            #template-original .orig-lo-contact,
+            #template-original .orig-lo-extra { font-size: 10px !important; }
+            #template-original .orig-lender-logo { max-width: 90px !important; max-height: 48px !important; }
+            #template-original .orig-lender-name { font-size: 11px !important; }
+
+            /* Footer legal row */
+            #template-original .orig-footer-legal { margin-top: 8px !important; font-size: 9px !important; page-break-inside: avoid; }
+            #template-original .orig-disclaimer { margin-top: 6px !important; font-size: 9px !important; page-break-inside: avoid; }
+
+            /* Matrix tables — tighter */
+            #template-original .orig-matrix-grid { gap: 8px !important; }
+            #template-original .orig-matrix-card { padding: 8px 10px !important; page-break-inside: avoid; }
+            #template-original .orig-matrix-card th,
+            #template-original .orig-matrix-card td { padding: 3px 6px !important; font-size: 10px !important; }
+
+            /* Hide anything non-essential in print */
+            #template-original .orig-floating-bar,
+            #floating-bar,
+            #preview-floating-bar,
+            #eq-orb,
+            #eq-tour-hl,
+            .objection-popup { display: none !important; }
+        }
     </style>
 </head>
 
@@ -12975,7 +13120,22 @@
                         quotePage = document.querySelector('.quote-page');
                     }
                     if (!quotePage) { window.print(); return; }
-                    var canvas = await captureQuotePageForPdf(quotePage);
+
+                    // Temporarily apply pdf-capture-mode so the capture uses the tightened
+                    // single-page spacing (especially for the Original preset). Removed in finally.
+                    var _pdfCaptureApplied = false;
+                    if (quotePage === tplOriginal) {
+                        document.body.classList.add('pdf-capture-mode');
+                        _pdfCaptureApplied = true;
+                        // Let the browser reflow before capture
+                        await new Promise(function (r) { setTimeout(r, 120); });
+                    }
+                    var canvas;
+                    try {
+                        canvas = await captureQuotePageForPdf(quotePage);
+                    } finally {
+                        if (_pdfCaptureApplied) document.body.classList.remove('pdf-capture-mode');
+                    }
                     if (!canvas) { window.print(); return; }
 
                     var imgData = canvas.toDataURL('image/jpeg', 0.92);

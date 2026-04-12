@@ -6338,6 +6338,7 @@
                 <p style="font-size: 7px; color: rgba(255,255,255,0.4); margin: 8px 0 0 0;">Check which optional
                     sections you want visible to the client on the generated link versus the exported PDF.</p>
             </div>
+            </details>
 
             <!-- Quote Templates (Diamond exclusive) -->
             <div id="quote-templates-section" class="control-section"
@@ -9057,6 +9058,8 @@ Best regards,
                         id="out-total-debt-pay">$0</span> | HELOC Payment: <span id="out-debt-heloc-pay">$0</span> | Net
                     Savings: <strong id="out-net-savings">$0</strong>/mo</div>
             </div>
+            <details class="collapsible-panel" id="cp-ai-strategy" data-cp-id="ai-strategy">
+            <summary class="cp-summary">🤖 AI-Generated Strategy<span class="cp-hint">click to expand</span></summary>
             <div id="ai-assistant-container" class="analysis-box">
                 <div class="analysis-title">🤖 AI-Generated Strategy</div>
                 <div class="ai-bubble" id="ai-output-text">Click "Generate AI Strategy" to create a personalized sales
@@ -9068,6 +9071,7 @@ Best regards,
                         onclick="copyHeyGenScriptFromStrategy()">🎬 Copy as HeyGen Script</button>
                 </div>
             </div>
+            </details>
 
             <div id="cta-section" class="cta-container">
                 <a href="#"
@@ -14646,6 +14650,49 @@ Best regards,
         // Restore custom presets on page load
         document.addEventListener('DOMContentLoaded', renderCustomMaxCashPresets);
 
+        // ===== Collapsible builder panels =====
+        // Persist open/closed state per panel, with sensible defaults
+        (function initCollapsiblePanels() {
+            var defaults = {
+                'loan-options': false,
+                'debt': false,
+                'refi': false,
+                'recommendation': true,
+                'presentation-output': false,
+                'ai-strategy': false
+            };
+            function hydrate() {
+                document.querySelectorAll('details.collapsible-panel').forEach(function(el) {
+                    var slug = el.getAttribute('data-cp-id');
+                    if (!slug) return;
+                    var key = 'heloc_panel_' + slug;
+                    var saved = null;
+                    try { saved = localStorage.getItem(key); } catch(_) {}
+                    var defaultOpen = (slug in defaults) ? defaults[slug] : false;
+                    el.open = (saved === null) ? defaultOpen : (saved === '1');
+                    el.addEventListener('toggle', function() {
+                        try { localStorage.setItem(key, el.open ? '1' : '0'); } catch(_) {}
+                    });
+                });
+                // Wrap generateAIStrategy so the output panel auto-opens when the LO triggers it
+                var aiPanelEl = document.getElementById('cp-ai-strategy');
+                if (aiPanelEl && typeof window.generateAIStrategy === 'function' && !window.generateAIStrategy._cpWrapped) {
+                    var _orig = window.generateAIStrategy;
+                    var _wrapped = function() {
+                        aiPanelEl.open = true;
+                        return _orig.apply(this, arguments);
+                    };
+                    _wrapped._cpWrapped = true;
+                    window.generateAIStrategy = _wrapped;
+                }
+            }
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', hydrate);
+            } else {
+                hydrate();
+            }
+        })();
+
         function enforceRec2DifferentTier() {
             var primary = document.getElementById('rec-tier-select');
             var secondary = document.getElementById('rec2-tier-select');
@@ -15762,6 +15809,7 @@ Generate the sales strategy and phone script now.`;
 
         function openAIQuoteBuilder() {
             // Seed wizard state from whatever's already on the Client tab
+            var rec2Enabled = document.getElementById('rec2-enabled')?.checked === true;
             var seed = {
                 clientName: document.getElementById('in-client-name')?.value || '',
                 clientEmail: document.getElementById('client-email')?.value || '',
@@ -15773,6 +15821,10 @@ Generate the sales strategy and phone script now.`;
                 recTier: document.getElementById('rec-tier-select')?.value || '2',
                 recTerm: document.getElementById('rec-term-select')?.value || '20',
                 recType: document.getElementById('rec-type-select')?.value || 'fixed',
+                rec2Enabled: rec2Enabled,
+                rec2Tier: document.getElementById('rec2-tier-select')?.value || '',
+                rec2Term: document.getElementById('rec2-term-select')?.value || '30',
+                rec2Type: document.getElementById('rec2-type-select')?.value || 'variable',
                 step: 1,
                 talkingPoints: null,
                 callScript: null,
@@ -15853,17 +15905,32 @@ Generate the sales strategy and phone script now.`;
             '</div>';
         }
 
-        // Step 3: Product + term
+        // Step 3: Product + term (primary + optional 2nd-best)
         function _aiqbStep3() {
             var s = window._aiqbState;
             var opt = function(val, label, sel) { return '<option value="' + val + '"' + (String(sel) === String(val) ? ' selected' : '') + '>' + label + '</option>'; };
+            var rec2Checked = s.rec2Enabled ? 'checked' : '';
+            var rec2Display = s.rec2Enabled ? 'flex' : 'none';
             return '' +
             '<h3 class="aiqb-step-title">Step 3: Recommended product</h3>' +
-            '<p class="aiqb-step-hint">Ezra will pitch this tier + term as your top pick on the call.</p>' +
+            '<p class="aiqb-step-hint">Primary pick is what Ezra will pitch hardest. Add a 2nd-best option for clients who want a backup to compare against.</p>' +
+            '<div style="margin-bottom:6px;font-family:var(--font-heading);font-size:10px;color:#a78bfa;text-transform:uppercase;letter-spacing:0.5px;">⭐ Primary recommendation</div>' +
             '<div class="aiqb-field-row">' +
                 '<div class="aiqb-field"><label>Tier</label><select id="aiqb-rec-tier">' + opt(1, 'Tier 1 — Best rates, highest fees', s.recTier) + opt(2, 'Tier 2 — Balanced (recommended for most)', s.recTier) + opt(3, 'Tier 3 — Lowest fees, slightly higher rate', s.recTier) + '</select></div>' +
                 '<div class="aiqb-field"><label>Term</label><select id="aiqb-rec-term">' + opt(30, '30-Year', s.recTerm) + opt(20, '20-Year', s.recTerm) + opt(15, '15-Year', s.recTerm) + opt(10, '10-Year', s.recTerm) + '</select></div>' +
                 '<div class="aiqb-field"><label>Type</label><select id="aiqb-rec-type">' + opt('fixed', 'Fixed', s.recType) + opt('variable', 'Variable', s.recType) + '</select></div>' +
+            '</div>' +
+            '<div style="margin-top:16px; padding-top:12px; border-top:1px solid rgba(139,92,246,0.15);">' +
+                '<label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-family:var(--font-heading); font-size:10px; color:rgba(255,255,255,0.7); text-transform:uppercase; letter-spacing:0.5px;">' +
+                    '<input type="checkbox" id="aiqb-rec2-enabled" ' + rec2Checked + ' onchange="document.getElementById(\'aiqb-rec2-row\').style.display=this.checked?\'flex\':\'none\';" style="accent-color:#8b5cf6;">' +
+                    '🥈 Add a 2nd-best option' +
+                '</label>' +
+                '<div id="aiqb-rec2-row" class="aiqb-field-row" style="margin-top:10px; display:' + rec2Display + ';">' +
+                    '<div class="aiqb-field"><label>Tier</label><select id="aiqb-rec2-tier">' + opt(1, 'Tier 1', s.rec2Tier) + opt(2, 'Tier 2', s.rec2Tier) + opt(3, 'Tier 3', s.rec2Tier) + '</select></div>' +
+                    '<div class="aiqb-field"><label>Term</label><select id="aiqb-rec2-term">' + opt(30, '30-Year', s.rec2Term) + opt(20, '20-Year', s.rec2Term) + opt(15, '15-Year', s.rec2Term) + opt(10, '10-Year', s.rec2Term) + '</select></div>' +
+                    '<div class="aiqb-field"><label>Type</label><select id="aiqb-rec2-type">' + opt('fixed', 'Fixed', s.rec2Type) + opt('variable', 'Variable', s.rec2Type) + '</select></div>' +
+                '</div>' +
+                '<p style="font-size:10px; color:rgba(255,255,255,0.45); margin:8px 0 0 0;">Tip: a 2nd-best pairing like "Tier 2 · 20-Year Fixed" vs "Tier 3 · 30-Year Variable" gives the borrower an apples-to-apples comparison.</p>' +
             '</div>' +
             '<div class="aiqb-footer">' +
                 '<button class="aiqb-btn aiqb-btn-secondary" onclick="_aiqbPrev(3)">← Back</button>' +
@@ -15875,6 +15942,8 @@ Generate the sales strategy and phone script now.`;
         function _aiqbStep4() {
             var s = window._aiqbState;
             var fmt = function (n) { var v = parseFloat(String(n || 0).replace(/[$,]/g, '')); return isNaN(v) ? '—' : '$' + Math.round(v).toLocaleString(); };
+            var rec2Row = (s.rec2Enabled && s.rec2Tier) ?
+                '<div class="aiqb-rev-row"><span>2nd-best option</span><strong>Tier ' + _aiqbEsc(s.rec2Tier) + ' · ' + _aiqbEsc(s.rec2Term) + '-Year · ' + _aiqbEsc(s.rec2Type) + '</strong></div>' : '';
             return '' +
             '<h3 class="aiqb-step-title">Step 4: Review the quote</h3>' +
             '<p class="aiqb-step-hint">Make sure this looks right. Ezra will use these numbers to draft the script.</p>' +
@@ -15883,7 +15952,8 @@ Generate the sales strategy and phone script now.`;
                 '<div class="aiqb-rev-row"><span>Home value</span><strong>' + fmt(s.homeValue) + '</strong></div>' +
                 '<div class="aiqb-rev-row"><span>1st mortgage</span><strong>' + fmt(s.mortgageBalance) + '</strong></div>' +
                 '<div class="aiqb-rev-row aiqb-rev-highlight"><span>HELOC requested</span><strong>' + fmt(s.helocAmount) + '</strong></div>' +
-                '<div class="aiqb-rev-row"><span>Recommendation</span><strong>Tier ' + _aiqbEsc(s.recTier) + ' · ' + _aiqbEsc(s.recTerm) + '-Year · ' + _aiqbEsc(s.recType) + '</strong></div>' +
+                '<div class="aiqb-rev-row"><span>⭐ Primary pick</span><strong>Tier ' + _aiqbEsc(s.recTier) + ' · ' + _aiqbEsc(s.recTerm) + '-Year · ' + _aiqbEsc(s.recType) + '</strong></div>' +
+                rec2Row +
                 (s.creditScore ? '<div class="aiqb-rev-row"><span>Credit score</span><strong>' + _aiqbEsc(s.creditScore) + '</strong></div>' : '') +
             '</div>' +
             '<div class="aiqb-footer">' +
@@ -15994,6 +16064,17 @@ Generate the sales strategy and phone script now.`;
                 s.recTier = (document.getElementById('aiqb-rec-tier') || {}).value || '2';
                 s.recTerm = (document.getElementById('aiqb-rec-term') || {}).value || '20';
                 s.recType = (document.getElementById('aiqb-rec-type') || {}).value || 'fixed';
+                s.rec2Enabled = (document.getElementById('aiqb-rec2-enabled') || {}).checked === true;
+                if (s.rec2Enabled) {
+                    s.rec2Tier = (document.getElementById('aiqb-rec2-tier') || {}).value || '';
+                    s.rec2Term = (document.getElementById('aiqb-rec2-term') || {}).value || '30';
+                    s.rec2Type = (document.getElementById('aiqb-rec2-type') || {}).value || 'variable';
+                    // Validate: 2nd pick should differ from primary on at least one dimension
+                    if (String(s.rec2Tier) === String(s.recTier) && String(s.rec2Term) === String(s.recTerm) && String(s.rec2Type) === String(s.recType)) {
+                        if (typeof showToast === 'function') showToast('Pick a 2nd option that differs from your primary (tier, term, or type).', 'warning');
+                        return;
+                    }
+                }
             }
             s.step = from + 1;
             _aiqbRenderModal();
@@ -16013,14 +16094,19 @@ Generate the sales strategy and phone script now.`;
             var fmt = function (v) { var n = parseFloat(String(v || 0).replace(/[$,]/g, '')); return isNaN(n) ? '—' : '$' + Math.round(n).toLocaleString(); };
             var firstName = (s.clientName || 'Client').split(' ')[0];
             var system = 'You are Ezra, a mortgage loan officer\'s AI assistant. Write concise, benefit-driven talking points and a short call script to help ' + lo.name + ' present a HELOC quote over the phone. Keep it conversational, warm, and focused on what matters to the borrower. Avoid jargon. Return STRICT JSON with two keys: "talking_points" (array of 3-5 bullet strings, each 1 short sentence) and "call_script" (one paragraph of 60-90 words the LO can read aloud, starting with "Hi {firstName}, ..."). Do not include markdown fences or any text outside the JSON.';
+            var rec2Line = (s.rec2Enabled && s.rec2Tier) ?
+                '- 2nd-best option (backup to compare): Tier ' + s.rec2Tier + ', ' + s.rec2Term + '-Year ' + s.rec2Type + '\n' : '';
+            var rec2Guidance = (s.rec2Enabled && s.rec2Tier) ?
+                ' Frame the primary as your top pick AND briefly mention the 2nd-best as a "here\'s a backup option if you prefer X" — keep the primary as the clear winner.' : '';
             var user = 'Quote details:\n' +
                 '- Client first name: ' + firstName + '\n' +
                 '- HELOC amount requested: ' + fmt(s.helocAmount) + '\n' +
-                '- Recommended: Tier ' + s.recTier + ', ' + s.recTerm + '-Year ' + s.recType + '\n' +
+                '- Primary recommendation: Tier ' + s.recTier + ', ' + s.recTerm + '-Year ' + s.recType + '\n' +
+                rec2Line +
                 '- Home value: ' + fmt(s.homeValue) + '\n' +
                 '- 1st mortgage balance: ' + fmt(s.mortgageBalance) + '\n' +
                 (s.creditScore ? '- Credit score: ' + s.creditScore + '\n' : '') +
-                '\nWrite the talking_points (3-5 bullets emphasizing savings, speed, no upfront cost if applicable) and the call_script (60-90 words, conversational, starts with "Hi ' + firstName + ', I\'ve got your HELOC quote ready...").';
+                '\nWrite the talking_points (3-5 bullets emphasizing savings, speed, no upfront cost if applicable) and the call_script (60-90 words, conversational, starts with "Hi ' + firstName + ', I\'ve got your HELOC quote ready...").' + rec2Guidance;
             return { system: system, user: user };
         }
 
@@ -16096,6 +16182,17 @@ Generate the sales strategy and phone script now.`;
             set('rec-tier-select', s.recTier);
             set('rec-term-select', s.recTerm);
             set('rec-type-select', s.recType);
+            // Sync 2nd-best recommendation if enabled
+            var rec2Chk = document.getElementById('rec2-enabled');
+            if (rec2Chk) {
+                rec2Chk.checked = !!s.rec2Enabled;
+                try { rec2Chk.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}
+            }
+            if (s.rec2Enabled && s.rec2Tier) {
+                set('rec2-tier-select', s.rec2Tier);
+                set('rec2-term-select', s.rec2Term);
+                set('rec2-type-select', s.rec2Type);
+            }
             // Stash talking points + call script in global so email/sms paths can include them
             window._aiqbLastTalkingPoints = s.talkingPoints;
             window._aiqbLastCallScript = s.callScript;
