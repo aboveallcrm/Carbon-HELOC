@@ -5826,6 +5826,34 @@
                             <option value="rec">Recommended Only</option>
                             <option value="rec-plus">Recommended + 1</option>
                         </select></div>
+                </div>
+                <div class="input-group" style="align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(197,160,89,0.3);">
+                    <div class="input-field" style="display: flex; align-items: center; padding-top: 18px;">
+                        <label style="display: flex; align-items: center; cursor: pointer; font-family: var(--font-heading); font-size: 10px; text-transform: uppercase; font-weight: 700; color: var(--accent-color);">
+                            <input type="checkbox" id="rec2-enabled" style="width: auto; margin-right: 6px;" onchange="updateQuote()">2nd Best <span class="help-tip">?<span class="help-tip-text">Show a second recommendation as an "Alternative" option on the client quote. Must be a different tier from your primary recommendation.</span></span>
+                        </label>
+                    </div>
+                    <div class="input-field"><label style="color: var(--accent-color);">2nd Tier</label><select
+                            id="rec2-tier-select" style="border-color: var(--accent-color);" onchange="updateQuote()">
+                            <option value="1" selected>Tier 1</option>
+                            <option value="2">Tier 2</option>
+                            <option value="3">Tier 3</option>
+                        </select></div>
+                    <div class="input-field"><label style="color: var(--accent-color);">2nd Term</label><select
+                            id="rec2-term-select" style="border-color: var(--accent-color);" onchange="updateQuote()">
+                            <option value="30" selected>30-Year</option>
+                            <option value="20">20-Year</option>
+                            <option value="15">15-Year</option>
+                            <option value="10">10-Year</option>
+                        </select></div>
+                    <div class="input-field"><label style="color: var(--accent-color);">2nd Type</label><select
+                            id="rec2-type-select" style="border-color: var(--accent-color);" onchange="updateQuote()">
+                            <option value="fixed" selected>Fixed</option>
+                            <option value="variable">Variable</option>
+                        </select></div>
+                    <div class="input-field" id="rec2-warning" style="display:none; color: #f87171; font-size: 10px; padding-top: 18px;">
+                        ⚠ 2nd Best must differ from Primary
+                    </div>
                     <div data-simple-hide style="display: flex; gap: 15px; align-items: center; padding-top: 15px;">
                         <label
                             style="display: flex; align-items: center; cursor: pointer; font-family: var(--font-heading); font-size: 9px; text-transform: uppercase; font-weight: 700; color: white;"><input
@@ -14015,7 +14043,22 @@ Best regards,
             't3': "Minimizes upfront costs for maximum immediate liquidity."
         };
 
+        function enforceRec2DifferentTier() {
+            var primary = document.getElementById('rec-tier-select');
+            var secondary = document.getElementById('rec2-tier-select');
+            var warn = document.getElementById('rec2-warning');
+            if (!primary || !secondary) return;
+            if (primary.value === secondary.value) {
+                var opts = ['1', '2', '3'].filter(function(v) { return v !== primary.value; });
+                secondary.value = opts[0];
+                if (warn) {
+                    warn.style.display = '';
+                    setTimeout(function() { warn.style.display = 'none'; }, 3500);
+                }
+            }
+        }
         function updateQuote() {
+            enforceRec2DifferentTier();
             const clientName = document.getElementById('in-client-name').value;
             const clientCredit = document.getElementById('in-client-credit').value;
             const propTypeInput = document.getElementById('in-property-type').value;
@@ -16351,6 +16394,12 @@ Sent via Above All Carbon HELOC Tool`;
                 recType: document.getElementById('rec-type-select').value || 'fixed',
                 recTier: normalizeRecTierValue(document.getElementById('rec-tier-select')?.value || ''),
                 recTerm: document.getElementById('rec-term-select')?.value || '',
+                rec2Enabled: document.getElementById('rec2-enabled')?.checked === true,
+                rec2Type: document.getElementById('rec2-type-select')?.value || 'fixed',
+                rec2Tier: normalizeRecTierValue(document.getElementById('rec2-tier-select')?.value || ''),
+                rec2Term: document.getElementById('rec2-term-select')?.value || '',
+                showVariable: document.getElementById('toggle-show-variable')?.classList.contains('active') || false,
+                showIO: document.getElementById('toggle-interest-only')?.classList.contains('active') || false,
                 date: new Date().toLocaleDateString(),
                 linkOptions: {
                     showLoInfo: document.getElementById('chk-link-lo-info')?.checked ?? true,
@@ -16503,6 +16552,12 @@ Sent via Above All Carbon HELOC Tool`;
                 recType: document.getElementById('rec-type-select').value || 'fixed',
                 recTier: normalizeRecTierValue(document.getElementById('rec-tier-select')?.value || ''),
                 recTerm: document.getElementById('rec-term-select')?.value || '',
+                rec2Enabled: document.getElementById('rec2-enabled')?.checked === true,
+                rec2Type: document.getElementById('rec2-type-select')?.value || 'fixed',
+                rec2Tier: normalizeRecTierValue(document.getElementById('rec2-tier-select')?.value || ''),
+                rec2Term: document.getElementById('rec2-term-select')?.value || '',
+                showVariable: document.getElementById('toggle-show-variable')?.classList.contains('active') || false,
+                showIO: document.getElementById('toggle-interest-only')?.classList.contains('active') || false,
                 date: new Date().toLocaleDateString(),
                 linkOptions: {
                     showLoInfo: document.getElementById('chk-link-lo-info')?.checked ?? true,
