@@ -1094,6 +1094,59 @@
             backdrop-filter: blur(8px);
         }
 
+        /* Collapsible panel wrapper (uses native <details>) */
+        details.collapsible-panel { margin: 0 0 8px 0; }
+        details.collapsible-panel > summary.cp-summary {
+            list-style: none;
+            cursor: pointer;
+            user-select: none;
+            padding: 10px 14px;
+            font-family: var(--font-heading);
+            font-size: 11px;
+            color: var(--accent-color);
+            background: rgba(15, 23, 42, 0.35);
+            border: 1px solid rgba(197, 160, 89, 0.25);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+        details.collapsible-panel > summary.cp-summary::before {
+            content: '▸';
+            display: inline-block;
+            transition: transform 0.15s ease;
+            font-size: 10px;
+            opacity: 0.8;
+        }
+        details.collapsible-panel[open] > summary.cp-summary::before { transform: rotate(90deg); }
+        details.collapsible-panel > summary.cp-summary::-webkit-details-marker { display: none; }
+        details.collapsible-panel > summary.cp-summary:hover { background: rgba(15, 23, 42, 0.55); }
+        details.collapsible-panel[open] > summary.cp-summary {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        details.collapsible-panel > summary.cp-summary .cp-hint {
+            margin-left: auto;
+            font-size: 9px;
+            opacity: 0.5;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        details.collapsible-panel[open] > summary.cp-summary .cp-hint { display: none; }
+        details.collapsible-panel > .control-section,
+        details.collapsible-panel > .analysis-box {
+            margin-top: 0;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+
         .input-group {
             display: flex;
             gap: 10px;
@@ -5982,6 +6035,8 @@
                 </div>
             </div>
 
+            <details class="collapsible-panel" data-cp-id="loan-options">
+            <summary class="cp-summary">⚙️ Loan Options<span class="cp-hint">click to expand</span></summary>
             <div class="control-section" data-simple-hide
                 style="background: linear-gradient(135deg, rgba(197,160,89,0.15), rgba(166,133,67,0.15)); border-color: var(--accent-color);">
                 <h4
@@ -6018,7 +6073,10 @@
                     </div>
                 </div>
             </div>
+            </details>
 
+            <details class="collapsible-panel" data-cp-id="debt">
+            <summary class="cp-summary">💳 Debt Consolidation<span class="cp-hint">click to expand</span></summary>
             <div id="debt-section" class="control-section" data-simple-hide
                 style="background: rgba(249,115,22,0.1); border-color: #f97316;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -6032,7 +6090,10 @@
                     <input type="checkbox" id="chk-show-debt" style="width: auto; margin-right: 8px;">Show on Proposal
                 </label>
             </div>
+            </details>
 
+            <details class="collapsible-panel" data-cp-id="refi">
+            <summary class="cp-summary">🔄 Existing HELOC Payoff<span class="cp-hint">click to expand</span></summary>
             <div id="refi-section" class="control-section" data-simple-hide
                 style="background: rgba(59,130,246,0.1); border-color: #3b82f6;">
                 <h4 style="font-family: var(--font-heading); color: #60a5fa; margin:0 0 8px 0; font-size: 11px;">🔄
@@ -6053,7 +6114,10 @@
                     </div>
                 </div>
             </div>
+            </details>
 
+            <details class="collapsible-panel" data-cp-id="recommendation" open>
+            <summary class="cp-summary">🎯 Recommendation &amp; Display<span class="cp-hint">click to expand</span></summary>
             <div class="control-section"
                 style="background: linear-gradient(135deg, rgba(197,160,89,0.2), rgba(166,133,67,0.2)); border-color: var(--accent-color);">
                 <div class="input-group" style="align-items: center;">
@@ -6124,8 +6188,11 @@
                     style="margin-top:8px; width:100%; justify-content: center; background: linear-gradient(135deg, #8b5cf6, #7c3aed);">🤖
                     Generate AI Strategy</button>
             </div>
+            </details>
 
             <!-- OUTPUt CONTROLS (Link & PDF) -->
+            <details class="collapsible-panel" data-cp-id="presentation-output">
+            <summary class="cp-summary">📄 Presentation Output Controls<span class="cp-hint">click to expand</span></summary>
             <div class="control-section" data-simple-hide style="background: rgba(6,182,212,0.1); border-color: #06b6d4;">
                 <h4 style="font-family: var(--font-heading); color: #06b6d4; margin: 0 0 12px 0; font-size: 11px;">📄
                     Presentation Output Controls <span class="help-tip">?<span class="help-tip-text">Control what appears on the client-facing link vs the PDF export. Client Link = the web page they see. PDF = the downloaded document.</span></span></h4>
