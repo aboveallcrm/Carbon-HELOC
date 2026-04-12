@@ -50,9 +50,65 @@ serve(async (req: Request) => {
       throw new Error("ALERT_TO_EMAIL not configured");
     }
 
-    const { type, subject, details } = await req.json();
+    const body = await req.json();
+    const { type, subject, details, template, user_id, client_name, signal, quote_code, title, body: piBody } = body;
 
-    // Build email HTML based on alert type
+    // ===== POSITIVE-INTENT TEMPLATE (cheerful "lock-it-in" alert routed to the specific LO) =====
+    if (template === "positive_intent" && user_id) {
+      // Look up the LO's email from profiles
+      const { data: loProfile } = await supabase
+        .from("profiles")
+        .select("email, first_name, last_name")
+        .eq("id", user_id)
+        .maybeSingle();
+      if (!loProfile?.email) {
+        return new Response(JSON.stringify({ error: "LO email not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const loFirstName = (loProfile.first_name || "").split(" ")[0] || "there";
+      const piTitle = title || `🔥 ${client_name || "Your client"} is showing buying intent!`;
+      const piMessage = piBody || `${client_name || "Your client"} just gave a strong signal on their quote. Reach out now to lock it in!`;
+      // Deep link to tool with quote_code so LO lands on the right lead
+      const toolUrl = `https://carbon-heloc.vercel.app/AboveAllCarbon_HELOC_v12_FIXED.html${quote_code ? `?quote=${esc(String(quote_code))}` : ""}`;
+      const piHtml = `
+        <div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#f8fafc;">
+          <div style="background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:14px;padding:28px;color:#fff;border:2px solid #c5a059;">
+            <div style="font-size:32px;margin-bottom:8px;">🔥</div>
+            <h2 style="color:#c5a059;margin:0 0 12px;font-family:Georgia,serif;font-size:22px;">${esc(piTitle)}</h2>
+            <p style="color:#e2e8f0;font-size:15px;line-height:1.55;margin:0 0 18px;">Hey ${esc(loFirstName)},</p>
+            <p style="color:#e2e8f0;font-size:15px;line-height:1.55;margin:0 0 18px;">${esc(piMessage)}</p>
+            <p style="color:#cbd5e1;font-size:13px;margin:0 0 22px;font-style:italic;">Strike while it's warm — clients who get a fast follow-up convert at much higher rates.</p>
+            <a href="${toolUrl}" style="display:inline-block;background:#c5a059;color:#0f172a;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;letter-spacing:0.5px;text-transform:uppercase;box-shadow:0 4px 14px rgba(197,160,89,0.3);">Open Tool &amp; Lock It In →</a>
+            <p style="color:#64748b;font-size:11px;margin:24px 0 0;border-top:1px solid #334155;padding-top:14px;">
+              Above All Carbon HELOC — Ezra is working for you 24/7
+            </p>
+          </div>
+        </div>`;
+      const resp = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from: FROM_EMAIL,
+          to: [loProfile.email],
+          subject: piTitle,
+          html: piHtml
+        })
+      });
+      const respData = await resp.json();
+      if (!resp.ok) {
+        console.error("Resend (positive_intent) error:", respData);
+        return new Response(JSON.stringify({ error: "Email delivery failed" }), {
+          status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+      return new Response(JSON.stringify({ success: true, id: respData.id, template: "positive_intent" }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // Build email HTML based on alert type (legacy types — webhook_failure, email_failure, generic)
     let htmlBody = "";
 
     if (type === "webhook_failure") {

@@ -49,6 +49,15 @@
 
     // Initialize Token System
     function initTokenSystem() {
+        console.log('🔑 Token System: Initializing...');
+        
+        // Check if Supabase is available
+        if (!window.supabase) {
+            console.warn('🔑 Token System: Supabase not available, will retry...');
+            setTimeout(initTokenSystem, 1000);
+            return;
+        }
+        
         // Load balance on startup
         fetchTokenBalance();
         
@@ -58,22 +67,31 @@
         // Listen for auth state changes
         window.addEventListener('auth-ready', fetchTokenBalance);
         
-        console.log('Token System initialized');
+        console.log('🔑 Token System: Initialized successfully');
     }
 
     // Fetch token balance from Supabase
     async function fetchTokenBalance() {
         if (tokenState.loading) return;
         
+        // Check if Supabase is available
+        if (!window.supabase) {
+            console.warn('🔑 Token System: Supabase not available');
+            return;
+        }
+        
         tokenState.loading = true;
         
         try {
             const { data: { user } } = await window.supabase.auth.getUser();
             if (!user) {
+                console.log('🔑 Token System: No user logged in');
                 tokenState.balance = 0;
                 updateTokenDisplay();
                 return;
             }
+            
+            console.log('🔑 Token System: Fetching balance for user', user.id);
 
             const { data, error } = await window.supabase
                 .from('user_tokens')
@@ -90,10 +108,13 @@
                 tokenState.balance = data.balance;
                 tokenState.lifetimeEarned = data.lifetime_earned;
                 tokenState.lifetimeSpent = data.lifetime_spent;
+                console.log(`🔑 Token System: Balance fetched - ${tokenState.balance} tokens`);
             } else {
-                // No token record yet
+                // No token record yet - this is normal for new users
+                // The database trigger should create it, but we'll show 0 until then
                 tokenState.balance = 0;
                 tokenState.lifetimeEarned = 0;
+                console.log('🔑 Token System: No token record yet (will be created on first use)');
                 tokenState.lifetimeSpent = 0;
             }
             

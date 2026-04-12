@@ -172,6 +172,85 @@ serve(async (req: Request) => {
             }
         }
 
+        // ===== POSITIVE-INTENT DETECTION → automation_alerts =====
+        // When the client signals buying intent, fire a celebratory in-app + email alert to the LO.
+        const POSITIVE_INTENT_EVENTS: Record<string, { weight: number; titleTpl: string; bodyTpl: string }> = {
+            'apply_redirect':        { weight: 50,  titleTpl: '🔥 {name} just clicked Apply Now!',           bodyTpl: '{name} clicked Apply Now on their quote — they are ready. Lock it in!' },
+            'application_submitted': { weight: 100, titleTpl: '🎉 {name} submitted the application!',         bodyTpl: '{name} just submitted their application! Time to close.' },
+            'schedule_call_clicked': { weight: 40,  titleTpl: '📞 {name} wants to schedule a call',          bodyTpl: '{name} clicked schedule-a-call on their quote. Reach out today!' },
+            'call_me_now':           { weight: 80,  titleTpl: '🚨 {name} requested a callback NOW',           bodyTpl: '{name} requested an immediate callback. Move fast!' },
+            'video_completed':       { weight: 25,  titleTpl: '👀 {name} watched your full video',            bodyTpl: '{name} watched the full video on their quote — strong engagement signal.' },
+            'repeat_visit':          { weight: 30,  titleTpl: '🔄 {name} came back to their quote',           bodyTpl: '{name} returned to view their quote again. Strike while it is warm!' }
+        }
+
+        if (POSITIVE_INTENT_EVENTS[event] && resolvedLeadId !== 'none') {
+            try {
+                let clientName = ''
+                const { data: lead } = await supabaseAdmin
+                    .from('leads')
+                    .select('first_name, last_name, email')
+                    .eq('id', resolvedLeadId)
+                    .maybeSingle()
+                if (lead) {
+                    clientName = [lead.first_name, lead.last_name].filter(Boolean).join(' ') || lead.email || 'Your client'
+                } else {
+                    clientName = 'Your client'
+                }
+
+                const quoteCode = providedCode || String(eventData.code || '')
+                const sig = POSITIVE_INTENT_EVENTS[event]
+
+                // Throttle: skip if a positive_intent alert exists for this lead+event in last 30 min
+                const cutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+                const { data: recent } = await supabaseAdmin
+                    .from('automation_alerts')
+                    .select('id')
+                    .eq('user_id', resolvedUserId)
+                    .eq('lead_id', resolvedLeadId)
+                    .eq('event_type', 'positive_intent')
+                    .gte('created_at', cutoff)
+                    .ilike('payload->>signal_source', event)
+                    .maybeSingle()
+
+                if (!recent) {
+                    await supabaseAdmin.from('automation_alerts').insert({
+                        user_id: resolvedUserId,
+                        lead_id: resolvedLeadId,
+                        event_type: 'positive_intent',
+                        title: sig.titleTpl.replace(/\{name\}/g, clientName),
+                        body: sig.bodyTpl.replace(/\{name\}/g, clientName),
+                        payload: { quote_code: quoteCode, signal_source: event, signal_score: sig.weight, device: isMobile ? 'mobile' : 'desktop' },
+                        seen: false
+                    })
+
+                    // Fire email alert (fire-and-forget)
+                    try {
+                        const alertEmailUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-alert-email`
+                        fetch(alertEmailUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`
+                            },
+                            body: JSON.stringify({
+                                user_id: resolvedUserId,
+                                template: 'positive_intent',
+                                client_name: clientName,
+                                signal: event,
+                                quote_code: quoteCode,
+                                title: sig.titleTpl.replace(/\{name\}/g, clientName),
+                                body: sig.bodyTpl.replace(/\{name\}/g, clientName)
+                            })
+                        }).catch((emailErr: unknown) => console.warn('email alert failed:', emailErr))
+                    } catch (emailErr) {
+                        console.warn('email alert dispatch error:', emailErr)
+                    }
+                }
+            } catch (piErr) {
+                console.error('Positive-intent alert error:', piErr)
+            }
+        }
+
         if (req.method === 'GET') return pixelResponse(corsHeaders)
 
         return new Response(

@@ -5473,6 +5473,7 @@
         <button class="toolbar-btn" onclick="toggleSendQuotePanel()" title="Send quote via SMS, Email, or CRM"
             style="background:linear-gradient(135deg,#10b981,#059669);" id="btn-send-quote">📲 Send</button>
         <button class="toolbar-btn" id="btn-notif-bell" onclick="toggleNotifPanel()" title="Quote view alerts" style="position:relative; background: transparent; border: 1px solid rgba(255,255,255,0.15); font-size: 14px; padding: 5px 10px;">🔔<span id="notif-badge" style="display:none; position:absolute; top:-4px; right:-4px; background:#ef4444; color:white; font-size:9px; font-weight:800; min-width:16px; height:16px; border-radius:8px; display:none; align-items:center; justify-content:center; font-family:var(--font-heading);">0</span></button>
+        <span id="lo-streak-widget" title="Today's wins" style="display:none; align-items:center; gap:4px; padding:5px 10px; background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(239,68,68,0.12)); border:1px solid rgba(245,158,11,0.35); border-radius:8px; font-size:11px; font-family:var(--font-heading); font-weight:700; color:#fbbf24; cursor:default;">🔥 <span id="lo-streak-count">0</span> today</span>
         <span class="autosave-indicator" id="autosave-status">✓ Saved</span>
         <div style="position:relative;display:inline-block;" id="help-dropdown-wrapper">
             <button class="toolbar-btn-help" onclick="document.getElementById('help-dropdown-menu').style.display=document.getElementById('help-dropdown-menu').style.display==='block'?'none':'block'" title="Help & Guides">❓ Help</button>
@@ -22165,6 +22166,24 @@ Sent via Above All Carbon HELOC Tool`;
             await fetchQuoteViewNotifs();
         };
 
+        // ===== LO-SIDE GAMIFICATION: confetti for big wins =====
+        function fireLOConfetti() {
+            var colors = ['#c5a059', '#10b981', '#3b82f6', '#f59e0b', '#ec4899'];
+            for (var i = 0; i < 60; i++) {
+                var c = document.createElement('div');
+                c.style.cssText = 'position:fixed;width:10px;height:10px;top:-10px;z-index:99999;pointer-events:none;left:' + (Math.random() * 100) + 'vw;background:' + colors[Math.floor(Math.random() * colors.length)] + ';border-radius:' + (Math.random() > 0.5 ? '50%' : '0') + ';animation:lo-confetti-fall 2.8s ease-in forwards;animation-delay:' + (Math.random() * 0.5) + 's;';
+                document.body.appendChild(c);
+                setTimeout((function(el) { return function() { el.remove(); }; })(c), 3500);
+            }
+            if (!document.getElementById('lo-confetti-style')) {
+                var st = document.createElement('style');
+                st.id = 'lo-confetti-style';
+                st.textContent = '@keyframes lo-confetti-fall { 0% { transform: translateY(0) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }';
+                document.head.appendChild(st);
+            }
+        }
+        window.fireLOConfetti = fireLOConfetti;
+
         // ===== AUTOMATION ALERTS (Zero-config smart notifications) =====
         var _autoAlertTimer = null;
         var _lastAutoAlertCheck = null;
@@ -22179,8 +22198,40 @@ Sent via Above All Carbon HELOC Tool`;
             if ((tierLevels[tier] || 0) < 1 && window.currentUserRole !== 'super_admin') return;
 
             await fetchAutomationAlerts();
-            _autoAlertTimer = setInterval(fetchAutomationAlerts, 30000);
+            await refreshLOStreak();
+            _autoAlertTimer = setInterval(function() {
+                fetchAutomationAlerts();
+                refreshLOStreak();
+            }, 30000);
         }
+
+        // Daily wins counter — counts today's positive intent + application_submitted events
+        async function refreshLOStreak() {
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) return;
+            var todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+            try {
+                var { count } = await sb
+                    .from('automation_alerts')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('user_id', userId)
+                    .in('event_type', ['positive_intent', 'application_submitted', 'hot_lead'])
+                    .gte('created_at', todayStart.toISOString());
+                var widget = document.getElementById('lo-streak-widget');
+                var countEl = document.getElementById('lo-streak-count');
+                if (widget && countEl) {
+                    if ((count || 0) > 0) {
+                        countEl.textContent = count;
+                        widget.style.display = 'inline-flex';
+                    } else {
+                        widget.style.display = 'none';
+                    }
+                }
+            } catch (e) { /* silent */ }
+        }
+        window.refreshLOStreak = refreshLOStreak;
 
         async function fetchAutomationAlerts() {
             var sb = window._supabase;
@@ -22204,7 +22255,8 @@ Sent via Above All Carbon HELOC Tool`;
                     application_submitted: '\uD83C\uDF89',
                     repeat_visitor: '\uD83D\uDC40',
                     stale_lead: '\u23F0',
-                    quote_expiry: '\u26A0\uFE0F'
+                    quote_expiry: '\u26A0\uFE0F',
+                    positive_intent: '\u2728'
                 };
 
                 alerts.forEach(function(a) {
@@ -22212,8 +22264,13 @@ Sent via Above All Carbon HELOC Tool`;
                     // Show toast for alerts created in the last 35 seconds (same window as quote view notifs)
                     if (age < 35000 && (!_lastAutoAlertCheck || new Date(a.created_at) > _lastAutoAlertCheck)) {
                         var icon = eventIcons[a.event_type] || '\uD83D\uDD14';
-                        var toastType = (a.event_type === 'hot_lead' || a.event_type === 'application_submitted') ? 'success' : 'info';
-                        showToast(icon + ' ' + a.title, toastType);
+                        var isCelebratory = a.event_type === 'hot_lead' || a.event_type === 'application_submitted' || a.event_type === 'positive_intent';
+                        var toastType = isCelebratory ? 'success' : 'info';
+                        showToast(icon + ' ' + a.title, toastType, 6000);
+                        // Confetti for the biggest wins
+                        if (a.event_type === 'application_submitted' || (a.event_type === 'positive_intent' && a.payload && a.payload.signal_score >= 80)) {
+                            if (typeof fireLOConfetti === 'function') fireLOConfetti();
+                        }
                     }
                 });
                 _lastAutoAlertCheck = new Date();
@@ -22495,6 +22552,7 @@ Sent via Above All Carbon HELOC Tool`;
     <script src="js/carbon-commands-v3.js" defer></script>
     <!-- Token System -->
     <script src="./js/token-system.js"></script>
+    <script src="./js/token-system-init.js"></script>
     <!-- Quote Builder -->
     <script src="./js/quote-builder.js"></script>
     <!-- Ezra AI Loan Structuring Assistant -->

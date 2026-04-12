@@ -7669,14 +7669,30 @@
             margin-left: 8px !important;
             border-radius: 4px !important;
         }
-        #template-minimal .min-disclaimer {
+        #template-minimal .min-footer-legal {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
             margin-top: 20px;
             padding-top: 14px;
             border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        #template-minimal .ehl-icon-min {
+            width: 28px;
+            height: auto;
+            flex-shrink: 0;
+            opacity: 0.85;
+            background: white;
+            padding: 2px;
+            border-radius: 3px;
+        }
+        #template-minimal .min-disclaimer {
             font-size: 9px;
             color: rgba(226,232,240,0.4);
             line-height: 1.5;
-            text-align: center;
+            text-align: left;
+            flex: 1;
         }
         @media (max-width: 780px) {
             #template-minimal .min-valuation { grid-template-columns: repeat(2, 1fr); }
@@ -7880,8 +7896,26 @@
             color: #0f172a;
             margin-bottom: 4px;
         }
-        #template-original .orig-disclaimer {
+        #template-original .orig-footer-legal {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
             margin-top: 18px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-radius: 6px;
+            font-size: 10px;
+            color: #475569;
+            text-align: left;
+        }
+        #template-original .ehl-icon-orig {
+            width: 36px;
+            height: auto;
+            flex-shrink: 0;
+        }
+        #template-original .orig-disclaimer {
+            margin-top: 14px;
             font-size: 9px;
             color: #94a3b8;
             line-height: 1.5;
@@ -10340,8 +10374,11 @@
                     html += '</div>';
                     html += '</section>';
 
-                    // Disclaimer
-                    html += '<div class="min-disclaimer">Rates and payments shown are estimates based on the information provided. Final terms subject to underwriting approval. Not a commitment to lend.</div>';
+                    // Footer with Equal Housing logo + disclaimer
+                    html += '<div class="min-footer-legal">';
+                    html += '<img src="assets/img/equal-housing-lender.jpg" class="ehl-icon-min" alt="Equal Housing Lender" loading="lazy">';
+                    html += '<div class="min-disclaimer">Equal Housing Lender. Rates and payments shown are estimates based on the information provided. Final terms subject to underwriting approval. Not a commitment to lend.</div>';
+                    html += '</div>';
 
                     container.innerHTML = html;
                 }
@@ -10470,6 +10507,10 @@
                     if (loPhone) contactBits.push(esc(loPhone));
                     if (loEmail) contactBits.push(esc(loEmail));
                     if (contactBits.length) html += '<div>' + contactBits.join(' &middot; ') + '</div>';
+                    html += '<div class="orig-footer-legal">';
+                    html += '<img src="assets/img/equal-housing-lender.jpg" class="ehl-icon-orig" alt="Equal Housing Lender" loading="lazy">';
+                    html += '<div>Equal Housing Lender. ' + (loCompany ? esc(loCompany) + '. ' : '') + 'We support fair lending and equal access to credit.</div>';
+                    html += '</div>';
                     html += '<div class="orig-disclaimer">Rates and payments are estimates. Final terms subject to full underwriting and property appraisal. This is not a commitment to lend.</div>';
                     html += '</div>';
 
@@ -11134,6 +11175,9 @@
 
             // Modal Functions
             window.openApplyModal = function () {
+                // Celebrate the moment — confetti + encouraging toast
+                if (typeof window.createConfetti === 'function') window.createConfetti();
+                if (typeof showToast === 'function') showToast('🎉 Smart move — let\'s get you started!', 'success', 2500);
                 // If LO has a direct apply link, go straight there instead of showing the modal
                 var applyUrl = window._loInfo && window._loInfo.applyLink;
                 if (applyUrl) {
@@ -11747,14 +11791,22 @@
                     document.body.appendChild(c); setTimeout(function () { c.remove(); }, 3000);
                 }
             }
+            window.createConfetti = createConfetti; // expose globally for Apply CTA / milestones
 
             // ===== VISUAL ENHANCEMENTS =====
             function initScrollProgress() {
                 var bar = document.getElementById('scroll-progress');
-                if (!bar) return;
+                var milestone50Fired = false;
                 window.addEventListener('scroll', function () {
                     var pct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-                    bar.style.width = Math.min(pct, 100) + '%';
+                    if (bar) bar.style.width = Math.min(pct, 100) + '%';
+                    // Fire one-time milestone toast when client scrolls past 50%
+                    if (!milestone50Fired && pct > 50) {
+                        milestone50Fired = true;
+                        if (typeof showToast === 'function') {
+                            showToast("\uD83D\uDD13 You're getting closer to unlocking your equity", 'success', 3500);
+                        }
+                    }
                 }, { passive: true });
             }
 
@@ -13177,11 +13229,11 @@
                 var opts = quoteData.linkOptions || {};
 
                 var defaultChips = [
-                    'Walk me through my quote',
-                    'Why is this rate good for me?',
-                    'How does a HELOC work?',
-                    'Compare my rate options',
-                    'What happens after I apply?'
+                    "What's this HELOC actually going to cost me?",
+                    "How is this different from a refinance?",
+                    "What if I'm not ready to use the full amount?",
+                    "What happens if rates change?",
+                    "Can " + esc(loName) + " walk me through it?"
                 ];
 
                 var _equity = (parseFloat(String(quoteData.homeValue || 0).replace(/[$,]/g, '')) || 0)
@@ -15862,11 +15914,11 @@
                         var lastMsg = (chatHistory[chatHistory.length - 1] || {}).content || '';
                         var lastLower = lastMsg.toLowerCase();
                         var contextChips = null;
-                        if (/rate|competitive|percent/i.test(lastLower)) contextChips = ['Compare my options', 'What\'s my monthly payment?', 'How do I start?'];
-                        else if (/nervous|scared|worried|afraid|uncertain|afford/i.test(lastLower)) contextChips = ['Walk me through the process', 'What if I change my mind?', 'Can I talk to ' + esc(loName) + '?'];
-                        else if (/debt|consolidat|credit card/i.test(lastLower)) contextChips = ['Show me my savings', 'How fast can I be debt-free?', 'What about my credit?'];
-                        else if (/spouse|partner|think about|time/i.test(lastLower)) contextChips = ['What happens after I apply?', 'How long does it take?', 'Is there a deadline?'];
-                        else if (/tier|option|which|best/i.test(lastLower)) contextChips = ['What\'s the monthly payment?', 'Compare all tiers', 'I\'m ready — let\'s go!'];
+                        if (/rate|competitive|percent/i.test(lastLower)) contextChips = ["What's actually driving the rate?", "How does rate change affect my payment?", "Lock in or wait — what's smarter?"];
+                        else if (/nervous|scared|worried|afraid|uncertain|afford/i.test(lastLower)) contextChips = ["What concerns you most?", "What would need to be true for me to move forward?", "Talk to " + esc(loName) + " first?"];
+                        else if (/debt|consolidat|credit card/i.test(lastLower)) contextChips = ["How much could I actually save monthly?", "How fast could I be debt-free?", "What if I keep paying minimums instead?"];
+                        else if (/spouse|partner|think about|time/i.test(lastLower)) contextChips = ["What does my spouse usually want to know?", "Is there a deadline driving this?", "How quickly can this close?"];
+                        else if (/tier|option|which|best/i.test(lastLower)) contextChips = ["Which tier fits my situation?", "What's the long-term cost difference?", "Which would " + esc(loName) + " pick?"];
                         if (contextChips) { renderChips(contextChips); return; }
                     }
                     if (engagementCount >= 5) {
