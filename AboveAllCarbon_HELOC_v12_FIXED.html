@@ -1465,6 +1465,40 @@
             margin: 4px 6px;
         }
 
+        /* Integrations collapsibles (native <details>/<summary>) */
+        .int-collapsible { margin-bottom: 12px; }
+        .int-collapsible > summary {
+            cursor: pointer;
+            font-family: var(--font-heading);
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: white;
+            padding: 10px 12px;
+            border-radius: 8px 8px 0 0;
+            background: rgba(255, 255, 255, 0.06);
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            user-select: none;
+            transition: background 0.15s;
+        }
+        .int-collapsible > summary:hover { background: rgba(255, 255, 255, 0.1); }
+        .int-collapsible > summary::-webkit-details-marker { display: none; }
+        .int-collapsible > summary::marker { content: ''; }
+        .int-collapsible > summary::before {
+            content: '▸';
+            display: inline-block;
+            transition: transform 0.15s;
+            font-size: 9px;
+            color: var(--accent-color);
+        }
+        .int-collapsible[open] > summary::before { transform: rotate(90deg); }
+        .int-collapsible[open] > summary { border-radius: 8px 8px 0 0; }
+        .int-collapsible:not([open]) > summary { border-radius: 8px; }
+
         .settings-content {
             display: none;
         }
@@ -5757,11 +5791,11 @@
                     style="font-family: var(--font-heading); color: var(--accent-color); margin: 0 0 12px 0; font-size: 11px;">
                     ⚙️ Loan Options</h4>
                 <div style="display: flex; gap: 25px; flex-wrap: wrap; align-items: center;">
-                    <div class="toggle-container">
+                    <div class="toggle-container" data-tier-feature="loan-options-pro">
                         <div class="toggle-switch" id="toggle-interest-only" onclick="toggleSwitch(this)"></div><span
                             class="toggle-label">Interest Only <span class="help-tip">?<span class="help-tip-text">Shows interest-only payment amounts instead of fully amortized (P&I). Useful for clients who want the lowest possible monthly payment.</span></span></span>
                     </div>
-                    <div class="toggle-container">
+                    <div class="toggle-container" data-tier-feature="loan-options-pro">
                         <div class="toggle-switch" id="toggle-show-variable" onclick="toggleSwitch(this)"></div><span
                             class="toggle-label">Show Variable Rates <span class="help-tip">?<span class="help-tip-text">Adds a variable rate column to the quote table. Great for showing clients how rates could adjust after the fixed period ends.</span></span></span>
                     </div>
@@ -5773,11 +5807,11 @@
                         <div class="toggle-switch active" id="toggle-show-fees" onclick="toggleSwitch(this)"></div><span
                             class="toggle-label">Show Fees <span class="help-tip">?<span class="help-tip-text">Displays origination fees and closing costs in the rate table on the client's quote page.</span></span></span>
                     </div>
-                    <div class="toggle-container">
+                    <div class="toggle-container" data-tier-feature="loan-options-pro">
                         <div class="toggle-switch active" id="toggle-show-best-of-both" onclick="toggleSwitch(this)"></div><span
                             class="toggle-label">"Best of Both" Section <span class="help-tip">?<span class="help-tip-text">Shows the "Best of Both Worlds" explainer on the client quote: fixed-rate security + line-of-credit flexibility.</span></span></span>
                     </div>
-                    <div class="toggle-container">
+                    <div class="toggle-container" data-tier-feature="loan-options-pro">
                         <div class="toggle-switch active" id="toggle-show-vs-alternatives" onclick="toggleSwitch(this)"></div><span
                             class="toggle-label">"Why Not HEL/HEA" Section <span class="help-tip">?<span class="help-tip-text">Shows the comparison section explaining why this HELOC beats a traditional Home Equity Loan, a variable HELOC, and a Home Equity Agreement (HEA).</span></span></span>
                     </div>
@@ -5902,10 +5936,11 @@
                     <label style="font-size: 9px; color: rgba(255,255,255,0.8); font-family: var(--font-heading); font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 4px;">🎨 Quote Style Preset</label>
                     <select id="link-style-preset" onchange="applyLinkPreset(this.value)"
                         style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(6,182,212,0.3); color: #22d3ee; border-radius: 6px; padding: 8px 10px; font-size: 10px; font-family: var(--font-heading); cursor: pointer;">
-                        <option value="enhanced" selected>Enhanced — Full sales psychology, animations, AI chat</option>
                         <option value="original">Original — Clean quote with rates, no extras</option>
-                        <option value="minimal">Minimal — Just the numbers, fast loading</option>
-                        <option value="custom">Custom — Set each option below</option>
+                        <option value="minimal" data-tier-feature="quote-preset-pro">Minimal — Just the numbers, fast loading (Pro)</option>
+                        <option value="enhanced" data-tier-feature="quote-preset-pro" selected>Enhanced — Full sales psychology, animations, AI chat (Pro)</option>
+                        <option value="compare" data-tier-feature="quote-preset-pro">Compare — 3-tier card view with "How to choose" guide (Pro)</option>
+                        <option value="custom" data-tier-feature="quote-preset-pro">Custom — Set each option below (Pro)</option>
                     </select>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; align-items: start;">
@@ -6857,6 +6892,27 @@
                     <div id="security-pw-msg" style="display:none;font-size:10px;padding:6px 10px;border-radius:6px;margin-top:8px;"></div>
                     <button class="btn" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);margin-top:10px;font-size:9px;padding:8px 20px;" onclick="changeUserPassword()">🔑 Update Password</button>
                 </div>
+
+                <!-- EMAIL PREFERENCES — Gmail send mode -->
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08);">
+                    <h5 style="font-family: var(--font-heading); color: #60a5fa; margin: 0 0 10px 0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;">✉️ Email Preferences</h5>
+                    <p style="font-size: 10px; color: rgba(255,255,255,0.6); margin: 0 0 10px 0;">When you click "Send via Gmail" on a quote, how should it work?</p>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; background: rgba(255,255,255,0.03);">
+                            <input type="radio" name="gmail-mode" value="oauth" onchange="saveGmailModePreference('oauth')" style="margin-top: 3px;">
+                            <span style="font-size: 11px; color: white;"><strong>⚡ Send with one click (Gmail OAuth)</strong><br><span style="font-size: 9px; color: rgba(255,255,255,0.6);">Uses your connected Google account. Best for Gmail users who sign in with Google.</span></span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; background: rgba(255,255,255,0.03);">
+                            <input type="radio" name="gmail-mode" value="browser" onchange="saveGmailModePreference('browser')" style="margin-top: 3px;">
+                            <span style="font-size: 11px; color: white;"><strong>🌐 Open Gmail in my browser</strong><br><span style="font-size: 9px; color: rgba(255,255,255,0.6);">Opens Gmail compose in a new tab. The quote is copied to your clipboard — paste with Ctrl+V.</span></span>
+                        </label>
+                        <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; padding: 8px 10px; border-radius: 6px; background: rgba(255,255,255,0.03);">
+                            <input type="radio" name="gmail-mode" value="ask" onchange="saveGmailModePreference('ask')" style="margin-top: 3px;" checked>
+                            <span style="font-size: 11px; color: white;"><strong>❓ Ask every time</strong><br><span style="font-size: 9px; color: rgba(255,255,255,0.6);">Prompt on first send, remember your choice for that session.</span></span>
+                        </label>
+                    </div>
+                    <p id="gmail-mode-save-status" style="font-size: 9px; color: #10b981; margin: 8px 0 0 0; opacity: 0; transition: opacity 0.3s;">✓ Preference saved</p>
+                </div>
             </div>
         </div>
 
@@ -7355,6 +7411,7 @@ Best regards,
                         <!-- Sync Actions -->
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                             <button class="btn" style="background: linear-gradient(135deg, #10b981, #059669); font-size: 9px; padding: 6px 14px;" onclick="saveGHLIntegration()">💾 Save Integration</button>
+                            <span id="ghl-live-save-indicator" style="font-size: 8px; color: #10b981; opacity: 0.4; transition: opacity 0.3s; align-self: center; padding-left: 4px;" title="Sync config auto-saves as you edit"></span>
                             <button class="btn" style="background: #3b82f6; font-size: 9px; padding: 6px 14px;" onclick="syncAllLeadsToGHL()">📤 Sync All Leads to GHL</button>
                             <button class="btn" style="background: #8b5cf6; font-size: 9px; padding: 6px 14px;" onclick="syncGHLToCarbon()">📥 Import from GHL</button>
                             <button class="btn" style="background: #6b7280; font-size: 9px; padding: 6px 14px;" onclick="viewGHLSyncLogs()">📋 View Sync Logs</button>
@@ -7583,6 +7640,21 @@ Best regards,
                                     onclick="copyStaticWebhookUrl(this.previousElementSibling.value, this)">📋 Copy</button>
                             </div>
                             <p style="font-size: 7.5px; color: rgba(255,255,255,0.4); margin: 4px 0 0 0;">GHL → Workflow → add a <em>Webhook</em> action and paste here, OR Settings → Webhooks for contact-created.</p>
+                            <details style="margin-top: 6px;">
+                                <summary style="cursor:pointer; font-size:8px; color:rgba(197,160,89,0.8); font-family:var(--font-heading); text-transform:uppercase; letter-spacing:0.5px; list-style:none; outline:none;">▸ Step-by-step setup</summary>
+                                <div style="font-size:9px; color:rgba(255,255,255,0.65); margin-top:6px; padding:10px; background:rgba(0,0,0,0.25); border-radius:5px; line-height:1.6;">
+                                    <strong style="color:#10b981;">Recommended: GHL Workflow → Webhook action</strong> (only fires for pipelines you pick, so you avoid syncing every contact).
+                                    <ol style="margin:6px 0 8px 14px; padding:0;">
+                                        <li>GHL → Automations → <strong>Workflows</strong> → New Workflow</li>
+                                        <li>Trigger: <em>Pipeline Stage Changed</em> (or <em>Contact Created</em> with HELOC tag)</li>
+                                        <li>Add Action → <strong>Webhook</strong></li>
+                                        <li>Paste the URL above into the Webhook URL field</li>
+                                        <li>Method: <strong>POST</strong>, then Save + Activate</li>
+                                    </ol>
+                                    <strong style="color:rgba(255,255,255,0.7);">Alternative: Settings → Webhooks</strong>
+                                    <div style="margin-top:4px;">Fires on every contact-created event. Simpler but noisier — you'll get every contact, not just HELOC leads.</div>
+                                </div>
+                            </details>
                         </div>
 
                         <div style="margin-bottom: 4px;">
@@ -9549,16 +9621,18 @@ Best regards,
             var saveBtn = document.querySelector('#integrations-section > button[onclick="saveIntegrations()"]');
             if (saveBtn) saveBtn.style.display = 'none';
 
-            // ---- PRO (level >= 1): Gmail OAuth, GHL, Bonzo, CRM, Webhooks ----
-            // Placeholder integrations (Radar, AI tile, FUB) intentionally hidden until functional
-            // — see plan: don't telegraph the roadmap to competitors.
+            // ---- PRO (level >= 1): GHL, Bonzo, CRM, Webhooks ----
+            // Placeholder integrations (Radar, AI tile, FUB) intentionally hidden until functional.
+            // Gmail OAuth tile REMOVED from Integrations (see plan Addendum 3): Google sign-in
+            // already captures gmail.send scope, and the send paths auto-fall-back to browser-
+            // compose if OAuth isn't connected. Integrations tab no longer shows Gmail.
             if (level >= 1) {
-                ['int-gmail', 'int-ghl', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-webhooks'].forEach(function (id) {
+                ['int-ghl', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-webhooks'].forEach(function (id) {
                     var el = document.getElementById(id);
                     if (el) el.style.display = '';
                 });
                 if (saveBtn) saveBtn.style.display = '';
-                // Load Gmail connection status
+                // Load Gmail connection status silently (non-UI; used by send paths)
                 _checkGmailStatus();
                 // Show webhook activity log
                 if (activityLog && activityLog.parentElement) {
@@ -9989,13 +10063,13 @@ Best regards,
                     // Normal super_admin view: show production-ready sections only.
                     // Placeholder integrations (n8n/radar/ai/heygen/fub) stay hidden site-wide
                     // until they're actually wired up — see plan: don't telegraph the roadmap.
-                    ['int-ghl', 'int-gmail', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-webhooks'].forEach(function(id) {
+                    ['int-ghl', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-webhooks'].forEach(function(id) {
                         var el = document.getElementById(id);
                         if (el) el.style.display = '';
                         unlockSubsection(id);
                     });
-                    // Explicitly hide placeholders even for super_admin
-                    ['int-n8n', 'int-radar', 'int-ai', 'int-heygen', 'int-crm-fub'].forEach(function(id) {
+                    // Explicitly hide placeholders + Gmail (moved to Email/Share flow) even for super_admin
+                    ['int-n8n', 'int-radar', 'int-ai', 'int-heygen', 'int-crm-fub', 'int-gmail'].forEach(function(id) {
                         var el = document.getElementById(id);
                         if (el) el.style.display = 'none';
                     });
@@ -10135,6 +10209,32 @@ Best regards,
             proLeadsControls.forEach(function (el) {
                 el.style.display = (level >= 1) ? '' : 'none';
             });
+            // Gate Pro-only Loan Options toggles (Best of Both, Why Not HEL/HEA, Interest Only, Variable Rates)
+            var proLoanOpts = document.querySelectorAll('[data-tier-feature="loan-options-pro"]');
+            proLoanOpts.forEach(function (el) {
+                el.style.display = (level >= 1) ? '' : 'none';
+            });
+            // Gate Pro-only quote presets (Minimal, Enhanced, Compare, Custom) — Starter gets Original only.
+            // <option> elements ignore CSS display in most browsers, so also disable for Starter
+            // and force the Starter selector to 'original' if it was on a Pro-only value.
+            var proPresets = document.querySelectorAll('[data-tier-feature="quote-preset-pro"]');
+            proPresets.forEach(function (el) {
+                var isOption = el.tagName === 'OPTION';
+                if (level >= 1) {
+                    el.style.display = '';
+                    if (isOption) el.disabled = false;
+                } else {
+                    el.style.display = 'none';
+                    if (isOption) el.disabled = true;
+                }
+            });
+            if (level < 1) {
+                var presetSel = document.getElementById('link-style-preset');
+                if (presetSel && presetSel.value !== 'original') {
+                    presetSel.value = 'original';
+                    if (typeof applyLinkPreset === 'function') applyLinkPreset('original');
+                }
+            }
 
             // Integrations tab — Show to all, but GHL/n8n/webhooks teaser for lower tiers
             // (Already handled by applyIntegrationAccess for non-super_admin; tier badges for super_admin above)
@@ -12338,12 +12438,46 @@ Best regards,
             if (banner.innerHTML) document.body.appendChild(banner);
         }
 
+        // Wrap visible Integrations sub-sections in <details class="int-collapsible" open>
+        // so LOs can collapse sections they've configured. Runs once after first auth-ready.
+        function _wrapIntegrationsCollapsibles() {
+            if (window._intCollapsiblesApplied) return;
+            var sections = [
+                { id: 'int-ghl', title: '🟢 GoHighLevel (GHL) — ⭐ Recommended' },
+                { id: 'int-crm', title: '🔗 Webhooks & CRM Connections' },
+                { id: 'int-webhooks', title: '⬆️ Outbound Webhooks' }
+            ];
+            sections.forEach(function (s) {
+                var el = document.getElementById(s.id);
+                if (!el || el.dataset.collapsibleWrapped === '1') return;
+                if (el.style.display === 'none') return; // section hidden by tier — skip
+                var details = document.createElement('details');
+                details.className = 'int-collapsible';
+                details.id = 'collapsible-' + s.id;
+                details.open = true;
+                var summary = document.createElement('summary');
+                summary.textContent = s.title;
+                details.appendChild(summary);
+                el.parentNode.insertBefore(details, el);
+                details.appendChild(el);
+                el.dataset.collapsibleWrapped = '1';
+                // Hide the now-redundant first <h5> inside the section (title is in summary now)
+                var firstHeader = el.querySelector('h5');
+                if (firstHeader) firstHeader.style.display = 'none';
+            });
+            window._intCollapsiblesApplied = true;
+        }
+
         window.addEventListener('auth-ready', function (e) {
             const role = e.detail?.role || 'user';
             const tier = e.detail?.tier || 'starter';
             applyRoleAccess(role);
             applyIntegrationAccess(role, tier);
             applyTierAccess(tier);
+            // Wrap Integrations sub-sections in collapsibles (after tier visibility applied)
+            try { _wrapIntegrationsCollapsibles(); } catch (e) { console.warn('[integrations-collapsible]', e); }
+            // Hydrate Gmail-send mode radio buttons from preference (after profile loads)
+            setTimeout(function () { try { _hydrateGmailModeRadios(); } catch (_) {} }, 1500);
             // Per-tier default landing tab (only applies on initial load, before user has navigated).
             // Starter LOs land on Lead Parser so they can paste a broker email and get auto-advanced
             // to the Client tab with fields pre-filled. Pro/Enterprise land on My Leads (pipeline triage).
@@ -13769,6 +13903,17 @@ Best regards,
             var sb = window._supabase;
             var userId = window.currentUserId;
             if (!sb || !userId) return;
+
+            // Hydrate Gmail-send preference from profiles.preferences.gmail_mode (in parallel)
+            (async function () {
+                try {
+                    var res = await sb.from('profiles').select('preferences').eq('id', userId).maybeSingle();
+                    var mode = (res && res.data && res.data.preferences && res.data.preferences.gmail_mode) || null;
+                    if (mode === 'oauth' || mode === 'browser' || mode === 'ask') {
+                        window._gmailMode = mode;
+                    }
+                } catch (e) { /* preferences column may not exist yet; non-fatal */ }
+            })();
 
             try {
                 var { data } = await sb.from('user_integrations')
@@ -16144,10 +16289,8 @@ Generate the sales strategy and phone script now.`;
                 }
             }
 
-            // Fallback: clipboard + open compose tab
-            await copyRichHTMLToClipboard(html);
-            window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(prepared.to) + '&su=' + encodeURIComponent(prepared.subject));
-            showToast('Rich HTML copied — paste into Gmail with Ctrl+V.', 'info', 5000);
+            // Fallback: shared helper does clipboard + opens compose
+            await openGmailCompose(prepared.to, prepared.subject, html);
         }
 
         async function copyRichEmailHTML() {
@@ -17689,6 +17832,14 @@ Sent via Above All Carbon HELOC Tool`;
             var fromName = document.getElementById('lo-name')?.value || '';
             var fromEmail = document.getElementById('lo-email')?.value || '';
 
+            // Honor LO's Gmail-send preference: oauth / browser / ask
+            var mode = _resolveGmailMode();
+            if (mode === 'ask') mode = await _askGmailModeOnce();
+            if (mode === 'browser') {
+                await openGmailCompose(to, subject, html);
+                return;
+            }
+            // mode === 'oauth' — try API send, fall back to browser compose on failure
             try {
                 showToast('Sending via Gmail...', 'info');
                 await _sendViaGmailAPI(to, subject, html, fromName, fromEmail);
@@ -17699,9 +17850,7 @@ Sent via Above All Carbon HELOC Tool`;
                     showToast('Gmail send error: ' + e2.message + '. Opening compose...', 'warning', 6000);
                 }
             }
-            await copyRichHTMLToClipboard(html);
-            window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(to) + '&su=' + encodeURIComponent(subject));
-            showToast('Rich email copied — paste into Gmail with Ctrl+V.', 'info', 5000);
+            await openGmailCompose(to, subject, html);
         }
 
         async function copyQuoteEmailHTML(e) {
@@ -18167,8 +18316,7 @@ Sent via Above All Carbon HELOC Tool`;
                 gmailBtn.textContent = '📧 Open in Gmail';
                 gmailBtn.style.cssText = 'margin-top:12px;padding:8px 16px;background:#ea4335;color:white;border:none;border-radius:6px;cursor:pointer;font-family:var(--font-heading);font-size:11px;margin-right:8px;';
                 gmailBtn.onclick = async function() {
-                    await copyRichHTMLToClipboard(_bonzoRichHtml);
-                    window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(contactEmail) + '&su=' + encodeURIComponent(_bonzoEmailSubject));
+                    await openGmailCompose(contactEmail, _bonzoEmailSubject, _bonzoRichHtml);
                     gmailBtn.textContent = '✅ Gmail opened — paste with Ctrl+V';
                 };
                 box.appendChild(gmailBtn);
@@ -18690,7 +18838,8 @@ Sent via Above All Carbon HELOC Tool`;
                     '<div style="font-size:9px;color:rgba(255,255,255,0.7);margin-top:6px;">Rich HTML email on clipboard — paste with Ctrl+V</div>';
 
                 document.getElementById('_email-gmail').onclick = function () {
-                    window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(prepared.to) + '&su=' + encodeURIComponent(prepared.subject));
+                    // HTML already on clipboard from the enclosing flow; just open compose.
+                    openGmailCompose(prepared.to, prepared.subject, null);
                     notification.remove();
                 };
                 document.getElementById('_email-outlook').onclick = function () {
@@ -18897,6 +19046,15 @@ Sent via Above All Carbon HELOC Tool`;
             var fromName = document.getElementById('lo-name')?.value || '';
             var fromEmail = document.getElementById('lo-email')?.value || '';
 
+            // Honor LO's Gmail-send preference: oauth / browser / ask
+            var mode = _resolveGmailMode();
+            if (mode === 'ask') mode = await _askGmailModeOnce();
+            if (mode === 'browser') {
+                closeEmailSendModal();
+                await openGmailCompose(toEmail, subject, html);
+                return;
+            }
+            // mode === 'oauth'
             try {
                 _esmShowStatus('Sending via Gmail API...', 'info');
                 await _sendViaGmailAPI(toEmail, subject, html, fromName, fromEmail);
@@ -18909,9 +19067,8 @@ Sent via Above All Carbon HELOC Tool`;
                     await new Promise(r => setTimeout(r, 1500));
                 }
             }
-            await copyRichHTMLToClipboard(html);
-            window.open('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(toEmail) + '&su=' + encodeURIComponent(subject));
-            _esmShowStatus('✅ Rich HTML copied — paste into Gmail with Ctrl+V.', 'success');
+            closeEmailSendModal();
+            await openGmailCompose(toEmail, subject, html);
         }
 
         async function esmSendGHL() {
@@ -18977,12 +19134,31 @@ Sent via Above All Carbon HELOC Tool`;
             }
         }
         
+        // Debounced live-save: when sync direction / field mappings / stage mappings change,
+        // persist to Supabase within 500ms so LOs don't need to remember to click 💾 Save Integration.
+        let _ghlSyncConfigDebounce = null;
         function updateGHLSyncConfig() {
-            // Auto-save when configuration changes
             autoSave();
+            if (_ghlSyncConfigDebounce) clearTimeout(_ghlSyncConfigDebounce);
+            _ghlSyncConfigDebounce = setTimeout(function () {
+                // Only live-save if basic creds are present — otherwise user hasn't finished setup
+                var apiKey = (document.getElementById('ghl-api-key') || {}).value;
+                var locationId = (document.getElementById('ghl-location-id') || {}).value;
+                if (!apiKey || !locationId) return;
+                saveGHLIntegration({ silent: true }).then(function () {
+                    var indicator = document.getElementById('ghl-live-save-indicator');
+                    if (indicator) {
+                        indicator.textContent = '✓ Auto-saved ' + new Date().toLocaleTimeString();
+                        indicator.style.opacity = '1';
+                        setTimeout(function () { indicator.style.opacity = '0.4'; }, 2500);
+                    }
+                }).catch(function (e) { console.warn('[ghl] live-save failed', e); });
+            }, 500);
         }
         
-        async function saveGHLIntegration() {
+        async function saveGHLIntegration(opts) {
+            opts = opts || {};
+            const silent = !!opts.silent;
             const apiKey = document.getElementById('ghl-api-key')?.value;
             const locationId = document.getElementById('ghl-location-id')?.value;
             const pipelineId = document.getElementById('ghl-pipeline-id')?.value;
@@ -19056,10 +19232,11 @@ Sent via Above All Carbon HELOC Tool`;
                 document.getElementById('ghl-sync-indicator').innerHTML = 
                     '<span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981;"></span> Active';
                 
-                showToast('GHL integration saved successfully!', 'success');
+                if (!silent) showToast('GHL integration saved successfully!', 'success');
                 autoSave();
             } catch (e) {
-                showToast('Error saving GHL integration: ' + e.message, 'error');
+                if (!silent) showToast('Error saving GHL integration: ' + e.message, 'error');
+                throw e;
             }
         }
         
@@ -19124,8 +19301,94 @@ Sent via Above All Carbon HELOC Tool`;
             }
         }
         
+        // Bulk pull GHL contacts → upsert into Carbon leads table via upsert_lead RPC.
+        // Reuses the same dedup logic the n8n router uses (email → phone → crm_contact_id).
+        // Tags each row with metadata.app_id='carbon-heloc' + source='ghl-import' for audit.
         async function syncGHLToCarbon() {
-            showToast('Use the GHL webhook to sync from GHL to Carbon. Copy the webhook URL above and paste it in GHL → Settings → Webhooks.', 'info', 8000);
+            const sb = window._supabase;
+            const userId = window.currentUserId;
+            if (!sb || !userId) { showToast('Not authenticated.', 'error'); return; }
+            const apiKey = (document.getElementById('ghl-api-key') || {}).value;
+            const locationId = (document.getElementById('ghl-location-id') || {}).value;
+            if (!apiKey || !locationId) {
+                showToast('Enter GHL API Key and Location ID first, then Save Integration.', 'warning');
+                return;
+            }
+            if (!confirm('Import all contacts from GHL into Carbon HELOC?\n\nExisting leads (matched by email or phone) will be enriched, not duplicated.')) return;
+
+            showToast('Starting GHL → Carbon import…', 'info');
+            var added = 0, matched = 0, failed = 0;
+            var totalFetched = 0;
+            const PAGE = 100;
+            var searchAfter = null;
+            var keepGoing = true;
+            try {
+                while (keepGoing) {
+                    var searchPayload = { limit: PAGE };
+                    if (searchAfter) searchPayload.searchAfter = searchAfter;
+                    var result = await callGHLProxy('search_contacts', searchPayload, null, locationId);
+                    if (!result || !result.success) {
+                        failed++; keepGoing = false; break;
+                    }
+                    var contacts = (result.data && (result.data.contacts || result.data)) || [];
+                    if (!Array.isArray(contacts) || contacts.length === 0) { keepGoing = false; break; }
+                    // GHL paginated search: last contact's searchAfter cursor drives next page
+                    var lastContact = contacts[contacts.length - 1];
+                    searchAfter = (lastContact && (lastContact.searchAfter || lastContact.id)) || null;
+                    totalFetched += contacts.length;
+
+                    for (var i = 0; i < contacts.length; i++) {
+                        var c = contacts[i];
+                        // Flatten GHL customFields (array) into a flat object for metadata
+                        var customObj = {};
+                        var cf = c.customFields || c.custom_fields || [];
+                        if (Array.isArray(cf)) {
+                            cf.forEach(function (f) { if (f && f.id && f.value !== undefined) customObj[f.id] = f.value; });
+                        } else if (cf && typeof cf === 'object') {
+                            customObj = cf;
+                        }
+                        var addrParts = [c.address1, c.city, c.state, c.postalCode].filter(Boolean);
+                        var meta = Object.assign({}, customObj, {
+                            app_id: 'carbon-heloc',
+                            routed_via: 'ghl-bulk-import',
+                            source: 'ghl-import',
+                            routed_at: new Date().toISOString()
+                        });
+                        if (addrParts.length) meta.property_address = addrParts.join(', ');
+                        try {
+                            var rpcRes = await sb.rpc('upsert_lead', {
+                                p_user_id: userId,
+                                p_first_name: c.firstName || c.first_name || null,
+                                p_last_name: c.lastName || c.last_name || null,
+                                p_email: c.email || null,
+                                p_phone: c.phone || null,
+                                p_source: 'ghl',
+                                p_status: 'new',
+                                p_crm_contact_id: c.id || c.contactId || null,
+                                p_metadata: meta
+                            });
+                            if (rpcRes.error) { failed++; console.warn('[ghl-import] upsert error', rpcRes.error); }
+                            else {
+                                var row = (rpcRes.data && rpcRes.data[0]) || {};
+                                if (row.is_new) added++; else matched++;
+                            }
+                        } catch (rowErr) {
+                            failed++;
+                            console.warn('[ghl-import] exception', rowErr);
+                        }
+                    }
+                    if (contacts.length < PAGE) keepGoing = false;
+                    // Safety cap at 5000 contacts per run
+                    if (totalFetched >= 5000) { keepGoing = false; break; }
+                    if (!searchAfter) { keepGoing = false; break; }
+                }
+                showToast('GHL import done — added ' + added + ', matched ' + matched + ' existing'
+                    + (failed ? ', failed ' + failed : ''), failed ? 'warning' : 'success', 7000);
+                if (typeof loadUserLeads === 'function') { try { loadUserLeads(); } catch (_) {} }
+            } catch (e) {
+                console.error('[ghl-import] fatal', e);
+                showToast('GHL import failed: ' + (e.message || e), 'error');
+            }
         }
         
         async function viewGHLSyncLogs() {
@@ -19668,6 +19931,97 @@ Sent via Above All Carbon HELOC Tool`;
         // Send email directly via Gmail API (used by sendViaGmail and esmSendGmail)
         async function _sendViaGmailAPI(to, subject, html, fromName, fromEmail) {
             return _callGmailSend({ action: 'send', to, subject, html, fromName, fromEmail });
+        }
+
+        // LO's Gmail-send preference: 'oauth' (one-click via Gmail API), 'browser' (always open
+        // Gmail compose in a new tab, paste from clipboard), or 'ask' (prompt on first send).
+        // Loaded from profiles.preferences.gmail_mode (via _loadProfileFromCloud). Defaults
+        // to 'ask' if unset.
+        window._gmailMode = window._gmailMode || null;
+        function _resolveGmailMode() {
+            // Honor the LO's stored preference if explicitly set
+            if (window._gmailMode === 'oauth' || window._gmailMode === 'browser' || window._gmailMode === 'ask') {
+                return window._gmailMode;
+            }
+            // Session-remembered choice from "ask" prompt
+            if (window._gmailModeSession) return window._gmailModeSession;
+            return 'ask';
+        }
+
+        // Shared helper: open Gmail compose in a new tab with to/subject pre-filled and
+        // the rich-HTML body copied to clipboard so the LO can paste it with Ctrl+V.
+        // Centralizes the 5 previous inline implementations.
+        async function openGmailCompose(to, subject, htmlBody) {
+            try {
+                if (htmlBody) await copyRichHTMLToClipboard(htmlBody);
+            } catch (e) { console.warn('[gmail-compose] clipboard copy failed', e); }
+            var url = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(to || '') +
+                      '&su=' + encodeURIComponent(subject || '');
+            window.open(url, '_blank');
+            if (typeof showToast === 'function') {
+                showToast('Quote copied to clipboard — paste into Gmail with Ctrl+V', 'success', 4000);
+            }
+        }
+
+        // Prompt the LO once per session to pick Gmail-send mode. Returns 'oauth' or 'browser'.
+        function _askGmailModeOnce() {
+            return new Promise(function (resolve) {
+                if (window._gmailModeSession) return resolve(window._gmailModeSession);
+                var existing = document.getElementById('gmail-mode-ask-modal');
+                if (existing) existing.remove();
+                var modal = document.createElement('div');
+                modal.id = 'gmail-mode-ask-modal';
+                modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+                modal.innerHTML = '<div style="background:var(--primary-color);border:1px solid rgba(197,160,89,0.3);border-radius:10px;max-width:460px;width:100%;padding:22px;">' +
+                    '<h3 style="margin:0 0 10px 0;font-family:var(--font-heading);font-size:14px;color:white;">How would you like to send?</h3>' +
+                    '<p style="font-size:11px;color:rgba(255,255,255,0.65);margin:0 0 14px 0;">Pick once — we\'ll remember your choice for this session. Change the default anytime in LO Profile → Email preferences.</p>' +
+                    '<div style="display:flex;flex-direction:column;gap:8px;">' +
+                        '<button class="btn" id="gmode-oauth" style="background:linear-gradient(135deg,#10b981,#059669);text-align:left;padding:12px 16px;font-size:11px;">' +
+                            '<strong>⚡ One-click (Gmail OAuth)</strong><br>' +
+                            '<span style="font-size:9px;color:rgba(255,255,255,0.7);font-weight:normal;">Sends directly from your Gmail. No paste required.</span>' +
+                        '</button>' +
+                        '<button class="btn" id="gmode-browser" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);text-align:left;padding:12px 16px;font-size:11px;">' +
+                            '<strong>🌐 Open Gmail in browser</strong><br>' +
+                            '<span style="font-size:9px;color:rgba(255,255,255,0.6);font-weight:normal;">Opens Gmail compose in a new tab with the quote copied to clipboard.</span>' +
+                        '</button>' +
+                    '</div>' +
+                    '<button onclick="document.getElementById(\'gmail-mode-ask-modal\').remove();" style="margin-top:12px;background:none;border:none;color:rgba(255,255,255,0.4);font-size:10px;cursor:pointer;">Cancel</button>' +
+                '</div>';
+                document.body.appendChild(modal);
+                document.getElementById('gmode-oauth').onclick = function () {
+                    window._gmailModeSession = 'oauth'; modal.remove(); resolve('oauth');
+                };
+                document.getElementById('gmode-browser').onclick = function () {
+                    window._gmailModeSession = 'browser'; modal.remove(); resolve('browser');
+                };
+            });
+        }
+
+        // Persist gmail_mode preference to profiles.preferences JSONB.
+        async function saveGmailModePreference(mode) {
+            window._gmailMode = mode;
+            window._gmailModeSession = null; // clear any session override — user chose a default
+            try {
+                var sb = window._supabase;
+                var userId = window.currentUserId;
+                if (!sb || !userId) return;
+                var res = await sb.from('profiles').select('preferences').eq('id', userId).maybeSingle();
+                var prefs = (res.data && res.data.preferences) || {};
+                prefs.gmail_mode = mode;
+                await sb.from('profiles').update({ preferences: prefs }).eq('id', userId);
+                var status = document.getElementById('gmail-mode-save-status');
+                if (status) {
+                    status.style.opacity = '1';
+                    setTimeout(function () { status.style.opacity = '0'; }, 2000);
+                }
+            } catch (e) { console.warn('[gmail-mode] save failed', e); }
+        }
+
+        // Hydrate the LO Profile radio buttons from _gmailMode (after profile loads).
+        function _hydrateGmailModeRadios() {
+            var mode = window._gmailMode || 'ask';
+            var radio = document.querySelector('input[name="gmail-mode"][value="' + mode + '"]');
+            if (radio) radio.checked = true;
         }
 
         // --- Outbound Webhooks ---

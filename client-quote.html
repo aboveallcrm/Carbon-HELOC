@@ -7489,6 +7489,146 @@
         }
 
         /* ============================================= */
+        /* ===== PRESET TEMPLATE: COMPARE (LIGHT) ====== */
+        /* ============================================= */
+        body.theme-compare { background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%); }
+        #template-compare {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 32px 24px 60px 24px;
+            font-family: var(--font-body, 'Inter', sans-serif);
+            color: #1e293b;
+        }
+        .cmp-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            margin-bottom: 26px;
+        }
+        .cmp-header-logo { width: 44px; height: 44px; border-radius: 50%; background: #0f172a; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; flex-shrink: 0; }
+        .cmp-header-brand { font-family: var(--font-heading, 'Playfair Display', serif); font-size: 18px; font-weight: 700; color: #0f172a; }
+        .cmp-sub-intro { text-align: center; color: #64748b; font-size: 14px; margin: 0 0 28px 0; }
+        .cmp-sub-intro strong { color: #0f172a; font-weight: 700; }
+        .cmp-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 36px;
+        }
+        @media (max-width: 780px) {
+            .cmp-cards { grid-template-columns: 1fr; }
+        }
+        .cmp-card {
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .cmp-card.recommended {
+            border: 2px solid #2563eb;
+            box-shadow: 0 8px 28px rgba(37, 99, 235, 0.18);
+            transform: translateY(-4px);
+        }
+        .cmp-card-top {
+            padding: 14px 20px;
+            color: white;
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-weight: 700;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .cmp-card[data-tier="1"] .cmp-card-top { background: linear-gradient(135deg, #10b981, #059669); }
+        .cmp-card[data-tier="2"] .cmp-card-top { background: linear-gradient(135deg, #2563eb, #1e40af); }
+        .cmp-card[data-tier="3"] .cmp-card-top { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .cmp-rec-badge {
+            font-size: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+        .cmp-card-body { padding: 24px 20px; flex: 1; display: flex; flex-direction: column; }
+        .cmp-rate {
+            font-size: 38px;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1;
+            margin: 0 0 4px 0;
+            text-align: center;
+        }
+        .cmp-rate-label { text-align: center; color: #64748b; font-size: 12px; margin: 0 0 22px 0; }
+        .cmp-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            font-size: 13px;
+        }
+        .cmp-row:last-child { border-bottom: 0; }
+        .cmp-row-label { color: #64748b; }
+        .cmp-row-value { color: #0f172a; font-weight: 700; }
+        .cmp-card-action {
+            padding: 14px 20px 20px 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.04);
+        }
+        .cmp-btn {
+            width: 100%;
+            padding: 11px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: #f1f5f9;
+            color: #475569;
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .cmp-btn:hover { background: #e2e8f0; }
+        .cmp-card.recommended .cmp-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+        .cmp-card.recommended .cmp-btn:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+        .cmp-howto {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .cmp-howto h4 {
+            margin: 0 0 10px 0;
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 16px;
+            color: #0f172a;
+        }
+        .cmp-howto ul { margin: 0; padding-left: 18px; color: #334155; font-size: 13px; line-height: 1.8; }
+        .cmp-howto ul li strong { color: #0f172a; }
+        .cmp-contact {
+            text-align: center;
+            padding: 30px 20px 12px 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            margin-top: 30px;
+            color: #64748b;
+            font-size: 13px;
+        }
+        .cmp-contact a { color: #2563eb; text-decoration: none; font-weight: 600; }
+
+        /* ============================================= */
         /* ===== PRESET TEMPLATE: MINIMAL (DARK) ======= */
         /* ============================================= */
         #template-minimal {
@@ -8004,13 +8144,165 @@
             font-size: 9px;
             color: #94a3b8;
             line-height: 1.5;
+            text-align: center;
         }
+
+        /* === West Capital proposal layout additions === */
+        #template-original .orig-proposal-header {
+            margin: -40px -50px 28px -50px;
+            padding: 28px 50px 22px;
+            background: linear-gradient(135deg, #0a1f3d 0%, #142d52 100%);
+            color: #ffffff;
+            text-align: center;
+            border-bottom: 3px solid #c5a059;
+        }
+        #template-original .orig-proposal-title {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #ffffff;
+        }
+        #template-original .orig-proposal-tagline {
+            margin-top: 6px;
+            font-size: 11px;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: #c5a059;
+        }
+        #template-original .orig-client-strip {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        #template-original .orig-cs-wide { grid-column: span 2; }
+
+        /* Recommended callout */
+        #template-original .orig-rec-callout {
+            margin: 22px 0 8px;
+            padding: 18px 22px;
+            border: 1.5px solid #c5a059;
+            border-radius: 8px;
+            background: #fef9e7;
+            text-align: center;
+        }
+        #template-original .orig-rec-callout-label {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #7a5a1f;
+            font-weight: 700;
+        }
+        #template-original .orig-rec-callout-offer {
+            margin-top: 6px;
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        #template-original .orig-rec-callout-sub {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        /* Monthly Payment Snapshot table */
+        #template-original .orig-snapshot {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 22px;
+        }
+        #template-original .orig-snapshot td {
+            padding: 10px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        #template-original .orig-snapshot td.label { color: #64748b; width: 50%; }
+        #template-original .orig-snapshot td.value { text-align: right; color: #0f172a; font-weight: 600; font-family: var(--font-heading, 'Playfair Display', serif); }
+        #template-original .orig-snapshot tr.orig-snapshot-payment td {
+            background: #0a1f3d;
+            color: #ffffff;
+            font-size: 15px;
+            padding: 14px 16px;
+            border-bottom: none;
+        }
+        #template-original .orig-snapshot tr.orig-snapshot-payment td.label { color: #c5a059; text-transform: uppercase; letter-spacing: 1.5px; font-size: 11px; }
+        #template-original .orig-snapshot tr.orig-snapshot-payment td.value { color: #c5a059; font-size: 20px; }
+
+        /* Apply CTA */
+        #template-original .orig-apply-cta {
+            display: block;
+            width: 100%;
+            max-width: 420px;
+            margin: 20px auto;
+            padding: 16px 32px;
+            min-height: 52px;
+            background: linear-gradient(135deg, #c5a059 0%, #a68543 100%);
+            color: #ffffff;
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            box-shadow: 0 6px 20px rgba(197,160,89,0.35);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        #template-original .orig-apply-cta:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(197,160,89,0.5); }
+        #template-original .orig-apply-cta:active { transform: translateY(0); }
+
+        /* Important Disclosure callout */
+        #template-original .orig-disclosure-callout {
+            margin: 22px 0;
+            padding: 14px 18px;
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #78350f;
+            line-height: 1.55;
+        }
+        #template-original .orig-disclosure-title { font-weight: 700; margin-bottom: 4px; color: #92400e; letter-spacing: 0.5px; text-transform: uppercase; font-size: 10px; }
+        #template-original .orig-disclosure-body { color: #78350f; }
+
+        /* LO footer (2-column card) */
+        #template-original .orig-lo-footer {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 18px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-top: 28px;
+            align-items: center;
+        }
+        #template-original .orig-lo-card { display: flex; gap: 14px; align-items: center; }
+        #template-original .orig-lo-photo { width: 68px; height: 68px; border-radius: 50%; object-fit: cover; border: 2px solid #c5a059; flex-shrink: 0; }
+        #template-original .orig-lo-details { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+        #template-original .orig-lo-name { font-family: var(--font-heading, 'Playfair Display', serif); font-size: 15px; font-weight: 700; color: #0f172a; }
+        #template-original .orig-lo-title { font-size: 11px; color: #64748b; letter-spacing: 0.3px; }
+        #template-original .orig-lo-ids { font-size: 10px; color: #64748b; letter-spacing: 0.5px; }
+        #template-original .orig-lo-contact,
+        #template-original .orig-lo-extra { font-size: 11px; color: #475569; line-height: 1.5; }
+        #template-original .orig-lo-link { color: #0f172a; text-decoration: none; min-height: 24px; display: inline-block; }
+        #template-original .orig-lo-link:hover { color: #c5a059; text-decoration: underline; }
+        #template-original .orig-lender-card { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        #template-original .orig-lender-logo { max-width: 120px; max-height: 64px; object-fit: contain; }
+        #template-original .orig-lender-name { font-family: var(--font-heading, 'Playfair Display', serif); font-size: 12px; font-weight: 700; color: #0f172a; letter-spacing: 0.5px; }
+
         @media (max-width: 780px) {
             #template-original { padding: 24px 20px; }
+            #template-original .orig-proposal-header { margin: -24px -20px 24px -20px; padding: 22px 20px 18px; }
+            #template-original .orig-proposal-title { font-size: 17px; letter-spacing: 1.2px; }
             #template-original .orig-client-strip { grid-template-columns: 1fr; }
+            #template-original .orig-cs-wide { grid-column: auto; }
             #template-original .orig-valuation { grid-template-columns: repeat(2, 1fr); }
             #template-original .orig-matrix-grid { grid-template-columns: 1fr !important; }
             #template-original .orig-rec-bar { flex-direction: column; text-align: center; gap: 10px; }
+            #template-original .orig-lo-footer { grid-template-columns: 1fr; text-align: center; }
+            #template-original .orig-lo-card { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
@@ -9246,6 +9538,8 @@
     <div id="template-minimal" class="preset-template" style="display:none;"></div>
     <!-- Original preset: clean PDF-style document (light theme, single column) -->
     <div id="template-original" class="preset-template" style="display:none;"></div>
+    <!-- Compare preset: clean 3-tier card layout with "How to choose" guide (Pro+) -->
+    <div id="template-compare" class="preset-template" style="display:none;"></div>
 
     <!-- Ezra Chat Widget (injected by JS) -->
     <div id="eq-root"></div>
@@ -10139,7 +10433,7 @@
                 // Apply template mode - hide/show sections based on mode
                 applyTemplateMode(templateMode, linkOpts);
                 // Re-hide floating bar for non-enhanced presets (it was shown above before template applied)
-                if (templateMode === 'minimal' || templateMode === 'simple' || templateMode === 'original' || templateMode === 'standard') {
+                if (templateMode === 'minimal' || templateMode === 'simple' || templateMode === 'original' || templateMode === 'standard' || templateMode === 'compare') {
                     var fbOther = document.getElementById('floating-bar');
                     if (fbOther) fbOther.style.display = 'none';
                     var pfbOther = document.getElementById('preview-floating-bar');
@@ -10388,6 +10682,19 @@
                         // (Ezra remains visible — tour targets are remapped via getTourTargetForPreset)
                         hide(document.getElementById('floating-bar'));
                         renderOriginal(data, opts);
+                        return;
+                    }
+
+                    if (mode === 'compare') {
+                        // 3-tier card comparison + "How to choose" guide (Pro+ preset)
+                        var compareEl = document.getElementById('template-compare');
+                        hide(enhancedContent);
+                        hide(minimalEl);
+                        hide(originalEl);
+                        show(compareEl, 'block');
+                        document.body.classList.add('theme-compare');
+                        hide(document.getElementById('floating-bar'));
+                        renderCompare(data, opts);
                         return;
                     }
 
@@ -10689,6 +10996,127 @@
                         '</td>';
                     row.parentNode.insertBefore(detail, row.nextSibling);
                 };
+
+                // ===== COMPARE TEMPLATE RENDERER (3-tier card view) =====
+                function renderCompare(data, opts) {
+                    var container = document.getElementById('template-compare');
+                    if (!container) return;
+                    var cbAmt = parseFloat(String(data.cashBack || 0).replace(/[$,]/g, '')) || 0;
+                    var hpAmt = parseFloat(String(data.helocPayoff || 0).replace(/[$,]/g, '')) || 0;
+                    var netCash = cbAmt + hpAmt;
+                    var recCtx = _buildRecCtx(data);
+                    var recTierNum = recCtx.recTier || 2;
+                    var recTermKey = recCtx.recTerm;
+                    if (recTermKey.indexOf('yr') === -1) recTermKey += 'yr';
+
+                    var loInfo = (data.lo_info || data.loInfo || {});
+                    var loName = loInfo.name || loInfo.loName || 'Your Loan Officer';
+                    var loCompany = loInfo.lenderName || loInfo.company || loInfo.loCompany || data.lenderName || 'Your Lender';
+                    var loPhone = loInfo.phone || loInfo.loPhone || '';
+                    var loEmail = loInfo.email || loInfo.loEmail || '';
+                    var loApply = loInfo.applyLink || loInfo.applicationLink || loInfo.applyUrl || '';
+                    var loApplyHref = loApply ? (/^https?:\/\//i.test(loApply) ? loApply : 'https://' + loApply) : '';
+                    var clientName = data.clientName || 'Client';
+
+                    // Pick up to 3 tiers sorted by tier number (1, 2, 3)
+                    var allTiers = (data.tiers || []).slice().sort(function(a, b) { return parseInt(a.tier) - parseInt(b.tier); });
+                    var threeTiers = allTiers.slice(0, 3);
+
+                    // Pull rate/payment/fee for the recommended term on each tier
+                    function pickTermData(tier) {
+                        var rates = tier.rates || {};
+                        var r = rates[recTermKey] || rates['20yr'] || rates['30yr'] || rates['15yr'] || {};
+                        return {
+                            rate: r.rate || r.fixedRate || tier.rate || '—',
+                            payment: r.payment || r.monthlyPayment || tier.payment || '—',
+                            fee: tier.originationFee || tier.fee || r.fee || '—',
+                            term: (recTermKey.replace('yr', '') || '20') + ' Years'
+                        };
+                    }
+
+                    function fmtRate(r) {
+                        if (r === '—' || r == null) return '—';
+                        var n = typeof r === 'number' ? r : parseFloat(String(r).replace('%', ''));
+                        if (isNaN(n)) return String(r);
+                        return n.toFixed(3).replace(/\.?0+$/, '') + '%';
+                    }
+                    function fmtPay(p) {
+                        if (p === '—' || p == null) return '—';
+                        var n = typeof p === 'number' ? p : parseFloat(String(p).replace(/[$,/mo]/g, ''));
+                        if (isNaN(n)) return String(p);
+                        return '$' + Math.round(n).toLocaleString() + '/mo';
+                    }
+                    function fmtFee(f) {
+                        if (f === '—' || f == null || f === 0 || f === '0') return '0.0% ($0)';
+                        var s = String(f);
+                        if (s.indexOf('$') !== -1) return s;
+                        var n = parseFloat(s.replace('%', ''));
+                        if (isNaN(n)) return s;
+                        var feeDollars = netCash ? Math.round(netCash * (n / 100)) : 0;
+                        return n.toFixed(1) + '%' + (feeDollars ? ' ($' + feeDollars.toLocaleString() + ')' : '');
+                    }
+
+                    var cardsHtml = threeTiers.map(function(tier) {
+                        var num = parseInt(tier.tier) || 0;
+                        var isRec = num === recTierNum;
+                        var td = pickTermData(tier);
+                        return '' +
+                        '<div class="cmp-card' + (isRec ? ' recommended' : '') + '" data-tier="' + num + '">' +
+                            '<div class="cmp-card-top">' +
+                                'Tier ' + num +
+                                (isRec ? '<span class="cmp-rec-badge">✓ Recommended</span>' : '') +
+                            '</div>' +
+                            '<div class="cmp-card-body">' +
+                                '<div class="cmp-rate">' + fmtRate(td.rate) + '</div>' +
+                                '<div class="cmp-rate-label">Fixed Rate</div>' +
+                                '<div class="cmp-row"><span class="cmp-row-label">Monthly Payment</span><span class="cmp-row-value">' + fmtPay(td.payment) + '</span></div>' +
+                                '<div class="cmp-row"><span class="cmp-row-label">Origination Fee</span><span class="cmp-row-value">' + fmtFee(td.fee) + '</span></div>' +
+                                '<div class="cmp-row"><span class="cmp-row-label">Term</span><span class="cmp-row-value">' + td.term + '</span></div>' +
+                            '</div>' +
+                            '<div class="cmp-card-action">' +
+                                (loApplyHref ?
+                                    '<a href="' + loApplyHref + '" target="_blank" class="cmp-btn" style="display:block;text-align:center;text-decoration:none;">' + (isRec ? '✓ Use This Tier' : 'Select Tier ' + num) + '</a>' :
+                                    '<button class="cmp-btn" onclick="alert(\'Contact your loan officer to apply.\')">' + (isRec ? '✓ Use This Tier' : 'Select Tier ' + num) + '</button>'
+                                ) +
+                            '</div>' +
+                        '</div>';
+                    }).join('');
+
+                    var howtoHtml = (data.howToChoose && typeof data.howToChoose === 'string' && data.howToChoose.trim()) ||
+                        '<ul>' +
+                            '<li><strong>Tier 1:</strong> Best rates, highest fees. Good for large loans ($100k+) held long-term.</li>' +
+                            '<li><strong>Tier 2:</strong> Balanced option. Lower fees, competitive rates. Best for most borrowers.</li>' +
+                            '<li><strong>Tier 3:</strong> No origination fee. Higher rate but no upfront cost. Good for smaller loans or short-term use.</li>' +
+                        '</ul>';
+
+                    var contactHtml = '';
+                    if (loName || loPhone || loEmail) {
+                        contactHtml = '<div class="cmp-contact">' +
+                            'Questions? Contact <strong style="color:#0f172a;">' + _esc(loName) + '</strong>' +
+                            (loPhone ? ' at <a href="tel:' + _esc(String(loPhone).replace(/\D/g, '')) + '">' + _esc(loPhone) + '</a>' : '') +
+                            (loEmail ? ' · <a href="mailto:' + _esc(loEmail) + '">' + _esc(loEmail) + '</a>' : '') +
+                        '</div>';
+                    }
+
+                    container.innerHTML =
+                        '<div class="cmp-header">' +
+                            '<div class="cmp-header-logo">⚡</div>' +
+                            '<div class="cmp-header-brand">' + _esc(loCompany) + '</div>' +
+                        '</div>' +
+                        '<p class="cmp-sub-intro">$' + Math.round(netCash).toLocaleString() + ' HELOC for <strong>' + _esc(clientName) + '</strong>.</p>' +
+                        '<div class="cmp-cards">' + cardsHtml + '</div>' +
+                        '<div class="cmp-howto">' +
+                            '<h4>How to choose</h4>' +
+                            howtoHtml +
+                        '</div>' +
+                        contactHtml;
+                }
+
+                function _esc(s) {
+                    return String(s == null ? '' : s)
+                        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                }
 
                 // ===== ORIGINAL TEMPLATE RENDERER =====
                 function renderOriginal(data, opts) {
