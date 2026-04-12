@@ -5896,6 +5896,21 @@
                             style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.8); margin-bottom: 6px;"><input
                                 type="checkbox" id="chk-link-ai-chat" checked style="margin-right: 6px;"> Enable Ezra AI
                             Widget</label>
+                        <div id="link-ai-assistant-wrap" style="display:none; padding-left: 18px; margin-bottom: 6px; padding-bottom: 4px; border-left: 2px solid rgba(168,85,247,0.3);">
+                            <label style="display: block; font-size: 8px; color: #c4b5fd; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">AI Assistant on this Quote <span style="font-size: 7px; background: #a855f7; color: #fff; padding: 1px 5px; border-radius: 6px; font-weight: 700;">ENT</span></label>
+                            <label style="display: flex; align-items: center; cursor: pointer; font-size: 8px; color: rgba(255,255,255,0.7); margin-bottom: 3px;">
+                                <input type="radio" name="link-ai-assistant" id="link-ai-default" value="default" checked style="margin-right: 6px;"> Use Default (set in LO Profile)
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; font-size: 8px; color: rgba(255,255,255,0.7); margin-bottom: 3px;">
+                                <input type="radio" name="link-ai-assistant" id="link-ai-ezra" value="ezra" style="margin-right: 6px;"> Use Ezra (text)
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; font-size: 8px; color: rgba(255,255,255,0.7); margin-bottom: 3px;">
+                                <input type="radio" name="link-ai-assistant" id="link-ai-ghl" value="ghl_widget" style="margin-right: 6px;"> Use GHL Widget (voice)
+                            </label>
+                            <label style="display: flex; align-items: center; cursor: pointer; font-size: 8px; color: rgba(255,255,255,0.7);">
+                                <input type="radio" name="link-ai-assistant" id="link-ai-none" value="none" style="margin-right: 6px;"> None
+                            </label>
+                        </div>
                         <div style="padding-left: 18px; margin-bottom: 6px;">
                             <label style="display: flex; align-items: center; cursor: pointer; font-size: 8px; color: rgba(255,255,255,0.6); margin-bottom: 4px;">
                                 🎙️ Voice Note URL (optional):
@@ -7454,6 +7469,31 @@ Best regards,
                         onclick="testHeyGenConnection()">🔗 Test Connection</button>
                     <span id="heygen-status"
                         style="font-size: 8px; color: rgba(255,255,255,0.4); margin-left: 8px;"></span>
+                </div>
+
+                <!-- AI ASSISTANT (Ezra vs GHL Voice Widget) — Enterprise only -->
+                <div id="int-ai-assistant"
+                    style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(168,85,247,0.3); display:none;">
+                    <h5 style="font-family: var(--font-heading); font-size: 10px; color: #a855f7; margin: 0 0 10px 0;">
+                        🎙️ Client-Quote AI Assistant <span
+                            style="font-size: 7px; background: #a855f7; color: #fff; padding: 2px 6px; border-radius: 8px; font-weight: 700;">ENTERPRISE</span>
+                    </h5>
+                    <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 0 0 10px 0;">
+                        By default, every client quote shows <strong>Ezra</strong> (text chat). Optionally swap in your
+                        own GHL voice-AI widget (e.g., Erika) so clients can talk and book appointments directly.
+                        Paste the embed code from your GHL widget settings below.</p>
+                    <div class="input-field" style="margin-bottom: 8px;">
+                        <label>GHL Widget Embed Code <span class="help-tip">?<span class="help-tip-text">Paste the full HTML/script snippet from your GHL chat widget. This is rendered verbatim on the client quote page — only paste code from trusted sources.</span></span></label>
+                        <textarea id="ghl-widget-embed" rows="5"
+                            style="width:100%; font-family: monospace; font-size: 9px; background: rgba(0,0,0,0.3); border: 1px solid rgba(168,85,247,0.3); color: #fff; padding: 8px; border-radius: 4px; resize: vertical;"
+                            placeholder="&lt;script src=&quot;https://widgets.leadconnectorhq.com/loader.js&quot; ...&gt;&lt;/script&gt;"></textarea>
+                    </div>
+                    <label style="display: flex; align-items: center; cursor: pointer; font-size: 9px; color: rgba(255,255,255,0.7); gap:6px;">
+                        <input type="checkbox" id="ghl-widget-default" style="accent-color:#a855f7;">
+                        Use this widget instead of Ezra by default for all new client quote links
+                    </label>
+                    <p style="font-size: 8px; color: #f59e0b; margin: 8px 0 0 0;">
+                        ⚠ Embed code is rendered as-is on the client quote — only paste code from sources you trust.</p>
                 </div>
 
                 <!-- WEBHOOKS & CRM CONNECTIONS -->
@@ -9458,7 +9498,7 @@ Best regards,
             if (level === -1) level = 0;
 
             // Start by hiding ALL integration subsections
-            var allIds = ['int-ghl', 'int-n8n', 'int-radar', 'int-ai', 'int-heygen', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks', 'int-gmail'];
+            var allIds = ['int-ghl', 'int-n8n', 'int-radar', 'int-ai', 'int-heygen', 'int-ai-assistant', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks', 'int-gmail'];
             allIds.forEach(function (id) {
                 var el = document.getElementById(id);
                 if (el) el.style.display = 'none';
@@ -9500,6 +9540,11 @@ Best regards,
             if (heygenModeLabel) {
                 heygenModeLabel.style.display = level >= 2 ? 'flex' : 'none';
             }
+            // Enterprise: show GHL voice-AI widget swap section + per-quote AI assistant control
+            var aiAssistEl = document.getElementById('int-ai-assistant');
+            if (aiAssistEl) aiAssistEl.style.display = level >= 2 ? '' : 'none';
+            var aiAssistWrap = document.getElementById('link-ai-assistant-wrap');
+            if (aiAssistWrap) aiAssistWrap.style.display = level >= 2 ? '' : 'none';
             // If not enterprise and heygen was selected, force back to manual
             if (level < 2) {
                 var heygenRadio = document.getElementById('video-mode-heygen');
@@ -16405,12 +16450,14 @@ Sent via Above All Carbon HELOC Tool`;
                     showLoInfo: document.getElementById('chk-link-lo-info')?.checked ?? true,
                     showAiChat: document.getElementById('chk-link-ai-chat')?.checked ?? true,
                     showApply: document.getElementById('chk-link-apply')?.checked ?? true,
-                    showVideo: document.getElementById('chk-link-video')?.checked ?? false,
+                    // Auto-enable when a videoUrl is present (LO intent: pasting a URL means show it)
+                    showVideo: (document.getElementById('chk-link-video')?.checked === true) || ((document.getElementById('link-video-url')?.value || '').trim().length > 0),
                     videoUrl: document.getElementById('link-video-url')?.value?.trim() || '',
                     videoMode: (document.getElementById('video-mode-heygen')?.checked ? 'heygen' : 'manual'),
                     showSalesPsych: document.getElementById('chk-link-sales-psych')?.checked ?? true,
                     preset: document.getElementById('link-style-preset')?.value || 'enhanced',
                     voiceNoteUrl: document.getElementById('link-voice-note-url')?.value?.trim() || '',
+                    aiAssistant: (document.querySelector('input[name="link-ai-assistant"]:checked')?.value || 'default'),
                     // Fee visibility — synced from LO toggle
                     showFees: document.getElementById('toggle-show-fees')?.classList.contains('active') !== false,
                     // Tier display mode (all / rec / rec-plus) — governs which tier tables appear on client quote
@@ -16508,7 +16555,10 @@ Sent via Above All Carbon HELOC Tool`;
                 reviewLink: g('lo-review-link'),
                 bio: (document.getElementById('lo-bio') || {}).value || '',
                 googleRating: '5.0',
-                tier: window.currentUserTier || 'starter'
+                tier: window.currentUserTier || 'starter',
+                lenderName: g('lo-company'),
+                ghlWidgetHtml: (document.getElementById('ghl-widget-embed')?.value || '').trim(),
+                ghlWidgetDefault: document.getElementById('ghl-widget-default')?.checked === true
             };
 
             // Build preview URL with data encoded in query params
@@ -16563,12 +16613,14 @@ Sent via Above All Carbon HELOC Tool`;
                     showLoInfo: document.getElementById('chk-link-lo-info')?.checked ?? true,
                     showAiChat: document.getElementById('chk-link-ai-chat')?.checked ?? true,
                     showApply: document.getElementById('chk-link-apply')?.checked ?? true,
-                    showVideo: document.getElementById('chk-link-video')?.checked ?? false,
+                    // Auto-enable when a videoUrl is present (LO intent: pasting a URL means show it)
+                    showVideo: (document.getElementById('chk-link-video')?.checked === true) || ((document.getElementById('link-video-url')?.value || '').trim().length > 0),
                     videoUrl: document.getElementById('link-video-url')?.value?.trim() || '',
                     videoMode: (document.getElementById('video-mode-heygen')?.checked ? 'heygen' : 'manual'),
                     showSalesPsych: document.getElementById('chk-link-sales-psych')?.checked ?? true,
                     preset: document.getElementById('link-style-preset')?.value || 'enhanced',
                     voiceNoteUrl: document.getElementById('link-voice-note-url')?.value?.trim() || '',
+                    aiAssistant: (document.querySelector('input[name="link-ai-assistant"]:checked')?.value || 'default'),
                     // Fee visibility — synced from LO toggle
                     showFees: document.getElementById('toggle-show-fees')?.classList.contains('active') !== false,
                     // Tier display mode (all / rec / rec-plus) — governs which tier tables appear on client quote
@@ -16653,7 +16705,10 @@ Sent via Above All Carbon HELOC Tool`;
                 reviewLink: g('lo-review-link'),
                 bio: (document.getElementById('lo-bio') || {}).value || '',
                 googleRating: '5.0',
-                tier: window.currentUserTier || 'starter'
+                tier: window.currentUserTier || 'starter',
+                lenderName: g('lo-company'),
+                ghlWidgetHtml: (document.getElementById('ghl-widget-embed')?.value || '').trim(),
+                ghlWidgetDefault: document.getElementById('ghl-widget-default')?.checked === true
             };
 
             // Find matching lead ID
@@ -19501,6 +19556,10 @@ Sent via Above All Carbon HELOC Tool`;
                 fub: { apiKey: _val('fub-api-key') },
                 heygen: { apiKey: _val('heygen-api-key'), avatarId: _val('heygen-avatar-id'), voiceId: _val('heygen-voice-id') },
                 gmail: { clientId: _val('google-client-id') },
+                aiAssistant: {
+                    ghlWidgetHtml: _val('ghl-widget-embed'),
+                    ghlWidgetDefault: document.getElementById('ghl-widget-default')?.checked === true
+                },
                 outboundWebhooks: outboundWebhooks
             };
         }
@@ -19538,6 +19597,11 @@ Sent via Above All Carbon HELOC Tool`;
             if (data.gmail) {
                 _setVal('google-client-id', data.gmail.clientId);
                 if (data.gmail.clientId) GMAIL_GOOGLE_CLIENT_ID = data.gmail.clientId;
+            }
+            if (data.aiAssistant) {
+                _setVal('ghl-widget-embed', data.aiAssistant.ghlWidgetHtml || '');
+                var defChk = document.getElementById('ghl-widget-default');
+                if (defChk) defChk.checked = data.aiAssistant.ghlWidgetDefault === true;
             }
             if (data.outboundWebhooks && Array.isArray(data.outboundWebhooks)) {
                 outboundWebhooks = data.outboundWebhooks;
@@ -22631,8 +22695,9 @@ Sent via Above All Carbon HELOC Tool`;
     <!-- Token System -->
     <script src="./js/token-system.js"></script>
     <script src="./js/token-system-init.js"></script>
-    <!-- Quote Builder -->
-    <script src="./js/quote-builder.js"></script>
+    <!-- Quote Builder v2 -->
+    <link rel="stylesheet" href="./js/quote-builder-v2-styles.css">
+    <script src="./js/quote-builder-v2.js"></script>
     <!-- Ezra AI Loan Structuring Assistant -->
     <!-- Ezra AI: lazy-loaded after 5s or on first interaction (saves 435KB parse on initial load) -->
     <script>

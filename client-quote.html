@@ -1310,6 +1310,72 @@
             box-shadow: 0 2px 8px rgba(197, 160, 89, 0.3);
         }
 
+        /* === Recommended-Alt (2nd Best) styling === */
+        .rec-tier-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #c5a059, #d4af37);
+            color: #fff;
+            font-family: var(--font-heading, serif);
+            font-size: 9px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+            vertical-align: middle;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            box-shadow: 0 2px 6px rgba(197, 160, 89, 0.35);
+        }
+        .rec-tier-badge.alt {
+            background: linear-gradient(135deg, #64748b, #94a3b8);
+            box-shadow: 0 2px 6px rgba(100, 116, 139, 0.3);
+        }
+        .tier-recommended-alt,
+        #template-minimal .min-tier.recommended-alt,
+        #template-original .orig-tier.recommended-alt {
+            border: 1px solid rgba(148, 163, 184, 0.55) !important;
+            box-shadow: 0 4px 16px rgba(100, 116, 139, 0.25) !important;
+            position: relative;
+        }
+        .rate-table tr.recommended-alt {
+            background: linear-gradient(90deg, rgba(148,163,184,0.18), rgba(148,163,184,0.08)) !important;
+            border-left: 3px solid #94a3b8 !important;
+        }
+
+        /* === Fixed/Variable info tooltip === */
+        .rate-tip {
+            display: inline-block;
+            margin-left: 4px;
+            color: rgba(197, 160, 89, 0.85);
+            font-size: 12px;
+            cursor: help;
+            position: relative;
+            font-weight: 700;
+            user-select: none;
+        }
+        .rate-tip:hover::after,
+        .rate-tip.show-tip::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            line-height: 1.4;
+            white-space: normal;
+            width: 240px;
+            text-align: left;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            z-index: 999;
+            pointer-events: none;
+        }
+
         /* Rate Row Click Expansion */
         .rate-table tr {
             cursor: pointer;
@@ -9688,12 +9754,48 @@
                         });
                     }
 
-                    // Ezra AI Chat — always available (default on unless explicitly disabled)
+                    // AI assistant: Ezra (default), GHL voice widget swap (Enterprise), or none
                     if (!link.quote_data.linkOptions || link.quote_data.linkOptions.showAiChat !== false) {
                         try {
-                            initEzraChat(link.quote_data, link.lo_info || {}, code);
+                            var loInfoForAi = link.lo_info || {};
+                            var perQuoteAi = (link.quote_data.linkOptions && link.quote_data.linkOptions.aiAssistant) || 'default';
+                            var aiMode;
+                            if (perQuoteAi === 'default') {
+                                aiMode = (loInfoForAi.ghlWidgetDefault && loInfoForAi.ghlWidgetHtml) ? 'ghl_widget' : 'ezra';
+                            } else {
+                                aiMode = perQuoteAi;
+                            }
+                            // Enterprise gate for GHL widget swap
+                            if (aiMode === 'ghl_widget' && String(loInfoForAi.tier || '').toLowerCase() !== 'enterprise') {
+                                aiMode = 'ezra';
+                            }
+                            if (aiMode === 'ghl_widget' && loInfoForAi.ghlWidgetHtml) {
+                                var orb = document.getElementById('eq-orb');
+                                if (orb) orb.style.display = 'none';
+                                var mount = document.getElementById('ghl-widget-mount') || (function() {
+                                    var m = document.createElement('div');
+                                    m.id = 'ghl-widget-mount';
+                                    m.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:1100;';
+                                    document.body.appendChild(m);
+                                    return m;
+                                })();
+                                // Render verbatim embed (LO trusted source). Use a Range to evaluate <script> tags.
+                                try {
+                                    var range = document.createRange();
+                                    range.selectNode(mount);
+                                    mount.appendChild(range.createContextualFragment(loInfoForAi.ghlWidgetHtml));
+                                } catch (embedErr) {
+                                    console.warn('GHL widget embed parse failed, falling back to Ezra:', embedErr);
+                                    initEzraChat(link.quote_data, loInfoForAi, code);
+                                }
+                            } else if (aiMode === 'none') {
+                                var orbN = document.getElementById('eq-orb');
+                                if (orbN) orbN.style.display = 'none';
+                            } else {
+                                initEzraChat(link.quote_data, loInfoForAi, code);
+                            }
                         } catch (e) {
-                            console.warn('Ezra chat init error:', e);
+                            console.warn('AI assistant init error:', e);
                         }
                     }
 
@@ -10258,20 +10360,63 @@
                     var num = typeof n === 'number' ? n : parseFloat(String(n || 0).replace(/[$,\/mo]/g, '')) || 0;
                     return '$' + Math.round(num).toLocaleString();
                 }
-                function _filterTiersByDisplayMode(tiers, recTierNum, mode) {
+                function _filterTiersByDisplayMode(tiers, recTierNum, mode, rec2TierNum) {
                     if (!tiers || tiers.length === 0) return [];
                     var sorted = tiers.slice().sort(function(a, b) { return parseInt(a.tier) - parseInt(b.tier); });
+                    var rec2 = parseInt(rec2TierNum) || 0;
                     if (mode === 'rec' && recTierNum > 0) {
-                        return sorted.filter(function(t) { return parseInt(t.tier) === recTierNum; });
+                        return sorted.filter(function(t) {
+                            var n = parseInt(t.tier);
+                            return n === recTierNum || (rec2 > 0 && n === rec2);
+                        });
                     }
                     if (mode === 'rec-plus' && recTierNum > 0) {
                         var neighbor = recTierNum > 1 ? recTierNum - 1 : recTierNum + 1;
                         return sorted.filter(function(t) {
                             var n = parseInt(t.tier);
-                            return n === recTierNum || n === neighbor;
+                            return n === recTierNum || n === neighbor || (rec2 > 0 && n === rec2);
                         });
                     }
                     return sorted;
+                }
+
+                // Returns which rate-set (fixed/variable) and visibility flags apply to a given tier.
+                // Rules:
+                //  - Best-recommended tier renders its assigned recType.
+                //  - Second-best tier (if enabled) renders its rec2Type.
+                //  - Other tiers render Fixed only by default; Variable shown only if showVariable=true.
+                //  - I/O is hidden globally unless showIO=true (does not affect fixed/variable choice).
+                function _resolveTierRender(tierN, recCtx) {
+                    var isBest = tierN === recCtx.recTier;
+                    var isAlt = recCtx.rec2Enabled && tierN === recCtx.rec2Tier;
+                    var rateType;
+                    if (isBest) rateType = recCtx.recType;
+                    else if (isAlt) rateType = recCtx.rec2Type;
+                    else rateType = 'fixed';
+                    var allowVariable = isBest ? (rateType === 'variable')
+                        : isAlt ? (rateType === 'variable')
+                        : (recCtx.showVariable === true);
+                    return {
+                        isBest: isBest,
+                        isAlt: isAlt,
+                        rateType: rateType,
+                        allowVariable: allowVariable,
+                        allowIO: recCtx.showIO === true
+                    };
+                }
+
+                function _buildRecCtx(data) {
+                    return {
+                        recTier: parseInt(data.recTier) || 0,
+                        recType: data.recType || 'fixed',
+                        recTerm: (data.recTerm || '20'),
+                        rec2Enabled: data.rec2Enabled === true,
+                        rec2Tier: parseInt(data.rec2Tier) || 0,
+                        rec2Type: data.rec2Type || 'fixed',
+                        rec2Term: (data.rec2Term || ''),
+                        showVariable: data.showVariable === true,
+                        showIO: data.showIO === true
+                    };
                 }
 
                 // ===== MINIMAL TEMPLATE RENDERER =====
@@ -10281,18 +10426,21 @@
                     var cbAmt = parseFloat(String(data.cashBack || 0).replace(/[$,]/g, '')) || 0;
                     var hpAmt = parseFloat(String(data.helocPayoff || 0).replace(/[$,]/g, '')) || 0;
                     var netCash = cbAmt + hpAmt;
-                    var recType = data.recType || 'fixed';
+                    var recCtx = _buildRecCtx(data);
+                    var recType = recCtx.recType;
                     var isVarRec = recType === 'variable';
-                    var recTierNum = parseInt(data.recTier) || 0;
-                    var recTermKey = (data.recTerm || '20');
+                    var recTierNum = recCtx.recTier;
+                    var recTermKey = recCtx.recTerm;
                     if (recTermKey.indexOf('yr') === -1) recTermKey += 'yr';
+                    var rec2TermKey = recCtx.rec2Term || '';
+                    if (rec2TermKey && rec2TermKey.indexOf('yr') === -1) rec2TermKey += 'yr';
                     var tierDisplayMode = (opts && opts.recTierDisplay) || data.recTierDisplay || 'all';
                     var showFees = opts && opts.showFees !== false;
-                    var tiers = _filterTiersByDisplayMode(data.tiers || [], recTierNum, tierDisplayMode);
+                    var tiers = _filterTiersByDisplayMode(data.tiers || [], recTierNum, tierDisplayMode, recCtx.rec2Tier);
 
                     // LO + client info
                     var loInfo = (data.lo_info || data.loInfo || {});
-                    var loCompany = loInfo.company || loInfo.loCompany || data.companyName || 'Above All Carbon HELOC';
+                    var loCompany = loInfo.lenderName || loInfo.company || loInfo.loCompany || data.lenderName || data.companyName || 'Your Lender';
                     var clientName = data.clientName || 'Client';
                     var dateStr = data.date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -10337,19 +10485,25 @@
                     html += '<div class="min-matrix-grid" data-cols="' + cols + '">';
                     tiers.forEach(function(tier) {
                         var tierN = parseInt(tier.tier);
-                        var isRec = tierN === recTierNum;
+                        var resolved = _resolveTierRender(tierN, recCtx);
+                        var isRec = resolved.isBest;
+                        var isAlt = resolved.isAlt;
                         var origPts = parseFloat(tier.origPts) || 0;
                         var feeAmt = Math.round(netCash * (origPts / 100));
-                        var rates = isVarRec && tier.varRates && Object.keys(tier.varRates).length ? tier.varRates : tier.rates;
-                        html += '<div class="min-tier' + (isRec ? ' recommended' : '') + '">';
-                        html += '<h4 class="min-tier-header"><span>TIER ' + tierN + '</span><span class="min-tier-fee">' + origPts.toFixed(2) + '% ' + (showFees ? '($' + feeAmt.toLocaleString() + ')' : '') + '</span></h4>';
-                        html += '<table class="min-rate-table"><thead><tr><th>Term</th><th>Rate</th><th>Payment</th>' + (showFees ? '<th>Fee</th>' : '') + '</tr></thead><tbody>';
+                        var rates = (resolved.rateType === 'variable' && tier.varRates && Object.keys(tier.varRates).length) ? tier.varRates : tier.rates;
+                        var tierClass = 'min-tier' + (isRec ? ' recommended' : '') + (isAlt ? ' recommended-alt' : '');
+                        html += '<div class="' + tierClass + '">';
+                        var badge = isRec ? ' <span class="rec-tier-badge">RECOMMENDED</span>' : (isAlt ? ' <span class="rec-tier-badge alt">ALTERNATIVE</span>' : '');
+                        html += '<h4 class="min-tier-header"><span>TIER ' + tierN + badge + '</span><span class="min-tier-fee">' + origPts.toFixed(2) + '% ' + (showFees ? '($' + feeAmt.toLocaleString() + ')' : '') + '</span></h4>';
+                        var colLabel = (resolved.rateType === 'variable') ? ('Rate <span class="rate-tip" data-tip="Your interest rate adjusts with Prime Rate \u2014 everything else (term, draw period, payment structure) is identical to Fixed; only the rate moves.">&#9432;</span>') : ('Rate <span class="rate-tip" data-tip="Your interest rate is locked for the life of the loan \u2014 payment never changes.">&#9432;</span>');
+                        html += '<table class="min-rate-table"><thead><tr><th>Term</th><th>' + colLabel + '</th><th>Payment</th>' + (showFees ? '<th>Fee</th>' : '') + '</tr></thead><tbody>';
                         // Stable term order: 30, 20, 15, 10
                         ['30yr', '20yr', '15yr', '10yr'].forEach(function(tk) {
                             if (!rates || !rates[tk]) return;
                             var r = rates[tk];
                             var termNum = parseInt(tk);
-                            var isHighlight = isRec && tk === recTermKey;
+                            var highlightTermKey = isAlt ? rec2TermKey : recTermKey;
+                            var isHighlight = (isRec || isAlt) && tk === highlightTermKey;
                             html += '<tr class="min-term-row' + (isHighlight ? ' highlight-row' : '') + '" data-tier="' + tierN + '" data-term="' + tk + '" onclick="toggleMinimalDetail(this)">';
                             html += '<td>' + termNum + '-Yr</td>';
                             html += '<td>' + esc(r.rate || '—') + '</td>';
@@ -10384,6 +10538,18 @@
                 }
 
                 // Toggle expandable detail row in minimal template
+                // Mobile tooltip toggle for .rate-tip (hover doesn't fire on touch)
+                if (!window._rateTipBound) {
+                    window._rateTipBound = true;
+                    document.addEventListener('click', function(e) {
+                        var tip = e.target.closest && e.target.closest('.rate-tip');
+                        document.querySelectorAll('.rate-tip.show-tip').forEach(function(t) { if (t !== tip) t.classList.remove('show-tip'); });
+                        if (tip) {
+                            e.stopPropagation();
+                            tip.classList.toggle('show-tip');
+                        }
+                    });
+                }
                 window.toggleMinimalDetail = function(row) {
                     var existing = row.nextElementSibling;
                     if (existing && existing.classList.contains('min-detail-row')) {
@@ -10421,17 +10587,20 @@
                     var cbAmt = parseFloat(String(data.cashBack || 0).replace(/[$,]/g, '')) || 0;
                     var hpAmt = parseFloat(String(data.helocPayoff || 0).replace(/[$,]/g, '')) || 0;
                     var netCash = cbAmt + hpAmt;
-                    var recType = data.recType || 'fixed';
+                    var recCtx = _buildRecCtx(data);
+                    var recType = recCtx.recType;
                     var isVarRec = recType === 'variable';
-                    var recTierNum = parseInt(data.recTier) || 0;
-                    var recTermKey = (data.recTerm || '20');
+                    var recTierNum = recCtx.recTier;
+                    var recTermKey = recCtx.recTerm;
                     if (recTermKey.indexOf('yr') === -1) recTermKey += 'yr';
+                    var rec2TermKey = recCtx.rec2Term || '';
+                    if (rec2TermKey && rec2TermKey.indexOf('yr') === -1) rec2TermKey += 'yr';
                     var tierDisplayMode = (opts && opts.recTierDisplay) || data.recTierDisplay || 'all';
                     var showFees = opts && opts.showFees !== false;
-                    var tiers = _filterTiersByDisplayMode(data.tiers || [], recTierNum, tierDisplayMode);
+                    var tiers = _filterTiersByDisplayMode(data.tiers || [], recTierNum, tierDisplayMode, recCtx.rec2Tier);
 
                     var loInfo = (data.lo_info || data.loInfo || {});
-                    var loCompany = loInfo.company || loInfo.loCompany || data.companyName || 'Above All Carbon HELOC';
+                    var loCompany = loInfo.lenderName || loInfo.company || loInfo.loCompany || data.lenderName || data.companyName || 'Your Lender';
                     var loName = loInfo.name || loInfo.loName || '';
                     var loPhone = loInfo.phone || loInfo.loPhone || '';
                     var loEmail = loInfo.email || loInfo.loEmail || '';
@@ -10472,18 +10641,24 @@
                     html += '<div class="orig-matrix-grid" data-cols="' + cols + '">';
                     tiers.forEach(function(tier) {
                         var tierN = parseInt(tier.tier);
-                        var isRec = tierN === recTierNum;
+                        var resolved = _resolveTierRender(tierN, recCtx);
+                        var isRec = resolved.isBest;
+                        var isAlt = resolved.isAlt;
                         var origPts = parseFloat(tier.origPts) || 0;
                         var feeAmt = Math.round(netCash * (origPts / 100));
-                        var rates = isVarRec && tier.varRates && Object.keys(tier.varRates).length ? tier.varRates : tier.rates;
-                        html += '<div class="orig-tier' + (isRec ? ' recommended' : '') + '">';
-                        html += '<h4 class="orig-tier-header"><span>TIER ' + tierN + '</span><span class="orig-tier-fee">' + origPts.toFixed(2) + '% ' + (showFees ? '($' + feeAmt.toLocaleString() + ')' : '') + '</span></h4>';
-                        html += '<table class="orig-rate-table"><thead><tr><th>Term</th><th>Rate</th><th>Payment</th>' + (showFees ? '<th>Fee</th>' : '') + '</tr></thead><tbody>';
+                        var rates = (resolved.rateType === 'variable' && tier.varRates && Object.keys(tier.varRates).length) ? tier.varRates : tier.rates;
+                        var tierClass = 'orig-tier' + (isRec ? ' recommended' : '') + (isAlt ? ' recommended-alt' : '');
+                        html += '<div class="' + tierClass + '">';
+                        var badge = isRec ? ' <span class="rec-tier-badge">RECOMMENDED</span>' : (isAlt ? ' <span class="rec-tier-badge alt">ALTERNATIVE</span>' : '');
+                        html += '<h4 class="orig-tier-header"><span>TIER ' + tierN + badge + '</span><span class="orig-tier-fee">' + origPts.toFixed(2) + '% ' + (showFees ? '($' + feeAmt.toLocaleString() + ')' : '') + '</span></h4>';
+                        var colLabel = (resolved.rateType === 'variable') ? ('Rate <span class="rate-tip" data-tip="Your interest rate adjusts with Prime Rate \u2014 everything else (term, draw period, payment structure) is identical to Fixed; only the rate moves.">&#9432;</span>') : ('Rate <span class="rate-tip" data-tip="Your interest rate is locked for the life of the loan \u2014 payment never changes.">&#9432;</span>');
+                        html += '<table class="orig-rate-table"><thead><tr><th>Term</th><th>' + colLabel + '</th><th>Payment</th>' + (showFees ? '<th>Fee</th>' : '') + '</tr></thead><tbody>';
                         ['30yr', '20yr', '15yr', '10yr'].forEach(function(tk) {
                             if (!rates || !rates[tk]) return;
                             var r = rates[tk];
                             var termNum = parseInt(tk);
-                            var isHighlight = isRec && tk === recTermKey;
+                            var highlightTermKey = isAlt ? rec2TermKey : recTermKey;
+                            var isHighlight = (isRec || isAlt) && tk === highlightTermKey;
                             html += '<tr class="' + (isHighlight ? 'highlight-row' : '') + '">';
                             html += '<td>' + termNum + '-Yr</td>';
                             html += '<td>' + esc(r.rate || '—') + '</td>';
@@ -10603,8 +10778,36 @@
                         window._strategyTextEs = 'Hola ' + esc(clientFirst) + '! He estructurado una forma de acceder a ' + esc(String(cashAmt)) + ' del valor de su hogar al ' + esc(String(rateAmt)) + '%. Por que esto funciona para usted: usted accede a ' + esc(String(cashAmt)) + ' sin tocar su primera hipoteca, su fuerte posicion de capital (' + esc(String(cltvAmt)) + '% CLTV) le califica para nuestros mejores precios. Tiene preguntas? Estoy aqui para ayudar — simplemente pregunte abajo o toque el boton de chat.';
                         strategyEl.innerText = (currentLanguage === 'es') ? window._strategyTextEs : window._strategyTextEn;
                         strategySection.style.display = 'block';
+
+                        // Inject action buttons: Discuss with Ezra + (Enterprise) Copy as HeyGen Script
+                        if (!document.getElementById('strategy-action-row')) {
+                            var actionRow = document.createElement('div');
+                            actionRow.id = 'strategy-action-row';
+                            actionRow.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;';
+                            var ezraBtn = '<button onclick="if(window.eqToggle){window.eqToggle();}else if(window.askQuestion){window.askQuestion();}" style="padding:10px 16px;background:linear-gradient(135deg,#06b6d4,#0891b2);color:#fff;border:none;border-radius:8px;font-family:var(--font-heading,serif);font-weight:700;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 12px rgba(6,182,212,0.3);">&#128172; Discuss with Ezra</button>';
+                            var loTier = (lo && (lo.tier || lo.subscription_tier || '')) || (data.lo_info && (data.lo_info.tier || data.lo_info.subscription_tier)) || '';
+                            var heygenBtn = '';
+                            if (String(loTier).toLowerCase() === 'enterprise') {
+                                heygenBtn = '<button onclick="copyHeyGenScript()" style="padding:10px 16px;background:linear-gradient(135deg,#c5a059,#d4af37);color:#fff;border:none;border-radius:8px;font-family:var(--font-heading,serif);font-weight:700;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 12px rgba(197,160,89,0.3);">&#128203; Copy as HeyGen Script</button>';
+                            }
+                            actionRow.innerHTML = ezraBtn + heygenBtn;
+                            strategySection.appendChild(actionRow);
+                        }
                     }
                 }
+
+                // Copy strategy text trimmed to HeyGen's 1500-char limit
+                window.copyHeyGenScript = function() {
+                    var txt = (window._strategyTextEn || '').trim();
+                    if (!txt) { showToast('No strategy text available', 'info'); return; }
+                    if (txt.length > 1500) txt = txt.slice(0, 1497) + '...';
+                    navigator.clipboard.writeText(txt).then(function() {
+                        showToast('Script copied — paste into HeyGen, then put the share URL in your quote video field.');
+                        trackEvent('heygen_script_copied', { code: code, len: txt.length });
+                    }).catch(function() {
+                        showToast('Could not copy script', 'info');
+                    });
+                };
 
                 // Rate Tiers with expandable rows
                 var recPayment = parseFloat((data.payment || '').replace(/[$,\/mo]/g, '')) || 0;
@@ -10613,13 +10816,18 @@
                 var cbVal = parseFloat((data.cashBack || '0').toString().replace(/[$,]/g, '')) || 0;
                 var hpVal = parseFloat((data.helocPayoff || '0').toString().replace(/[$,]/g, '')) || 0;
                 var netCash = (cbVal + hpVal) || loanAmt;
-                var hasVarRates = data.tiers && data.tiers.some(function (t) { return t.varRates && Object.keys(t.varRates).length > 0; });
-                var recType = data.recType || 'fixed';
+                var recCtxE = _buildRecCtx(data);
+                // Variable column visibility: allowed if any tier has varRates AND (showVariable OR best/alt is variable)
+                var anyVarData = data.tiers && data.tiers.some(function (t) { return t.varRates && Object.keys(t.varRates).length > 0; });
+                var hasVarRates = anyVarData && (recCtxE.showVariable || recCtxE.recType === 'variable' || (recCtxE.rec2Enabled && recCtxE.rec2Type === 'variable'));
+                var recType = recCtxE.recType;
                 var isVarRec = recType === 'variable';
                 // Preferred matching: recTier + recTerm identify exactly one row
-                var recTierNum = parseInt(data.recTier) || 0;
-                var recTermKey = (data.recTerm || '');
+                var recTierNum = recCtxE.recTier;
+                var recTermKey = recCtxE.recTerm;
                 if (recTermKey && recTermKey.indexOf('yr') === -1) recTermKey += 'yr';
+                var rec2TermKeyE = recCtxE.rec2Term || '';
+                if (rec2TermKeyE && rec2TermKeyE.indexOf('yr') === -1) rec2TermKeyE += 'yr';
                 var tiersHtml = '';
                 var recFound = false; // only highlight first match
                 if (data.tiers && data.tiers.length > 0) {
@@ -10629,22 +10837,21 @@
                     });
                     // Apply recTierDisplay filter: 'all' (default), 'rec' (only recommended tier), 'rec-plus' (recommended + closest neighbor)
                     var tierDisplayMode = (linkOpts && linkOpts.recTierDisplay) || data.recTierDisplay || 'all';
-                    if (tierDisplayMode === 'rec' && recTierNum > 0) {
-                        displayTiers = displayTiers.filter(function(t) { return parseInt(t.tier) === recTierNum; });
-                    } else if (tierDisplayMode === 'rec-plus' && recTierNum > 0) {
-                        // Show recommended + the tier adjacent to it (prefer lower tier number if exists, else higher)
-                        var neighbor = recTierNum > 1 ? recTierNum - 1 : recTierNum + 1;
-                        displayTiers = displayTiers.filter(function(t) {
-                            var n = parseInt(t.tier);
-                            return n === recTierNum || n === neighbor;
-                        });
-                    }
+                    displayTiers = _filterTiersByDisplayMode(displayTiers, recTierNum, tierDisplayMode, recCtxE.rec2Tier);
                     displayTiers.forEach(function (tier) {
+                        var tierNn = parseInt(tier.tier);
+                        var resolvedE = _resolveTierRender(tierNn, recCtxE);
+                        var isBestTier = resolvedE.isBest;
+                        var isAltTier = resolvedE.isAlt;
+                        var tierBadge = isBestTier ? ' <span class="rec-tier-badge">RECOMMENDED</span>' : (isAltTier ? ' <span class="rec-tier-badge alt">ALTERNATIVE</span>' : '');
+                        var tierCardClass = 'tier' + (isBestTier ? ' tier-recommended' : '') + (isAltTier ? ' tier-recommended-alt' : '');
                         // Fee calculated on net cash (before fees), NOT on totalLoan
                         var origDollars = Math.round((parseFloat(tier.origPts) / 100) * netCash);
-                        tiersHtml += '<div class="tier"><div class="tier-header"><span>Tier ' + tier.tier + '</span><span class="pts">' + esc(tier.origPts) + '% ($' + origDollars.toLocaleString() + ')</span></div>';
-                        tiersHtml += '<table class="rate-table"><thead><tr><th>Term</th><th>' + (hasVarRates ? 'Fixed Rate' : 'Rate') + '</th><th>' + (hasVarRates ? 'Fixed Pmt' : 'Payment') + '</th>';
-                        if (hasVarRates) tiersHtml += '<th class="var-col">Var Rate</th><th class="var-col">Var Pmt</th>';
+                        tiersHtml += '<div class="' + tierCardClass + '"><div class="tier-header"><span>Tier ' + tier.tier + tierBadge + '</span><span class="pts">' + esc(tier.origPts) + '% ($' + origDollars.toLocaleString() + ')</span></div>';
+                        var fixedTip = '<span class="rate-tip" data-tip="Your interest rate is locked for the life of the loan \u2014 payment never changes.">&#9432;</span>';
+                        var varTip = '<span class="rate-tip" data-tip="Your interest rate adjusts with Prime Rate \u2014 everything else (term, draw period, payment structure) is identical to Fixed; only the rate moves.">&#9432;</span>';
+                        tiersHtml += '<table class="rate-table"><thead><tr><th>Term</th><th>' + (hasVarRates ? ('Fixed Rate ' + fixedTip) : ('Rate ' + fixedTip)) + '</th><th>' + (hasVarRates ? 'Fixed Pmt' : 'Payment') + '</th>';
+                        if (hasVarRates) tiersHtml += '<th class="var-col">Var Rate ' + varTip + '</th><th class="var-col">Var Pmt</th>';
                         tiersHtml += '</tr></thead><tbody>';
                         Object.entries(tier.rates).forEach(function (e) {
                             var termKey = e[0];
@@ -10652,7 +10859,8 @@
                             var fixedPayStr = e[1].payment;
                             var varData = (tier.varRates && tier.varRates[termKey]) || null;
 
-                            // Determine if this row is the single recommended option
+                            // Determine if this row is the single recommended option (or alternative)
+                            var isAltRow = isAltTier && rec2TermKeyE && termKey === rec2TermKeyE;
                             var isRec = false;
                             if (!recFound) {
                                 if (recTierNum > 0 && recTermKey) {
@@ -10679,7 +10887,7 @@
                             var vsDiff = Math.round(Math.abs(compPayVal - recPayment));
                             var vsLabel = isRec ? 'This is recommended' : (compPayVal > recPayment ? '$' + vsDiff + '/mo more' : '$' + vsDiff + '/mo less');
 
-                            tiersHtml += '<tr' + (isRec ? ' class="recommended"' : '') + ' onclick="toggleRateDetail(this)">';
+                            tiersHtml += '<tr' + (isRec ? ' class="recommended"' : (isAltRow ? ' class="recommended-alt"' : '')) + ' onclick="toggleRateDetail(this)">';
                             tiersHtml += '<td>' + esc(termKey) + '</td>';
                             tiersHtml += '<td>' + esc(fixedRateStr) + (!isVarRec && isRec ? '<span class="rec-badge">REC</span>' : '') + '</td>';
                             tiersHtml += '<td>' + esc(fixedPayStr) + '</td>';
@@ -11609,7 +11817,7 @@
 
             function sanitizeQuoteCaptureClone(clonedDoc) {
                 if (!clonedDoc) return;
-                var hideSelectors = '#decision-banner, #floating-bar, .floating-bar, #exit-modal, #eq-root, .eq-orb, .eq-panel, .eq-hint, .eq-nudge, .sticky-cta-bar, .toast-container, .theme-toggle, .no-print, .command-palette, .kbd-hint, .key-hint, #scroll-progress, #particle-canvas, #apply-modal, #contact-modal, #share-modal, .modal-overlay, #sec-personal-video, .pvf-play-btn, .pvf-pulse-ring, .pvf-play-label, .pvf-duration-badge, .pvf-video-pattern, .fc-dots, .fc-cta, .confetti, .min-lang, .min-pdf-btn, .orig-pdf-btn, .min-detail-row';
+                var hideSelectors = '#decision-banner, #floating-bar, .floating-bar, #exit-modal, #eq-root, .eq-orb, .eq-panel, .eq-hint, .eq-nudge, .sticky-cta-bar, .toast-container, .theme-toggle, .no-print, .command-palette, .kbd-hint, .key-hint, #scroll-progress, #particle-canvas, #apply-modal, #contact-modal, #share-modal, .modal-overlay, #sec-personal-video, .pvf-play-btn, .pvf-pulse-ring, .pvf-play-label, .pvf-duration-badge, .pvf-video-pattern, .fc-dots, .fc-cta, .confetti, .min-lang, .min-pdf-btn, .orig-pdf-btn, .min-detail-row, #sec-prequal, #sec-dti-calc, #sec-doc-upload, #sec-faq, #sec-testimonials, #sec-what-if-borrow, #sec-what-if-payback, #ai-strategy-cta, .ask-question-btn, .askq-btn, .pvf-container, .quote-actions, .action-buttons, button.askq, .rate-tip';
                 clonedDoc.querySelectorAll(hideSelectors).forEach(function(el) {
                     el.style.display = 'none';
                 });

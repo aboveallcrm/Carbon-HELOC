@@ -4766,9 +4766,11 @@ File name: ${fileName}`;
             return;
         }
 
-        // Handle Build Quote - Open Interactive Quote Builder
+        // Handle Build Quote - Open Interactive Quote Builder v2
         if (action === 'build_quote') {
-            if (window.QuoteBuilder) {
+            if (window.QuoteBuilderV2) {
+                window.QuoteBuilderV2.start();
+            } else if (window.QuoteBuilder) {
                 window.QuoteBuilder.start();
             } else {
                 addMessage('assistant', 'Quote Builder is loading... Please try again in a moment.', { model: 'local' });
