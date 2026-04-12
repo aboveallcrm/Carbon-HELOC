@@ -7463,27 +7463,29 @@ Best regards,
                     <div id="webhook-urls-section"
                         style="background: rgba(197,160,89,0.08); border-radius: 6px; padding: 10px; margin-bottom: 12px; border: 1px solid rgba(197,160,89,0.25);">
                         <h6 style="font-family: var(--font-heading); font-size: 9px; color: var(--accent-color); margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">
-                            🔗 Your Webhook URLs</h6>
-                        <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 0 0 10px 0;">Paste these into Bonzo, GHL, and your lead sources.</p>
+                            🔗 Your Carbon HELOC Webhook URLs</h6>
+                        <p style="font-size: 8px; color: rgba(255,255,255,0.5); margin: 0 0 10px 0;">Paste these into Bonzo, GHL, and your lead sources. Each URL is unique to your account &amp; subscription — leads land in <em>your</em> Carbon HELOC pipeline only. <span class="help-tip">?<span class="help-tip-text">If a URL stops working, contact support — we can issue a temporary direct URL while we troubleshoot.</span></span></p>
 
                         <div style="margin-bottom: 10px;">
-                            <label style="font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Bonzo Inbound Webhook</label>
+                            <label style="font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Bonzo → Carbon HELOC Webhook</label>
                             <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
                                 <input type="text" id="static-bonzo-webhook-url" readonly value="" placeholder="Loading..."
                                     style="flex: 1; font-size: 9px; background: rgba(0,0,0,0.3); border: 1px solid rgba(197,160,89,0.3); color: #c5a059; padding: 6px 8px; border-radius: 4px; font-family: 'Courier New', monospace; cursor: text;">
                                 <button class="btn" style="background: rgba(197,160,89,0.3); border: 1px solid var(--accent-color); font-size: 8px; white-space: nowrap; padding: 4px 8px;"
                                     onclick="copyStaticWebhookUrl(this.previousElementSibling.value, this)">📋 Copy</button>
                             </div>
+                            <p style="font-size: 7.5px; color: rgba(255,255,255,0.4); margin: 4px 0 0 0;">Bonzo → Settings → Webhooks → paste here for the <em>lead created</em> event.</p>
                         </div>
 
                         <div style="margin-bottom: 10px;">
-                            <label style="font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">GHL Inbound Webhook</label>
+                            <label style="font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">GHL → Carbon HELOC Webhook</label>
                             <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
                                 <input type="text" id="static-ghl-webhook-url" readonly value="" placeholder="Loading..."
                                     style="flex: 1; font-size: 9px; background: rgba(0,0,0,0.3); border: 1px solid rgba(197,160,89,0.3); color: #c5a059; padding: 6px 8px; border-radius: 4px; font-family: 'Courier New', monospace; cursor: text;">
                                 <button class="btn" style="background: rgba(197,160,89,0.3); border: 1px solid var(--accent-color); font-size: 8px; white-space: nowrap; padding: 4px 8px;"
                                     onclick="copyStaticWebhookUrl(this.previousElementSibling.value, this)">📋 Copy</button>
                             </div>
+                            <p style="font-size: 7.5px; color: rgba(255,255,255,0.4); margin: 4px 0 0 0;">GHL → Workflow → add a <em>Webhook</em> action and paste here, OR Settings → Webhooks for contact-created.</p>
                         </div>
 
                         <div style="margin-bottom: 4px;">
@@ -10293,6 +10295,11 @@ Best regards,
                 if (bonzoUrlEl) _populateBonzoWebhookUrl(bonzoUrlEl);
             }
 
+            // n8n carbon-heloc-lead-router base URL (shared with initWebhookUrls — also
+            // declared here so it's in TDZ before the onboarding wizard runs).
+            // Single source of truth; if you edit, update both places.
+            const _N8N_LEAD_ROUTER_BASE_OB = 'https://n8n.srv1290585.hstgr.cloud/webhook/carbon-heloc/lead-in';
+
             async function _populateBonzoWebhookUrl(el) {
                 var userId = window.currentUserId || 'USER_ID';
                 var token = _webhookToken || '';
@@ -10315,7 +10322,7 @@ Best regards,
                 var tokenParam = token ? '&token=' + token : '';
                 // Onboarding wizard now hands out the gated n8n Carbon HELOC URL,
                 // not the legacy Supabase edge function URL.
-                el.value = N8N_LEAD_ROUTER_BASE + '?source=bonzo&user_id=' + userId + tokenParam;
+                el.value = _N8N_LEAD_ROUTER_BASE_OB + '?source=bonzo&user_id=' + userId + tokenParam;
             }
 
             function _copyBonzoUrl() {
