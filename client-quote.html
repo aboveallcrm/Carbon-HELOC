@@ -7635,11 +7635,19 @@
             color: #c5a059;
         }
         #template-minimal .min-lang {
-            position: absolute;
-            top: 20px;
+            position: fixed;
+            bottom: 20px;
             right: 20px;
             display: flex;
             gap: 0;
+            z-index: 50;
+            background: rgba(15,23,42,0.92);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            padding: 6px;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            border: 1px solid rgba(197,160,89,0.25);
         }
         #template-minimal .min-lang button {
             padding: 6px 10px;
@@ -7651,11 +7659,15 @@
             font-family: var(--font-heading, 'Playfair Display', serif);
         }
         #template-minimal .min-lang button:first-child { border-radius: 4px 0 0 4px; }
-        #template-minimal .min-lang button:last-child { border-radius: 0 4px 4px 0; }
+        #template-minimal .min-lang button[id="minLangEs"] { border-radius: 0 4px 4px 0; }
         #template-minimal .min-lang button.active {
             background: #c5a059;
             color: #0f172a;
             border-color: #c5a059;
+        }
+        #template-minimal .min-pdf-btn {
+            margin-left: 8px !important;
+            border-radius: 4px !important;
         }
         #template-minimal .min-disclaimer {
             margin-top: 20px;
@@ -10158,12 +10170,13 @@
                     }
 
                     if (mode === 'original' || mode === 'standard') {
-                        // Hide enhanced layout, render clean PDF-style doc
+                        // Hide enhanced layout, render clean PDF-style doc.
+                        // Ezra orb is KEPT visible so the client can take an interactive tour of the original layout.
                         hide(enhancedContent);
                         hide(minimalEl);
                         show(originalEl, 'block');
                         document.body.classList.add('theme-original');
-                        hide(document.getElementById('eq-orb'));
+                        // (Ezra remains visible — tour targets are remapped via getTourTargetForPreset)
                         hide(document.getElementById('floating-bar'));
                         renderOriginal(data, opts);
                         return;
@@ -10269,7 +10282,7 @@
                     html += '<div class="min-lang">';
                     html += '<button onclick="setLanguage(\'en\')" id="minLangEn" class="active">EN</button>';
                     html += '<button onclick="setLanguage(\'es\')" id="minLangEs">ES</button>';
-                    html += '<button onclick="downloadPDF()" title="Save as PDF" style="margin-left:8px;padding:6px 10px;font-size:10px;border-radius:4px;border:1px solid rgba(197,160,89,0.3);background:rgba(0,0,0,0.3);color:rgba(226,232,240,0.7);cursor:pointer;font-family:var(--font-heading,serif);">&#128196; PDF</button>';
+                    html += '<button class="min-pdf-btn" onclick="downloadPDF()" title="Save as PDF" style="padding:6px 10px;font-size:10px;border:1px solid rgba(197,160,89,0.3);background:rgba(0,0,0,0.3);color:rgba(226,232,240,0.7);cursor:pointer;font-family:var(--font-heading,serif);">&#128196; PDF</button>';
                     html += '</div>';
                     html += '<header class="min-header">';
                     html += '<div class="min-brand">' + esc(loCompany) + '</div>';
@@ -10460,10 +10473,9 @@
                     html += '<div class="orig-disclaimer">Rates and payments are estimates. Final terms subject to full underwriting and property appraisal. This is not a commitment to lend.</div>';
                     html += '</div>';
 
-                    // PDF button (top-right, unobtrusive)
-                    html += '<button onclick="downloadPDF()" title="Save as PDF" style="position:absolute;top:20px;right:20px;padding:8px 14px;font-size:11px;border-radius:4px;border:1px solid #c5a059;background:#c5a059;color:white;cursor:pointer;font-family:var(--font-heading,serif);font-weight:600;letter-spacing:0.5px;">&#128196; SAVE PDF</button>';
+                    // PDF button (bottom-right floating, doesn't overlap content)
+                    html += '<button class="orig-pdf-btn" onclick="downloadPDF()" title="Save as PDF" style="position:fixed;bottom:20px;right:20px;z-index:50;padding:10px 16px;font-size:11px;border-radius:8px;border:1px solid #c5a059;background:#c5a059;color:white;cursor:pointer;font-family:var(--font-heading,serif);font-weight:700;letter-spacing:0.5px;box-shadow:0 8px 24px rgba(197,160,89,0.4);">&#128196; SAVE PDF</button>';
 
-                    container.style.position = 'relative';
                     container.innerHTML = html;
                 }
 
@@ -11553,7 +11565,7 @@
 
             function sanitizeQuoteCaptureClone(clonedDoc) {
                 if (!clonedDoc) return;
-                var hideSelectors = '#decision-banner, #floating-bar, .floating-bar, #exit-modal, #eq-root, .eq-orb, .eq-panel, .eq-hint, .eq-nudge, .sticky-cta-bar, .toast-container, .theme-toggle, .no-print, .command-palette, .kbd-hint, .key-hint, #scroll-progress, #particle-canvas, #apply-modal, #contact-modal, #share-modal, .modal-overlay, #sec-personal-video, .pvf-play-btn, .pvf-pulse-ring, .pvf-play-label, .pvf-duration-badge, .pvf-video-pattern, .fc-dots, .fc-cta, .confetti, .min-lang, #template-original > button[onclick*="downloadPDF"], .min-detail-row';
+                var hideSelectors = '#decision-banner, #floating-bar, .floating-bar, #exit-modal, #eq-root, .eq-orb, .eq-panel, .eq-hint, .eq-nudge, .sticky-cta-bar, .toast-container, .theme-toggle, .no-print, .command-palette, .kbd-hint, .key-hint, #scroll-progress, #particle-canvas, #apply-modal, #contact-modal, #share-modal, .modal-overlay, #sec-personal-video, .pvf-play-btn, .pvf-pulse-ring, .pvf-play-label, .pvf-duration-badge, .pvf-video-pattern, .fc-dots, .fc-cta, .confetti, .min-lang, .min-pdf-btn, .orig-pdf-btn, .min-detail-row';
                 clonedDoc.querySelectorAll(hideSelectors).forEach(function(el) {
                     el.style.display = 'none';
                 });

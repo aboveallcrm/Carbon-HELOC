@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthProvider';
+import { useTokens, AI_FEATURE_COSTS } from '../hooks/useTokens';
 import type { LoanInputs, QuoteResult } from '../types';
 
 interface EzraKnowledgeBaseProps {
@@ -10,16 +11,19 @@ interface EzraKnowledgeBaseProps {
   activeTab: 'strategy' | 'comparison' | 'debt' | 'refi';
 }
 
-// Feature definitions for future use
-// const FEATURES: Feature[] = [
-//   { id: 'basic_strategy', name: 'Basic Strategy', requiredTier: 'starter', description: 'Rule-based recommendations' },
-//   { id: 'ai_strategy', name: 'AI Strategy', requiredTier: 'pro', description: 'AI-generated personalized strategy' },
-//   { id: 'sales_scripts', name: 'Sales Scripts', requiredTier: 'pro', description: 'Personalized opening pitches' },
-//   { id: 'objection_handlers', name: 'Objection Handlers', requiredTier: 'pro', description: 'Responses to common objections' },
-//   { id: 'full_analysis', name: 'Full AI Analysis', requiredTier: 'enterprise', description: 'Comprehensive strategy with confidence scores' },
-//   { id: 'competitive_analysis', name: 'Competitive Analysis', requiredTier: 'enterprise', description: 'Rate comparison vs competitors' },
-//   { id: 'email_templates', name: 'Email Templates', requiredTier: 'enterprise', description: 'Follow-up sequences' },
-// ];
+// Token cost display component
+const TokenCostBadge: React.FC<{ cost: number; available: number }> = ({ cost, available }) => {
+  const hasEnough = available >= cost;
+  return (
+    <span className={`
+      inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium
+      ${hasEnough ? 'bg-purple-100 text-purple-700' : 'bg-red-100 text-red-700'}
+    `}>
+      <span>⚡</span>
+      {cost}
+    </span>
+  );
+};
 
 export const EzraKnowledgeBase: React.FC<EzraKnowledgeBaseProps> = ({
   inputs,
@@ -29,15 +33,34 @@ export const EzraKnowledgeBase: React.FC<EzraKnowledgeBaseProps> = ({
   activeTab: _activeTab,
 }) => {
   const { tier: userTier } = useAuth();
+  const { balance, hasEnoughTokens, consumeTokens } = useTokens();
   const [showUpgradeModal, setShowUpgradeModal] = useState<string | null>(null);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [consumingFeature, setConsumingFeature] = useState<string | null>(null);
+  const [consumedFeatures, setConsumedFeatures] = useState<Set<string>>(new Set());
 
-  // Future use: tier-based feature gating
-  // const hasAccess = (featureTier: FeatureTier): boolean => {
-  //   const tierLevels: Record<Tier, number> = { starter: 1, pro: 2, enterprise: 3 };
-  //   const requiredLevel = tierLevels[featureTier as Tier] || 1;
-  //   const userLevel = tierLevels[userTier || 'starter'];
-  //   return userLevel >= requiredLevel;
-  // };
+  const currentBalance = balance?.balance || 0;
+
+  // Helper to consume tokens for a feature
+  const handleConsumeFeature = async (featureType: keyof typeof AI_FEATURE_COSTS, featureId: string) => {
+    if (consumedFeatures.has(featureId)) return true; // Already consumed
+    
+    setConsumingFeature(featureId);
+    const result = await consumeTokens(featureType, { 
+      tier: selectedTier,
+      term: selectedTerm 
+    });
+    setConsumingFeature(null);
+
+    if (result.success) {
+      setConsumedFeatures(prev => new Set(prev).add(featureId));
+      return true;
+    } else {
+      // Show purchase modal if insufficient tokens
+      setShowPurchaseModal(true);
+      return false;
+    }
+  };
 
   const renderStarterContent = () => {
     const tierData = quoteResult.results[selectedTier];
@@ -74,16 +97,25 @@ export const EzraKnowledgeBase: React.FC<EzraKnowledgeBaseProps> = ({
 
         {/* Upsell to Pro */}
         <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
-          <h4 className="font-semibold text-purple-900 mb-2">✨ Want More?</h4>
+          <h4 className="font-semibold text-purple-900 mb-2">✨ Want AI-Powered Features?</h4>
           <p className="text-sm text-purple-800 mb-3">
-            I can generate a personalized sales script and objection handlers for this specific client.
+            Upgrade to Pro for AI-generated strategies, sales scripts, and objection handlers.
+            Pro includes 500 tokens/month plus purchase options.
           </p>
-          <button 
-            onClick={() => setShowUpgradeModal('pro')}
-            className="bg-purple-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-purple-700"
-          >
-            Upgrade to Pro
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setShowUpgradeModal('pro')}
+              className="bg-purple-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-purple-700"
+            >
+              Upgrade to Pro
+            </button>
+            <button 
+              onClick={() => setShowPurchaseModal(true)}
+              className="bg-white text-purple-600 border border-purple-300 px-4 py-2 rounded text-sm font-medium hover:bg-purple-50"
+            >
+              Buy Tokens
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -95,8 +127,27 @@ export const EzraKnowledgeBase: React.FC<EzraKnowledgeBaseProps> = ({
     
     return (
       <div className="space-y-4">
+        {/* Token Balance Bar */}
+        <div className="bg-purple-50 p-3 rounded-lg flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">⚡</span>
+            <span className="text-sm font-medium text-purple-900">
+              {currentBalance.toLocaleString()} tokens
+            </span>
+          </div>
+          <button 
+            onClick={() => setShowPurchaseModal(true)}
+            className="text-xs text-purple-600 hover:text-purple-800 font-medium"
+          >
+            + Buy More
+          </button>
+        </div>
+
         <div className="bg-blue-50 p-4 rounded-lg">
-          <h4 className="font-semibold text-blue-900 mb-2">📊 AI Strategy</h4>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="font-semibold text-blue-900">📊 AI Strategy</h4>
+            <TokenCostBadge cost={AI_FEATURE_COSTS.strategy.tokenCost} available={currentBalance} />
+          </div>
           <div className="text-sm text-blue-800 space-y-3">
             <p>
               <strong>Recommended:</strong> {selectedTier.replace('t', 'Tier ')} - {selectedTerm} Year Fixed @ {payment.rate.toFixed(3)}%
@@ -110,42 +161,70 @@ export const EzraKnowledgeBase: React.FC<EzraKnowledgeBaseProps> = ({
         </div>
 
         <div className="bg-green-50 p-4 rounded-lg">
-          <h4 className="font-semibold text-green-900 mb-2">🎯 Sales Script</h4>
-          <blockquote className="text-sm text-green-800 italic border-l-4 border-green-400 pl-4">
-            "{inputs.clientName || 'John'}, I've analyzed your situation - you have a ${inputs.homeValue.toLocaleString()} home 
-            with a ${inputs.mortgageBalance.toLocaleString()} balance, and you're looking for ${inputs.netCash.toLocaleString()}. 
-            That puts you in a strong equity position. I've found a sweet spot: {payment.rate.toFixed(3)}% fixed for {selectedTerm} years. 
-            Your payment would be ${payment.pmt.toFixed(2)}, and with {tierData.orig}% origination, you're not overpaying on fees."
-          </blockquote>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="font-semibold text-green-900">🎯 Sales Script</h4>
+            <TokenCostBadge cost={AI_FEATURE_COSTS.sales_script.tokenCost} available={currentBalance} />
+          </div>
+          {!consumedFeatures.has('sales_script') ? (
+            <button
+              onClick={() => handleConsumeFeature('sales_script', 'sales_script')}
+              disabled={consumingFeature === 'sales_script'}
+              className="w-full py-3 bg-green-100 text-green-700 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors"
+            >
+              {consumingFeature === 'sales_script' ? 'Generating...' : 
+                hasEnoughTokens('sales_script') ? 'Generate Sales Script (10 tokens)' : 'Insufficient Tokens - Purchase More'}
+            </button>
+          ) : (
+            <blockquote className="text-sm text-green-800 italic border-l-4 border-green-400 pl-4">
+              "{inputs.clientName || 'John'}, I've analyzed your situation - you have a ${inputs.homeValue.toLocaleString()} home 
+              with a ${inputs.mortgageBalance.toLocaleString()} balance, and you're looking for ${inputs.netCash.toLocaleString()}. 
+              That puts you in a strong equity position. I've found a sweet spot: {payment.rate.toFixed(3)}% fixed for {selectedTerm} years. 
+              Your payment would be ${payment.pmt.toFixed(2)}, and with {tierData.orig}% origination, you're not overpaying on fees."
+            </blockquote>
+          )}
         </div>
 
         <div className="bg-orange-50 p-4 rounded-lg">
-          <h4 className="font-semibold text-orange-900 mb-2">🛡️ Objection Handlers</h4>
-          <div className="space-y-3 text-sm">
-            <div>
-              <p className="font-medium text-orange-900">"The rate seems high"</p>
-              <p className="text-orange-800">
-                → "I understand. Let's look at this - a {payment.rate.toFixed(3)}% fixed rate gives you payment certainty. 
-                Compare that to credit cards at 20%+ or even a personal loan at 10-12%. This is actually quite competitive 
-                for a second lien position."
-              </p>
-            </div>
-            <div>
-              <p className="font-medium text-orange-900">"What about the origination fee?"</p>
-              <p className="text-orange-800">
-                → "The {tierData.orig}% fee (${tierData.feeAmt.toLocaleString()}) gets you a rate that's 
-                {((quoteResult.results.t3.payments[selectedTerm].rate - payment.rate) * 100).toFixed(0)} basis points lower than our no-fee option. 
-                That saves you ${((quoteResult.results.t3.payments[selectedTerm].pmt - payment.pmt) * selectedTerm * 12).toLocaleString()} over the life of the loan."
-              </p>
-            </div>
-            <div>
-              <p className="font-medium text-orange-900">"I want to shop around"</p>
-              <p className="text-orange-800">
-                → "Absolutely, you should. Here's what to compare: our {payment.rate.toFixed(3)}% fixed with no annual fees 
-                vs competitors. Many quote lower rates but add annual fees ($100-300/year) or have variable rates that adjust."
-              </p>
-            </div>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="font-semibold text-orange-900">🛡️ Objection Handlers</h4>
+            <TokenCostBadge cost={AI_FEATURE_COSTS.objection_handler.tokenCost} available={currentBalance} />
           </div>
+          {!consumedFeatures.has('objection_handlers') ? (
+            <button
+              onClick={() => handleConsumeFeature('objection_handler', 'objection_handlers')}
+              disabled={consumingFeature === 'objection_handlers'}
+              className="w-full py-3 bg-orange-100 text-orange-700 rounded-lg text-sm font-medium hover:bg-orange-200 transition-colors"
+            >
+              {consumingFeature === 'objection_handlers' ? 'Generating...' : 
+                hasEnoughTokens('objection_handler') ? 'Generate Objection Handlers (8 tokens)' : 'Insufficient Tokens - Purchase More'}
+            </button>
+          ) : (
+            <div className="space-y-3 text-sm">
+              <div>
+                <p className="font-medium text-orange-900">"The rate seems high"</p>
+                <p className="text-orange-800">
+                  → "I understand. Let's look at this - a {payment.rate.toFixed(3)}% fixed rate gives you payment certainty. 
+                  Compare that to credit cards at 20%+ or even a personal loan at 10-12%. This is actually quite competitive 
+                  for a second lien position."
+                </p>
+              </div>
+              <div>
+                <p className="font-medium text-orange-900">"What about the origination fee?"</p>
+                <p className="text-orange-800">
+                  → "The {tierData.orig}% fee (${tierData.feeAmt.toLocaleString()}) gets you a rate that's 
+                  {((quoteResult.results.t3.payments[selectedTerm].rate - payment.rate) * 100).toFixed(0)} basis points lower than our no-fee option. 
+                  That saves you ${((quoteResult.results.t3.payments[selectedTerm].pmt - payment.pmt) * selectedTerm * 12).toLocaleString()} over the life of the loan."
+                </p>
+              </div>
+              <div>
+                <p className="font-medium text-orange-900">"I want to shop around"</p>
+                <p className="text-orange-800">
+                  → "Absolutely, you should. Here's what to compare: our {payment.rate.toFixed(3)}% fixed with no annual fees 
+                  vs competitors. Many quote lower rates but add annual fees ($100-300/year) or have variable rates that adjust."
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {inputs.debtItems && inputs.debtItems.length > 0 && (
@@ -161,9 +240,10 @@ export const EzraKnowledgeBase: React.FC<EzraKnowledgeBaseProps> = ({
 
         {/* Upsell to Enterprise */}
         <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-4 rounded-lg border border-amber-200">
-          <h4 className="font-semibold text-amber-900 mb-2">🏆 Go Deeper</h4>
+          <h4 className="font-semibold text-amber-900 mb-2">🏆 Go Deeper with Enterprise</h4>
           <p className="text-sm text-amber-800 mb-3">
-            I can provide competitive analysis against Chase and Wells Fargo, risk assessment, and ready-to-send follow-up emails.
+            Get competitive analysis against Chase and Wells Fargo, risk assessment, 
+            ready-to-send follow-up emails, and 2,000 tokens/month.
           </p>
           <button 
             onClick={() => setShowUpgradeModal('enterprise')}
@@ -185,6 +265,25 @@ export const EzraKnowledgeBase: React.FC<EzraKnowledgeBaseProps> = ({
     
     return (
       <div className="space-y-4">
+        {/* Token Balance Bar */}
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-3 rounded-lg flex items-center justify-between border border-amber-200">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">⚡</span>
+            <div>
+              <span className="text-sm font-medium text-amber-900">
+                {currentBalance.toLocaleString()} tokens
+              </span>
+              <span className="text-xs text-amber-600 ml-2">Enterprise Plan</span>
+            </div>
+          </div>
+          <button 
+            onClick={() => setShowPurchaseModal(true)}
+            className="text-xs text-amber-600 hover:text-amber-800 font-medium"
+          >
+            + Buy More
+          </button>
+        </div>
+
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
           <h4 className="font-semibold text-blue-900 mb-2">📊 Executive Summary</h4>
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -246,7 +345,7 @@ export const EzraKnowledgeBase: React.FC<EzraKnowledgeBaseProps> = ({
               { obj: "The origination fee", resp: `The ${tierData.orig}% ($${tierData.feeAmt.toLocaleString()}) pays for itself in ${breakEvenMonths > 0 ? breakEvenMonths.toFixed(0) : 'N/A'} months through lower payments vs the no-fee option. After that, you're saving $${monthlySavings.toFixed(0)}/month.` },
               { obj: "Fixed vs variable", resp: "With the current rate environment, fixed gives you certainty. A variable rate might start lower but could adjust up 2% per year. On a $100K loan, that's $2,000/year in potential increases." },
               { obj: "I need to think about it", resp: "Of course. Here's what I'd consider: rates can change daily. This quote is locked for today. Also, if you're consolidating debt, every month you wait costs you $[X] in high-interest payments." },
-              { obj: "My bank offered me something", resp: "Great! What rate and terms did they offer? [Listen] Our ${payment.rate.toFixed(3)}% fixed with no annual fee is competitive. Plus, we close in 10-14 days vs 30-45 at most banks." },
+              { obj: "My bank offered me something", resp: `Great! What rate and terms did they offer? [Listen] Our ${payment.rate.toFixed(3)}% fixed with no annual fee is competitive. Plus, we close in 10-14 days vs 30-45 at most banks.` },
             ].map((item, idx) => (
               <div key={idx}>
                 <p className="font-medium text-orange-900">"{item.obj}"</p>
@@ -257,34 +356,47 @@ export const EzraKnowledgeBase: React.FC<EzraKnowledgeBaseProps> = ({
         </div>
 
         <div className="bg-purple-50 p-4 rounded-lg">
-          <h4 className="font-semibold text-purple-900 mb-2">📧 Follow-Up Templates</h4>
-          <div className="space-y-3 text-sm">
-            <div className="bg-white p-3 rounded border border-purple-200">
-              <p className="font-medium text-purple-900 mb-1">Same Day:</p>
-              <p className="text-purple-800 text-xs">
-                Hi {inputs.clientName?.split(' ')[0] || 'John'}, great speaking today. As promised, here are the numbers: 
-                {payment.rate.toFixed(3)}% fixed, ${payment.pmt.toFixed(2)}/month, {tierData.orig}% origination. 
-                This quote is valid through end of day tomorrow. Any questions?
-              </p>
-            </div>
-            <div className="bg-white p-3 rounded border border-purple-200">
-              <p className="font-medium text-purple-900 mb-1">3 Days:</p>
-              <p className="text-purple-800 text-xs">
-                Hi {inputs.clientName?.split(' ')[0] || 'John'}, wanted to check in on the HELOC we discussed. 
-                Rates have {Math.random() > 0.5 ? 'stayed stable' : 'ticked up slightly'} since we spoke. 
-                Still interested in moving forward?
-              </p>
-            </div>
-            <div className="bg-white p-3 rounded border border-purple-200">
-              <p className="font-medium text-purple-900 mb-1">1 Week:</p>
-              <p className="text-purple-800 text-xs">
-                Hi {inputs.clientName?.split(' ')[0] || 'John'}, following up on the HELOC quote. 
-                The ${payment.rate.toFixed(3)}% rate we discussed is still available. 
-                Given your {inputs.debtItems && inputs.debtItems.length > 0 ? 'credit card interest' : 'timeline'}, 
-                wanted to make sure this is still on your radar.
-              </p>
-            </div>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="font-semibold text-purple-900">📧 Follow-Up Templates</h4>
+            <TokenCostBadge cost={AI_FEATURE_COSTS.email_template.tokenCost} available={currentBalance} />
           </div>
+          {!consumedFeatures.has('email_templates') ? (
+            <button
+              onClick={() => handleConsumeFeature('email_template', 'email_templates')}
+              disabled={consumingFeature === 'email_templates'}
+              className="w-full py-3 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-200 transition-colors"
+            >
+              {consumingFeature === 'email_templates' ? 'Generating...' : 
+                hasEnoughTokens('email_template') ? 'Generate Email Templates (12 tokens)' : 'Insufficient Tokens - Purchase More'}
+            </button>
+          ) : (
+            <div className="space-y-3 text-sm">
+              <div className="bg-white p-3 rounded border border-purple-200">
+                <p className="font-medium text-purple-900 mb-1">Same Day:</p>
+                <p className="text-purple-800 text-xs">
+                  Hi {inputs.clientName?.split(' ')[0] || 'John'}, great speaking today. As promised, here are the numbers: 
+                  {payment.rate.toFixed(3)}% fixed, ${payment.pmt.toFixed(2)}/month, {tierData.orig}% origination. 
+                  This quote is valid through end of day tomorrow. Any questions?
+                </p>
+              </div>
+              <div className="bg-white p-3 rounded border border-purple-200">
+                <p className="font-medium text-purple-900 mb-1">3 Days:</p>
+                <p className="text-purple-800 text-xs">
+                  Hi {inputs.clientName?.split(' ')[0] || 'John'}, wanted to check in on the HELOC we discussed. 
+                  Rates have stayed stable since we spoke. Still interested in moving forward?
+                </p>
+              </div>
+              <div className="bg-white p-3 rounded border border-purple-200">
+                <p className="font-medium text-purple-900 mb-1">1 Week:</p>
+                <p className="text-purple-800 text-xs">
+                  Hi {inputs.clientName?.split(' ')[0] || 'John'}, following up on the HELOC quote. 
+                  The ${payment.rate.toFixed(3)}% rate we discussed is still available. 
+                  Given your {inputs.debtItems && inputs.debtItems.length > 0 ? 'credit card interest' : 'timeline'}, 
+                  wanted to make sure this is still on your radar.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {tierData.cltv > 85 && (
@@ -302,38 +414,52 @@ export const EzraKnowledgeBase: React.FC<EzraKnowledgeBaseProps> = ({
         )}
 
         <div className="bg-indigo-50 p-4 rounded-lg">
-          <h4 className="font-semibold text-indigo-900 mb-2">📊 Competitive Analysis</h4>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-indigo-700 border-b border-indigo-200">
-                <th className="text-left py-1">Lender</th>
-                <th className="text-left py-1">Est. Rate</th>
-                <th className="text-left py-1">Fees</th>
-              </tr>
-            </thead>
-            <tbody className="text-indigo-800">
-              <tr className="bg-white">
-                <td className="py-1 font-medium">Our Offer</td>
-                <td className="py-1">{payment.rate.toFixed(3)}%</td>
-                <td className="py-1">{tierData.orig}% orig</td>
-              </tr>
-              <tr>
-                <td className="py-1">Chase (est.)</td>
-                <td className="py-1">{(payment.rate + 0.375).toFixed(3)}%</td>
-                <td className="py-1">$500 + annual</td>
-              </tr>
-              <tr>
-                <td className="py-1">Wells Fargo (est.)</td>
-                <td className="py-1">{(payment.rate + 0.625).toFixed(3)}%</td>
-                <td className="py-1">Annual fee</td>
-              </tr>
-              <tr>
-                <td className="py-1">Credit Union (est.)</td>
-                <td className="py-1">{(payment.rate + 0.125).toFixed(3)}%</td>
-                <td className="py-1">Membership req.</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="font-semibold text-indigo-900">📊 Competitive Analysis</h4>
+            <TokenCostBadge cost={AI_FEATURE_COSTS.competitive_analysis.tokenCost} available={currentBalance} />
+          </div>
+          {!consumedFeatures.has('competitive_analysis') ? (
+            <button
+              onClick={() => handleConsumeFeature('competitive_analysis', 'competitive_analysis')}
+              disabled={consumingFeature === 'competitive_analysis'}
+              className="w-full py-3 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-200 transition-colors"
+            >
+              {consumingFeature === 'competitive_analysis' ? 'Generating...' : 
+                hasEnoughTokens('competitive_analysis') ? 'Generate Competitive Analysis (20 tokens)' : 'Insufficient Tokens - Purchase More'}
+            </button>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-indigo-700 border-b border-indigo-200">
+                  <th className="text-left py-1">Lender</th>
+                  <th className="text-left py-1">Est. Rate</th>
+                  <th className="text-left py-1">Fees</th>
+                </tr>
+              </thead>
+              <tbody className="text-indigo-800">
+                <tr className="bg-white">
+                  <td className="py-1 font-medium">Our Offer</td>
+                  <td className="py-1">{payment.rate.toFixed(3)}%</td>
+                  <td className="py-1">{tierData.orig}% orig</td>
+                </tr>
+                <tr>
+                  <td className="py-1">Chase (est.)</td>
+                  <td className="py-1">{(payment.rate + 0.375).toFixed(3)}%</td>
+                  <td className="py-1">$500 + annual</td>
+                </tr>
+                <tr>
+                  <td className="py-1">Wells Fargo (est.)</td>
+                  <td className="py-1">{(payment.rate + 0.625).toFixed(3)}%</td>
+                  <td className="py-1">Annual fee</td>
+                </tr>
+                <tr>
+                  <td className="py-1">Credit Union (est.)</td>
+                  <td className="py-1">{(payment.rate + 0.125).toFixed(3)}%</td>
+                  <td className="py-1">Membership req.</td>
+                </tr>
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     );
@@ -372,8 +498,8 @@ export const EzraKnowledgeBase: React.FC<EzraKnowledgeBaseProps> = ({
             </h3>
             <p className="text-gray-600 mb-4">
               {showUpgradeModal === 'pro' 
-                ? 'Get AI-generated strategies, sales scripts, and objection handlers for every quote.'
-                : 'Unlock competitive analysis, risk assessment, email templates, and unlimited AI usage.'}
+                ? 'Get AI-generated strategies, sales scripts, and objection handlers. Includes 500 tokens/month.'
+                : 'Unlock competitive analysis, risk assessment, email templates, and 2,000 tokens/month.'}
             </p>
             <div className="flex gap-3">
               <button 
@@ -384,7 +510,6 @@ export const EzraKnowledgeBase: React.FC<EzraKnowledgeBaseProps> = ({
               </button>
               <button 
                 onClick={() => {
-                  // Navigate to billing/upgrade page
                   window.location.href = '/settings?tab=billing';
                 }}
                 className="flex-1 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
@@ -395,6 +520,37 @@ export const EzraKnowledgeBase: React.FC<EzraKnowledgeBaseProps> = ({
           </div>
         </div>
       )}
+
+      {/* Purchase Modal Placeholder */}
+      {showPurchaseModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Purchase Tokens</h3>
+            <p className="text-gray-600 mb-4">
+              Token purchasing will be available soon. For now, upgrade your plan to get more monthly tokens.
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setShowPurchaseModal(false)}
+                className="flex-1 py-2 border rounded-lg hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <button 
+                onClick={() => {
+                  setShowPurchaseModal(false);
+                  window.location.href = '/settings?tab=billing';
+                }}
+                className="flex-1 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              >
+                View Plans
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+export default EzraKnowledgeBase;

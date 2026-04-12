@@ -1453,6 +1453,14 @@
             box-shadow: 0 2px 10px rgba(197, 160, 89, 0.25);
         }
 
+        .settings-tab-divider {
+            display: inline-block;
+            width: 1px;
+            align-self: stretch;
+            background: rgba(255, 255, 255, 0.12);
+            margin: 4px 6px;
+        }
+
         .settings-content {
             display: none;
         }
@@ -5655,16 +5663,18 @@
         </div>
 
         <div class="settings-tabs">
-            <button class="settings-tab active" onclick="switchTab('client')">📋 Client</button>
-            <button class="settings-tab" onclick="switchTab('quotes')">📂 My Quotes</button>
-            <button class="settings-tab" onclick="switchTab('leads')">👥 My Leads</button>
+            <button class="settings-tab active" onclick="switchTab('leads')">👥 My Leads</button>
+            <button class="settings-tab" onclick="switchTab('client')">📋 Client</button>
             <button class="settings-tab" onclick="switchTab('rates')">💰 Rates</button>
-            <button class="settings-tab" onclick="switchTab('lo')">👤 LO Profile</button>
-            <button class="settings-tab" onclick="switchTab('whitelabel')">🎨 White Label</button>
+            <button class="settings-tab" onclick="switchTab('quotes')">📂 My Quotes</button>
+            <span class="settings-tab-divider" aria-hidden="true"></span>
             <button class="settings-tab" onclick="switchTab('parser')">📧 Lead Parser</button>
+            <button class="settings-tab" onclick="switchTab('lo')">👤 LO Profile</button>
             <button class="settings-tab" onclick="switchTab('email')">✉️ Email/Share</button>
+            <span class="settings-tab-divider" aria-hidden="true"></span>
             <button class="settings-tab" onclick="switchTab('integrations')">🔌 Integrations</button>
             <button class="settings-tab" onclick="switchTab('notifications')">🔔 Notifications</button>
+            <button class="settings-tab" onclick="switchTab('whitelabel')">🎨 White Label</button>
             <button class="settings-tab" onclick="switchTab('voice')">🎤 Voice</button>
             <button class="settings-tab" id="tab-btn-superadmin" onclick="switchTab('superadmin')"
                 style="display:none; background: linear-gradient(135deg, #ef4444, #dc2626); color: white;">🛡️ Super
@@ -5676,6 +5686,17 @@
             <div class="simple-mode-banner">
                 <span>🎯 Simple Mode is ON — only essential fields are shown.</span>
                 <a onclick="toggleSimpleMode(document.getElementById('toggle-simple-mode'))">Switch to Full Control</a>
+            </div>
+            <!-- QUICK ACTIONS — speed up quote start -->
+            <div class="control-section" style="background: rgba(197,160,89,0.08); border-color: rgba(197,160,89,0.3); padding: 8px 12px;">
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span style="font-family: var(--font-heading); font-size: 9px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700;">Quick Start:</span>
+                    <button class="btn" style="background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); font-size: 10px; padding: 6px 12px;" onclick="startNewQuote()">+ New Quote</button>
+                    <button class="btn" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); font-size: 10px; padding: 6px 12px;" onclick="openLeadPicker()">📥 Pull from Leads</button>
+                    <button class="btn" style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; font-size: 10px; padding: 6px 12px;" onclick="switchTab('parser')">📧 Paste Email</button>
+                    <span style="flex:1;"></span>
+                    <span style="font-size: 9px; color: rgba(255,255,255,0.4);">Tip: Pull from Leads pre-fills name, email, phone &amp; address.</span>
+                </div>
             </div>
             <div class="control-section">
                 <h4 style="font-family: var(--font-heading); color: white; margin: 0 0 10px 0; font-size: 11px;">📋
@@ -6899,15 +6920,20 @@
                             style="width: 100%; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2); padding: 8px; font-family: var(--font-body); font-size: 11px; background: #1e293b; color: white; resize: vertical;"></textarea>
                     </div>
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button class="btn" style="background: linear-gradient(135deg, #10b981, #059669); flex: 1;"
-                        onclick="parseLead()">🔍 Parse Lead</button>
+                <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                    <button class="btn" style="background: linear-gradient(135deg, #10b981, #059669); flex: 1; min-width: 140px;"
+                        onclick="parseLead()">🔍 Parse &amp; Open Quote</button>
+                    <button class="btn" style="background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: #0f172a; font-weight: 800; flex: 1; min-width: 160px;"
+                        onclick="parseLead({ saveToPipeline: true })" title="Parse this email AND save the lead to your Pipeline (dedup-safe — won't overwrite leads already in Bonzo/GHL).">💾 Parse + Save to Pipeline</button>
+                    <button class="btn" style="background: linear-gradient(135deg, #3b82f6, #2563eb); flex: 1; min-width: 200px;"
+                        onclick="parseBrokerLaunchBulk()" title="Paste a Broker Launch blast (multiple leads in one email). Each lead is dedupe-checked against your Pipeline before saving — existing CRM contacts are enriched, not duplicated.">📨 Bulk Parse (Broker Launch)</button>
                     <button class="btn" style="background: #6b7280;" onclick="clearParser()">🗑️ Clear</button>
                 </div>
                 <div id="parse-result"
                     style="display: none; margin-top: 10px; padding: 10px; background: rgba(16,185,129,0.2); border-radius: 6px; font-size: 10px; color: #a7f3d0;">
                     <div style="font-weight: 700; margin-bottom: 5px;">✅ Lead Parsed Successfully</div>
                     <div id="parse-summary"></div>
+                    <div id="parse-save-status" style="display:none; margin-top:6px; padding:6px 8px; background:rgba(0,0,0,0.25); border-radius:4px; font-size:9.5px;"></div>
                 </div>
             </div>
             <div id="lenderparser-section" class="control-section locked-section locked"
@@ -7129,9 +7155,12 @@ Best regards,
                         style="font-size: 8px; background: #ef4444; color: white; padding: 2px 6px; border-radius: 10px; margin-left: 6px;">ADMIN</span>
                 </h4>
                 <div id="int-ghl"
-                    style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
-                    <h5 style="font-family: var(--font-heading); font-size: 10px; color: #10b981; margin: 0 0 10px 0;">
-                        🟢 GoHighLevel (GHL)</h5>
+                    style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid rgba(197,160,89,0.35);">
+                    <h5 style="font-family: var(--font-heading); font-size: 10px; color: #10b981; margin: 0 0 10px 0; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        🟢 GoHighLevel (GHL)
+                        <span style="font-size: 8px; background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)); color: #0f172a; padding: 2px 8px; border-radius: 10px; font-weight: 800; letter-spacing: 0.3px;">⭐ RECOMMENDED</span>
+                        <span style="font-size: 8px; color: rgba(255,255,255,0.45); font-weight: 500; text-transform: none; letter-spacing: 0.2px;">— richer automations &amp; native pipelines</span>
+                    </h5>
                     <div class="input-group">
                         <div class="input-field" style="flex: 2;"><label>API Key (Private Integration) <span class="help-tip">?<span class="help-tip-text">Found in GHL → Settings → Integrations → Private Integrations. Starts with "pit-". Needed to push leads and contacts to GHL.</span></span></label><input
                                 type="password" id="ghl-api-key" autocomplete="off" placeholder="pit-xxxxxxxx-xxxx-xxxx"></div>
@@ -9410,9 +9439,11 @@ Best regards,
             var saveBtn = document.querySelector('#integrations-section > button[onclick="saveIntegrations()"]');
             if (saveBtn) saveBtn.style.display = 'none';
 
-            // ---- PRO (level >= 1): Radar, AI, Gmail OAuth, GHL, Bonzo, CRM, FUB, Webhooks ----
+            // ---- PRO (level >= 1): Gmail OAuth, GHL, Bonzo, CRM, Webhooks ----
+            // Placeholder integrations (Radar, AI tile, FUB) intentionally hidden until functional
+            // — see plan: don't telegraph the roadmap to competitors.
             if (level >= 1) {
-                ['int-radar', 'int-ai', 'int-gmail', 'int-ghl', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks'].forEach(function (id) {
+                ['int-gmail', 'int-ghl', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-webhooks'].forEach(function (id) {
                     var el = document.getElementById(id);
                     if (el) el.style.display = '';
                 });
@@ -9425,13 +9456,9 @@ Best regards,
                 }
             }
 
-            // ---- ENTERPRISE (level >= 2): n8n + HeyGen ----
-            if (level >= 2) {
-                var intN8n = document.getElementById('int-n8n');
-                if (intN8n) intN8n.style.display = '';
-                var intHeygen = document.getElementById('int-heygen');
-                if (intHeygen) intHeygen.style.display = '';
-            }
+            // ---- ENTERPRISE (level >= 2) ----
+            // n8n + HeyGen tiles intentionally hidden — placeholder UIs (no production wiring yet).
+            // When ready, re-enable here. Marker: <!-- INTEGRATION_PLACEHOLDERS_HIDDEN -->
 
             // Show HeyGen video mode option in Presentation Controls for Enterprise users
             var heygenModeLabel = document.getElementById('video-mode-heygen-label');
@@ -9844,12 +9871,18 @@ Best regards,
                     });
                     applyIntegrationAccess(window.currentUserRole, effectiveTier);
                 } else {
-                    // Normal super_admin view: show all sections, add tier lock badges for preview
-                    // First restore all sections to visible (undo any demo hiding)
-                    ['int-ghl', 'int-n8n', 'int-radar', 'int-ai', 'int-heygen', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-crm-fub', 'int-webhooks'].forEach(function(id) {
+                    // Normal super_admin view: show production-ready sections only.
+                    // Placeholder integrations (n8n/radar/ai/heygen/fub) stay hidden site-wide
+                    // until they're actually wired up — see plan: don't telegraph the roadmap.
+                    ['int-ghl', 'int-crm', 'int-crm-inbound', 'int-bonzo', 'int-webhooks'].forEach(function(id) {
                         var el = document.getElementById(id);
                         if (el) el.style.display = '';
                         unlockSubsection(id);
+                    });
+                    // Explicitly hide placeholders even for super_admin
+                    ['int-n8n', 'int-radar', 'int-ai', 'int-heygen', 'int-crm-fub'].forEach(function(id) {
+                        var el = document.getElementById(id);
+                        if (el) el.style.display = 'none';
                     });
                     var actLog = document.getElementById('webhook-activity-log');
                     if (actLog && actLog.parentElement) actLog.parentElement.style.display = '';
@@ -9970,26 +10003,23 @@ Best regards,
             // ---- TIER-LOCKED TABS: Register lockable tabs so switchTab() can show upgrade overlay ----
             _tierLockedTabs = {}; // Reset
 
-            // Leads tab — Pro+ (level >= 1)
+            // Leads tab — visible to ALL tiers (Starter sees manual + parser-added leads only;
+            // Pro+ unlocks auto-import / Bonzo / GHL bulk sync via in-tab feature gating).
             var leadsTabBtn = document.querySelector('.settings-tab[onclick="switchTab(\'leads\')"]');
-            if (level < 1) {
-                _tierLockedTabs['leads'] = {
-                    requiredLevel: 1, requiredTier: 'pro',
-                    icon: '👥', title: 'Every Lead You Lose is a Deal Someone Else Closes',
-                    description: 'Top producers never let a lead slip through the cracks. Your pipeline tracks every borrower from first contact to funded — automatically.',
-                    features: ['Auto-import leads — no more copy-pasting from email', 'See exactly where every deal stands at a glance', 'One click loads the borrower into your quote builder', 'Filter by status, source, or stage — find anyone in seconds', 'Pro users close 3x more HELOC deals']
-                };
-                if (leadsTabBtn) { leadsTabBtn.classList.add('tier-locked'); leadsTabBtn.style.display = ''; }
-            } else {
-                if (leadsTabBtn) { leadsTabBtn.classList.remove('tier-locked'); leadsTabBtn.style.display = ''; }
-                // Restore real content if previously locked
-                var leadsTab = document.getElementById('tab-leads');
-                if (leadsTab) {
-                    var overlay = leadsTab.querySelector('.tab-upgrade-overlay');
-                    if (overlay) overlay.remove();
-                    Array.from(leadsTab.children).forEach(function (c) { if (c.getAttribute('data-tier-hidden')) { c.style.display = ''; c.removeAttribute('data-tier-hidden'); } });
-                }
+            if (leadsTabBtn) { leadsTabBtn.classList.remove('tier-locked'); leadsTabBtn.style.display = ''; }
+            var leadsTab = document.getElementById('tab-leads');
+            if (leadsTab) {
+                var overlay = leadsTab.querySelector('.tab-upgrade-overlay');
+                if (overlay) overlay.remove();
+                Array.from(leadsTab.children).forEach(function (c) {
+                    if (c.getAttribute('data-tier-hidden')) { c.style.display = ''; c.removeAttribute('data-tier-hidden'); }
+                });
             }
+            // Gate Pro-only sync controls inside Leads tab (Bonzo Sync, GHL Import, Auto-import toggle)
+            var proLeadsControls = document.querySelectorAll('[data-tier-feature="leads-pro-sync"]');
+            proLeadsControls.forEach(function (el) {
+                el.style.display = (level >= 1) ? '' : 'none';
+            });
 
             // Integrations tab — Show to all, but GHL/n8n/webhooks teaser for lower tiers
             // (Already handled by applyIntegrationAccess for non-super_admin; tier badges for super_admin above)
@@ -12193,6 +12223,16 @@ Best regards,
             applyRoleAccess(role);
             applyIntegrationAccess(role, tier);
             applyTierAccess(tier);
+            // Per-tier default landing tab (only applies on initial load, before user has navigated).
+            // Starter LOs land on Lead Parser so they can paste a broker email and get auto-advanced
+            // to the Client tab with fields pre-filled. Pro/Enterprise land on My Leads (pipeline triage).
+            try {
+                if (!window._landingTabApplied) {
+                    window._landingTabApplied = true;
+                    var landingTab = (tier === 'starter') ? 'parser' : 'leads';
+                    if (typeof switchTab === 'function') switchTab(landingTab);
+                }
+            } catch (_landingErr) { /* non-fatal */ }
             // Show trial banner if applicable
             showTrialBanner();
             // Apply read-only mode if impersonating in View As mode
@@ -14785,8 +14825,123 @@ Generate the sales strategy and phone script now.`;
             }
         }
 
+        // ===== QUICK ACTIONS — Client tab top bar =====
+        function startNewQuote() {
+            // Clear primary client/quote inputs without nuking saved settings
+            var ids = ['in-client-name', 'in-client-credit', 'custom-address-input',
+                       'in-net-cash', 'in-home-value', 'in-mortgage-balance',
+                       'in-refi-balance', 'in-refi-rate', 'in-refi-payment',
+                       'client-email', 'client-phone'];
+            ids.forEach(function (id) { var el = document.getElementById(id); if (el) el.value = ''; });
+            // Reset the "current quote link" so Send won't re-use a stale one
+            try { window._currentQuoteShortUrl = null; window._currentQuoteCode = null; } catch (_) {}
+            if (typeof updateQuote === 'function') updateQuote();
+            if (typeof showToast === 'function') showToast('New blank quote ready', 'success');
+        }
+
+        async function openLeadPicker() {
+            // Build lightweight lead-picker modal that loads a lead's contact info into the Client tab
+            var modal = document.getElementById('lead-picker-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'lead-picker-modal';
+                modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+                modal.innerHTML = '<div style="background:var(--primary-color);border:1px solid rgba(197,160,89,0.3);border-radius:10px;width:100%;max-width:560px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">' +
+                    '<div style="padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;">' +
+                        '<h3 style="margin:0;font-family:var(--font-heading);font-size:13px;color:white;flex:1;">📥 Pull a Lead into the Quote Builder</h3>' +
+                        '<button onclick="document.getElementById(\'lead-picker-modal\').remove()" style="background:#ef4444;color:white;border:none;border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;">✕</button>' +
+                    '</div>' +
+                    '<div style="padding:10px 18px;border-bottom:1px solid rgba(255,255,255,0.06);">' +
+                        '<input type="text" id="lead-picker-search" placeholder="Search by name, email, or phone…" oninput="renderLeadPickerList()" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:5px;padding:7px 10px;font-size:11px;color:white;">' +
+                    '</div>' +
+                    '<div id="lead-picker-list" style="overflow-y:auto;flex:1;padding:6px;">' +
+                        '<div style="padding:20px;text-align:center;color:rgba(255,255,255,0.5);font-size:10px;">Loading…</div>' +
+                    '</div>';
+                document.body.appendChild(modal);
+            } else {
+                modal.style.display = 'flex';
+            }
+            // Fetch leads (cached on window after first load)
+            try {
+                var sb = window._supabase;
+                var userId = window.currentUserId;
+                if (!sb || !userId) {
+                    document.getElementById('lead-picker-list').innerHTML = '<div style="padding:20px;text-align:center;color:rgba(255,255,255,0.5);font-size:10px;">Log in to view leads.</div>';
+                    return;
+                }
+                var res = await sb.from('leads')
+                    .select('id, first_name, last_name, email, phone, status, source, metadata, created_at')
+                    .eq('user_id', userId)
+                    .is('deleted_at', null)
+                    .order('created_at', { ascending: false })
+                    .limit(500);
+                window._leadPickerCache = res.data || [];
+                renderLeadPickerList();
+            } catch (e) {
+                document.getElementById('lead-picker-list').innerHTML = '<div style="padding:20px;text-align:center;color:#f87171;font-size:10px;">Error loading leads: ' + (e.message || e) + '</div>';
+            }
+        }
+
+        function renderLeadPickerList() {
+            var listEl = document.getElementById('lead-picker-list');
+            if (!listEl) return;
+            var leads = window._leadPickerCache || [];
+            var q = (document.getElementById('lead-picker-search') || {}).value || '';
+            q = q.toLowerCase().trim();
+            var filtered = q ? leads.filter(function (l) {
+                var blob = ((l.first_name || '') + ' ' + (l.last_name || '') + ' ' + (l.email || '') + ' ' + (l.phone || '')).toLowerCase();
+                return blob.indexOf(q) !== -1;
+            }) : leads;
+            if (filtered.length === 0) {
+                listEl.innerHTML = '<div style="padding:20px;text-align:center;color:rgba(255,255,255,0.5);font-size:10px;">' + (leads.length === 0 ? 'No leads yet. Use the Lead Parser tab or connect Bonzo/GHL.' : 'No leads match your search.') + '</div>';
+                return;
+            }
+            listEl.innerHTML = filtered.slice(0, 200).map(function (l) {
+                var name = ((l.first_name || '') + ' ' + (l.last_name || '')).trim() || (l.email || '(no name)');
+                var meta = (l.metadata || {});
+                var addr = meta.property_address || meta.address || '';
+                return '<div onclick="loadLeadIntoQuote(\'' + l.id + '\')" style="padding:10px 14px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.04);" onmouseover="this.style.background=\'rgba(197,160,89,0.12)\'" onmouseout="this.style.background=\'\'">' +
+                    '<div style="flex:1;min-width:0;">' +
+                        '<div style="font-weight:600;color:white;font-size:11px;">' + escapeAttr(name) + '</div>' +
+                        '<div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px;">' + escapeAttr(l.email || '') + (l.phone ? ' · ' + escapeAttr(l.phone) : '') + '</div>' +
+                        (addr ? '<div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px;">🏠 ' + escapeAttr(addr) + '</div>' : '') +
+                    '</div>' +
+                    '<span style="font-size:8px;color:rgba(255,255,255,0.4);text-transform:uppercase;">' + escapeAttr(l.source || 'manual') + '</span>' +
+                '</div>';
+            }).join('');
+        }
+
+        function loadLeadIntoQuote(leadId) {
+            var leads = window._leadPickerCache || [];
+            var lead = leads.find(function (l) { return l.id === leadId; });
+            if (!lead) return;
+            var name = ((lead.first_name || '') + ' ' + (lead.last_name || '')).trim();
+            if (name) { var n = document.getElementById('in-client-name'); if (n) n.value = name; }
+            var meta = lead.metadata || {};
+            if (lead.email) { var ce = document.getElementById('client-email'); if (ce) ce.value = lead.email; }
+            if (lead.phone) { var cp = document.getElementById('client-phone'); if (cp) cp.value = lead.phone; }
+            if (meta.credit_score) { var cs = document.getElementById('in-client-credit'); if (cs) cs.value = meta.credit_score; }
+            if (meta.home_value) { var hv = document.getElementById('in-home-value'); if (hv) hv.value = Math.round(parseFloat(meta.home_value)) || hv.value; }
+            if (meta.mortgage_balance) { var mb = document.getElementById('in-mortgage-balance'); if (mb) mb.value = Math.round(parseFloat(meta.mortgage_balance)) || mb.value; }
+            var addr = meta.property_address || meta.address || '';
+            if (addr) {
+                var ai = document.getElementById('custom-address-input'); if (ai) ai.value = addr;
+                var ao = document.getElementById('out-property-address'); if (ao) ao.innerText = addr;
+            }
+            // Reset stale quote link so Send creates a fresh one for this lead
+            try { window._currentQuoteShortUrl = null; window._currentQuoteCode = null; } catch (_) {}
+            if (typeof updateQuote === 'function') updateQuote();
+            if (typeof autoSave === 'function') autoSave();
+            var modal = document.getElementById('lead-picker-modal');
+            if (modal) modal.remove();
+            if (typeof showToast === 'function') showToast('Loaded ' + (name || 'lead') + ' into quote builder', 'success');
+        }
+
         // ===== LEAD PARSER =====
-        function parseLead() {
+        // Options: { saveToPipeline: bool, autoAdvance: bool (default true) }
+        async function parseLead(options) {
+            options = options || {};
+            const autoAdvance = options.autoAdvance !== false;
             const emailBody = document.getElementById('lead-email-input').value;
             if (!emailBody.trim()) { showToast('Please paste the lead email body first.', 'warning'); return; }
             const parsed = {};
@@ -14880,11 +15035,240 @@ Generate the sales strategy and phone script now.`;
                 property_value: parsed.propertyValue, credit_score: parsed.creditScore,
                 address: addrParts.join(', '), campaign: parsed.campaign
             });
+
+            // ---- Save to Pipeline (dedup-safe via upsert_lead RPC) ----
+            if (options.saveToPipeline) {
+                await _savePipelineFromParse(parsed, addrParts.join(', '));
+            }
+
+            // ---- Auto-advance to Client tab so the LO sees the populated quote ----
+            if (autoAdvance) {
+                if (typeof showToast === 'function') showToast('Lead parsed — opening quote builder…', 'success');
+                setTimeout(function () {
+                    if (typeof switchTab === 'function') switchTab('client');
+                }, 1100);
+            }
+        }
+
+        // Save a single parsed lead to Supabase via upsert_lead RPC.
+        // Dedupes against existing leads (email ilike + digits-only phone + crm_contact_id),
+        // so leads already synced from Bonzo/GHL are enriched, not duplicated.
+        async function _savePipelineFromParse(parsed, fullAddress) {
+            var statusEl = document.getElementById('parse-save-status');
+            try {
+                var sb = window._supabase;
+                var userId = window.currentUserId;
+                if (!sb || !userId) {
+                    if (statusEl) {
+                        statusEl.style.display = 'block';
+                        statusEl.style.color = '#fbbf24';
+                        statusEl.innerText = '⚠️  Not logged in — lead loaded into quote builder but not saved to Pipeline.';
+                    }
+                    return;
+                }
+                var meta = {
+                    parsed_from: 'lead_parser',
+                    parsed_at: new Date().toISOString()
+                };
+                if (parsed.creditScore) meta.credit_score = parsed.creditScore;
+                if (parsed.propertyValue) meta.home_value = parsed.propertyValue;
+                if (parsed.currentBalance) meta.mortgage_balance = parsed.currentBalance;
+                if (parsed.helocBalance) meta.heloc_balance = parsed.helocBalance;
+                if (parsed.cashOut) meta.cash_out = parsed.cashOut;
+                if (parsed.loanAmount) meta.loan_amount = parsed.loanAmount;
+                if (fullAddress) meta.property_address = fullAddress;
+                if (parsed.propertyUse) meta.property_use = parsed.propertyUse;
+                if (parsed.campaign) meta.campaign = parsed.campaign;
+
+                var res = await sb.rpc('upsert_lead', {
+                    p_user_id: userId,
+                    p_first_name: parsed.firstName || null,
+                    p_last_name: parsed.lastName || null,
+                    p_email: parsed.email || null,
+                    p_phone: parsed.phone || null,
+                    p_source: 'parser',
+                    p_status: 'new',
+                    p_crm_contact_id: null,
+                    p_metadata: meta
+                });
+                if (res.error) throw res.error;
+                var row = (res.data && res.data[0]) || {};
+                var isNew = !!row.is_new;
+                if (statusEl) {
+                    statusEl.style.display = 'block';
+                    statusEl.style.color = isNew ? '#34d399' : '#fbbf24';
+                    statusEl.innerText = isNew
+                        ? '✅  Saved to Pipeline as a NEW lead.'
+                        : '🔁  Matched an EXISTING lead in your Pipeline (already synced from CRM) — enriched, not duplicated.';
+                }
+                // Refresh leads UI if it's loaded
+                if (typeof loadUserLeads === 'function') { try { loadUserLeads(); } catch (_) {} }
+            } catch (e) {
+                if (statusEl) {
+                    statusEl.style.display = 'block';
+                    statusEl.style.color = '#f87171';
+                    statusEl.innerText = '❌  Save to Pipeline failed: ' + (e.message || e);
+                }
+                console.error('[parser] save to pipeline error', e);
+            }
         }
 
         function clearParser() {
             document.getElementById('lead-email-input').value = '';
             document.getElementById('parse-result').style.display = 'none';
+            var s = document.getElementById('parse-save-status');
+            if (s) { s.style.display = 'none'; s.innerText = ''; }
+        }
+
+        // Same regex map used by parseLead — kept inline so single-lead path doesn't need to share state.
+        const _BROKER_LEAD_PATTERNS = {
+            firstName: /First Name\s*[=:]\s*([^.\n]+)/i,
+            lastName: /Last Name\s*[=:]\s*([^.\n]+)/i,
+            phone: /Phone\s*[=:]\s*([^.\n]+)/i,
+            email: /Email\s*[=:]\s*([^\s\n]+@[^\s\n]+)/i,
+            address: /^Address\s*[=:]\s*([^.\n]+)/im,
+            physAddress: /PhysicalAddress\s*[=:]\s*([^.\n]+)/i,
+            city: /^City\s*[=:]\s*([^.\n]+)/im,
+            physCity: /Phys City\s*[=:]\s*([^.\n]+)/i,
+            state: /^State\s*[=:]\s*([^.\n]+)/im,
+            physState: /Phys State\s*[=:]\s*([^.\n]+)/i,
+            zip: /^Zip\s*[=:]\s*([^.\n]+)/im,
+            physZip: /Phys Zip\s*[=:]\s*([^.\n_]+)/i,
+            propertyValue: /Property Value\s*[=:]\s*\$?([\d,.]+)/i,
+            currentBalance: /Current Balance\s*[=:]\s*\$?([\d,.]+)/i,
+            creditScore: /Credit Rating\s*[=:]\s*(\d+)/i,
+            cashOut: /Cash out\s*[=:]\s*\$?([\d,.]+)/i,
+            helocBalance: /^HELOC\s*[=:]\s*\$?([\d,.]+)/im,
+            loanAmount: /Loan Amount\s*[=:]\s*\$?([\d,.]+)/i,
+            propertyUse: /Property Use\s*[=:]\s*([^.\n]+)/i,
+            campaign: /Campaign\s*[=:]\s*([^.\n]+)/i
+        };
+
+        function _parseSingleLeadSegment(seg) {
+            var parsed = {};
+            for (var key in _BROKER_LEAD_PATTERNS) {
+                var match = seg.match(_BROKER_LEAD_PATTERNS[key]);
+                if (match && match[1] && match[1].trim()) parsed[key] = match[1].trim().replace(/,/g, '');
+            }
+            // A "valid" lead needs at least an email OR (first name + phone)
+            if (parsed.email || (parsed.firstName && parsed.phone)) return parsed;
+            return null;
+        }
+
+        // Bulk parser: handles Broker Launch emails containing multiple leads.
+        // Splits on common separators (---, "Lead #N:", repeated "First Name:" blocks)
+        // then upserts each via the same dedup-safe RPC.
+        async function parseBrokerLaunchBulk() {
+            var emailBody = document.getElementById('lead-email-input').value;
+            if (!emailBody.trim()) { showToast('Paste the Broker Launch email body first.', 'warning'); return; }
+
+            // Split on the most common patterns. We try a few:
+            //  1. Markdown horizontal rules (---, ===) — common in Broker Launch HTML→text conversion
+            //  2. "Lead #N", "Lead N:", "Contact N:" headers
+            //  3. Fallback: split on duplicate "First Name:" or "Email:" markers
+            var segments = [];
+            if (/\n\s*[-=]{3,}\s*\n/.test(emailBody)) {
+                segments = emailBody.split(/\n\s*[-=]{3,}\s*\n/);
+            } else if (/\b(?:Lead|Contact|Prospect)\s*#?\s*\d+\s*[:\-]/i.test(emailBody)) {
+                segments = emailBody.split(/(?=\b(?:Lead|Contact|Prospect)\s*#?\s*\d+\s*[:\-])/i);
+            } else {
+                // Fallback: split before each subsequent "First Name:" — keep first segment too
+                var parts = emailBody.split(/(?=^\s*First Name\s*[:=])/im);
+                segments = parts.length > 1 ? parts : [emailBody];
+            }
+
+            var parsedLeads = segments
+                .map(function (s) { return s.trim(); })
+                .filter(function (s) { return s.length > 0; })
+                .map(_parseSingleLeadSegment)
+                .filter(Boolean);
+
+            var statusEl = document.getElementById('parse-save-status');
+            var resultDiv = document.getElementById('parse-result');
+            var summaryEl = document.getElementById('parse-summary');
+            resultDiv.style.display = 'block';
+            if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = 'rgba(255,255,255,0.7)'; statusEl.innerText = 'Parsing & saving ' + parsedLeads.length + ' lead(s)…'; }
+
+            if (parsedLeads.length === 0) {
+                summaryEl.innerHTML = '<strong>No leads found</strong><br>Couldn\'t detect Broker Launch lead blocks. Try the single-lead parser instead.';
+                if (statusEl) { statusEl.style.color = '#fbbf24'; statusEl.innerText = '⚠️  No valid leads detected.'; }
+                return;
+            }
+
+            summaryEl.innerHTML = '<strong>Detected ' + parsedLeads.length + ' lead(s)</strong> in this email. Saving to Pipeline (dedup-checked)…';
+
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) {
+                if (statusEl) { statusEl.style.color = '#fbbf24'; statusEl.innerText = '⚠️  Not logged in — bulk save aborted.'; }
+                return;
+            }
+
+            var added = 0, matched = 0, failed = 0;
+            for (var i = 0; i < parsedLeads.length; i++) {
+                var p = parsedLeads[i];
+                var addr = '';
+                var usePhys = p.physCity || p.physState;
+                var addrParts = usePhys
+                    ? [p.physAddress || p.address, p.physCity, p.physState, p.physZip].filter(Boolean)
+                    : [p.address, p.city, p.state, p.zip].filter(Boolean);
+                if (addrParts.length > 0) addr = addrParts.join(', ');
+
+                var meta = {
+                    parsed_from: 'lead_parser_bulk',
+                    parsed_at: new Date().toISOString()
+                };
+                if (p.creditScore) meta.credit_score = p.creditScore;
+                if (p.propertyValue) meta.home_value = p.propertyValue;
+                if (p.currentBalance) meta.mortgage_balance = p.currentBalance;
+                if (p.helocBalance) meta.heloc_balance = p.helocBalance;
+                if (p.cashOut) meta.cash_out = p.cashOut;
+                if (p.loanAmount) meta.loan_amount = p.loanAmount;
+                if (addr) meta.property_address = addr;
+                if (p.propertyUse) meta.property_use = p.propertyUse;
+                if (p.campaign) meta.campaign = p.campaign;
+
+                try {
+                    var res = await sb.rpc('upsert_lead', {
+                        p_user_id: userId,
+                        p_first_name: p.firstName || null,
+                        p_last_name: p.lastName || null,
+                        p_email: p.email || null,
+                        p_phone: p.phone || null,
+                        p_source: 'parser',
+                        p_status: 'new',
+                        p_crm_contact_id: null,
+                        p_metadata: meta
+                    });
+                    if (res.error) { failed++; console.warn('[bulk-parser] upsert error', res.error); }
+                    else {
+                        var row = (res.data && res.data[0]) || {};
+                        if (row.is_new) added++; else matched++;
+                    }
+                } catch (e) { failed++; console.warn('[bulk-parser] exception', e); }
+            }
+
+            if (statusEl) {
+                statusEl.style.display = 'block';
+                statusEl.style.color = failed === 0 ? '#34d399' : '#fbbf24';
+                statusEl.innerText = '✅  Bulk save complete — Added ' + added + ', matched ' + matched +
+                    ' existing (already in CRM)' + (failed > 0 ? ', failed ' + failed : '') + '.';
+            }
+
+            // Refresh leads view if loaded
+            if (typeof loadUserLeads === 'function') { try { loadUserLeads(); } catch (_) {} }
+
+            // Fire outbound webhooks for each new lead
+            for (var j = 0; j < parsedLeads.length; j++) {
+                try {
+                    fireOutboundWebhooks('lead_received', {
+                        name: ((parsedLeads[j].firstName || '') + ' ' + (parsedLeads[j].lastName || '')).trim(),
+                        email: parsedLeads[j].email, phone: parsedLeads[j].phone,
+                        property_value: parsedLeads[j].propertyValue, credit_score: parsedLeads[j].creditScore,
+                        campaign: parsedLeads[j].campaign, source: 'parser_bulk'
+                    });
+                } catch (_) {}
+            }
         }
 
         function parseLenderInfo() {
