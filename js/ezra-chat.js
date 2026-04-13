@@ -359,6 +359,197 @@
     //   ...Fixed Rate\n\n\n\n$1,210/month\n\n8.35%\n\n30yr fixed\n\nSelect\n\n...
     //   Variable Rate\n\n...\n$1,210/month\n\nStarting at 8.35%\n\n30yr variable\n\nSelect\n\n...
     //   ...Initial Draw Amount\n$157,156\nCash required at closing\n$0\n...
+    // ---------------------------------------------------------------
+    // Figure APPLICATION page paste — full DealSnapshot (borrower + property + offer grid)
+    // Distinct from parseLenderPortalData which handles the quote portal paste.
+    // Triggered by markers: "Application Progress", "Borrower Information",
+    // "Initial Offers", and a structured rate grid with loan-amount bands.
+    // Produces: { borrower, property, lien, cltv, offerGrid: { tiers: [{origPct, cells:[{term,type,rate,minAmt,maxAmt}]}] } }
+    // ---------------------------------------------------------------
+    function parseFigureApp(message) {
+        // Detect: need at least 3 Figure-app signals
+        const m = message || '';
+        const sig = {
+            progress: /application\s*progress/i.test(m),
+            borrower: /borrower\s*information/i.test(m),
+            initialOffers: /initial\s*offers/i.test(m),
+            propValuation: /property\s*value\s*\(avm\)|pre[\s-]*loan\s*cltv/i.test(m),
+            appId: /application\s*id/i.test(m),
+            heloc: /heloc\s*inquiry/i.test(m),
+            leadPortal: /lead\s*portal/i.test(m),
+            poweredFigure: /powered\s*by\s*figure/i.test(m)
+        };
+        const score = Object.values(sig).filter(Boolean).length;
+        console.log('[parseFigureApp] length:', m.length, 'signals:', sig, 'score:', score, 'preview:', m.slice(0, 200));
+        if (score < 3) return null;
+
+        const snap = {
+            source: 'figure_app',
+            borrower: {},
+            property: {},
+            lien: {},
+            cltv: null,
+            offerGrid: { tiers: [] }
+        };
+
+        // Figure's paste format is LINE-BASED: label on one line, value on the next non-empty line.
+        // Helper: pull the next non-empty line after a label (case-insensitive, multiline-aware).
+        // Pattern: ^LABEL\s*$\n+\s*(VALUE)$ — we use [\s\S]*? to skip blank lines between.
+        const afterLabel = (labelRegex, valuePattern) => {
+            const re = new RegExp(`^\\s*${labelRegex}\\s*$[\\r\\n]+\\s*(${valuePattern})`, 'im');
+            const match = m.match(re);
+            return match ? match[1].trim() : null;
+        };
+
+        // --- Borrower ---
+        // Scope name match to inside "Borrower Information" section (before "Loan Officer")
+        const borrowerSection = m.match(/borrower\s*information[\s\S]*?(?=loan\s*officer|property\s*information|$)/i);
+        const bSec = borrowerSection ? borrowerSection[0] : m;
+        const bAfterLabel = (labelRegex, valuePattern) => {
+            const re = new RegExp(`^\\s*${labelRegex}\\s*$[\\r\\n]+\\s*(${valuePattern})`, 'im');
+            const match = bSec.match(re);
+            return match ? match[1].trim() : null;
+        };
+        const nameVal = bAfterLabel('name', '[A-Z][A-Za-z .\'-]{1,80}');
+        if (nameVal) snap.borrower.name = nameVal;
+        const emailVal = bAfterLabel('email', '[\\w.+-]+@[\\w.-]+\\.[A-Za-z]{2,}');
+        if (emailVal) snap.borrower.email = emailVal;
+        const phoneVal = bAfterLabel('phone', '\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}');
+        if (phoneVal) snap.borrower.phone = phoneVal;
+        const dobVal = bAfterLabel('date\\s*of\\s*birth', '\\d{2}/\\d{2}/\\d{4}');
+        if (dobVal) snap.borrower.dob = dobVal; // PII — redact before any AI call
+        const ficoVal = afterLabel('fico', '\\d{3}');
+        if (ficoVal) snap.borrower.fico = parseInt(ficoVal);
+        const incomeVal = afterLabel('stated\\s*total\\s*income', '\\$?[\\d,]+(?:\\.\\d+)?');
+        if (incomeVal) snap.borrower.statedIncome = parseFloat(incomeVal.replace(/[$,]/g, ''));
+        const employVal = afterLabel('employment\\s*type', '[A-Za-z][A-Za-z \\-]{2,40}');
+        if (employVal) snap.borrower.employment = employVal;
+        const appIdVal = bAfterLabel('application\\s*id', '[\\w-]+');
+        if (appIdVal) snap.borrower.appId = appIdVal;
+
+        // --- Property ---
+        // "Primary Address" appears in Borrower section; "Property Address" may appear multiple times under Property Information
+        const primaryAddrVal = bAfterLabel('primary\\s*address', '[0-9][^\\r\\n]{5,160}');
+        const propAddrVal = afterLabel('property\\s*address', '[0-9][^\\r\\n]{5,160}');
+        const addrVal = primaryAddrVal || propAddrVal;
+        if (addrVal) snap.property.address = addrVal;
+        const avmVal = afterLabel('property\\s*value\\s*\\(avm\\)', '\\$?[\\d,]+(?:\\.\\d+)?');
+        if (avmVal) snap.property.avm = parseFloat(avmVal.replace(/[$,]/g, ''));
+        const propTypeVal = afterLabel('property\\s*type', '[A-Za-z][^\\r\\n]{2,60}');
+        if (propTypeVal) snap.property.type = propTypeVal;
+
+        // --- Existing lien (inside Property Liens section only) ---
+        const lienSection = m.match(/property\s*liens[\s\S]*?(?=property\s*information|initial\s*offers|$)/i);
+        if (lienSection) {
+            const lSec = lienSection[0];
+            const lAfterLabel = (labelRegex, valuePattern) => {
+                const re = new RegExp(`^\\s*${labelRegex}\\s*$[\\r\\n]+\\s*(${valuePattern})`, 'im');
+                const match = lSec.match(re);
+                return match ? match[1].trim() : null;
+            };
+            const lienBalVal = lAfterLabel('current\\s*balance', '\\$?[\\d,]+(?:\\.\\d+)?');
+            if (lienBalVal) snap.lien.currentBalance = parseFloat(lienBalVal.replace(/[$,]/g, ''));
+            const lienLenderVal = lAfterLabel('lender', '[A-Z][A-Za-z0-9 .&\\-]{2,80}');
+            if (lienLenderVal) snap.lien.lender = lienLenderVal;
+        }
+
+        // --- CLTV ---
+        const cltvVal = afterLabel('pre[\\s-]*loan\\s*cltv', '[\\d.]+\\s*%?');
+        if (cltvVal) snap.cltv = parseFloat(cltvVal);
+
+        // --- Initial Offers grid ---
+        // Structure: "N Year Fixed|Variable" blocks, each with multiple "Min: $X Max: $Y Interest Rate: Z%" tuples,
+        // grouped under origination tier columns at the top (e.g., "1.50%  2.99%").
+        const offersStart = m.search(/initial\s*offers/i);
+        if (offersStart >= 0) {
+            const offersBlock = m.slice(offersStart);
+
+            // Detect origination tier percentages present at the top of Initial Offers
+            // Typical: "1.50%\n2.99%" or "1.50%\n2.99%\n4.99%" — read the first 2-3 distinct pcts
+            const headerPcts = [];
+            const headerPctRegex = /(\d+\.\d+)\s*%/g;
+            let hm;
+            let headerEnd = offersBlock.search(/\d+\s*year\s*(fixed|variable)/i);
+            if (headerEnd < 0) headerEnd = Math.min(400, offersBlock.length);
+            const headerSlice = offersBlock.slice(0, headerEnd);
+            while ((hm = headerPctRegex.exec(headerSlice)) !== null) {
+                const v = parseFloat(hm[1]);
+                if (v > 0 && v < 10 && !headerPcts.includes(v)) headerPcts.push(v);
+            }
+            // Variable tier count: 1–3 expected. Sort ascending (lower origination first, per mockup).
+            const tierPcts = headerPcts.slice(0, 3).sort((a, b) => a - b);
+
+            // Parse each "N Year Fixed|Variable" section
+            // Each section contains `tierPcts.length` pairs of {Min, Max, Interest Rate} — one per tier
+            const sectionRegex = /(\d+)\s*year\s*(fixed|variable)([\s\S]*?)(?=\d+\s*year\s*(fixed|variable)|$)/gi;
+            let sm;
+            const cellsByTier = tierPcts.map(() => []);
+            while ((sm = sectionRegex.exec(offersBlock)) !== null) {
+                const term = parseInt(sm[1]);
+                const rateType = sm[2].toLowerCase();
+                const body = sm[3];
+                // Extract Min/Max/Rate triples in order — each triple maps to tierPcts[i]
+                const tripleRegex = /min:\s*\$?([\d,.]+)[\s\S]*?max:\s*\$?([\d,.]+)[\s\S]*?interest\s*rate:\s*([\d.]+)\s*%/gi;
+                let tm;
+                let triples = [];
+                while ((tm = tripleRegex.exec(body)) !== null) {
+                    triples.push({
+                        minAmt: parseFloat(tm[1].replace(/,/g, '')),
+                        maxAmt: parseFloat(tm[2].replace(/,/g, '')),
+                        rate: parseFloat(tm[3])
+                    });
+                }
+                // Triples come in pairs (one per tier) PER loan-amount band. Group by tier index.
+                // Pattern from Figure: per band, tier 1 triple then tier 2 triple (then tier 3 if present).
+                for (let i = 0; i < triples.length; i++) {
+                    const tierIdx = i % tierPcts.length;
+                    if (cellsByTier[tierIdx]) {
+                        cellsByTier[tierIdx].push({
+                            term,
+                            type: rateType,
+                            rate: triples[i].rate,
+                            minAmt: triples[i].minAmt,
+                            maxAmt: triples[i].maxAmt
+                        });
+                    }
+                }
+            }
+
+            snap.offerGrid.tiers = tierPcts.map((pct, i) => ({
+                originationPct: pct,
+                cells: cellsByTier[i] || []
+            })).filter(t => t.cells.length > 0);
+        }
+
+        // If no offer grid parsed, bail — we need the grid to be useful
+        if (snap.offerGrid.tiers.length === 0) return null;
+
+        return snap;
+    }
+
+    // Redact PII from Figure snapshot before any AI/logging call.
+    // Keeps identifiers useful to the LO locally; strips from anything crossing the network.
+    function redactSnapshotForAI(snap) {
+        if (!snap) return snap;
+        const clone = JSON.parse(JSON.stringify(snap));
+        if (clone.borrower) {
+            delete clone.borrower.dob;
+            delete clone.borrower.email;
+            delete clone.borrower.phone;
+            // Keep FICO bucket, not raw score
+            if (clone.borrower.fico) {
+                const f = clone.borrower.fico;
+                clone.borrower.ficoBucket = f >= 760 ? '760+'
+                    : f >= 720 ? '720-759'
+                    : f >= 680 ? '680-719'
+                    : f >= 640 ? '640-679'
+                    : '<640';
+                delete clone.borrower.fico;
+            }
+        }
+        return clone;
+    }
+
     function parseLenderPortalData(message) {
         // Detect Figure portal paste: look for key signatures
         const hasFixedRate = /fixed\s*rate/i.test(message);
@@ -4226,6 +4417,17 @@ Would you like me to fill in the quote form with these details?`, { model: 'loca
             : message;
         addMessage('user', displayMsg);
 
+        // Figure application paste escape hatch — if the user pastes a Figure app during
+        // onboarding or any other intercept, end onboarding and fall through to normal routing
+        // so parseFigureApp() can handle it.
+        const looksLikeFigureApp = /application\s*progress/i.test(message)
+            && /initial\s*offers/i.test(message)
+            && (/borrower\s*information/i.test(message) || /property\s*value\s*\(avm\)/i.test(message));
+        if (looksLikeFigureApp && EzraState.onboardingStep) {
+            console.log('[Ezra] Figure app paste detected — exiting onboarding to parse snapshot');
+            EzraState.onboardingStep = 0;
+        }
+
         // Check if we're in onboarding mode
         if (EzraState.onboardingStep && EzraState.onboardingStep > 0) {
             showTypingIndicator();
@@ -4276,6 +4478,23 @@ Would you like me to fill in the quote form with these details?`, { model: 'loca
             // Handle auto-fill if present
             if (response.autoFillFields) {
                 showAutoFillBlock(response.autoFillFields);
+            }
+
+            // Slash commands can set metadata.followupPrompt to trigger a second AI call
+            // (e.g. /objection KB template → AI reframe with client numbers).
+            if (response.metadata && response.metadata.followupPrompt) {
+                try {
+                    showTypingIndicator();
+                    const followup = await callAIService(response.metadata.followupPrompt, null, response.metadata.featureTag || 'ezra_copilot');
+                    hideTypingIndicator();
+                    if (followup && followup.content) {
+                        addMessage('assistant', followup.content, { model: 'ai', intent: (response.metadata.intent || 'slash') + '_reframe' });
+                    }
+                } catch (fErr) {
+                    hideTypingIndicator();
+                    console.warn('[Ezra] slash followup failed:', fErr);
+                    addMessage('assistant', '_(Reframe unavailable — KB response above is the pre-approved answer.)_', { model: 'local' });
+                }
             }
 
             // Save to Supabase
@@ -4809,6 +5028,32 @@ File name: ${fileName}`;
     // Initialize scroll button visibility (retry because the container mounts after this script)
     [100, 400, 1000].forEach(t => setTimeout(updateScrollButtons, t));
 
+    // Attach a ResizeObserver so arrows recompute when the quick-commands strip actually
+    // finishes layout (fixes the case where the [100,400,1000] timers fire before the
+    // 20 buttons have rendered their final widths, leaving both arrows stuck at 0 opacity).
+    function _attachQuickCommandsObserver() {
+        const container = document.getElementById('ezra-quick-commands');
+        if (!container) {
+            // Retry — container mounts after script load
+            setTimeout(_attachQuickCommandsObserver, 300);
+            return;
+        }
+        if (container._ezraROAttached) return;
+        container._ezraROAttached = true;
+        try {
+            const ro = new ResizeObserver(() => _scheduleScrollBtnUpdate());
+            ro.observe(container);
+            // Also observe scroll events on the container so the arrows update as user scrolls
+            container.addEventListener('scroll', _scheduleScrollBtnUpdate, { passive: true });
+            // One final rAF-based update after the browser paints
+            requestAnimationFrame(() => requestAnimationFrame(updateScrollButtons));
+            console.log('[Ezra] quick-commands ResizeObserver attached');
+        } catch (e) {
+            console.warn('[Ezra] ResizeObserver unavailable, falling back to timer-only updates', e);
+        }
+    }
+    _attachQuickCommandsObserver();
+
     // Update on scroll and setup touch swipe
     document.addEventListener('DOMContentLoaded', function() {
         const container = document.getElementById('ezra-quick-commands');
@@ -5205,6 +5450,159 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
     // ============================================
     // AI ROUTING (Task 3)
     // ============================================
+    // ─────────────────────────────────────────────────────────────
+    // Slash command handler — structured commands with KB-first, tier-aware depth
+    // Returns null if command is unknown (caller falls through to AI routing).
+    // ─────────────────────────────────────────────────────────────
+    async function handleSlashCommand(cmd, arg) {
+        const tier = String(window.currentUserTier || 'starter').toLowerCase();
+        const isEnterprise = tier === 'enterprise' || window.currentUserRole === 'super_admin';
+        const isPro = isEnterprise || tier === 'pro';
+
+        switch (cmd) {
+            case 'help': {
+                const lines = [
+                    '**Ezra slash commands:**',
+                    '• `/objection <keyword>` — NEPQ response (e.g. `/objection rate`)',
+                    '• `/kb <query>` — search knowledge base, no AI tokens',
+                    '• `/gap` — flag "Ezra didn\'t know this" (logs to kb_suggestions)',
+                    '• `/reset` — clear the quote builder state',
+                    '• `/share` — generate share link for current quote',
+                    isEnterprise ? '• `/heygen` — generate HeyGen video script from current quote (Enterprise)' : '• `/heygen` — Enterprise only (upgrade to unlock)',
+                    '• `/help` — this list'
+                ];
+                return { content: lines.join('\n'), metadata: { model: 'local', intent: 'slash_help' } };
+            }
+
+            case 'objection': {
+                if (!arg) {
+                    return { content: 'Usage: `/objection <keyword>` — e.g. `/objection rate`, `/objection spouse`, `/objection timing`.', metadata: { model: 'local', intent: 'objection_help' } };
+                }
+                const ctx = getFormContext();
+                // KB-first: local getSmartObjectionResponse returns pre-approved NEPQ templates.
+                // Starter gets the template verbatim (compliance-safe).
+                // Pro/Enterprise gets the template + an AI reframe using the client's numbers.
+                const kbResponse = getSmartObjectionResponse(arg, ctx);
+
+                if (!isPro) {
+                    // Starter: KB-only, no AI
+                    return { content: kbResponse + '\n\n_Tip: Pro unlocks an AI reframe using this client\'s actual numbers._', metadata: { model: 'local', intent: 'objection_kb_only' } };
+                }
+
+                // Pro/Enterprise: use KB as context + request AI reframe via ai-proxy
+                const depthLine = isEnterprise ? 'Use deep consequence questioning and personalize with the client\'s actual numbers.' : 'Use NEPQ reframe and reference the client\'s numbers where available.';
+                const reframePrompt = `A loan officer is handling this client objection: "${arg}".
+
+Here are pre-approved KB templates:
+${kbResponse}
+
+Client context: ${JSON.stringify(ctx).slice(0, 1500)}
+
+${depthLine} Respond in 3-5 sentences, quotable, that the LO can read to the client. Do NOT restate the KB template verbatim — produce a personalized reframe using the client's specific numbers.`;
+                return {
+                    content: kbResponse + '\n\n---\n\n💬 Generating personalized reframe…',
+                    metadata: { model: 'local', intent: 'objection_kb_first', followupPrompt: reframePrompt }
+                };
+            }
+
+            case 'kb': {
+                if (!arg) {
+                    return { content: 'Usage: `/kb <query>` — searches the knowledge base, no AI tokens used.', metadata: { model: 'local', intent: 'kb_help' } };
+                }
+                try {
+                    const sb = window._supabase || EzraState.supabase;
+                    if (!sb) {
+                        return { content: 'Knowledge base unavailable (not authenticated).', metadata: { model: 'local', intent: 'kb_error' } };
+                    }
+                    // Fallback to simple ilike search since vector search needs an embedding service
+                    const { data } = await sb
+                        .from('ezra_knowledge_base')
+                        .select('category, title, content')
+                        .or(`title.ilike.%${arg}%,content.ilike.%${arg}%`)
+                        .limit(3);
+                    if (!data || data.length === 0) {
+                        // Log gap so it becomes a learning signal
+                        try {
+                            await sb.from('kb_gaps').insert({
+                                user_id: window.currentUserId,
+                                query: arg,
+                                source: 'slash_kb'
+                            });
+                        } catch {}
+                        return { content: `No KB hits for "${arg}". Logged to \`kb_gaps\` — we'll train on this.`, metadata: { model: 'local', intent: 'kb_miss' } };
+                    }
+                    const hits = data.map((r, i) => `**${i + 1}. ${r.title}** _(${r.category})_\n${r.content.slice(0, 400)}${r.content.length > 400 ? '…' : ''}`).join('\n\n');
+                    return { content: `**KB results for "${arg}":**\n\n${hits}`, metadata: { model: 'local', intent: 'kb_hit' } };
+                } catch (err) {
+                    console.error('[Ezra] /kb error:', err);
+                    return { content: 'KB search failed: ' + err.message, metadata: { model: 'local', intent: 'kb_error' } };
+                }
+            }
+
+            case 'gap': {
+                try {
+                    const sb = window._supabase || EzraState.supabase;
+                    if (!sb) return { content: 'Not authenticated.', metadata: { model: 'local', intent: 'gap_error' } };
+                    // Grab last few messages from chat DOM as context
+                    const lastMsgs = Array.from(document.querySelectorAll('.ezra-message-content'))
+                        .slice(-6)
+                        .map(el => el.innerText.trim())
+                        .join('\n---\n');
+                    await sb.from('kb_suggestions').insert({
+                        user_id: window.currentUserId,
+                        context: lastMsgs.slice(0, 4000),
+                        flagged_at: new Date().toISOString()
+                    });
+                    return { content: '✅ Flagged to `kb_suggestions` — Ezra will learn from this gap.', metadata: { model: 'local', intent: 'gap_logged' } };
+                } catch (err) {
+                    console.error('[Ezra] /gap error:', err);
+                    return { content: 'Could not log gap: ' + err.message, metadata: { model: 'local', intent: 'gap_error' } };
+                }
+            }
+
+            case 'reset': {
+                if (window.QuoteBuilder && typeof window.QuoteBuilder.close === 'function') {
+                    try { window.QuoteBuilder.close(); } catch {}
+                }
+                EzraState.lastDealSnapshot = null;
+                EzraState.lastDealSnapshotRedacted = null;
+                return { content: '🔄 Quote builder state cleared. Paste a new Figure app or run `/new quote` when ready.', metadata: { model: 'local', intent: 'reset' } };
+            }
+
+            case 'share': {
+                if (window.QuoteBuilder && typeof window.QuoteBuilder.shareQuote === 'function') {
+                    window.QuoteBuilder.shareQuote();
+                    return { content: '🔗 Generating share link — check the Quote Builder Step 5 panel for the URL.', metadata: { model: 'local', intent: 'share_triggered' } };
+                }
+                return { content: 'Open the Quote Builder first, then run `/share`.', metadata: { model: 'local', intent: 'share_no_qb' } };
+            }
+
+            case 'heygen': {
+                if (!isEnterprise) {
+                    return { content: '🔒 `/heygen` is an Enterprise feature. Upgrade to generate HeyGen video scripts from your quote data.', metadata: { model: 'local', intent: 'heygen_gated' } };
+                }
+                const ctx = getFormContext();
+                const snap = EzraState.lastDealSnapshotRedacted;
+                const context = snap ? JSON.stringify(snap).slice(0, 2000) : JSON.stringify(ctx).slice(0, 2000);
+                const prompt = `Generate a 30-60 second HeyGen video script for a HELOC quote presentation. Use NEPQ close strategy. Client context: ${context}
+
+Requirements:
+- First sentence: personal greeting with the client's first name.
+- Middle: 2-3 sentences summarizing the recommended rate + payment + cash out, framed against their stated goal.
+- End: one consequence question and a commitment ask ("Does that make sense? Let's lock it in before rates move.").
+- Tone: warm, confident, no sales jargon.
+- Output ONLY the script text, no stage directions or formatting.`;
+                return {
+                    content: '🎬 Drafting HeyGen script…',
+                    metadata: { model: 'local', intent: 'heygen_generating', followupPrompt: prompt, featureTag: 'heygen_script' }
+                };
+            }
+
+            default:
+                return null; // Unknown — fall through to AI routing
+        }
+    }
+
     async function routeToAI(message) {
         // Compliance check intercept — if user just pasted text to review
         if (EzraState._pendingComplianceCheck) {
@@ -5216,6 +5614,86 @@ Use the **Deal Radar** tab to view all opportunities and create quotes.`;
                 content: runComplianceCheck(message),
                 metadata: { model: 'local', intent: 'compliance_check' }
             };
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // Slash commands — fast, no-LLM, no-token paths
+        // ─────────────────────────────────────────────────────────────
+        const slashMatch = message.trim().match(/^\/(\w+)(?:\s+(.*))?$/);
+        if (slashMatch) {
+            const cmd = slashMatch[1].toLowerCase();
+            const arg = (slashMatch[2] || '').trim();
+            const slashResult = await handleSlashCommand(cmd, arg);
+            if (slashResult) return slashResult;
+        }
+
+        // Check for Figure APPLICATION page paste (full DealSnapshot) BEFORE portal-quote paste.
+        // This is the "Lead Portal > HELOC Inquiry #..." page with borrower info + Initial Offers grid.
+        const figureApp = parseFigureApp(message);
+        console.log('[Ezra] parseFigureApp result:', figureApp ? {
+            borrower: figureApp.borrower,
+            property: figureApp.property,
+            tiers: figureApp.offerGrid?.tiers?.length,
+            cellsPerTier: figureApp.offerGrid?.tiers?.map(t => t.cells.length)
+        } : 'no match');
+        if (figureApp) {
+            EzraState.lastDealSnapshot = figureApp;
+            // Save a redacted copy that any AI call can use safely
+            EzraState.lastDealSnapshotRedacted = redactSnapshotForAI(figureApp);
+
+            const b = figureApp.borrower || {};
+            const p = figureApp.property || {};
+            const lien = figureApp.lien || {};
+            const tiers = figureApp.offerGrid.tiers || [];
+            const maxLoan = tiers[0]?.cells?.reduce((m, c) => Math.max(m, c.maxAmt || 0), 0) || 0;
+
+            const tierSummary = tiers.map(t => `${t.originationPct}% orig (${t.cells.length} rates)`).join(' · ');
+            const tierCountHint = tiers.length < 3
+                ? `\n\n_Figure offered **${tiers.length}** origination option${tiers.length === 1 ? '' : 's'} for this borrower — Quote Builder will render ${tiers.length} column${tiers.length === 1 ? '' : 's'}._`
+                : '';
+
+            const summaryMd = `**Figure application imported** ✅\n\n`
+                + `**Borrower:** ${b.name || '—'}${b.ficoBucket ? ` (FICO ${b.ficoBucket})` : b.fico ? ` (FICO ${b.fico})` : ''}\n`
+                + `**Property:** ${p.address || '—'}${p.avm ? ` · AVM $${p.avm.toLocaleString()}` : ''}\n`
+                + (lien.currentBalance ? `**Existing lien:** $${lien.currentBalance.toLocaleString()}${lien.lender ? ` (${lien.lender})` : ''}\n` : '')
+                + (figureApp.cltv != null ? `**Pre-loan CLTV:** ${figureApp.cltv}%\n` : '')
+                + (maxLoan ? `**Max HELOC available:** $${maxLoan.toLocaleString()}\n` : '')
+                + `\n**Offer tiers:** ${tierSummary || '—'}`
+                + tierCountHint
+                + `\n\n👉 **Click the blue "Build Quote from Snapshot" button below** — it will pre-fill the Quote Builder with all of this data and jump straight to the recommendation. Ignore the generic "Build Quote" and "Structure Deal" buttons in the top bar — those are for manual entry.`;
+
+            // Use Ezra's native metadata.actions API — wires addEventListener, styles correctly,
+            // and survives CSP restrictions on inline handlers.
+            addMessage('assistant', summaryMd, {
+                model: 'local',
+                intent: 'figure_app_parse',
+                actions: [
+                    {
+                        label: 'Build Quote from Snapshot',
+                        icon: '🏗️',
+                        onClick: () => {
+                            console.log('[Ezra] Build Quote from Snapshot clicked. Snapshot:', EzraState.lastDealSnapshot);
+                            if (window.Ezra && typeof window.Ezra.buildQuoteFromSnapshot === 'function') {
+                                window.Ezra.buildQuoteFromSnapshot();
+                            } else {
+                                console.error('[Ezra] buildQuoteFromSnapshot API missing on window.Ezra');
+                                addMessage('assistant', 'Quote Builder bridge is not ready. Please refresh the page.', { model: 'local' });
+                            }
+                        }
+                    },
+                    {
+                        label: 'Dismiss',
+                        icon: '✕',
+                        onClick: () => {
+                            if (window.Ezra && typeof window.Ezra.dismissSnapshot === 'function') {
+                                window.Ezra.dismissSnapshot();
+                            }
+                        }
+                    }
+                ]
+            });
+
+            return null; // Suppress default assistant message — we handled it above
         }
 
         // Check for pasted lender portal data FIRST (Figure, etc.) — most specific
@@ -7313,6 +7791,31 @@ What would you like to do?`;
         predictQuestions: () => { const ctx = getFormContext(); addMessage('assistant', predictClientQuestions(ctx), { model: 'local' }); },
         followUpCoach: async () => { const r = await getFollowUpCoach(); addMessage('assistant', r, { model: 'local' }); },
         smartObjection: (text) => { const ctx = getFormContext(); addMessage('assistant', getSmartObjectionResponse(text, ctx), { model: 'local' }); },
+        // Figure snapshot API — hands the parsed DealSnapshot to the Quote Builder
+        buildQuoteFromSnapshot: () => {
+            const snap = EzraState.lastDealSnapshot;
+            console.log('[Ezra.buildQuoteFromSnapshot] snap:', snap, 'QuoteBuilder:', window.QuoteBuilder, 'openWithSnapshot:', window.QuoteBuilder?.openWithSnapshot);
+            if (!snap) {
+                addMessage('assistant', 'No Figure snapshot available. Paste a Figure application page first.', { model: 'local' });
+                return;
+            }
+            if (window.QuoteBuilder && typeof window.QuoteBuilder.openWithSnapshot === 'function') {
+                try {
+                    window.QuoteBuilder.openWithSnapshot(snap);
+                } catch (err) {
+                    console.error('[Ezra] openWithSnapshot threw:', err);
+                    addMessage('assistant', `Quote Builder error: ${err.message || err}`, { model: 'local' });
+                }
+            } else {
+                console.error('[Ezra] window.QuoteBuilder.openWithSnapshot is not a function. Available keys:', window.QuoteBuilder ? Object.keys(window.QuoteBuilder) : 'QuoteBuilder undefined');
+                addMessage('assistant', 'Quote Builder is not ready yet. Please refresh the page and try again.', { model: 'local' });
+            }
+        },
+        dismissSnapshot: () => {
+            EzraState.lastDealSnapshot = null;
+            EzraState.lastDealSnapshotRedacted = null;
+            addMessage('assistant', 'Snapshot dismissed.', { model: 'local' });
+        },
         // Follow-Up Sequence API
         generateFollowUpSequence: generateFollowUpSequence,
         previewFollowUpMessage: previewFollowUpMessage,

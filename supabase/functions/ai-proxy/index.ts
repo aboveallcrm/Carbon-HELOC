@@ -27,6 +27,12 @@ const OR_KIMI_MODEL    = "moonshotai/kimi-vl-a3b-thinking:free";
 const OR_KIMI_PAID     = "moonshotai/moonshot-v1-8k";
 const OR_GEMINI_MODEL  = "google/gemini-2.0-flash-001";
 const OR_CLAUDE_MODEL  = "anthropic/claude-sonnet-4-5";
+// Tier-escalating free/near-free models for Starter+Pro daily drivers
+const OR_GEMMA_FREE    = "google/gemma-2-9b-it:free";
+const OR_QWEN_FREE     = "qwen/qwen-2.5-72b-instruct:free";
+const OR_MINIMAX_FREE  = "minimax/minimax-m1:free";
+// Kimi 2.5 w/ 200K context — shines on long rate sheets + objection reasoning
+const OR_KIMI_2_5      = "moonshotai/moonshot-v1-128k";
 
 // ─── TIER CONFIG ─────────────────────────────────────────────────────────────
 const TIER_LEVEL: Record<string,number> = { starter:0, pro:1, enterprise:2 };
@@ -34,24 +40,53 @@ const TIER_CASCADE_CUTOFF: Record<string,number> = { starter:1, pro:5, enterpris
 
 function getFeatureRoute(feature: string, tier: string, isSuperAdmin: boolean): { provider:string; model:string } {
   const level = TIER_LEVEL[tier] || 0;
-  const premium = level >= 2 || isSuperAdmin;
+  const isPro = level >= 1;
+  const isEnterprise = level >= 2 || isSuperAdmin;
+
+  // Super-admin lane: Kimi 2.5 for reasoning, Gemini for parsing
   if (isSuperAdmin) {
     switch (feature) {
       case "document_parse": case "rate_sheet":
         return { provider:"openrouter", model:OR_GEMINI_MODEL };
+      case "heygen_script":
+        return { provider:"openrouter", model:OR_CLAUDE_MODEL };
       default:
-        return { provider:"openrouter", model:OR_KIMI_MODEL };
+        return { provider:"openrouter", model:OR_KIMI_2_5 };
     }
   }
+
   switch (feature) {
-    case "sms_reply": case "note_taker": case "call_script":
-      return premium ? { provider:"anthropic", model:CLAUDE_HAIKU } : { provider:"gemini", model:"gemini-2.0-flash" };
-    case "deal_analysis": case "ezra_copilot": case "objection": case "prompt_improver": case "campaign_generation":
-      return premium ? { provider:"anthropic", model:CLAUDE_SONNET } : { provider:"gemini", model:"gemini-2.0-flash" };
+    // Structured parsing — Gemini Flash is the cheapest/fastest structured-output
+    // model and stays across all tiers. This is the SAFE path for PII-adjacent work.
     case "document_parse": case "rate_sheet":
       return { provider:"gemini", model:"gemini-2.0-flash" };
+
+    // High-value reasoning / objection handling / NEPQ reframe
+    // Enterprise → Claude Sonnet 4.5; Pro → Kimi 2.5 (200K ctx); Starter → Gemini Flash
+    case "deal_analysis": case "ezra_copilot": case "objection":
+    case "prompt_improver": case "campaign_generation":
+      if (isEnterprise) return { provider:"anthropic", model:CLAUDE_SONNET };
+      if (isPro)        return { provider:"openrouter", model:OR_KIMI_2_5 };
+      return { provider:"gemini", model:"gemini-2.0-flash" };
+
+    // HeyGen script — Enterprise-only feature, Claude Sonnet for the prose quality
+    case "heygen_script":
+      return isEnterprise
+        ? { provider:"anthropic", model:CLAUDE_SONNET }
+        : { provider:"gemini", model:"gemini-2.0-flash" }; // fallback if accidentally called
+
+    // Quick SMS/notes/call-scripts — cheap lane
+    // Enterprise → Claude Haiku (premium quick); Pro → Qwen/MiniMax free; Starter → Gemma free
+    case "sms_reply": case "note_taker": case "call_script":
+      if (isEnterprise) return { provider:"anthropic", model:CLAUDE_HAIKU };
+      if (isPro)        return { provider:"openrouter", model:OR_QWEN_FREE };
+      return { provider:"openrouter", model:OR_GEMMA_FREE };
+
+    // Default (general chat) — same ladder as SMS
     default:
-      return premium ? { provider:"anthropic", model:CLAUDE_HAIKU } : { provider:"gemini", model:"gemini-2.0-flash" };
+      if (isEnterprise) return { provider:"anthropic", model:CLAUDE_HAIKU };
+      if (isPro)        return { provider:"openrouter", model:OR_MINIMAX_FREE };
+      return { provider:"openrouter", model:OR_GEMMA_FREE };
   }
 }
 
@@ -69,6 +104,8 @@ const COST_PER_1M: Record<string,{input:number;output:number}> = {
 
 const CASCADE_ORDER = [
   { name:"gemini",     model:"gemini-2.0-flash",          url:"" },
+  { name:"openrouter", model:OR_QWEN_FREE,                url:OR_BASE_URL },  // Qwen 72B free via OpenRouter
+  { name:"openrouter", model:OR_GEMMA_FREE,               url:OR_BASE_URL },  // Gemma 2 9B free via OpenRouter
   { name:"groq",       model:"llama-3.3-70b-versatile",   url:"" },
   { name:"kimi",       model:"moonshot-v1-8k",            url:"https://api.moonshot.cn/v1/chat/completions" },
   { name:"perplexity", model:"sonar",                     url:"https://api.perplexity.ai/chat/completions" },

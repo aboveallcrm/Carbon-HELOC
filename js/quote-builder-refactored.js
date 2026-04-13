@@ -14,7 +14,9 @@
         rates: null,
         recommendation: null,
         leads: [],
-        isOpen: false
+        isOpen: false,
+        snapshot: null,     // Figure DealSnapshot when imported
+        offerGrid: null     // Parsed offer grid { tiers: [{originationPct, cells[]}] }
     };
 
     // Demo leads data
@@ -34,8 +36,20 @@
         ]
     };
 
+    // Check if user has Pro+ tier (Quote Builder is Pro/Enterprise only)
+    function hasProTier() {
+        const tier = (window.currentUserTier || 'starter').toLowerCase();
+        const level = ['starter', 'pro', 'enterprise'].indexOf(tier);
+        const effectiveLevel = (window.currentUserRole === 'super_admin') ? 2 : (level === -1 ? 0 : level);
+        return effectiveLevel >= 1;
+    }
+
     // Initialize
     function init() {
+        if (!hasProTier()) {
+            console.log('✗ Quote Builder disabled — Pro+ feature');
+            return;
+        }
         addFloatingButton();
         console.log('✓ Quote Builder initialized');
     }
@@ -62,6 +76,10 @@
 
     // Open quote builder
     function open() {
+        if (!hasProTier()) {
+            showToast('Quote Builder is a Pro feature. Please upgrade to access it.');
+            return;
+        }
         resetState();
         state.isOpen = true;
         render();
@@ -70,6 +88,7 @@
     // Close quote builder
     function close() {
         state.isOpen = false;
+        stopEzraRatePolling();
         const modal = document.getElementById('quote-builder-modal');
         if (modal) modal.remove();
     }
@@ -82,6 +101,8 @@
         state.rates = null;
         state.recommendation = null;
         state.leads = [];
+        state.snapshot = null;
+        state.offerGrid = null;
     }
 
     // Render entire modal
@@ -102,6 +123,13 @@
             </div>
         `;
         document.body.appendChild(modal);
+        
+        // Start/stop Ezra rate polling based on current step
+        if (state.step === 3) {
+            startEzraRatePolling();
+        } else {
+            stopEzraRatePolling();
+        }
     }
 
     // Render header
@@ -196,6 +224,12 @@
                         </div>
                     </div>
                     <div class="qb-form-row">
+                        <div class="qb-form-group" style="flex:1 1 100%;">
+                            <label>Email</label>
+                            <input type="email" id="client-email" value="${state.client.email || ''}" placeholder="client@example.com">
+                        </div>
+                    </div>
+                    <div class="qb-form-row">
                         <div class="qb-form-group">
                             <label>Credit Score</label>
                             <select id="client-credit">
@@ -230,12 +264,41 @@
         `;
     }
 
+    // Sticky client badge — shows on Steps 2–5 so LO always sees who they're quoting
+    function renderClientBadge() {
+        const c = state.client || {};
+        if (!c.name && !c.phone && !c.email) return '';
+        const parts = [];
+        if (c.phone) parts.push(`<a href="tel:${c.phone}" class="qb-cb-link">${c.phone}</a>`);
+        if (c.email) parts.push(`<a href="mailto:${c.email}" class="qb-cb-link">${c.email}</a>`);
+        return `
+            <div class="qb-client-badge">
+                <div class="qb-cb-name">Quote for <strong>${c.name || 'Client'}</strong></div>
+                ${parts.length ? `<div class="qb-cb-meta">${parts.join(' · ')}</div>` : ''}
+            </div>
+        `;
+    }
+
+    // Step 2 contact context — read-only, above property inputs
+    function renderContactReadonly() {
+        const c = state.client || {};
+        const bits = [];
+        if (c.creditScore) bits.push(`<span>Credit: <strong>${c.creditScore}</strong></span>`);
+        if (c.amount) bits.push(`<span>Cash needed: <strong>$${Number(c.amount).toLocaleString()}</strong></span>`);
+        if (c.purpose) bits.push(`<span>Purpose: <strong>${c.purpose}</strong></span>`);
+        if (!bits.length) return '';
+        return `<div class="qb-contact-readonly">${bits.join('')}</div>`;
+    }
+
     // Step 2: Property
     function renderStep2() {
         return `
             <div class="qb-step">
+                ${renderClientBadge()}
                 <h4>Step 2: Property & Equity</h4>
-                
+
+                ${renderContactReadonly()}
+
                 <div class="qb-form-section">
                     <div class="qb-form-group">
                         <label>Property Address</label>
@@ -285,36 +348,52 @@
 
     // Step 3: Rates
     function renderStep3() {
+        const hasEzraRates = checkEzraRates();
+        
         return `
             <div class="qb-step">
+                ${renderClientBadge()}
                 <h4>Step 3: Import Today's Rates</h4>
                 
-                <div class="qb-rate-options">
-                    <button class="qb-rate-option" onclick="QuoteBuilder.showRatePaste()">
-                        <span class="qb-rate-icon">📋</span>
-                        <h5>Paste Rate Sheet</h5>
-                        <p>From Figure or Nifty Door</p>
-                    </button>
-                    <button class="qb-rate-option" onclick="QuoteBuilder.goToStep(4)">
-                        <span class="qb-rate-icon">✓</span>
-                        <h5>Use Current Rates</h5>
-                        <p>From rate matrix</p>
-                    </button>
-                </div>
-                
-                <div id="rate-paste-area" class="qb-rate-paste-area" style="display: none;">
-                    <div class="qb-rate-instructions">
-                        <p><strong>How to copy from Figure:</strong></p>
+                ${hasEzraRates ? `
+                    <div class="qb-ezra-rates-ready">
+                        <span class="qb-check-icon">✓</span>
+                        <div>
+                            <strong>Ezra has rates loaded!</strong>
+                            <p>Rate sheet with all 3 origination tiers is ready to use.</p>
+                        </div>
+                        <button class="qb-btn-primary" onclick="QuoteBuilder.useEzraRates()">Use Ezra's Rates</button>
+                    </div>
+                ` : `
+                    <div class="qb-rate-options">
+                        <button class="qb-rate-option" onclick="QuoteBuilder.openEzraForRates()">
+                            <span class="qb-rate-icon">📋</span>
+                            <h5>Import via Ezra</h5>
+                            <p>Paste Figure rates in Ezra chat</p>
+                        </button>
+                        <button class="qb-rate-option" onclick="QuoteBuilder.goToStep(4)">
+                            <span class="qb-rate-icon">✓</span>
+                            <h5>Use Current Rates</h5>
+                            <p>From rate matrix</p>
+                        </button>
+                    </div>
+                    
+                    <div class="qb-ezra-instructions">
+                        <p><strong>How to import rates via Ezra:</strong></p>
                         <ol>
-                            <li>Open the PDF from your email</li>
-                            <li>Press <kbd>Ctrl+A</kbd> to select all</li>
-                            <li>Press <kbd>Ctrl+C</kbd> to copy</li>
-                            <li>Press <kbd>Ctrl+V</kbd> to paste below</li>
+                            <li>Click "Import via Ezra" above to open Ezra chat</li>
+                            <li>In Ezra, paste your Figure rate sheet (Ctrl+A, Ctrl+C, Ctrl+V)</li>
+                            <li>Ezra will parse all 3 origination fee tiers:
+                                <ul>
+                                    <li>4.99% origination</li>
+                                    <li>2.99% origination</li>
+                                    <li>1.5% origination</li>
+                                </ul>
+                            </li>
+                            <li>Return here and click "Use Ezra's Rates"</li>
                         </ol>
                     </div>
-                    <textarea id="rate-text" placeholder="Paste rate sheet here..."></textarea>
-                    <button class="qb-btn-primary" onclick="QuoteBuilder.parseRates()">Extract Rates</button>
-                </div>
+                `}
                 
                 <div class="qb-actions">
                     <button class="qb-btn-secondary" onclick="QuoteBuilder.goToStep(2)">← Back</button>
@@ -322,20 +401,161 @@
             </div>
         `;
     }
+    
+    // Check if Ezra has rates loaded
+    function checkEzraRates() {
+        // Check if Ezra's rate sheet matrix exists and has data
+        if (window.EzraState && window.EzraState.rateSheetMatrix) {
+            const matrix = window.EzraState.rateSheetMatrix;
+            return matrix.baseRates && Object.keys(matrix.baseRates).length > 0;
+        }
+        return false;
+    }
+    
+    // Poll for Ezra rates (called when Step 3 is rendered)
+    let ezraRatePollInterval = null;
+    
+    function startEzraRatePolling() {
+        // Clear any existing poll
+        if (ezraRatePollInterval) {
+            clearInterval(ezraRatePollInterval);
+        }
+        
+        // Poll every 2 seconds to check if Ezra has rates
+        ezraRatePollInterval = setInterval(() => {
+            if (state.step === 3 && checkEzraRates()) {
+                // Rates detected! Re-render Step 3 to show "Use Ezra's Rates" button
+                const stepContainer = document.querySelector('.qb-step');
+                if (stepContainer && !document.querySelector('.qb-ezra-rates-ready')) {
+                    // Only re-render if we haven't already shown the rates ready state
+                    render();
+                    showToast('✓ Ezra rates detected!');
+                }
+            }
+        }, 2000);
+    }
+    
+    function stopEzraRatePolling() {
+        if (ezraRatePollInterval) {
+            clearInterval(ezraRatePollInterval);
+            ezraRatePollInterval = null;
+        }
+    }
+    
+    // Open Ezra chat for rate import
+    function openEzraForRates() {
+        // Boost Ezra's z-index so it appears above the Quote Builder overlay (z-index: 10000)
+        const ezraWidget = document.getElementById('ezra-widget');
+        if (ezraWidget) {
+            ezraWidget.style.zIndex = '10010';
+        }
+        const ezraContainer = document.getElementById('ezra-container');
+        if (ezraContainer) {
+            ezraContainer.style.zIndex = '10010';
+        }
+        const ezraOrb = document.getElementById('ezra-orb');
+        if (ezraOrb) {
+            ezraOrb.style.zIndex = '10010';
+        }
+        
+        // Ensure Ezra is initialized
+        if (typeof window.Ezra !== 'undefined' && window.Ezra.open) {
+            window.Ezra.open();
+            
+            // Send message to Ezra prompting for rate paste
+            setTimeout(() => {
+                if (window.Ezra.sendMessage) {
+                    window.Ezra.sendMessage('Paste my Figure rate sheet');
+                }
+            }, 600);
+            
+            showToast('Ezra opened. Paste your Figure rate sheet there.');
+        } else {
+            // Fallback: try clicking the orb directly if Ezra API isn't ready
+            if (ezraOrb) {
+                ezraOrb.click();
+                showToast('Ezra opened. Paste your Figure rate sheet there.');
+            } else {
+                showToast('Ezra is still loading. Please wait a moment and try again.');
+                
+                // Retry once after 2 seconds
+                setTimeout(() => {
+                    if (typeof window.Ezra !== 'undefined' && window.Ezra.open) {
+                        window.Ezra.open();
+                        setTimeout(() => {
+                            if (window.Ezra.sendMessage) {
+                                window.Ezra.sendMessage('Paste my Figure rate sheet');
+                            }
+                        }, 600);
+                        showToast('Ezra opened. Paste your Figure rate sheet there.');
+                    } else {
+                        const orbRetry = document.getElementById('ezra-orb');
+                        if (orbRetry) {
+                            orbRetry.style.zIndex = '10010';
+                            orbRetry.click();
+                            showToast('Ezra opened. Paste your Figure rate sheet there.');
+                        } else {
+                            showToast('Could not open Ezra. Please open it manually from the floating orb.');
+                        }
+                    }
+                }, 2000);
+            }
+        }
+    }
+    
+    // Use Ezra's parsed rates
+    function useEzraRates() {
+        if (!checkEzraRates()) {
+            showToast('No rates found in Ezra. Please paste rate sheet in Ezra first.');
+            return;
+        }
+        
+        // Copy Ezra's rates to our state
+        const matrix = window.EzraState.rateSheetMatrix;
+        state.rates = {
+            source: 'ezra',
+            matrix: matrix,
+            timestamp: Date.now()
+        };
+        
+        showToast('✓ Rates imported from Ezra!');
+        goToStep(4);
+    }
 
     // Step 4: Recommendation
     function renderStep4() {
         const rec = calculateRecommendation();
         state.recommendation = rec;
-        
+
+        // Snapshot banner — only appears when opened via openWithSnapshot()
+        let snapshotBanner = '';
+        if (state.snapshot && state.offerGrid) {
+            const tierCount = state.offerGrid.tiers.length;
+            const tierPcts = state.offerGrid.tiers.map(t => `${t.originationPct}%`).join(' · ');
+            const hint = tierCount < 3
+                ? `<span style="color:#b45309;">Figure offered ${tierCount} origination option${tierCount === 1 ? '' : 's'} for this borrower.</span>`
+                : '';
+            snapshotBanner = `
+                <div class="qb-snapshot-banner">
+                    <span>📄 <strong>Imported from Figure</strong> — ${tierPcts} ${hint}</span>
+                    <button onclick="QuoteBuilder.goToStep(1)" class="qb-btn-link">Edit inputs</button>
+                </div>
+            `;
+        }
+
+        const typeLabel = rec.type === 'variable' ? 'Variable' : 'Fixed';
+
         return `
             <div class="qb-step">
+                ${renderClientBadge()}
                 <h4>Step 4: Recommendation</h4>
-                
+
+                ${snapshotBanner}
+
                 <div class="qb-recommendation-card">
                     <div class="qb-rec-badge">🏆 RECOMMENDED</div>
-                    <h5>Tier ${rec.tier} - ${rec.term} Year Fixed @ ${rec.rate}%</h5>
-                    
+                    <h5>Tier ${rec.tier} - ${rec.term} Year ${typeLabel} @ ${rec.rate}%</h5>
+
                     <div class="qb-rec-numbers">
                         <div class="qb-rec-number">
                             <span class="qb-rec-label">Monthly Payment</span>
@@ -347,11 +567,15 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="qb-actions">
-                    <button class="qb-btn-secondary" onclick="QuoteBuilder.goToStep(3)">← Back</button>
+                    <button class="qb-btn-secondary" onclick="QuoteBuilder.goToStep(${state.snapshot ? 1 : 3})">← Back</button>
+                    <button class="qb-btn-action qb-btn-share" onclick="QuoteBuilder.shareQuote()">
+                        <span>🔗</span> Share Quote with Client
+                    </button>
                     <button class="qb-btn-primary" onclick="QuoteBuilder.goToStep(5)">Continue →</button>
                 </div>
+                <div id="qb-share-result" style="display:none; margin-top:12px;"></div>
             </div>
         `;
     }
@@ -362,6 +586,7 @@
         
         return `
             <div class="qb-step">
+                ${renderClientBadge()}
                 <h4>Step 5: Generate & Present</h4>
                 
                 <div class="qb-quote-summary">
@@ -381,6 +606,10 @@
                     <button class="qb-btn-action" onclick="QuoteBuilder.saveQuote()">
                         <span>✓</span> Save Quote
                     </button>
+                    <button class="qb-btn-action qb-btn-share" onclick="QuoteBuilder.shareQuote()">
+                        <span>🔗</span> Share Quote (PDF + Link)
+                    </button>
+                    <div id="qb-share-result" style="display:none; margin-top:12px;"></div>
                 </div>
                 
                 <div class="qb-actions">
@@ -404,6 +633,7 @@
             state.client = {
                 name: document.getElementById('client-name')?.value || '',
                 phone: document.getElementById('client-phone')?.value || '',
+                email: document.getElementById('client-email')?.value || (state.client && state.client.email) || '',
                 creditScore: parseInt(document.getElementById('client-credit')?.value) || '',
                 amount: parseFloat(document.getElementById('client-amount')?.value) || '',
                 purpose: document.querySelector('input[name="purpose"]:checked')?.value || ''
@@ -567,17 +797,258 @@
 
     // Calculate recommendation
     function calculateRecommendation() {
-        const amount = state.client.amount || 75000;
-        
+        const amount = parseFloat(state.client.amount) || 75000;
+
+        // If a Figure snapshot offer grid is present, pick the real best cell.
+        // Strategy: choose the LOWEST origination tier, 20yr fixed (or closest term ≤20), matching the loan amount band.
+        if (state.offerGrid && state.offerGrid.tiers && state.offerGrid.tiers.length) {
+            // Lowest origination % = best long-term value for most borrowers
+            const preferredTier = [...state.offerGrid.tiers].sort((a, b) => a.originationPct - b.originationPct)[0];
+            const tierIdx = state.offerGrid.tiers.indexOf(preferredTier) + 1;
+            // Pick the cell whose band contains the amount, fixed, 20yr (or fallback)
+            const inBand = (c) => (!c.minAmt || amount >= c.minAmt) && (!c.maxAmt || amount <= c.maxAmt);
+            const prefTerm = 20;
+            let cell = preferredTier.cells.find(c => c.type === 'fixed' && c.term === prefTerm && inBand(c));
+            if (!cell) {
+                // Fallback: any fixed in band, shortest term
+                cell = preferredTier.cells
+                    .filter(c => c.type === 'fixed' && inBand(c))
+                    .sort((a, b) => a.term - b.term)[0];
+            }
+            if (!cell) {
+                // Last fallback: first cell available
+                cell = preferredTier.cells[0];
+            }
+            if (cell) {
+                const r = parseFloat(cell.rate);
+                // Simple interest-only approximation for quick display; full amortization handled elsewhere
+                const payment = Math.round(amount * (r / 100) / 12);
+                return {
+                    tier: String(tierIdx),
+                    term: cell.term,
+                    rate: r.toFixed(2),
+                    orig: preferredTier.originationPct.toFixed(2),
+                    payment,
+                    type: cell.type,
+                    source: 'figure_snapshot'
+                };
+            }
+        }
+
+        // Fallback demo logic for non-snapshot flow
         let tier = '2', rate = '6.375', orig = '1.5';
-        
         if (amount > 100000) { tier = '1'; rate = '5.125'; orig = '2.0'; }
         else if (amount < 50000) { tier = '3'; rate = '7.125'; orig = '0.0'; }
-        
         const payment = Math.round(amount * (parseFloat(rate) / 100) / 12);
-        
         return { tier, term: 20, rate, orig, payment };
     }
+
+    // Build the quote_data payload that client-quote.html expects.
+    // Mirrors the shape produced by AboveAllCarbon_HELOC_v12_FIXED.html generateClientLink().
+    function buildQuoteDataForShare() {
+        const rec = state.recommendation || calculateRecommendation();
+        const c = state.client || {};
+        const p = state.property || {};
+        return {
+            clientName: c.name || '',
+            clientEmail: c.email || '',
+            clientPhone: c.phone || '',
+            creditScore: c.creditScore || '',
+            propertyAddress: p.address || '',
+            propertyType: 'Primary residence',
+            homeValue: String(p.value || ''),
+            maxQualCash: parseFloat(c.amount) || 0,
+            mortgageBalance: String(p.mortgage || ''),
+            helocPayoff: '0',
+            cashBack: String(c.amount || ''),
+            cltv: p.value ? (((parseFloat(p.mortgage || 0) + parseFloat(c.amount || 0)) / parseFloat(p.value)) * 100).toFixed(2) : '',
+            totalLoan: String(c.amount || ''),
+            rate: String(rec.rate),
+            term: rec.term,
+            payment: String(rec.payment),
+            origination: String(rec.orig),
+            recType: rec.type === 'variable' ? 'variable' : 'fixed',
+            recTier: 't' + (rec.tier || '2'),
+            recTerm: String(rec.term),
+            rec2Enabled: false,
+            showVariable: false,
+            showIO: false,
+            date: new Date().toLocaleDateString(),
+            // Source marker so client-quote.html can render the Figure snapshot banner if desired
+            source: state.snapshot ? 'figure_snapshot' : 'manual',
+            linkOptions: {
+                showLoInfo: true,
+                showAiChat: false,  // LO-only — scripts never reach client per plan rule
+                showApply: true,
+                showVideo: false,
+                videoUrl: '',
+                showSalesPsych: true,
+                preset: 'original',
+                showFees: true,
+                showBestOfBoth: true,
+                showVsAlternatives: true,
+                recTierDisplay: 'rec'
+            }
+        };
+    }
+
+    // Pull LO info from profiles so client-quote.html has the LO card data.
+    async function fetchLoInfoSnapshot() {
+        const sb = window._supabase;
+        const userId = window.currentUserId;
+        if (!sb || !userId) return {};
+        try {
+            const { data } = await sb.from('profiles').select('*').eq('id', userId).maybeSingle();
+            if (!data) return {};
+            // Map profile columns into the lo_info shape client-quote.html reads.
+            return {
+                name: data.lo_name || data.full_name || window.currentUserEmail || '',
+                title: data.lo_title || 'Loan Officer',
+                email: data.lo_email || window.currentUserEmail || '',
+                phone: data.lo_phone || '',
+                nmls: data.lo_nmls || '',
+                coNmls: data.company_nmls || '',
+                company: data.company_name || data.lender_name || '',
+                lenderName: data.lender_name || data.company_name || '',
+                companyLogo: data.company_logo_url || '',
+                headshotUrl: data.lo_headshot_url || data.avatar_url || '',
+                calendarLink: data.lo_calendar_link || '',
+                bio: data.lo_bio || '',
+                googleRating: data.google_rating || '',
+                reviewLink: data.review_link || '',
+                dre: data.lo_dre || ''
+            };
+        } catch (err) {
+            console.warn('[QB] fetchLoInfoSnapshot failed:', err);
+            return {};
+        }
+    }
+
+    // Ensure a share result container exists in the DOM regardless of which step the LO triggers share from
+    function _ensureShareResultEl() {
+        let el = document.getElementById('qb-share-result');
+        if (el) {
+            el.style.display = 'block';
+            return el;
+        }
+        // Not on current step — inject a floating panel into the QB modal body as a fallback
+        const modalBody = document.querySelector('#quote-builder-modal .qb-body') || document.querySelector('#quote-builder-modal .quote-builder-modal') || document.body;
+        el = document.createElement('div');
+        el.id = 'qb-share-result';
+        el.style.cssText = 'margin:16px 20px; display:block;';
+        modalBody.appendChild(el);
+        return el;
+    }
+
+    // Share quote — insert quote_links row, create short link, copy URL to clipboard
+    async function shareQuote() {
+        console.log('[QB] shareQuote called. state:', state, 'supabase:', !!window._supabase, 'userId:', window.currentUserId);
+        const sb = window._supabase;
+        const userId = window.currentUserId;
+        const resultEl = _ensureShareResultEl();
+
+        if (!sb) {
+            const msg = '❌ Supabase client not loaded (window._supabase is missing). Check that main.js finished loading and auth initialized.';
+            resultEl.innerHTML = `<div class="qb-share-error">${msg}</div>`;
+            console.error('[QB]', msg);
+            showToast('Share: Supabase not ready');
+            return;
+        }
+        if (!userId) {
+            const msg = '❌ Not authenticated (window.currentUserId missing). Log in and try again.';
+            resultEl.innerHTML = `<div class="qb-share-error">${msg}</div>`;
+            console.error('[QB]', msg);
+            showToast('Share: not authenticated');
+            return;
+        }
+
+        resultEl.innerHTML = '<div class="qb-share-loading">🔗 Generating share link…</div>';
+
+        try {
+            const quoteData = buildQuoteDataForShare();
+            console.log('[QB] shareQuote built quoteData:', quoteData);
+            const loInfo = await fetchLoInfoSnapshot();
+            const code = Math.random().toString(36).substring(2, 10);
+
+            // Insert quote_links row
+            const insertObj = {
+                code,
+                user_id: userId,
+                quote_data: quoteData,
+                lo_info: loInfo,
+                lo_tier: window.currentUserTier || 'starter'
+            };
+            console.log('[QB] inserting quote_links:', insertObj);
+            const { error: insErr } = await sb.from('quote_links').insert(insertObj);
+            if (insErr) {
+                console.error('[QB] quote_links insert error:', insErr);
+                throw insErr;
+            }
+
+            // Build raw URL
+            const baseUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
+            const rawLink = baseUrl + 'client-quote.html?id=' + code;
+            console.log('[QB] raw link:', rawLink);
+
+            // Try to shorten via RPC (reuses the proven create_short_link function)
+            let finalUrl = rawLink;
+            try {
+                const { data: shortData, error: shortErr } = await sb.rpc('create_short_link', {
+                    p_destination_url: rawLink,
+                    p_title: 'HELOC Quote - ' + (quoteData.clientName || 'Client'),
+                    p_category: 'quote',
+                    p_domain: 'go.aboveallcrm.com',
+                    p_user_id: userId,
+                    p_utm_source: 'carbon_heloc',
+                    p_utm_medium: 'quote_link',
+                    p_utm_campaign: 'qb_share'
+                });
+                if (shortErr) console.warn('[QB] create_short_link RPC error:', shortErr);
+                if (shortData && shortData.length > 0 && shortData[0].out_short_url) {
+                    finalUrl = shortData[0].out_short_url;
+                    await sb.from('quote_links')
+                        .update({ short_link_id: shortData[0].out_id, short_url: finalUrl })
+                        .eq('code', code);
+                }
+            } catch (shortErr) {
+                console.warn('[QB] short link failed, using raw URL:', shortErr);
+            }
+
+            // Copy to clipboard
+            let copied = false;
+            try {
+                await navigator.clipboard.writeText(finalUrl);
+                copied = true;
+            } catch {}
+
+            // Render result block
+            const esc = s => String(s).replace(/[<>&"]/g, c => ({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;' }[c]));
+            resultEl.innerHTML = `
+                <div class="qb-share-result">
+                    <div class="qb-share-title">✅ Quote link ready${copied ? ' — copied to clipboard' : ''}</div>
+                    <div class="qb-share-url">
+                        <input type="text" readonly value="${esc(finalUrl)}" onclick="this.select()">
+                        <button class="qb-btn-link" onclick="navigator.clipboard.writeText('${esc(finalUrl)}').then(()=>QuoteBuilder._toastCopied())">Copy</button>
+                    </div>
+                    <div class="qb-share-actions">
+                        <a href="${esc(finalUrl)}" target="_blank" rel="noopener" class="qb-btn-link">👁️ Preview</a>
+                        ${quoteData.clientEmail ? `<a href="mailto:${esc(quoteData.clientEmail)}?subject=${encodeURIComponent('Your HELOC Quote')}&body=${encodeURIComponent('Hi ' + (quoteData.clientName || '') + ',\n\nHere is your personalized HELOC quote:\n' + finalUrl + '\n\nLet me know if you have any questions.')}" class="qb-btn-link">✉️ Email to Client</a>` : ''}
+                        ${quoteData.clientPhone ? `<a href="sms:${esc(quoteData.clientPhone)}?body=${encodeURIComponent('Your HELOC quote: ' + finalUrl)}" class="qb-btn-link">💬 Text to Client</a>` : ''}
+                    </div>
+                </div>
+            `;
+            // Scroll result into view — the LO shouldn't have to hunt for it
+            try { resultEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch {}
+            showToast('Share link ready!');
+            console.log('[QB] share complete. URL:', finalUrl);
+        } catch (err) {
+            console.error('[QB] shareQuote failed:', err);
+            resultEl.innerHTML = `<div class="qb-share-error">❌ ${err.message || 'Failed to generate share link'}<br><small>Check browser console for details.</small></div>`;
+            showToast('Share failed — check console.');
+        }
+    }
+
+    function _toastCopied() { showToast('Copied!'); }
 
     // Save quote
     function saveQuote() {
@@ -607,9 +1078,56 @@
     }
 
     // Expose public API
+    // Open directly from a Figure DealSnapshot — pre-fills client + property + offer grid,
+    // skips Steps 1–3 and lands on Step 4 (Recommendation).
+    function openWithSnapshot(snap) {
+        console.log('[QuoteBuilder.openWithSnapshot] called with:', snap, 'tier:', window.currentUserTier, 'role:', window.currentUserRole);
+        if (!hasProTier()) {
+            console.warn('[QuoteBuilder] blocked by tier gate — user tier:', window.currentUserTier, 'role:', window.currentUserRole);
+            showToast('Quote Builder is a Pro feature. Please upgrade to access it.');
+            return;
+        }
+        if (!snap) {
+            showToast('No snapshot provided.');
+            return;
+        }
+        resetState();
+        state.snapshot = snap;
+
+        const b = snap.borrower || {};
+        const p = snap.property || {};
+        const lien = snap.lien || {};
+        const maxLoanFromGrid = (snap.offerGrid?.tiers?.[0]?.cells || [])
+            .reduce((m, c) => Math.max(m, c.maxAmt || 0), 0);
+
+        state.client = {
+            name: b.name || '',
+            phone: b.phone || '',
+            email: b.email || '',
+            creditScore: b.fico || '',
+            amount: maxLoanFromGrid || '',
+            purpose: '' // Figure app doesn't capture this — LO picks on Step 5
+        };
+
+        state.property = {
+            address: p.address || '',
+            value: p.avm || '',
+            mortgage: lien.currentBalance || ''
+        };
+
+        state.offerGrid = snap.offerGrid || null;
+        state.rates = { source: 'figure_snapshot', matrix: state.offerGrid, timestamp: Date.now() };
+
+        state.isOpen = true;
+        state.step = 4; // Jump straight to Recommendation
+        render();
+        showToast('Figure snapshot imported — review recommendation.');
+    }
+
     window.QuoteBuilder = {
         init,
         open,
+        openWithSnapshot,
         close,
         goToStep,
         loadLeads,
@@ -618,8 +1136,12 @@
         parseBrokerEmail,
         showRatePaste,
         parseRates,
+        openEzraForRates,
+        useEzraRates,
         calculateEquity,
-        saveQuote
+        saveQuote,
+        shareQuote,
+        _toastCopied
     };
 
     // Auto-init

@@ -1249,9 +1249,23 @@
 
         .rate-table td {
             padding: 14px 20px;
-            border-bottom: 1px solid rgba(15, 43, 76, 0.04);
-            color: var(--font-color);
-            font-weight: 500;
+            border-bottom: 1px solid rgba(15, 43, 76, 0.08);
+            background: #ffffff;
+            color: #0f172a;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background-color 0.15s ease, transform 0.15s ease;
+        }
+        .rate-table tr:not(.recommended):not(.recommended-alt):not(.rate-detail-tr):hover td {
+            background: #f8fafc;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(15, 43, 76, 0.06);
+        }
+        /* Ensure th stays legible on accent-colored headers */
+        .rate-table th {
+            color: #0f172a;
+            background: #f1f5f9;
+            opacity: 1;
         }
 
         .rate-table tr.recommended {
@@ -8462,9 +8476,25 @@
         }
         #template-original .orig-header {
             text-align: center;
-            padding-bottom: 24px;
-            margin-bottom: 28px;
-            border-bottom: 2px solid #c5a059;
+            padding: 26px 40px;
+            margin: -40px -50px 28px -50px;
+            border-bottom: 3px solid #c5a059;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 6px 6px 0 0;
+            color: #ffffff;
+            position: relative;
+        }
+        #template-original .orig-header .orig-brand {
+            color: #c5a059;
+            font-size: 22px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        #template-original .orig-header .orig-subtitle {
+            color: rgba(255,255,255,0.75);
+            font-size: 10px;
+            letter-spacing: 3px;
         }
         #template-original .orig-brand {
             font-family: var(--font-heading, 'Playfair Display', serif);
@@ -8665,6 +8695,54 @@
             color: #94a3b8;
             line-height: 1.5;
             text-align: center;
+        }
+
+        /* ─── West Capital mockup polish (2026-04) ─── */
+        /* Rate cells lift on hover for tactile feel */
+        #template-original .orig-rate-table td {
+            transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+            cursor: default;
+        }
+        #template-original .orig-rate-table tr:hover td:not(.orig-rate-label) {
+            background: rgba(197,160,89,0.08);
+        }
+        #template-original .orig-rate-table td.sweet-spot,
+        #template-original .orig-rate-table td[data-sweet-spot="true"] {
+            background: linear-gradient(135deg, rgba(197,160,89,0.22), rgba(197,160,89,0.12));
+            border: 2px solid #c5a059;
+            color: #8b6914;
+            font-weight: 700;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(197,160,89,0.25);
+        }
+        #template-original .orig-rate-table td.sweet-spot::after {
+            content: '★';
+            position: absolute;
+            top: -6px;
+            right: -4px;
+            font-size: 10px;
+            color: #c5a059;
+        }
+        /* Prominent "Important Disclosure" strip — amber bordered, eye-catching but not alarming */
+        #template-original .orig-important-disclosure {
+            margin-top: 28px;
+            padding: 14px 18px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+            border: 1px solid #fcd34d;
+            border-left: 4px solid #d97706;
+            border-radius: 6px;
+            font-size: 10px;
+            line-height: 1.6;
+            color: #78350f;
+        }
+        #template-original .orig-important-disclosure .imp-title {
+            font-family: var(--font-heading, 'Playfair Display', serif);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #92400e;
+            margin-bottom: 6px;
+            font-weight: 700;
         }
 
         /* === West Capital proposal layout additions === */
@@ -10714,7 +10792,7 @@
                 .eq('code', code)
                 .limit(1)
                 .maybeSingle()
-                .then(function (res) {
+                .then(async function (res) {
                 if (res.error) {
                     console.error('Database error loading quote:', res.error);
                     showError(
@@ -10745,7 +10823,48 @@
 
                 sb.rpc('increment_quote_view', { p_code: code }).then(function () { });
                 window._quoteExpiry = link.expires_at || null;
-                renderQuote(link.quote_data, link.lo_info || {}, link.user_id, link.lead_id);
+
+                // Stale-snapshot refresh: if the LO updated their profile (phone, headshot, NMLS)
+                // after this link was created, pull the current profile and merge it over the
+                // frozen snapshot. Snapshot stays as fallback if the fetch fails.
+                // This prevents old quote links from showing stale LO contact info.
+                var _freshLoInfo = link.lo_info || {};
+                try {
+                    var freshProfile = null;
+                    try {
+                        var profRes = await sb.from('profiles').select('*').eq('id', link.user_id).maybeSingle();
+                        freshProfile = profRes && profRes.data ? profRes.data : null;
+                    } catch (pErr) { /* fetch fails silently — fall back to snapshot */ }
+                    if (freshProfile) {
+                        var mapped = {
+                            name: freshProfile.lo_name || freshProfile.full_name || _freshLoInfo.name || '',
+                            title: freshProfile.lo_title || _freshLoInfo.title || 'Loan Officer',
+                            email: freshProfile.lo_email || _freshLoInfo.email || '',
+                            phone: freshProfile.lo_phone || _freshLoInfo.phone || '',
+                            nmls: freshProfile.lo_nmls || _freshLoInfo.nmls || '',
+                            coNmls: freshProfile.company_nmls || _freshLoInfo.coNmls || '',
+                            company: freshProfile.company_name || freshProfile.lender_name || _freshLoInfo.company || '',
+                            lenderName: freshProfile.lender_name || freshProfile.company_name || _freshLoInfo.lenderName || '',
+                            companyLogo: freshProfile.company_logo_url || _freshLoInfo.companyLogo || '',
+                            headshotUrl: freshProfile.lo_headshot_url || freshProfile.avatar_url || _freshLoInfo.headshotUrl || '',
+                            calendarLink: freshProfile.lo_calendar_link || _freshLoInfo.calendarLink || '',
+                            bio: freshProfile.lo_bio || _freshLoInfo.bio || '',
+                            googleRating: freshProfile.google_rating || _freshLoInfo.googleRating || '',
+                            reviewLink: freshProfile.review_link || _freshLoInfo.reviewLink || '',
+                            dre: freshProfile.lo_dre || _freshLoInfo.dre || '',
+                            tier: freshProfile.tier || _freshLoInfo.tier || link.lo_tier || 'starter'
+                        };
+                        // Only overwrite fields that have actual values in the fresh profile
+                        // (so empty columns don't wipe out the frozen snapshot values)
+                        Object.keys(mapped).forEach(function (k) {
+                            if (mapped[k] !== undefined && mapped[k] !== null && mapped[k] !== '') {
+                                _freshLoInfo[k] = mapped[k];
+                            }
+                        });
+                    }
+                } catch (e) { console.warn('[client-quote] LO snapshot refresh failed, using frozen lo_info:', e); }
+
+                renderQuote(link.quote_data, _freshLoInfo, link.user_id, link.lead_id);
                 trackEvent('quote_opened', { code: code });
 
                 // Restore per-quote language preference (not global — avoids leaking between clients)
@@ -10773,6 +10892,22 @@
                     } catch (e) {
                         console.warn('Visual enhancement error:', e);
                     }
+
+                    // Client-side polish injected by plan:
+                    // 1) Decorate jargon labels with tooltips (uses existing .tooltip CSS)
+                    // 2) Hide Ezra widget entirely when LO is on Starter tier
+                    // 3) Regression guard: verify Equal Housing Lender logo renders
+                    try { decorateClientQuoteTooltips(); } catch (e) { console.warn('tooltip decoration failed:', e); }
+                    try {
+                        if (loTier === 'starter') {
+                            var ezraEls = document.querySelectorAll('#ezra-widget, #ezra-container, #ezra-orb');
+                            ezraEls.forEach(function (el) { el.style.display = 'none'; });
+                        }
+                    } catch (e) { console.warn('Ezra gate failed:', e); }
+                    try {
+                        var ehl = document.querySelector('img[src*="equal-housing"]');
+                        if (!ehl) console.warn('[regression] Equal Housing Lender logo missing from DOM — check template.');
+                    } catch (e) {}
 
                     // ── TITANIUM+ (level >= 1): Interactive calculators ──
                     if (tierLevel >= 1) {
@@ -10988,6 +11123,49 @@
             }
 
             // ===== RENDERING =====
+            // Decorate jargon-heavy labels with tooltips so clients understand HELOC terms
+            // without a phone call. Uses the existing .tooltip CSS pattern (data-tooltip attr).
+            function decorateClientQuoteTooltips() {
+                var TOOLTIP_MAP = [
+                    { match: /^\s*CLTV\s*$/i, tip: 'Combined Loan-to-Value — the % of your home\'s value that\'s loaned (existing mortgage + new HELOC). Most lenders cap at 85%.' },
+                    { match: /Proposed\s*CLTV/i, tip: 'Your CLTV if you take the full HELOC amount shown.' },
+                    { match: /Origination\s*(Points|Fee)/i, tip: 'One-time fee at closing. Higher fee = lower rate, lower fee = higher rate. Math out the break-even based on how long you\'ll hold the loan.' },
+                    { match: /Interest\s*Rate/i, tip: 'The annual rate charged on your HELOC balance. Fixed rates stay constant; variable rates adjust with the Prime Rate.' },
+                    { match: /Interest[-\s]*Only|^IO$/i, tip: 'You pay only the interest for the draw period (typically 5-10 years), then principal + interest. Lower starting payment, higher total cost if carried full term.' },
+                    { match: /Draw\s*Period/i, tip: 'The window during which you can pull funds from the HELOC. After it closes, repayment-only.' },
+                    { match: /Estimated\s*Monthly\s*Payment|^Your\s*Payment$/i, tip: 'Based on the selected rate, term, and loan amount. Actual payment may vary based on final underwriting.' },
+                    { match: /Estimated\s*Home\s*Value|AVM|Home\s*Value/i, tip: 'Automated Valuation Model — an estimate based on comparable sales. Final value confirmed by appraisal.' },
+                    { match: /HELOC\s*Amount/i, tip: 'The total cash you can draw from this home equity line of credit.' },
+                    { match: /Current\s*Mortgage/i, tip: 'The remaining balance on your primary mortgage. This stays in place; the HELOC is a second lien.' },
+                    { match: /Loan\s*Term/i, tip: 'The length of the repayment period in years. Shorter terms = higher monthly payment, less total interest paid.' }
+                ];
+
+                // Scan all short label elements (avoid paragraphs) and wrap matching text in a tooltip span
+                var LABEL_SELECTORS = [
+                    '.dg-label', '.min-block-label', '.orig-block-label', '.ps-result-label',
+                    '.eq-vn-label', '.ed-label', '.summary-label', '.label'
+                ];
+                var candidates = document.querySelectorAll(LABEL_SELECTORS.join(','));
+                candidates.forEach(function (el) {
+                    // Skip if already decorated
+                    if (el.querySelector('.tooltip')) return;
+                    var text = (el.textContent || '').trim();
+                    if (!text || text.length > 40) return;
+                    for (var i = 0; i < TOOLTIP_MAP.length; i++) {
+                        if (TOOLTIP_MAP[i].match.test(text)) {
+                            // Append a small info icon with the tooltip — leaves existing label text untouched
+                            var tip = document.createElement('span');
+                            tip.className = 'tooltip';
+                            tip.setAttribute('data-tooltip', TOOLTIP_MAP[i].tip);
+                            tip.style.cssText = 'display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; margin-left:6px; border-radius:50%; background:rgba(148,163,184,0.2); color:#64748b; font-size:11px; font-weight:700; cursor:help; position:relative;';
+                            tip.textContent = 'ⓘ';
+                            el.appendChild(tip);
+                            break;
+                        }
+                    }
+                });
+            }
+
             function renderQuote(data, lo, userId, leadId) {
                 _userId = userId;
                 _leadId = leadId;
@@ -17458,6 +17636,7 @@
 
                 function startTour() {
                     tourActive = true; tourStep = 0;
+                    console.log('[tour] startTour — steps:', tourSteps.map(function(s){ return s.label + ' → ' + s.target; }));
                     showTourExitBtn();
                     // Compact Ezra on mobile so tour content is visible
                     if (window.innerWidth < 768) {
@@ -17534,19 +17713,65 @@
                 }
 
                 function highlightSection(selector) {
-                    var target = document.querySelector(selector);
                     var hl = document.getElementById('eq-tour-hl');
-                    if (!target || !hl) return;
+                    if (!hl) { console.warn('[tour] highlight element missing'); return; }
+
+                    var target = document.querySelector(selector);
+                    console.log('[tour] highlighting:', selector, '→ target:', target);
+
+                    // If target missing or hidden, try the mapped alternative for the active preset
+                    function isUsable(el) {
+                        if (!el) return false;
+                        var cs = window.getComputedStyle(el);
+                        if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+                        var r = el.getBoundingClientRect();
+                        return r.width > 0 && r.height > 0;
+                    }
+
+                    if (!isUsable(target) && typeof window.resolveTourTarget === 'function') {
+                        var remapped = window.resolveTourTarget(selector);
+                        if (remapped && remapped !== selector) {
+                            target = document.querySelector(remapped);
+                            console.log('[tour] remapped', selector, '→', remapped, 'target:', target);
+                        }
+                    }
+
+                    // Last-resort: pick the nearest visible ancestor or fallback to the enhanced content
+                    if (!isUsable(target)) {
+                        target = document.getElementById('enhanced-content')
+                              || document.querySelector('.quote-wrapper')
+                              || document.body;
+                        console.warn('[tour] target not usable, falling back to', target);
+                    }
+
+                    // Expand any collapsed <details> ancestors so highlight actually lands on something visible
+                    var cur = target;
+                    while (cur && cur !== document.body) {
+                        if (cur.tagName === 'DETAILS' && !cur.open) { cur.open = true; }
+                        cur = cur.parentElement;
+                    }
+
                     var scrollBlock = (window.innerWidth < 768 && tourActive) ? 'start' : 'center';
-                    target.scrollIntoView({ behavior: 'smooth', block: scrollBlock });
-                    setTimeout(function () {
+                    try { target.scrollIntoView({ behavior: 'smooth', block: scrollBlock }); } catch (e) {}
+
+                    // Retry-until-rect-stabilizes: wait for scroll to finish + any pending layout
+                    var attempts = 0;
+                    function paintHighlight() {
+                        attempts++;
                         var rect = target.getBoundingClientRect();
-                        hl.style.display = 'block';
-                        hl.style.top = (rect.top - 8) + 'px';
-                        hl.style.left = (rect.left - 8) + 'px';
-                        hl.style.width = (rect.width + 16) + 'px';
-                        hl.style.height = (rect.height + 16) + 'px';
-                    }, 700);
+                        // If we got a real rect, or we've given up, paint it
+                        if ((rect.width > 0 && rect.height > 0) || attempts >= 8) {
+                            hl.style.display = 'block';
+                            hl.style.top = (rect.top - 8) + 'px';
+                            hl.style.left = (rect.left - 8) + 'px';
+                            hl.style.width = (rect.width + 16) + 'px';
+                            hl.style.height = (rect.height + 16) + 'px';
+                            console.log('[tour] highlight painted after', attempts, 'tries. rect:', rect);
+                            return;
+                        }
+                        setTimeout(paintHighlight, 150);
+                    }
+                    setTimeout(paintHighlight, 450);
                 }
 
                 // ===== FEATURE 11: CONDITIONAL FOLLOW-UP NUDGES =====
