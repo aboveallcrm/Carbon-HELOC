@@ -15013,6 +15013,179 @@ Best regards,
 
         // LO-side: copy HeyGen script. Prefer the dedicated narration generated alongside the AI strategy
         // (Enterprise dual-output prompt). Fall back to truncated phone script for non-Enterprise users.
+        // ===== HEYGEN SCRIPT SANITIZER =====
+        // The AI sometimes leaks markdown (**, ##, bullets), abbreviations (HELOC, LTV),
+        // raw currency ($75,000) or percentages (7.50%) into the HeyGen output. The avatar
+        // reads literal characters, so "$" becomes "dollar sign" and "%" becomes "percent
+        // sign" — both wrong. This sanitizer normalizes the text for natural TTS output.
+        // Goal: even if the AI ignores the prompt rules, the avatar still sounds human.
+        function sanitizeHeyGenScript(raw) {
+            if (!raw) return '';
+            var s = String(raw);
+
+            // Strip code fences + markdown headings / bullets / horizontal rules
+            s = s.replace(/```[\s\S]*?```/g, '');
+            s = s.replace(/^#{1,6}\s+/gm, '');
+            s = s.replace(/^\s*[-*•]\s+/gm, '');
+            s = s.replace(/^\s*\d+\.\s+/gm, '');
+            s = s.replace(/^[-=*_]{3,}$/gm, '');
+
+            // Strip bold/italic markdown markers (preserve inner text)
+            s = s.replace(/\*\*([^*]+)\*\*/g, '$1');
+            s = s.replace(/\*([^*]+)\*/g, '$1');
+            s = s.replace(/__([^_]+)__/g, '$1');
+            s = s.replace(/_([^_]+)_/g, '$1');
+            s = s.replace(/`([^`]+)`/g, '$1');
+
+            // Strip our own divider artifacts
+            s = s.replace(/^\s*=+\s*HEYGEN\s*=+\s*$/gim, '');
+            s = s.replace(/━{3,}/g, '');
+
+            // Replace em-dashes / en-dashes used as breaks with periods
+            s = s.replace(/\s*[—–]\s+/g, '. ');
+            // Replace " - " mid-sentence dashes with commas (preserve hyphenated words)
+            s = s.replace(/(\w)\s+-\s+(\w)/g, '$1, $2');
+
+            // Strip parenthetical asides (avatar reads "open paren, close paren")
+            s = s.replace(/\s*\([^)]{1,80}\)/g, '');
+
+            // Strip emojis + most special chars (keep basic ASCII punctuation)
+            s = s.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '');
+
+            // CURRENCY → spoken English. Order matters: largest patterns first.
+            // "$1,234,567" / "$1234567" → words. Cap support up to billions.
+            s = s.replace(/\$\s?([\d,]+(?:\.\d{1,2})?)\b/g, function (_m, num) {
+                var clean = String(num).replace(/,/g, '');
+                var n = parseFloat(clean);
+                if (isNaN(n)) return _m;
+                return _heygenSpeakCurrency(n);
+            });
+
+            // PERCENTAGES → "X percent" / "X point Y percent"
+            s = s.replace(/(\d+(?:\.\d+)?)\s?%/g, function (_m, num) {
+                var n = parseFloat(num);
+                if (isNaN(n)) return _m;
+                return _heygenSpeakPercent(n);
+            });
+
+            // YEAR / TERM abbreviations: "30-Yr", "20-Year", "15 yr", "10yr"
+            s = s.replace(/\b(\d{1,2})\s*-?\s*(?:Yr|Year|yr|year)s?\b/g, function (_m, n) {
+                var num = parseInt(n, 10);
+                if (isNaN(num)) return _m;
+                return _heygenSpeakInt(num) + ' year';
+            });
+
+            // Common mortgage abbreviations the avatar mispronounces
+            // First mention of HELOC stays as written (the avatar pronounces "hee-lock"
+            // reasonably well in modern voices), but any other acronym must be expanded.
+            s = s.replace(/\bLTV\b/g, 'loan to value');
+            s = s.replace(/\bCLTV\b/g, 'combined loan to value');
+            s = s.replace(/\bDTI\b/g, 'debt to income');
+            s = s.replace(/\bAPR\b/g, 'A P R');
+            s = s.replace(/\bNMLS#?\s*\d+/gi, ''); // license numbers don't belong in narration
+            s = s.replace(/\bDRE#?\s*\d+/gi, '');
+            s = s.replace(/\bHEL\b/g, 'home equity loan');
+            s = s.replace(/\bHEA\b/g, 'home equity agreement');
+            s = s.replace(/\bP&I\b/g, 'principal and interest');
+            s = s.replace(/\bPMI\b/g, 'P M I');
+            s = s.replace(/\bFICO\b/g, 'fye-coh');
+
+            // Phone numbers: convert "(555) 264-0303" / "555-264-0303" / "555.264.0303"
+            // to "five five five, two six four, oh three oh three" (TTS reads digits one-by-one
+            // anyway, but the parens/dashes confuse pacing).
+            s = s.replace(/\(?\s*(\d{3})\s*\)?[\s.\-]+(\d{3})[\s.\-]+(\d{4})/g, function (_m, a, b, c) {
+                return _heygenSpeakDigits(a) + ', ' + _heygenSpeakDigits(b) + ', ' + _heygenSpeakDigits(c);
+            });
+
+            // Collapse whitespace + double periods
+            s = s.replace(/[ \t]+/g, ' ');
+            s = s.replace(/\.{2,}/g, '.');
+            s = s.replace(/\s+([.,!?])/g, '$1');
+            s = s.replace(/\n{3,}/g, '\n\n');
+            s = s.replace(/\n+/g, ' ');  // HeyGen prefers single-line; line breaks add awkward pauses
+            s = s.trim();
+
+            // Final safety cap (1500 char HeyGen limit; sentence-aware truncation)
+            if (s.length > 1500) {
+                var cut = s.slice(0, 1500);
+                var lastDot = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('! '), cut.lastIndexOf('? '));
+                if (lastDot > 1200) cut = cut.slice(0, lastDot + 1);
+                s = cut.trim();
+            }
+
+            return s;
+        }
+
+        // Speak an integer 0-999,999,999 in plain English
+        function _heygenSpeakInt(n) {
+            if (n === 0) return 'zero';
+            if (n < 0) return 'negative ' + _heygenSpeakInt(-n);
+            var ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine',
+                        'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
+                        'seventeen', 'eighteen', 'nineteen'];
+            var tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+            function under1000(x) {
+                if (x < 20) return ones[x];
+                if (x < 100) {
+                    var t = Math.floor(x / 10), o = x % 10;
+                    return tens[t] + (o ? '-' + ones[o] : '');
+                }
+                var h = Math.floor(x / 100), rest = x % 100;
+                return ones[h] + ' hundred' + (rest ? ' ' + under1000(rest) : '');
+            }
+            if (n < 1000) return under1000(n);
+            if (n < 1000000) {
+                var k = Math.floor(n / 1000), rest = n % 1000;
+                return under1000(k) + ' thousand' + (rest ? ' ' + under1000(rest) : '');
+            }
+            if (n < 1000000000) {
+                var m = Math.floor(n / 1000000), rest2 = n % 1000000;
+                var rem = '';
+                if (rest2 >= 1000) {
+                    var k2 = Math.floor(rest2 / 1000), r3 = rest2 % 1000;
+                    rem = ' ' + under1000(k2) + ' thousand' + (r3 ? ' ' + under1000(r3) : '');
+                } else if (rest2 > 0) {
+                    rem = ' ' + under1000(rest2);
+                }
+                return under1000(m) + ' million' + rem;
+            }
+            return String(n);
+        }
+
+        // Speak currency: prefers natural rounding ("seventy-five thousand dollars" not
+        // "seventy five thousand dollars and zero cents")
+        function _heygenSpeakCurrency(n) {
+            var sign = n < 0 ? 'negative ' : '';
+            var abs = Math.abs(n);
+            var dollars = Math.floor(abs);
+            var cents = Math.round((abs - dollars) * 100);
+            var out = sign + _heygenSpeakInt(dollars) + ' dollar' + (dollars === 1 ? '' : 's');
+            if (cents > 0) out += ' and ' + _heygenSpeakInt(cents) + ' cent' + (cents === 1 ? '' : 's');
+            return out;
+        }
+
+        // Speak a percent: "7.50%" → "seven point five percent" (drop trailing zeros)
+        function _heygenSpeakPercent(n) {
+            var whole = Math.floor(n);
+            var frac = n - whole;
+            if (frac === 0) return _heygenSpeakInt(whole) + ' percent';
+            // Convert fractional part to spoken digits: 0.50 → "five", 0.125 → "one two five"
+            var fracStr = String(frac.toFixed(4)).replace(/^0\./, '').replace(/0+$/, '');
+            if (!fracStr) return _heygenSpeakInt(whole) + ' percent';
+            var digitWords = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+            var spoken = fracStr.split('').map(function (d) { return digitWords[parseInt(d, 10)] || d; }).join(' ');
+            return _heygenSpeakInt(whole) + ' point ' + spoken + ' percent';
+        }
+
+        // Speak a digit string one-by-one ("555" → "five five five", "0" → "oh")
+        function _heygenSpeakDigits(s) {
+            var digitWords = ['oh', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
+            return String(s).split('').map(function (d) {
+                var n = parseInt(d, 10);
+                return isNaN(n) ? d : digitWords[n];
+            }).join(' ');
+        }
+
         window.copyHeyGenScriptFromStrategy = function() {
             var txt = String(window._lastHeyGenScript || '').trim();
             if (!txt) {
@@ -15021,7 +15194,8 @@ Best regards,
                 // Strip the KB + AI-enhanced divider blocks so the truncation is meaningful
                 txt = txt.replace(/^.*━{5,}\s*🤖 AI-ENHANCED STRATEGY[^\n]*\n━{5,}\s*\n*/ms, '');
                 txt = txt.replace(/\n*━{5,}\s*🎬 HEYGEN VIDEO SCRIPT[\s\S]*$/m, '').trim();
-                if (txt.length > 1500) txt = txt.slice(0, 1497) + '...';
+                // Run sanitizer on the fallback too — phone scripts are full of $ and %
+                txt = sanitizeHeyGenScript(txt);
             }
             if (!txt) { if (window.showToast) showToast('Generate an AI Strategy first.', 'info'); return; }
             navigator.clipboard.writeText(txt).then(function() {
@@ -15555,14 +15729,41 @@ OUTPUT 1 — PHONE SCRIPT (for the loan officer to use on calls):
 
 After OUTPUT 1, on its own line, write exactly: ===HEYGEN===
 
-OUTPUT 2 — HEYGEN VIDEO NARRATION (for the borrower, spoken on camera by an AI avatar):
-- First-person from the loan officer's perspective ("I put this together for you...", "Here's what stands out...")
-- Address the borrower by their first name
-- Conversational, warm, ≤180 words AND ≤1500 characters
-- NO headings, NO bullet points, NO emojis, NO markdown, NO section labels — pure continuous prose
-- Read aloud naturally — no parenthetical asides, no lists
-- Mention the key numbers (loan amount, rate, payment) in a natural spoken way
-- End with one clear next step ("Reply to this video or tap the apply button below this message")`;
+OUTPUT 2 — HEYGEN VIDEO NARRATION (the avatar will read this aloud — every character matters):
+
+CRITICAL: The output is fed directly to a text-to-speech AI avatar. The avatar reads EXACTLY what you write, character-for-character. If you write "$75,000" the avatar tries to say "dollar seventy five comma zero zero zero". If you write "HELOC" the avatar says "H-E-L-O-C". You must spell out everything for natural human speech.
+
+VOICE & STYLE:
+- First person, from the loan officer's perspective (open with: "Hi {firstName}, I just put this quote together for you...")
+- Warm, confident, conversational — like a trusted friend, not a salesperson
+- Use contractions naturally: "I've", "you're", "we'll", "that's", "here's"
+- Short sentences. Vary rhythm. One idea per sentence.
+- ≤160 words AND ≤1200 characters (TTS output is denser than written prose; leave headroom)
+
+NUMBER & ABBREVIATION RULES (mandatory — the avatar will mispronounce otherwise):
+- Currency: write as words. "$75,000" → "seventy-five thousand dollars". "$598.86" → "five hundred ninety-eight dollars". "$2,242" → "twenty-two hundred dollars" or "two thousand two hundred dollars".
+- Percentages: write as words with "percent". "7.50%" → "seven point five percent". "2.99%" → "two point nine nine percent". "100%" → "one hundred percent".
+- Years/terms: spell numbers under 100. "20-Yr" → "twenty year". "30-Year Fixed" → "thirty year fixed".
+- HELOC: write as "Home Equity Line of Credit" the FIRST time, then "HELOC" pronounced as "hee-lock" (write "HELOC" — the avatar handles it once it's been introduced).
+- HEL/HEA: write "Home Equity Loan" and "Home Equity Agreement" — never the abbreviations.
+- LTV / CLTV / DTI / NMLS: spell out as full words ("loan to value", "combined loan to value", "debt to income", or omit if not essential — these are jargon).
+- Phone numbers: format as natural pauses, e.g. "five five five, two six four, oh three oh three" (dashes/parentheses confuse TTS).
+
+STRUCTURE (60-90 second video):
+1. Hook (10s): Address by first name, warm greeting, one-line value statement. Example: "Hi Sarah, I just finished putting your quote together and I think you're going to like what you see."
+2. The offer (20s): Loan amount + rate + monthly payment in plain English. Tie to a benefit ("that frees up cash to consolidate", "that's lower than your current payment", etc.).
+3. Why this works for them (15s): One specific reason — credit, equity position, or goal alignment. Avoid generic claims.
+4. The next step (10s): One clear action, ONE call to action. Example: "Reply to this video or tap apply below — takes about three minutes and there's no impact to your credit."
+
+DO NOT INCLUDE:
+- Headings, section labels, bullet points, asterisks, hashtags, em-dashes used as breaks (use periods instead)
+- Emojis or special characters
+- Parenthetical asides (the avatar reads them aloud as "open paren … close paren")
+- "Best of Both" or product trademark phrases — translate to plain language
+- Any URL, email, or street address — they don't read well aloud
+- Robotic disclosures ("rates subject to change", "based on credit", etc.) — keep it human
+
+GOAL: Sound like a real loan officer recording a 60-second loom for a friend. Confident, warm, specific to this borrower. The avatar will sound natural ONLY if you write natural spoken English.`;
 
             const systemPrompt = customPrompt.trim() || (_isEnterpriseAI ? _dualOutputPrompt : _phoneOnlyPrompt);
 
@@ -15629,8 +15830,9 @@ Generate the sales strategy and phone script now.`;
                     if (_isEnterpriseAI && _divMatch.length >= 2) {
                         _phoneScript = _divMatch[0].trim();
                         _heygenScript = _divMatch.slice(1).join('').trim();
-                        // Hard safety: cap at 1500 chars
-                        if (_heygenScript.length > 1500) _heygenScript = _heygenScript.slice(0, 1497) + '...';
+                        // Run TTS-friendly sanitizer (strips markdown, expands abbreviations,
+                        // converts $/% to spoken form, fixes hyphens, caps length).
+                        _heygenScript = sanitizeHeyGenScript(_heygenScript);
                         window._lastHeyGenScript = _heygenScript;
                     } else {
                         window._lastHeyGenScript = '';
