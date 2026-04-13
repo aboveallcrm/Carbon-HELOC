@@ -94,15 +94,16 @@ serve(async (req: Request) => {
 
         switch (action) {
             case 'create_contact': {
-                // POST /v3/prospects — store a new prospect
-                // v3 also has POST /v3/prospects/create-or-update-and-message for upsert+message
-                bonzoUrl = `${BONZO_API}/prospects`
-                bonzoResp = await timedFetch(bonzoUrl, {
-                    method: 'POST',
-                    headers: bonzoHeaders,
-                    body: JSON.stringify(payload),
-                })
-                break
+                // MATCH-ONLY policy (Addendum 6 hardened, 2026-04-13):
+                // Carbon NEVER creates new Bonzo prospects. Leads flow FROM Bonzo INTO
+                // Supabase via the n8n router / bonzo-sync — not back out. Callers should
+                // use search_contact first and update_contact on the match, or skip the
+                // enrichment entirely if no match exists.
+                return jsonResponse({
+                    error: 'create_contact is disabled — Carbon uses match-only writes. Search first and update the match, or skip if no match exists.',
+                    skipped: true,
+                    reason: 'match_only_policy',
+                }, 405)
             }
 
             case 'search_contact': {
