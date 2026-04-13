@@ -7714,10 +7714,201 @@
         .wt-nav-btn:hover { background: rgba(255, 255, 255, 0.1); }
         .wt-nav-btn.primary { background: linear-gradient(135deg, #10b981, #059669); border-color: transparent; }
         .wt-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        /* ===== DESKTOP OPTIMIZATIONS FOR WALKTHROUGH ===== */
         @media (min-width: 780px) {
-            #template-walkthrough { max-width: 600px; padding: 40px 24px; }
-            .wt-headline { font-size: 32px; }
-            .wt-bignum { font-size: 64px; }
+            #template-walkthrough { 
+                max-width: 900px; 
+                padding: 40px 48px 60px 48px;
+            }
+            .wt-brand-header {
+                padding: 10px 4px 20px 4px;
+                margin-bottom: 20px;
+            }
+            .wt-brand-logo {
+                width: 44px; 
+                height: 44px;
+                font-size: 20px;
+            }
+            .wt-brand-name { font-size: 16px; }
+            .wt-progress {
+                gap: 6px;
+                margin-bottom: 32px;
+                max-width: 600px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .wt-dot { height: 6px; border-radius: 3px; }
+            .wt-step-num { font-size: 11px; margin-bottom: 10px; }
+            .wt-step-wrap {
+                padding: 20px 0 40px 0;
+                max-width: 800px;
+                margin: 0 auto;
+            }
+            .wt-headline { 
+                font-size: 38px; 
+                margin: 0 0 20px 0;
+                text-align: center;
+            }
+            .wt-bignum { 
+                font-size: 72px; 
+                text-align: center;
+            }
+            .wt-subtle { 
+                font-size: 15px; 
+                text-align: center;
+                max-width: 600px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            /* Desktop: Tier cards in grid instead of scroll */
+            .wt-tier-scroll {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 20px;
+                overflow-x: visible;
+                padding: 10px 0 24px 0;
+                scroll-snap-type: none;
+                max-width: 800px;
+                margin: 0 auto;
+            }
+            .wt-tier-card {
+                min-width: auto;
+                scroll-snap-align: auto;
+                padding: 28px 24px;
+                border-radius: 18px;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .wt-tier-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+            }
+            .wt-tier-card.rec {
+                box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4), 0 12px 40px rgba(16, 185, 129, 0.2);
+            }
+            .wt-tier-label { font-size: 11px; }
+            .wt-tier-rate { font-size: 36px; }
+            .wt-tier-pay { font-size: 15px; }
+            .wt-tier-fee { font-size: 13px; }
+            .wt-tier-rec-badge {
+                font-size: 10px;
+                padding: 3px 10px;
+                border-radius: 12px;
+            }
+            /* Desktop: Q&A in 2-column grid */
+            .wt-qa-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                max-width: 800px;
+                margin: 20px auto;
+            }
+            .wt-qa-btn {
+                padding: 16px 18px;
+                font-size: 14px;
+                border-radius: 12px;
+            }
+            .wt-qa-answer {
+                padding: 16px 18px;
+                font-size: 14px;
+                grid-column: 1 / -1;
+            }
+            /* Desktop: CTAs side by side */
+            .wt-cta-wrap {
+                display: flex;
+                gap: 16px;
+                max-width: 600px;
+                margin: 24px auto 0 auto;
+            }
+            .wt-cta-primary {
+                flex: 2;
+                padding: 18px 28px;
+                font-size: 17px;
+                border-radius: 16px;
+            }
+            .wt-cta-secondary {
+                flex: 1;
+                padding: 18px 24px;
+                font-size: 14px;
+                border-radius: 16px;
+                margin-top: 0;
+            }
+            /* Desktop: Navigation */
+            .wt-nav {
+                max-width: 600px;
+                margin: 0 auto;
+                padding-top: 24px;
+                gap: 16px;
+            }
+            .wt-nav-btn {
+                padding: 14px 24px;
+                font-size: 14px;
+                border-radius: 12px;
+            }
+            /* Desktop: Step indicator numbers */
+            .wt-step-indicator {
+                display: flex;
+                justify-content: center;
+                gap: 40px;
+                margin-bottom: 30px;
+            }
+            .wt-step-indicator-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+                opacity: 0.4;
+                transition: opacity 0.3s;
+            }
+            .wt-step-indicator-item.active {
+                opacity: 1;
+            }
+            .wt-step-indicator-item.completed {
+                opacity: 0.7;
+            }
+            .wt-step-indicator-num {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.1);
+                border: 2px solid rgba(255,255,255,0.2);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 14px;
+            }
+            .wt-step-indicator-item.active .wt-step-indicator-num {
+                background: linear-gradient(135deg, #10b981, #059669);
+                border-color: transparent;
+                color: white;
+            }
+            .wt-step-indicator-item.completed .wt-step-indicator-num {
+                background: rgba(16, 185, 129, 0.3);
+                border-color: #10b981;
+                color: #10b981;
+            }
+            .wt-step-indicator-label {
+                font-size: 12px;
+                color: rgba(255,255,255,0.7);
+                font-weight: 500;
+            }
+        }
+        /* Large desktop screens */
+        @media (min-width: 1200px) {
+            #template-walkthrough { 
+                max-width: 1100px; 
+                padding: 50px 64px 80px 64px;
+            }
+            .wt-headline { font-size: 44px; }
+            .wt-bignum { font-size: 84px; }
+            .wt-tier-scroll {
+                gap: 28px;
+                max-width: 1000px;
+            }
+            .wt-tier-card {
+                padding: 32px 28px;
+            }
+            .wt-tier-rate { font-size: 42px; }
         }
 
         /* ============================================= */
@@ -8543,18 +8734,18 @@
         /* Same tightening as @media print, applied via .pdf-capture-mode class before
            html2canvas snapshots. Ensures the captured pixels fit one Letter page. */
         body.pdf-capture-mode #template-original {
-            padding: 18px 24px !important;
+            padding: 12px 24px !important;
             max-width: none !important;
             margin: 0 !important;
             font-size: 11px;
         }
         body.pdf-capture-mode #template-original .orig-proposal-header {
-            margin: -18px -24px 14px -24px !important;
-            padding: 14px 30px 10px !important;
+            margin: -12px -24px 10px -24px !important;
+            padding: 9px 30px 7px !important;
             border-bottom-width: 2px !important;
         }
-        body.pdf-capture-mode #template-original .orig-proposal-title { font-size: 17px !important; letter-spacing: 1.2px !important; }
-        body.pdf-capture-mode #template-original .orig-proposal-tagline { margin-top: 3px !important; font-size: 9px !important; letter-spacing: 1.8px !important; }
+        body.pdf-capture-mode #template-original .orig-proposal-title { font-size: 14px !important; letter-spacing: 1px !important; line-height: 1.1 !important; }
+        body.pdf-capture-mode #template-original .orig-proposal-tagline { margin-top: 2px !important; font-size: 8px !important; letter-spacing: 1.4px !important; line-height: 1.1 !important; }
         body.pdf-capture-mode #template-original h2,
         body.pdf-capture-mode #template-original h3,
         body.pdf-capture-mode #template-original .orig-section-title { margin-top: 10px !important; margin-bottom: 6px !important; }
@@ -8567,24 +8758,24 @@
         body.pdf-capture-mode #template-original .orig-snapshot tr.orig-snapshot-payment td { padding: 8px 12px !important; font-size: 12px !important; }
         body.pdf-capture-mode #template-original .orig-snapshot tr.orig-snapshot-payment td.value { font-size: 16px !important; }
         body.pdf-capture-mode #template-original .orig-apply-cta {
-            max-width: 320px !important; margin: 10px auto !important; padding: 10px 20px !important;
-            min-height: 38px !important; font-size: 12px !important; letter-spacing: 1.5px !important; box-shadow: none !important;
+            max-width: 280px !important; margin: 8px auto !important; padding: 7px 18px !important;
+            min-height: 30px !important; font-size: 11px !important; letter-spacing: 1.2px !important; box-shadow: none !important;
         }
-        body.pdf-capture-mode #template-original .orig-disclosure-callout { margin: 10px 0 !important; padding: 8px 12px !important; font-size: 10px !important; }
-        body.pdf-capture-mode #template-original .orig-disclosure-title { font-size: 9px !important; margin-bottom: 2px !important; }
+        body.pdf-capture-mode #template-original .orig-disclosure-callout { margin: 7px 0 !important; padding: 6px 10px !important; font-size: 9px !important; line-height: 1.35 !important; }
+        body.pdf-capture-mode #template-original .orig-disclosure-title { font-size: 8px !important; margin-bottom: 2px !important; }
         body.pdf-capture-mode #template-original .orig-lo-footer {
-            margin-top: 12px !important; padding: 10px !important; gap: 12px !important;
+            margin-top: 8px !important; padding: 8px !important; gap: 10px !important; page-break-inside: avoid;
         }
-        body.pdf-capture-mode #template-original .orig-lo-photo { width: 50px !important; height: 50px !important; }
-        body.pdf-capture-mode #template-original .orig-lo-name { font-size: 13px !important; }
-        body.pdf-capture-mode #template-original .orig-lo-title { font-size: 10px !important; }
+        body.pdf-capture-mode #template-original .orig-lo-photo { width: 44px !important; height: 44px !important; }
+        body.pdf-capture-mode #template-original .orig-lo-name { font-size: 12px !important; line-height: 1.15 !important; }
+        body.pdf-capture-mode #template-original .orig-lo-title { font-size: 9px !important; line-height: 1.15 !important; }
         body.pdf-capture-mode #template-original .orig-lo-ids,
         body.pdf-capture-mode #template-original .orig-lo-contact,
-        body.pdf-capture-mode #template-original .orig-lo-extra { font-size: 10px !important; }
-        body.pdf-capture-mode #template-original .orig-lender-logo { max-width: 90px !important; max-height: 48px !important; }
-        body.pdf-capture-mode #template-original .orig-lender-name { font-size: 11px !important; }
-        body.pdf-capture-mode #template-original .orig-footer-legal { margin-top: 8px !important; font-size: 9px !important; }
-        body.pdf-capture-mode #template-original .orig-disclaimer { margin-top: 6px !important; font-size: 9px !important; }
+        body.pdf-capture-mode #template-original .orig-lo-extra { font-size: 9px !important; line-height: 1.3 !important; }
+        body.pdf-capture-mode #template-original .orig-lender-logo { max-width: 80px !important; max-height: 40px !important; }
+        body.pdf-capture-mode #template-original .orig-lender-name { font-size: 10px !important; }
+        body.pdf-capture-mode #template-original .orig-footer-legal { margin-top: 5px !important; font-size: 8px !important; line-height: 1.25 !important; }
+        body.pdf-capture-mode #template-original .orig-disclaimer { margin-top: 4px !important; font-size: 8px !important; line-height: 1.25 !important; }
         body.pdf-capture-mode #template-original .orig-matrix-grid { gap: 8px !important; }
         body.pdf-capture-mode #template-original .orig-matrix-card { padding: 8px 10px !important; }
         body.pdf-capture-mode #template-original .orig-matrix-card th,
@@ -8601,71 +8792,71 @@
         /* ============================================= */
         /* Tightens header/footer/spacing so the Original preset fits on one Letter page. */
         @media print {
-            @page { size: letter; margin: 0.25in; }
+            @page { size: letter; margin: 0.2in 0.25in 0.35in 0.25in; }
             body.theme-original { background: #ffffff !important; }
             body.theme-original * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             #template-original {
-                padding: 18px 24px !important;
+                padding: 12px 24px !important;
                 max-width: none !important;
                 margin: 0 !important;
                 font-size: 11px;
             }
-            /* Hero — shrink the tall navy banner */
+            /* Hero — aggressive shrink of the tall navy banner */
             #template-original .orig-proposal-header {
-                margin: -18px -24px 14px -24px !important;
-                padding: 14px 30px 10px !important;
+                margin: -12px -24px 10px -24px !important;
+                padding: 9px 30px 7px !important;
                 border-bottom-width: 2px !important;
             }
-            #template-original .orig-proposal-title { font-size: 17px !important; letter-spacing: 1.2px !important; }
-            #template-original .orig-proposal-tagline { margin-top: 3px !important; font-size: 9px !important; letter-spacing: 1.8px !important; }
+            #template-original .orig-proposal-title { font-size: 14px !important; letter-spacing: 1px !important; line-height: 1.1 !important; }
+            #template-original .orig-proposal-tagline { margin-top: 2px !important; font-size: 8px !important; letter-spacing: 1.4px !important; line-height: 1.1 !important; }
 
             /* Section spacing */
-            #template-original h2, #template-original h3, #template-original .orig-section-title { margin-top: 10px !important; margin-bottom: 6px !important; }
-            #template-original .orig-section { margin: 10px 0 !important; page-break-inside: avoid; }
-            #template-original .orig-rec-callout { margin: 10px 0 6px !important; padding: 10px 14px !important; page-break-inside: avoid; }
-            #template-original .orig-rec-callout-offer { font-size: 14px !important; margin-top: 3px !important; }
-            #template-original .orig-rec-callout-sub { font-size: 10px !important; margin-top: 2px !important; }
+            #template-original h2, #template-original h3, #template-original .orig-section-title { margin-top: 8px !important; margin-bottom: 5px !important; }
+            #template-original .orig-section { margin: 8px 0 !important; page-break-inside: avoid; }
+            #template-original .orig-rec-callout { margin: 8px 0 5px !important; padding: 8px 12px !important; page-break-inside: avoid; }
+            #template-original .orig-rec-callout-offer { font-size: 13px !important; margin-top: 2px !important; }
+            #template-original .orig-rec-callout-sub { font-size: 9px !important; margin-top: 2px !important; }
 
             /* Snapshot table — tighter rows */
-            #template-original .orig-snapshot { margin-bottom: 12px !important; page-break-inside: avoid; }
-            #template-original .orig-snapshot td { padding: 6px 10px !important; font-size: 11px !important; }
-            #template-original .orig-snapshot tr.orig-snapshot-payment td { padding: 8px 12px !important; font-size: 12px !important; }
-            #template-original .orig-snapshot tr.orig-snapshot-payment td.value { font-size: 16px !important; }
+            #template-original .orig-snapshot { margin-bottom: 10px !important; page-break-inside: avoid; }
+            #template-original .orig-snapshot td { padding: 5px 9px !important; font-size: 11px !important; }
+            #template-original .orig-snapshot tr.orig-snapshot-payment td { padding: 7px 11px !important; font-size: 12px !important; }
+            #template-original .orig-snapshot tr.orig-snapshot-payment td.value { font-size: 15px !important; }
 
             /* Apply CTA — smaller in print, no gradient glow */
             #template-original .orig-apply-cta {
-                max-width: 320px !important;
-                margin: 10px auto !important;
-                padding: 10px 20px !important;
-                min-height: 38px !important;
-                font-size: 12px !important;
-                letter-spacing: 1.5px !important;
+                max-width: 280px !important;
+                margin: 8px auto !important;
+                padding: 7px 18px !important;
+                min-height: 30px !important;
+                font-size: 11px !important;
+                letter-spacing: 1.2px !important;
                 box-shadow: none !important;
             }
 
             /* Important disclosure — keep in flow, smaller */
-            #template-original .orig-disclosure-callout { margin: 10px 0 !important; padding: 8px 12px !important; font-size: 10px !important; }
-            #template-original .orig-disclosure-title { font-size: 9px !important; margin-bottom: 2px !important; }
+            #template-original .orig-disclosure-callout { margin: 7px 0 !important; padding: 6px 10px !important; font-size: 9px !important; line-height: 1.35 !important; }
+            #template-original .orig-disclosure-title { font-size: 8px !important; margin-bottom: 2px !important; }
 
             /* LO footer — keep together, shrink padding */
             #template-original .orig-lo-footer {
-                margin-top: 12px !important;
-                padding: 10px !important;
-                gap: 12px !important;
+                margin-top: 8px !important;
+                padding: 8px !important;
+                gap: 10px !important;
                 page-break-inside: avoid;
             }
-            #template-original .orig-lo-photo { width: 50px !important; height: 50px !important; }
-            #template-original .orig-lo-name { font-size: 13px !important; }
-            #template-original .orig-lo-title { font-size: 10px !important; }
+            #template-original .orig-lo-photo { width: 44px !important; height: 44px !important; }
+            #template-original .orig-lo-name { font-size: 12px !important; line-height: 1.15 !important; }
+            #template-original .orig-lo-title { font-size: 9px !important; line-height: 1.15 !important; }
             #template-original .orig-lo-ids,
             #template-original .orig-lo-contact,
-            #template-original .orig-lo-extra { font-size: 10px !important; }
-            #template-original .orig-lender-logo { max-width: 90px !important; max-height: 48px !important; }
-            #template-original .orig-lender-name { font-size: 11px !important; }
+            #template-original .orig-lo-extra { font-size: 9px !important; line-height: 1.3 !important; }
+            #template-original .orig-lender-logo { max-width: 80px !important; max-height: 40px !important; }
+            #template-original .orig-lender-name { font-size: 10px !important; }
 
             /* Footer legal row */
-            #template-original .orig-footer-legal { margin-top: 8px !important; font-size: 9px !important; page-break-inside: avoid; }
-            #template-original .orig-disclaimer { margin-top: 6px !important; font-size: 9px !important; page-break-inside: avoid; }
+            #template-original .orig-footer-legal { margin-top: 5px !important; font-size: 8px !important; line-height: 1.25 !important; page-break-inside: avoid; }
+            #template-original .orig-disclaimer { margin-top: 4px !important; font-size: 8px !important; line-height: 1.25 !important; page-break-inside: avoid; }
 
             /* Matrix tables — tighter */
             #template-original .orig-matrix-grid { gap: 8px !important; }
@@ -10694,14 +10885,14 @@
                 // Template mode: simple, standard, enhanced
                 var linkOpts = data.linkOptions || {};
                 var templateMode = linkOpts.preset || linkOpts.templateMode || 'enhanced'; // default to enhanced
-                // Enterprise auto-route: when LO is on Enterprise tier AND client is on mobile,
+                // Enterprise auto-route: when LO is on Enterprise tier,
                 // default to the immersive walkthrough unless the LO explicitly picked another preset.
+                // Works on both mobile and desktop — fully responsive.
                 // The LO can still override by picking any other preset in the generator.
                 try {
                     var _loTier = String((data.lo_info && (data.lo_info.tier || data.lo_info.loTier)) || data.lo_tier || '').toLowerCase();
-                    var _isMobile = (window.matchMedia && window.matchMedia('(max-width: 780px)').matches);
                     var _presetExplicit = !!(linkOpts.preset || linkOpts.templateMode);
-                    if (_loTier === 'enterprise' && _isMobile && !_presetExplicit) {
+                    if (_loTier === 'enterprise' && !_presetExplicit) {
                         templateMode = 'walkthrough';
                     }
                 } catch (_) {}
@@ -13141,11 +13332,13 @@
                     var imgData = canvas.toDataURL('image/jpeg', 0.92);
                     var jsPDF = window.jspdf.jsPDF;
 
-                    // Letter size in mm
+                    // Letter size in mm. Reserve a 7mm bottom strip for the "Generated by …
+                    // | Page N of N" footer so the quote image never collides with it.
                     var pageW = 215.9, pageH = 279.4, margin = 8;
+                    var footerReserve = 7; // mm dedicated to page-number footer
                     var contentW = pageW - margin * 2;
                     var imgH = (canvas.height / canvas.width) * contentW;
-                    var usableH = pageH - margin * 2;
+                    var usableH = pageH - margin * 2 - footerReserve;
 
                     var pdf = new jsPDF('p', 'mm', 'letter');
 
