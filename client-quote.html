@@ -13149,9 +13149,13 @@
 
                     var pdf = new jsPDF('p', 'mm', 'letter');
 
-                    // Single-page mode: if the natural render is within ~10% of one page, scale-to-fit.
-                    // This produces a clean single-page screenshot like the in-app quote preview.
-                    var singlePageThreshold = usableH * 1.10; // allow minor overflow to scale rather than spill
+                    // Single-page mode: if the natural render is within ~35% of one page, scale-to-fit.
+                    // Raised from 1.10 → 1.35 (2026-04-12) because the tightened pdf-capture-mode
+                    // still occasionally produced a rendered image 15-25% taller than one page due to
+                    // per-LO content variance. 35% headroom lets the fit-scale handle it instead of
+                    // paginating. Slight text shrink is still far better than a 2-page PDF for what's
+                    // supposed to be a single-page flyer.
+                    var singlePageThreshold = usableH * 1.35;
                     if (imgH <= singlePageThreshold) {
                         var fitScale = imgH > usableH ? (usableH / imgH) : 1;
                         var renderW = contentW * fitScale;

@@ -2199,6 +2199,16 @@
                 display: none !important;
             }
 
+            /* AI-Generated Strategy block (#cp-ai-strategy) lives inside #proposal-container
+               which is also the PDF capture target. The LO sees the strategy in the Ezra
+               chat widget (pushed via _pushEnhancedToEzra), so the on-quote collapsible is
+               redundant AND it inflates the html2canvas capture past one page. Hide it
+               site-wide. Ezra chat remains the sole channel for the strategy + HeyGen
+               script. */
+            #cp-ai-strategy {
+                display: none !important;
+            }
+
             #print-selection-dialog {
                 display: none !important;
             }
@@ -19478,6 +19488,12 @@ Sent via Above All Carbon HELOC Tool`;
             const welcomeHero = document.getElementById('welcome-hero');
             if (welcomeHero) { welcomeHero.classList.add('print-exclude'); pdfHiddenEls.push(welcomeHero); }
 
+            // AI-Generated Strategy collapsible — redundant with Ezra chat. Hide from PDF capture
+            // unconditionally; the CSS rule above already hides it site-wide, but this is belt-
+            // and-suspenders for any stylesheet caching edge case.
+            const aiStrategyPanel = document.getElementById('cp-ai-strategy');
+            if (aiStrategyPanel) { aiStrategyPanel.classList.add('print-exclude'); pdfHiddenEls.push(aiStrategyPanel); }
+
             if (document.getElementById('chk-pdf-lo-info') && !document.getElementById('chk-pdf-lo-info').checked) {
                 const footer = document.querySelector('footer');
                 if (footer) { footer.classList.add('print-exclude'); pdfHiddenEls.push(footer); }
@@ -19520,19 +19536,29 @@ Sent via Above All Carbon HELOC Tool`;
                 var imgH = imgW * imgRatio;
 
                 var pdf = new jsPDF('p', 'mm', 'letter');
-                var heightLeft = imgH;
-                var yPageOffset = 0;
 
-                // First page
-                pdf.addImage(imgData, 'JPEG', margin, margin, imgW, imgH);
-                heightLeft -= usableH;
-
-                // Additional pages — shift image up by full page height per slice
-                while (heightLeft > 0) {
-                    pdf.addPage();
-                    yPageOffset += usableH;
-                    pdf.addImage(imgData, 'JPEG', margin, margin - yPageOffset, imgW, imgH);
+                // Single-page fit-to-scale (mirrors client-quote.html downloadPDF behavior).
+                // If the captured render is within 35% of one page, letterbox-fit onto one
+                // page instead of paginating. Pathological overflow still paginates cleanly.
+                var singlePageThreshold = usableH * 1.35;
+                if (imgH <= singlePageThreshold) {
+                    var fitScale = imgH > usableH ? (usableH / imgH) : 1;
+                    var renderW = imgW * fitScale;
+                    var renderH = imgH * fitScale;
+                    var xOffset = margin + (imgW - renderW) / 2;
+                    pdf.addImage(imgData, 'JPEG', xOffset, margin, renderW, renderH);
+                } else {
+                    // Pathological overflow (very long quote): paginate
+                    var heightLeft = imgH;
+                    var yPageOffset = 0;
+                    pdf.addImage(imgData, 'JPEG', margin, margin, imgW, imgH);
                     heightLeft -= usableH;
+                    while (heightLeft > 0) {
+                        pdf.addPage();
+                        yPageOffset += usableH;
+                        pdf.addImage(imgData, 'JPEG', margin, margin - yPageOffset, imgW, imgH);
+                        heightLeft -= usableH;
+                    }
                 }
 
                 // Footer on every page
