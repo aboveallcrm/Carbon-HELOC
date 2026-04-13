@@ -232,35 +232,44 @@ async function dispatchToGHL(
     const lead = item.lead
     const channel = item.channel // 'sms' | 'email'
 
-    // If we have a contact_id, use it directly as GHL contact ID
-    // Otherwise search by email/phone
+    // MATCH-ONLY policy (Addendum 6, 2026-04-13): never create a new GHL contact.
+    // Use an existing contact ID if we have one; otherwise search by email/phone.
+    // If nothing matches, fail hard — do NOT upsert. Carbon's contract is that leads
+    // flow FROM GHL INTO Supabase, not back out.
     let ghlContactId = item.metadata?.ghl_contact_id || ''
+    const leadKnownGhlId = lead?.metadata?.ghl_contact_id || lead?.crm_contact_id || ''
+    if (!ghlContactId && leadKnownGhlId) ghlContactId = leadKnownGhlId
 
     if (!ghlContactId && lead) {
-        // Upsert contact — atomic create-or-update, no race conditions
-        const upsertResp = await timedFetch(`${GHL_API}/contacts/upsert`, {
-            method: 'POST',
-            headers: ghlHeaders,
-            body: JSON.stringify({
-                locationId,
-                firstName: lead.first_name || '',
-                lastName: lead.last_name || '',
-                email: lead.email || '',
-                phone: lead.phone || '',
-            }),
-        })
+        async function searchContactsGHL(query: string) {
+            const resp = await timedFetch(`${GHL_API}/contacts/search`, {
+                method: 'POST',
+                headers: ghlHeaders,
+                body: JSON.stringify({ locationId, query, pageLimit: 1 }),
+            })
+            if (!resp.ok) return null
+            const data = await resp.json().catch(() => ({}))
+            const contacts = data?.contacts || data?.data || []
+            return Array.isArray(contacts) && contacts[0] ? contacts[0] : null
+        }
 
-        if (upsertResp.ok) {
-            const upsertData = await upsertResp.json()
-            ghlContactId = upsertData.contact?.id || ''
-        } else {
-            const errText = await upsertResp.text()
-            throw new Error(`GHL upsert contact failed (${upsertResp.status}): ${errText}`)
+        if (lead.email) {
+            const hit = await searchContactsGHL(lead.email)
+            if (hit?.id && hit.email && String(hit.email).toLowerCase() === String(lead.email).toLowerCase()) {
+                ghlContactId = hit.id
+            }
+        }
+        if (!ghlContactId && lead.phone) {
+            const phoneDigits = String(lead.phone).replace(/\D/g, '')
+            if (phoneDigits.length >= 7) {
+                const hit = await searchContactsGHL(phoneDigits)
+                if (hit?.id) ghlContactId = hit.id
+            }
         }
     }
 
     if (!ghlContactId) {
-        throw new Error('Could not resolve GHL contact ID')
+        throw new Error('skipped_no_match: Lead not found in GHL. Match-only policy — Carbon never creates new GHL contacts. Add the contact to GHL first if you want enrichment.')
     }
 
     // Send message via GHL conversations API
@@ -328,106 +337,77 @@ async function syncSingleLead(
         return jsonResponse({ error: 'Lead not found' }, 404)
     }
 
-    // Round-trip prevention (Addendum 6, 2026-04-13):
-    // If the lead came FROM GHL (via the n8n carbon-heloc-lead-router), do NOT push it
-    // back into GHL as a new contact. It already lives there; a round-trip upsert risks
-    // creating a duplicate during eventual-consistency windows. We allow tag updates only
-    // if we already have a known ghl_contact_id; otherwise skip the sync entirely.
-    const leadSource = String(lead.source || '').toLowerCase()
+    // MATCH-ONLY policy (Addendum 6 hardened, 2026-04-13):
+    // Carbon NEVER creates a new GHL contact. Period. Leads flow FROM GHL INTO Supabase
+    // via the n8n router — not back out. This endpoint enriches existing GHL contacts
+    // only (tags). If no match exists, fail hard with skipped_no_match.
     const knownGhlContactId = lead.metadata?.ghl_contact_id || lead.crm_contact_id || ''
-    if (leadSource === 'ghl' && !knownGhlContactId) {
-        return jsonResponse({
-            success: true,
-            skipped: true,
-            reason: 'round_trip_prevention',
-            detail: 'Lead originated from GHL; skipping outbound GHL upsert to avoid duplicates. Add tags via the app\'s match-only path instead.',
-        })
-    }
-
-    // Use atomic upsert — eliminates race conditions from search-then-create
     let ghlContactId = knownGhlContactId
-    let operation = ghlContactId ? 'update' : 'upsert'
 
-    // Build contact payload — do NOT include tags here (GHL overwrites all tags)
-    const contactPayload: any = {
-        locationId,
-        firstName: lead.first_name || '',
-        lastName: lead.last_name || '',
-        email: lead.email || '',
-        phone: lead.phone || '',
-    }
-
-    // Add metadata fields as custom fields if available
-    if (lead.metadata) {
-        const customFields: any[] = []
-        if (lead.metadata.credit_score) customFields.push({ key: 'credit_score', field_value: String(lead.metadata.credit_score) })
-        if (lead.metadata.home_value) customFields.push({ key: 'home_value', field_value: String(lead.metadata.home_value) })
-        if (lead.metadata.mortgage_balance) customFields.push({ key: 'mortgage_balance', field_value: String(lead.metadata.mortgage_balance) })
-        if (lead.metadata.loan_amount) customFields.push({ key: 'loan_amount', field_value: String(lead.metadata.loan_amount) })
-        if (customFields.length > 0) contactPayload.customFields = customFields
-    }
-
-    let ghlResp: Response
-    if (ghlContactId) {
-        // Known contact — direct update
-        const { locationId: _loc, ...updatePayload } = contactPayload
-        ghlResp = await timedFetch(`${GHL_API}/contacts/${ghlContactId}`, {
-            method: 'PUT',
-            headers: ghlHeaders,
-            body: JSON.stringify(updatePayload),
-        })
-    } else {
-        // Upsert — atomic create-or-update by email/phone match
-        ghlResp = await timedFetch(`${GHL_API}/contacts/upsert`, {
-            method: 'POST',
-            headers: ghlHeaders,
-            body: JSON.stringify(contactPayload),
-        })
-    }
-
-    const ghlData = await ghlResp.json().catch(() => ({}))
-
-    if (!ghlResp.ok) {
-        await recordSyncError(supabaseAdmin, userId, 'ghl', `sync_single_lead_${operation}`, `GHL ${operation} failed (${ghlResp.status})`, {
-            lead_id: leadId,
-            detail: ghlData,
-        })
-        return jsonResponse({
-            error: `GHL ${operation} failed`,
-            status: ghlResp.status,
-            detail: ghlData,
-        }, 502)
-    }
-
-    // Add tags via dedicated endpoint (won't overwrite existing tags)
-    const tagContactId = ghlData.contact?.id || ghlContactId
-    if (tagContactId) {
-        try {
-            await timedFetch(`${GHL_API}/contacts/${tagContactId}/tags`, {
+    // If we don't have a known contact ID, search GHL by email then phone
+    if (!ghlContactId) {
+        async function searchContactsGHL(query: string) {
+            const resp = await timedFetch(`${GHL_API}/contacts/search`, {
                 method: 'POST',
                 headers: ghlHeaders,
-                body: JSON.stringify({ tags: ['carbon-heloc'] }),
+                body: JSON.stringify({ locationId, query, pageLimit: 1 }),
             })
-        } catch (_tagErr) {
-            // Non-fatal — tag add failed but contact was synced
-            console.warn('Failed to add tags to GHL contact:', tagContactId)
+            if (!resp.ok) return null
+            const data = await resp.json().catch(() => ({}))
+            const contacts = data?.contacts || data?.data || []
+            return Array.isArray(contacts) && contacts[0] ? contacts[0] : null
+        }
+
+        if (lead.email) {
+            const hit = await searchContactsGHL(lead.email)
+            if (hit?.id && hit.email && String(hit.email).toLowerCase() === String(lead.email).toLowerCase()) {
+                ghlContactId = hit.id
+            }
+        }
+        if (!ghlContactId && lead.phone) {
+            const phoneDigits = String(lead.phone).replace(/\D/g, '')
+            if (phoneDigits.length >= 7) {
+                const hit = await searchContactsGHL(phoneDigits)
+                if (hit?.id) ghlContactId = hit.id
+            }
         }
     }
 
-    // Store GHL contact ID back on lead metadata
-    const newContactId = ghlData.contact?.id || ghlContactId
-    if (newContactId) {
+    if (!ghlContactId) {
+        // No match — do NOT create. Return skipped status so caller knows to prompt
+        // the LO to add the contact in GHL first.
+        return jsonResponse({
+            success: true,
+            skipped: true,
+            reason: 'no_match',
+            detail: 'Lead not found in GHL. Match-only policy — Carbon never creates new GHL contacts. Add the contact to GHL first if you want enrichment.',
+        })
+    }
+
+    // Matched — enrich by adding the carbon-heloc tag (won't overwrite existing tags)
+    try {
+        await timedFetch(`${GHL_API}/contacts/${ghlContactId}/tags`, {
+            method: 'POST',
+            headers: ghlHeaders,
+            body: JSON.stringify({ tags: ['carbon-heloc'] }),
+        })
+    } catch (_tagErr) {
+        console.warn('Failed to add tags to GHL contact:', ghlContactId)
+    }
+
+    // Store matched GHL contact ID back on lead metadata for faster future lookups
+    if (ghlContactId && ghlContactId !== knownGhlContactId) {
         const existingMeta = lead.metadata || {}
         await supabaseAdmin
             .from('leads')
-            .update({ metadata: { ...existingMeta, ghl_contact_id: newContactId } })
+            .update({ metadata: { ...existingMeta, ghl_contact_id: ghlContactId } })
             .eq('id', leadId)
     }
 
     return jsonResponse({
         success: true,
-        operation,
-        ghl_contact_id: newContactId,
-        data: ghlData,
+        operation: 'enrich',
+        ghl_contact_id: ghlContactId,
+        matched: true,
     })
 }
