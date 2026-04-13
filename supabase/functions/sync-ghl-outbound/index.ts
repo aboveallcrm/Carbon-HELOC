@@ -328,8 +328,24 @@ async function syncSingleLead(
         return jsonResponse({ error: 'Lead not found' }, 404)
     }
 
+    // Round-trip prevention (Addendum 6, 2026-04-13):
+    // If the lead came FROM GHL (via the n8n carbon-heloc-lead-router), do NOT push it
+    // back into GHL as a new contact. It already lives there; a round-trip upsert risks
+    // creating a duplicate during eventual-consistency windows. We allow tag updates only
+    // if we already have a known ghl_contact_id; otherwise skip the sync entirely.
+    const leadSource = String(lead.source || '').toLowerCase()
+    const knownGhlContactId = lead.metadata?.ghl_contact_id || lead.crm_contact_id || ''
+    if (leadSource === 'ghl' && !knownGhlContactId) {
+        return jsonResponse({
+            success: true,
+            skipped: true,
+            reason: 'round_trip_prevention',
+            detail: 'Lead originated from GHL; skipping outbound GHL upsert to avoid duplicates. Add tags via the app\'s match-only path instead.',
+        })
+    }
+
     // Use atomic upsert — eliminates race conditions from search-then-create
-    let ghlContactId = lead.metadata?.ghl_contact_id || ''
+    let ghlContactId = knownGhlContactId
     let operation = ghlContactId ? 'update' : 'upsert'
 
     // Build contact payload — do NOT include tags here (GHL overwrites all tags)

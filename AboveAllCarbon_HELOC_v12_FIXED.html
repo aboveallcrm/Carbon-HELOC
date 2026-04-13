@@ -5806,6 +5806,16 @@
                 </div>
             </button>
         </div>
+        <!-- CRM match status: shows whether the current client email/phone matches an
+             existing Bonzo/GHL contact. Match-only policy: if Not Found, the Send-via-CRM
+             buttons fall back to clipboard copy / Gmail compose rather than create a
+             duplicate contact in the CRM. -->
+        <div id="crm-match-status" style="margin-top: 6px; font-size: 10px; color: rgba(255,255,255,0.55); display: none; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span style="font-family: var(--font-heading); text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.4);">CRM status:</span>
+            <span id="crm-match-bonzo" style="display: none; padding: 2px 8px; border-radius: 10px; font-size: 9px;"></span>
+            <span id="crm-match-ghl" style="display: none; padding: 2px 8px; border-radius: 10px; font-size: 9px;"></span>
+            <span id="crm-match-hint" style="font-size: 9px; color: rgba(255,255,255,0.4); flex: 1;"></span>
+        </div>
         <div id="send-quote-status"></div>
     </div>
 
@@ -9201,6 +9211,99 @@ Best regards,
             return result;
         }
 
+        // ==================================================================
+        // MATCH-ONLY CRM HELPERS — never create a contact, only find & enrich.
+        // Carbon's contract: contacts flow FROM the CRMs INTO Supabase via the
+        // n8n router; the app never pushes NEW contacts back out. This prevents
+        // duplicate contacts on eventual-consistency windows (e.g. a GHL contact
+        // synced to Carbon 30s ago may not yet be findable by GHL's search API).
+        // ==================================================================
+
+        // Shape-tolerant extractor: pulls the first contact/prospect record from
+        // whatever shape the proxy returned (GHL's search API wraps under .contacts,
+        // some older paths just return an array).
+        function _firstContactFromGHLSearch(result) {
+            if (!result) return null;
+            var data = result.data || result;
+            if (Array.isArray(data) && data[0]) return data[0];
+            if (data.contacts && Array.isArray(data.contacts) && data.contacts[0]) return data.contacts[0];
+            if (data.contact) return data.contact;
+            return null;
+        }
+        function _firstProspectFromBonzoSearch(result) {
+            if (!result) return null;
+            var data = result.data || result;
+            if (Array.isArray(data) && data[0]) return data[0];
+            if (data.prospects && Array.isArray(data.prospects) && data.prospects[0]) return data.prospects[0];
+            if (data.results && Array.isArray(data.results) && data.results[0]) return data.results[0];
+            if (data.prospect) return data.prospect;
+            return null;
+        }
+
+        /**
+         * Match-only GHL contact lookup. Never creates. Returns:
+         *   { contactId, matched: true, source: 'email'|'phone', contact }
+         *   { contactId: null, matched: false }
+         */
+        async function findGHLContactByEmailOrPhone(email, phone, locationId) {
+            try {
+                if (email) {
+                    var r1 = await callGHLProxy('search_contacts', { email: email, query: email }, null, locationId);
+                    var hit1 = _firstContactFromGHLSearch(r1);
+                    if (hit1 && hit1.id) return { contactId: hit1.id, matched: true, source: 'email', contact: hit1 };
+                }
+                if (phone) {
+                    var phoneDigits = String(phone).replace(/\D/g, '');
+                    if (phoneDigits.length >= 7) {
+                        var r2 = await callGHLProxy('search_contacts', { phone: phone, query: phoneDigits }, null, locationId);
+                        var hit2 = _firstContactFromGHLSearch(r2);
+                        if (hit2 && hit2.id) return { contactId: hit2.id, matched: true, source: 'phone', contact: hit2 };
+                    }
+                }
+            } catch (e) { console.warn('[ghl-match] lookup error', e); }
+            return { contactId: null, matched: false };
+        }
+
+        /**
+         * Match-only Bonzo prospect lookup. Never creates. Returns:
+         *   { contactId, matched: true, source: 'email'|'phone', contact }
+         *   { contactId: null, matched: false }
+         */
+        async function findBonzoContactByEmailOrPhone(email, phone) {
+            try {
+                if (email) {
+                    var r1 = await _bonzoProxy('search_contact', { payload: { email: email, per_page: 5 } });
+                    var hit1 = _firstProspectFromBonzoSearch(r1);
+                    // Bonzo's /prospects?search=<term> returns loose matches — tighten by
+                    // comparing the email back (case-insensitive) so we don't match the
+                    // wrong prospect whose name happens to contain the search term.
+                    if (hit1 && hit1.id && hit1.email && String(hit1.email).toLowerCase() === String(email).toLowerCase()) {
+                        return { contactId: hit1.id, matched: true, source: 'email', contact: hit1 };
+                    }
+                    // Fallback: scan the result array for an exact email match
+                    var data1 = (r1 && (r1.data || r1));
+                    var arr1 = Array.isArray(data1) ? data1 : (data1 && Array.isArray(data1.data) ? data1.data : []);
+                    var exact = arr1.find(function (p) { return p && p.email && String(p.email).toLowerCase() === String(email).toLowerCase(); });
+                    if (exact && exact.id) return { contactId: exact.id, matched: true, source: 'email', contact: exact };
+                }
+                if (phone) {
+                    var phoneDigits = String(phone).replace(/\D/g, '');
+                    if (phoneDigits.length >= 7) {
+                        var r2 = await _bonzoProxy('search_contact', { payload: { phone: phoneDigits, search: phoneDigits, per_page: 5 } });
+                        var data2 = (r2 && (r2.data || r2));
+                        var arr2 = Array.isArray(data2) ? data2 : (data2 && Array.isArray(data2.data) ? data2.data : []);
+                        // Match by digits-only comparison
+                        var phoneHit = arr2.find(function (p) {
+                            var d = String(p.phone || '').replace(/\D/g, '');
+                            return d && d.length >= 7 && d.endsWith(phoneDigits.slice(-7));
+                        });
+                        if (phoneHit && phoneHit.id) return { contactId: phoneHit.id, matched: true, source: 'phone', contact: phoneHit };
+                    }
+                }
+            } catch (e) { console.warn('[bonzo-match] lookup error', e); }
+            return { contactId: null, matched: false };
+        }
+
         // Safe JSON parse — never throws, returns fallback on error
         function safeParse(str, fallback) {
             if (!str) return fallback !== undefined ? fallback : null;
@@ -10578,6 +10681,34 @@ Best regards,
 
             // Send Quote section tier gating
             applyQuoteSendTierGating();
+
+            // Starter tier: collapse Presentation Output Controls into a one-liner
+            // since they only have access to one preset anyway.
+            try {
+                var presentationPanel = document.querySelector('details[data-cp-id="presentation-output"]');
+                if (presentationPanel) {
+                    if (effectiveTier === 'starter') {
+                        // Replace inner controls with a short info line; preserve the <summary>.
+                        var summary = presentationPanel.querySelector('summary');
+                        var existingCollapse = presentationPanel.querySelector('.starter-presentation-collapse');
+                        var originalBody = presentationPanel.querySelector('.control-section');
+                        if (originalBody) originalBody.style.display = 'none';
+                        if (!existingCollapse) {
+                            var msg = document.createElement('div');
+                            msg.className = 'starter-presentation-collapse';
+                            msg.style.cssText = 'padding:14px 16px; background:rgba(6,182,212,0.05); border:1px dashed rgba(6,182,212,0.3); border-radius:8px; color:rgba(255,255,255,0.75); font-size:12px; line-height:1.6;';
+                            msg.innerHTML = '<strong style="color:#22d3ee;">Output style:</strong> Standard quote — <em>upgrade to Pro for 3-tier comparison, Enterprise for walkthrough + video.</em>';
+                            presentationPanel.appendChild(msg);
+                        }
+                    } else {
+                        // Restore full panel for Pro/Enterprise (e.g. after impersonation switch back)
+                        var body = presentationPanel.querySelector('.control-section');
+                        if (body) body.style.display = '';
+                        var collapse = presentationPanel.querySelector('.starter-presentation-collapse');
+                        if (collapse) collapse.remove();
+                    }
+                }
+            } catch (e) { console.warn('Starter presentation collapse failed:', e); }
 
             // Tier access applied
         }
@@ -17369,14 +17500,26 @@ Generate the sales strategy and phone script now.`;
                     { key: 'heloc_quote_date', value: new Date().toLocaleDateString() }
                 ];
 
-                const upsertResult = await callGHLProxy('upsert_contact', {
-                    firstName, lastName, email: contactEmail,
-                    phone: contactPhone,
-                    source: 'HELOC Quote Tool',
-                    customFields
-                });
-                const contactId = upsertResult.data?.contact?.id;
-                if (!contactId) throw new Error('Could not create or find contact');
+                // Match-only lookup — never create a new GHL contact. The lead should
+                // already exist in GHL (it likely came FROM GHL via the n8n router).
+                statusDiv.innerHTML = '<div style="font-size:24px;margin-bottom:10px;">🔎</div>Finding contact in GHL...';
+                const matchResult = await findGHLContactByEmailOrPhone(contactEmail, contactPhone, locationId);
+                if (!matchResult.matched) {
+                    // Graceful fallback: skip CRM enrichment, send the quote via Gmail path.
+                    // This prevents duplicate contact creation when a lead isn't in GHL yet.
+                    showToast('Lead not found in GHL — sending without CRM enrichment. Add them in GHL first if you want tags, notes & opportunity to fire.', 'info', 7000);
+                    if (typeof sendQuoteViaGmailDirect === 'function') {
+                        await sendQuoteViaGmailDirect();
+                    } else if (typeof openGmailCompose === 'function') {
+                        await openGmailCompose(contactEmail, 'Your Personalized HELOC Quote', buildRichEmailHTML());
+                    }
+                    return;
+                }
+                const contactId = matchResult.contactId;
+                // Update existing contact's custom fields (not a create — safe enrichment)
+                try {
+                    await callGHLProxy('update_contact', { customFields }, contactId);
+                } catch (ucErr) { console.debug('Update contact fields error:', ucErr); }
 
                 // Step 3: Add tags to contact (dedicated endpoint, won't overwrite)
                 statusDiv.innerHTML = '<div style="font-size:24px;margin-bottom:10px;">🏷️</div>Adding tags...';
@@ -18440,17 +18583,18 @@ Sent via Above All Carbon HELOC Tool`;
             if (!await ensureOutboundConsent('sms', contactEmail, contactPhone)) return;
 
             try {
-                showToast('Sending SMS via GHL...', 'info');
-                // Upsert contact via proxy (API key stays server-side)
-                var nameParts = contactName.split(' ');
-                var upsertResult = await callGHLProxy('upsert_contact', {
-                    firstName: nameParts[0] || '', lastName: nameParts.slice(1).join(' ') || '',
-                    phone: contactPhone, email: contactEmail, source: 'HELOC Quote Tool'
-                });
-                var contactId = upsertResult.data?.contact?.id;
-                if (!contactId) throw new Error('Could not find or create contact in GHL');
-
-                // Send SMS via proxy
+                showToast('Finding contact in GHL...', 'info');
+                // Match-only — never create a new GHL contact.
+                var match = await findGHLContactByEmailOrPhone(contactEmail, contactPhone, null);
+                if (!match.matched) {
+                    // Graceful fallback: copy the SMS text to clipboard so the LO can
+                    // text it directly from their phone.
+                    try { await navigator.clipboard.writeText(smsText); } catch (_) {}
+                    showToast('Lead not found in GHL — SMS copied to clipboard. Text them directly from your phone, or add the lead to GHL first.', 'info', 8000);
+                    return;
+                }
+                var contactId = match.contactId;
+                // Send SMS via proxy (safe — targets the existing contact)
                 await callGHLProxy('send_sms', { contactId: contactId, message: smsText }, contactId);
                 await logUsageEvent('client_link_sent', {
                     quote_code: window._lastGeneratedQuoteCode || null,
@@ -18490,40 +18634,16 @@ Sent via Above All Carbon HELOC Tool`;
             if (!dncClear) { showToast('Send cancelled — contact is on DNC list.', 'warning'); return; }
 
             try {
-                showToast('Sending SMS via Bonzo...', 'info');
-                var nameParts = contactName.split(' ');
-
-                var contactPayload = {
-                    first_name: nameParts[0] || '',
-                    last_name: nameParts.slice(1).join(' ') || '',
-                    email: contactEmail,
-                    phone: contactPhone
-                };
-                if (teamId) contactPayload.team_id = teamId;
-
-                // Create/update contact via proxy (handle duplicates gracefully)
-                var contactData = null;
-                try {
-                    var createResult = await _bonzoProxy('create_contact', { payload: contactPayload });
-                    contactData = createResult.data || createResult;
-                } catch (createErr) {
-                    if (createErr.message && (createErr.message.includes('409') || createErr.message.includes('422') || createErr.message.includes('duplicate'))) {
-                        try {
-                            var searchResult = await _bonzoProxy('search_contact', { payload: { email: contactEmail } });
-                            var prospects = searchResult.data || searchResult;
-                            if (Array.isArray(prospects)) {
-                                contactData = prospects.find(function(p) { return p.email && p.email.toLowerCase() === contactEmail.toLowerCase(); }) || prospects[0];
-                            } else if (prospects && prospects.id) {
-                                contactData = prospects;
-                            }
-                        } catch (e2) { /* search failed */ }
-                    }
-                    if (!contactData) throw createErr;
+                showToast('Finding contact in Bonzo...', 'info');
+                // Match-only — never create a new Bonzo contact.
+                var match = await findBonzoContactByEmailOrPhone(contactEmail, contactPhone);
+                if (!match.matched) {
+                    try { await navigator.clipboard.writeText(smsText); } catch (_) {}
+                    showToast('Lead not found in Bonzo — SMS copied to clipboard. Add them to Bonzo first for auto-send, or text from your phone.', 'info', 8000);
+                    return;
                 }
-                var bonzoContactId = contactData?.id || contactData?.data?.id;
-                if (!bonzoContactId) throw new Error('Could not create or find contact in Bonzo');
-
-                // Send SMS message via proxy
+                var bonzoContactId = match.contactId;
+                // Send SMS message via proxy (safe — targets existing contact)
                 await _bonzoProxy('send_sms', { contactId: bonzoContactId, payload: { message: smsText } });
                 await logUsageEvent('client_link_sent', {
                     quote_code: window._lastGeneratedQuoteCode || null,
@@ -18543,8 +18663,124 @@ Sent via Above All Carbon HELOC Tool`;
             if (!panel) return;
             var isOpen = panel.style.display === 'block';
             panel.style.display = isOpen ? 'none' : 'block';
-            if (!isOpen) updateQuoteSMS();
+            if (!isOpen) {
+                updateQuoteSMS();
+                refreshCRMMatchStatus();
+            }
         }
+
+        // Live CRM match status — runs when Send panel opens AND when client email/phone
+        // change. Results cached per session keyed by "email|phone" to avoid API spam.
+        // Shows LO whether the Send-via-CRM buttons will enrich an existing contact
+        // (green ✓) or silently skip to fallback because the lead isn't in the CRM (amber ⚠).
+        window._crmMatchCache = window._crmMatchCache || {};
+        var _crmMatchDebounce = null;
+        function refreshCRMMatchStatus() {
+            if (_crmMatchDebounce) clearTimeout(_crmMatchDebounce);
+            _crmMatchDebounce = setTimeout(_crmMatchStatusRunner, 350);
+        }
+        async function _crmMatchStatusRunner() {
+            var wrap = document.getElementById('crm-match-status');
+            if (!wrap) return;
+            var bonzoBadge = document.getElementById('crm-match-bonzo');
+            var ghlBadge = document.getElementById('crm-match-ghl');
+            var hint = document.getElementById('crm-match-hint');
+            var email = (document.getElementById('client-email') || {}).value || '';
+            var phone = (document.getElementById('client-phone') || {}).value || '';
+            if (!email && !phone) {
+                wrap.style.display = 'none';
+                return;
+            }
+            wrap.style.display = 'flex';
+
+            // Detect which CRMs are configured (cheap DOM check — don't hit network)
+            var hasBonzo = !!((document.getElementById('bonzo-api-key') || {}).value || (document.getElementById('bonzo-api-key-2') || {}).value);
+            var hasGhl = !!((document.getElementById('ghl-api-key') || {}).value && (document.getElementById('ghl-location-id') || {}).value);
+
+            if (!hasBonzo && !hasGhl) {
+                wrap.style.display = 'none';
+                return;
+            }
+
+            var cacheKey = String(email).toLowerCase() + '|' + String(phone).replace(/\D/g, '');
+            var cached = window._crmMatchCache[cacheKey];
+            var now = Date.now();
+            if (cached && (now - cached.ts) < 120000) {
+                _renderCrmMatchBadges(cached, hasBonzo, hasGhl);
+                return;
+            }
+
+            // Show "checking…" state immediately
+            if (hasBonzo) {
+                bonzoBadge.style.display = 'inline-block';
+                bonzoBadge.style.background = 'rgba(255,255,255,0.08)';
+                bonzoBadge.style.color = 'rgba(255,255,255,0.5)';
+                bonzoBadge.textContent = '⏳ Bonzo: checking…';
+            } else { bonzoBadge.style.display = 'none'; }
+            if (hasGhl) {
+                ghlBadge.style.display = 'inline-block';
+                ghlBadge.style.background = 'rgba(255,255,255,0.08)';
+                ghlBadge.style.color = 'rgba(255,255,255,0.5)';
+                ghlBadge.textContent = '⏳ GHL: checking…';
+            } else { ghlBadge.style.display = 'none'; }
+            hint.textContent = '';
+
+            // Fire both lookups in parallel
+            var bonzoPromise = hasBonzo ? findBonzoContactByEmailOrPhone(email, phone).catch(function () { return { matched: false }; }) : Promise.resolve({ matched: false, notConfigured: true });
+            var ghlPromise = hasGhl ? findGHLContactByEmailOrPhone(email, phone, (document.getElementById('ghl-location-id') || {}).value).catch(function () { return { matched: false }; }) : Promise.resolve({ matched: false, notConfigured: true });
+            var results = await Promise.all([bonzoPromise, ghlPromise]);
+            var result = { bonzo: results[0], ghl: results[1], ts: now };
+            window._crmMatchCache[cacheKey] = result;
+            _renderCrmMatchBadges(result, hasBonzo, hasGhl);
+        }
+        function _renderCrmMatchBadges(result, hasBonzo, hasGhl) {
+            var bonzoBadge = document.getElementById('crm-match-bonzo');
+            var ghlBadge = document.getElementById('crm-match-ghl');
+            var hint = document.getElementById('crm-match-hint');
+            if (!bonzoBadge || !ghlBadge || !hint) return;
+
+            function paintBadge(el, label, matched) {
+                el.style.display = 'inline-block';
+                if (matched) {
+                    el.style.background = 'rgba(16,185,129,0.18)';
+                    el.style.color = '#34d399';
+                    el.textContent = '✓ ' + label + ': found';
+                } else {
+                    el.style.background = 'rgba(245,158,11,0.18)';
+                    el.style.color = '#fbbf24';
+                    el.textContent = '⚠ ' + label + ': not found';
+                }
+            }
+            if (hasBonzo) paintBadge(bonzoBadge, 'Bonzo', !!result.bonzo.matched);
+            else bonzoBadge.style.display = 'none';
+            if (hasGhl) paintBadge(ghlBadge, 'GHL', !!result.ghl.matched);
+            else ghlBadge.style.display = 'none';
+
+            var allMiss = (hasBonzo && !result.bonzo.matched) && (hasGhl && !result.ghl.matched);
+            var anyMiss = (hasBonzo && !result.bonzo.matched) || (hasGhl && !result.ghl.matched);
+            if (allMiss) {
+                hint.textContent = 'Send buttons will fall back to clipboard/Gmail. Add to your CRM first for auto-enrichment.';
+            } else if (anyMiss) {
+                hint.textContent = 'Send will enrich where matched, skip where not.';
+            } else {
+                hint.textContent = '';
+            }
+        }
+
+        // Refresh match status when the LO edits email/phone
+        (function _wireCRMMatchListeners() {
+            function bind() {
+                ['client-email', 'client-phone'].forEach(function (id) {
+                    var el = document.getElementById(id);
+                    if (el && !el.dataset.crmMatchBound) {
+                        el.addEventListener('input', refreshCRMMatchStatus);
+                        el.dataset.crmMatchBound = '1';
+                    }
+                });
+            }
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bind);
+            else bind();
+        })();
 
         function updateQuoteSMS() {
             var textarea = document.getElementById('send-quote-sms');
@@ -18648,40 +18884,20 @@ Sent via Above All Carbon HELOC Tool`;
 
             if (!await ensureOutboundConsent('sms', contactEmail, contactPhone)) { statusDiv.innerHTML = ''; return; }
 
-            statusDiv.innerHTML = '<span style="color:#a78bfa;">Sending via Bonzo...</span>';
-            var teamId = document.getElementById('bonzo-team-id')?.value || '';
+            statusDiv.innerHTML = '<span style="color:#a78bfa;">Finding contact in Bonzo...</span>';
 
             try {
-                var nameParts = contactName.split(' ');
-                var contactPayload = {
-                    first_name: nameParts[0] || '',
-                    last_name: nameParts.slice(1).join(' ') || '',
-                    email: contactEmail,
-                    phone: contactPhone
-                };
-                if (teamId) contactPayload.team_id = teamId;
-
-                // Create/update contact via proxy (handle duplicates gracefully)
-                var contactData = null;
-                try {
-                    var createResult = await _bonzoProxy('create_contact', { payload: contactPayload });
-                    contactData = createResult.data || createResult;
-                } catch (createErr) {
-                    if (createErr.message && (createErr.message.includes('409') || createErr.message.includes('422') || createErr.message.includes('duplicate'))) {
-                        try {
-                            var searchResult = await _bonzoProxy('search_contact', { payload: { email: contactEmail } });
-                            var prospects = searchResult.data || searchResult;
-                            if (Array.isArray(prospects)) {
-                                contactData = prospects.find(function(p) { return p.email && p.email.toLowerCase() === contactEmail.toLowerCase(); }) || prospects[0];
-                            } else if (prospects && prospects.id) {
-                                contactData = prospects;
-                            }
-                        } catch (e2) { /* search failed */ }
-                    }
-                    if (!contactData) throw createErr;
+                // Match-only — never create a new Bonzo contact.
+                var match = await findBonzoContactByEmailOrPhone(contactEmail, contactPhone);
+                if (!match.matched) {
+                    try { await navigator.clipboard.writeText(smsText); } catch (_) {}
+                    statusDiv.innerHTML = '<span style="color:#f59e0b;">⚠ Lead not in Bonzo — SMS copied to clipboard.</span>';
+                    showToast('Lead not found in Bonzo — SMS copied to clipboard. Add them to Bonzo first for auto-send, or text from your phone.', 'info', 8000);
+                    setTimeout(function() { statusDiv.innerHTML = ''; }, 6000);
+                    return;
                 }
-                var bonzoContactId = contactData?.id || contactData?.data?.id;
-                if (!bonzoContactId) throw new Error('Could not create or find contact in Bonzo');
+                var bonzoContactId = match.contactId;
+                statusDiv.innerHTML = '<span style="color:#a78bfa;">Sending via Bonzo...</span>';
 
                 await _bonzoProxy('send_sms', { contactId: bonzoContactId, payload: { message: smsText } });
                 statusDiv.innerHTML = '<span style="color:#10b981;">✅ SMS sent via Bonzo!</span>';
@@ -18733,18 +18949,20 @@ Sent via Above All Carbon HELOC Tool`;
 
             if (!await ensureOutboundConsent('sms', contactEmail, contactPhone)) { statusDiv.innerHTML = ''; return; }
 
-            statusDiv.innerHTML = '<span style="color:#f97316;">Sending via GHL...</span>';
+            statusDiv.innerHTML = '<span style="color:#f97316;">Finding contact in GHL...</span>';
 
             try {
-                // Upsert contact via proxy (API key stays server-side)
-                var nameParts = contactName.split(' ');
-                var upsertResult = await callGHLProxy('upsert_contact', {
-                    firstName: nameParts[0] || '', lastName: nameParts.slice(1).join(' ') || '',
-                    phone: contactPhone, email: contactEmail, source: 'HELOC Quote Tool'
-                });
-                var contactId = upsertResult.data?.contact?.id;
-                if (!contactId) throw new Error('Could not find or create contact in GHL');
-
+                // Match-only — never create a new GHL contact.
+                var match = await findGHLContactByEmailOrPhone(contactEmail, contactPhone, null);
+                if (!match.matched) {
+                    try { await navigator.clipboard.writeText(smsText); } catch (_) {}
+                    statusDiv.innerHTML = '<span style="color:#f59e0b;">⚠ Lead not in GHL — SMS copied to clipboard.</span>';
+                    showToast('Lead not found in GHL — SMS copied to clipboard. Add them to GHL first for auto-send, or text from your phone.', 'info', 8000);
+                    setTimeout(function() { statusDiv.innerHTML = ''; }, 6000);
+                    return;
+                }
+                var contactId = match.contactId;
+                statusDiv.innerHTML = '<span style="color:#f97316;">Sending via GHL...</span>';
                 // Send SMS via proxy
                 await callGHLProxy('send_sms', { contactId: contactId, message: smsText }, contactId);
                 statusDiv.innerHTML = '<span style="color:#10b981;">✅ SMS sent via GHL!</span>';
@@ -19015,23 +19233,21 @@ Sent via Above All Carbon HELOC Tool`;
             // contact = { email, name, phone, firstName, lastName }
             // excludeCRM = 'ghl' or 'bonzo' (skip the CRM we just sent from to avoid duplicate work)
 
+            // Match-only: never create a contact in either CRM. If the contact exists,
+            // enrich it with tags; if not, silently skip (this is a background sync, no toast).
+
             // Push to GHL if configured and not excluded (via server-side proxy)
             if (excludeCRM !== 'ghl') {
                 try {
                     const ghlApiKey = document.getElementById('ghl-api-key')?.value;
                     const ghlLocationId = document.getElementById('ghl-location-id')?.value;
-                    if (ghlApiKey && ghlLocationId && contact.email) {
-                        // Upsert contact via proxy (API key stays server-side)
-                        var ghlUpsert = await callGHLProxy('upsert_contact', {
-                            firstName: contact.firstName || '', lastName: contact.lastName || '',
-                            email: contact.email, phone: contact.phone || '', source: 'HELOC Quote Tool'
-                        });
-                        var ghlContactId = ghlUpsert.data?.contact?.id;
-
-                        // Add all tags in one call (dedicated endpoint, won't overwrite)
-                        if (ghlContactId && tags.length > 0) {
-                            await callGHLProxy('add_tags', { tags: tags }, ghlContactId);
-                            console.debug('Cross-CRM: Pushed ' + tags.length + ' tags to GHL');
+                    if (ghlApiKey && ghlLocationId && (contact.email || contact.phone)) {
+                        var ghlMatch = await findGHLContactByEmailOrPhone(contact.email, contact.phone, ghlLocationId);
+                        if (ghlMatch.matched && tags.length > 0) {
+                            await callGHLProxy('add_tags', { tags: tags }, ghlMatch.contactId);
+                            console.debug('Cross-CRM: Pushed ' + tags.length + ' tags to GHL for existing contact');
+                        } else {
+                            console.debug('Cross-CRM GHL: contact not found, skipping (match-only policy)');
                         }
                     }
                 } catch (e) { console.debug('Cross-CRM GHL sync skipped:', e.message); }
@@ -19040,18 +19256,13 @@ Sent via Above All Carbon HELOC Tool`;
             // Push to Bonzo if configured and not excluded (via server-side proxy)
             if (excludeCRM !== 'bonzo') {
                 try {
-                    if (contact.email) {
-                        var searchResult = await _bonzoProxy('search_contact', { payload: { email: contact.email } });
-                        var bonzoContactId = searchResult.data?.id || searchResult.id;
-                        if (bonzoContactId) {
-                            await _bonzoProxy('update_contact', { contactId: bonzoContactId, payload: { tags: tags } });
-                            console.debug('Cross-CRM: Pushed ' + tags.length + ' tags to Bonzo');
+                    if (contact.email || contact.phone) {
+                        var bonzoMatch = await findBonzoContactByEmailOrPhone(contact.email, contact.phone);
+                        if (bonzoMatch.matched) {
+                            await _bonzoProxy('update_contact', { contactId: bonzoMatch.contactId, payload: { tags: tags } });
+                            console.debug('Cross-CRM: Pushed ' + tags.length + ' tags to Bonzo for existing contact');
                         } else {
-                            await _bonzoProxy('create_contact', { payload: {
-                                first_name: contact.firstName || '', last_name: contact.lastName || '',
-                                email: contact.email, phone: contact.phone || '', tags: tags
-                            } });
-                            console.debug('Cross-CRM: Created Bonzo contact with ' + tags.length + ' tags');
+                            console.debug('Cross-CRM Bonzo: contact not found, skipping (match-only policy)');
                         }
                     }
                 } catch (e) { console.debug('Cross-CRM Bonzo sync skipped:', e.message); }
@@ -19188,33 +19399,28 @@ Sent via Above All Carbon HELOC Tool`;
 
                 if (teamId) contactPayload.team_id = teamId;
 
+                // Match-only — never create a new Bonzo contact. If the lead isn't already
+                // in Bonzo (via the n8n router or manual Bonzo entry), skip the CRM write
+                // and let the LO use the manual Gmail/Outlook send paths below.
+                log('🔎 Finding contact in Bonzo...');
                 var contactData = null;
-                try {
-                    var createResult = await _bonzoProxy('create_contact', { payload: contactPayload });
-                    contactData = createResult.data || createResult;
-                    log('✅ Contact created: ' + (contactData.id || 'OK'));
-                } catch (createErr) {
-                    if (createErr.message && (createErr.message.includes('409') || createErr.message.includes('422') || createErr.message.includes('duplicate'))) {
-                        log('✅ Contact already exists — searching...');
-                        try {
-                            var searchResult = await _bonzoProxy('search_contact', { payload: { email: contactEmail } });
-                            var prospects = searchResult.data || searchResult;
-                            if (Array.isArray(prospects)) {
-                                contactData = prospects.find(function(p) { return p.email && p.email.toLowerCase() === contactEmail.toLowerCase(); }) || prospects[0];
-                            } else if (prospects && prospects.id) {
-                                contactData = prospects;
-                            }
-                            log('✅ Contact found: ' + (contactData?.id || 'OK'));
-                        } catch (e2) { log('⚠️ Could not find existing contact: ' + e2.message); }
-                    } else {
-                        log('⚠️ Bonzo API error: ' + createErr.message);
-                    }
+                var bonzoMatch = await findBonzoContactByEmailOrPhone(contactEmail, contactPhone);
+                if (bonzoMatch.matched) {
+                    contactData = bonzoMatch.contact;
+                    log('✅ Contact found in Bonzo: ' + (bonzoMatch.contactId || 'OK'));
+                    // Update existing contact's tags + custom fields (not a create — safe enrichment)
+                    try {
+                        await _bonzoProxy('update_contact', { contactId: bonzoMatch.contactId, payload: contactPayload });
+                        log('✅ Tags + custom fields updated on existing contact');
+                    } catch (ue) { log('⚠️ Update contact error: ' + ue.message); }
+                } else {
+                    log('⚠️ Contact not in Bonzo — skipping CRM enrichment (match-only policy). Add them to Bonzo first, or use Gmail/Outlook below.');
                 }
 
-                // Step 2: Send email directly via Bonzo API
+                // Step 2: Send email directly via Bonzo API (only if matched)
                 var _bonzoRichHtml = buildRichEmailHTML();
                 var _bonzoEmailSubject = processTemplate(document.getElementById('email-subject').value);
-                var _bonzoContactId = contactData?.id || contactData?.data?.id;
+                var _bonzoContactId = contactData?.id || contactData?.data?.id || bonzoMatch.contactId;
                 if (_bonzoContactId) {
                     log('⏳ Sending email via Bonzo API...');
                     try {
@@ -21221,12 +21427,12 @@ Sent via Above All Carbon HELOC Tool`;
     `).join('');
         }
 
-        // Push a contact to Bonzo via their API (outbound sync)
+        // DEPRECATED (2026-04-13): Carbon's match-only outbound policy disallows creating
+        // new contacts in Bonzo. Contacts flow FROM Bonzo INTO Supabase via the n8n router.
+        // If you need to enrich a Bonzo prospect, use the match-only send paths instead
+        // (sendViaBonzo, sendSmsViaBonzo, sendQuoteViaBonzo, syncQuoteTagsToCRMs).
         async function pushToBonzo(contactData) {
-            try {
-                await _bonzoProxy('create_contact', { payload: contactData });
-                console.debug('Contact pushed to Bonzo');
-            } catch (e) { console.warn('Bonzo push failed:', e.message); }
+            console.warn('[pushToBonzo] DEPRECATED — match-only policy: use sendViaBonzo or syncQuoteTagsToCRMs. No-op.');
         }
 
         function _val(id) { var el = document.getElementById(id); return el ? el.value : ''; }
