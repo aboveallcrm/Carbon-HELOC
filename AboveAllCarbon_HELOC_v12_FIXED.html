@@ -20440,62 +20440,146 @@ Sent via Above All Carbon HELOC Tool`;
         async function syncAllLeadsToGHL() {
             const apiKey = document.getElementById('ghl-api-key')?.value;
             const locationId = document.getElementById('ghl-location-id')?.value;
-            
+
             if (!apiKey || !locationId) {
                 showToast('Please configure GHL API Key and Location ID first.', 'warning');
                 return;
             }
-            
+
             const sb = window._supabase;
             const userId = window.currentUserId;
-            
+
             if (!sb || !userId) {
                 showToast('Not authenticated.', 'error');
                 return;
             }
-            
+
+            // Confirm — this is a bulk write; LO should consciously trigger it
+            if (!confirm('Sync all your Carbon leads to GHL?\n\nMatch-only policy applies:\n• Leads from Bonzo/manual/parser → push to GHL\n• Leads already from GHL → skipped (no duplicates)\n\nContinue?')) return;
+
             showToast('Starting bulk sync to GHL...', 'info');
-            
+
             try {
-                // Get all leads that need syncing
+                // Get all leads that need syncing. Client-side filter EXCLUDES GHL-sourced
+                // leads unless they already have a resolved ghl_contact_id. The edge function
+                // would skip them anyway via round-trip prevention, but filtering client-side
+                // keeps the queue clean and avoids wasted enqueue work.
                 const { data: leads, error } = await sb
                     .from('leads')
-                    .select('*')
+                    .select('id, source, metadata')
                     .eq('user_id', userId)
                     .or('sync_status.eq.pending,sync_status.eq.error,external_id.is.null')
                     .limit(500);
-                
+
                 if (error) throw error;
-                
                 if (!leads || leads.length === 0) {
                     showToast('No leads need syncing.', 'info');
                     return;
                 }
-                
-                // Add to sync queue
-                const syncItems = leads.map(lead => ({
-                    lead_id: lead.id,
-                    crm_integration_id: null, // Will be looked up by edge function
-                    operation: lead.external_id ? 'update' : 'create',
-                    status: 'pending',
-                    priority: 5
-                }));
-                
+
+                var eligibleLeads = leads.filter(function (l) {
+                    var src = String(l.source || '').toLowerCase();
+                    var knownGhlId = (l.metadata && (l.metadata.ghl_contact_id || l.metadata.crm_contact_id)) || '';
+                    return src !== 'ghl' || !!knownGhlId;
+                });
+                var skippedRoundTrip = leads.length - eligibleLeads.length;
+
+                if (eligibleLeads.length === 0) {
+                    showToast('All ' + leads.length + ' leads are GHL-sourced — nothing to push (round-trip prevention).', 'info', 6000);
+                    return;
+                }
+
+                const syncItems = eligibleLeads.map(function (lead) {
+                    return {
+                        lead_id: lead.id,
+                        crm_integration_id: null,
+                        operation: (lead.metadata && lead.metadata.ghl_contact_id) ? 'update' : 'create',
+                        status: 'pending',
+                        priority: 5
+                    };
+                });
+
                 const { error: queueError } = await sb
                     .from('crm_sync_queue')
                     .insert(syncItems);
-                
+
                 if (queueError) throw queueError;
-                
-                showToast(`Queued ${leads.length} leads for GHL sync. Processing in background...`, 'success');
-                
-                // Trigger immediate sync
+
+                var queuedMsg = 'Queued ' + eligibleLeads.length + ' leads for GHL sync.';
+                if (skippedRoundTrip > 0) queuedMsg += ' Skipped ' + skippedRoundTrip + ' GHL-sourced (no duplicates).';
+                showToast(queuedMsg + ' Processing…', 'success', 5000);
+
+                // Trigger immediate processing (fire-and-forget)
                 var syncHeaders = await getAuthHeaders();
-                if (syncHeaders) fetch(SUPABASE_FUNCTIONS_URL + '/sync-ghl-outbound', { method: 'POST', headers: syncHeaders }).catch(console.error);
-                
+                if (syncHeaders) {
+                    fetch(SUPABASE_FUNCTIONS_URL + '/sync-ghl-outbound', { method: 'POST', headers: syncHeaders })
+                        .catch(function (e) { console.warn('Sync trigger:', e); });
+                }
+
+                // Poll the queue so the LO sees progress + any failures surface
+                _pollGHLSyncProgress(eligibleLeads.length);
+
             } catch (e) {
                 showToast('Error queueing leads for sync: ' + e.message, 'error');
             }
+        }
+
+        // Poll crm_sync_queue for the recently-inserted batch until items settle
+        // (dispatched or failed), surfacing progress + failures to the LO. Auto-stops
+        // after 2 minutes so a slow/stuck queue never leaves the timer running forever.
+        var _ghlSyncPollTimer = null;
+        async function _pollGHLSyncProgress(expectedCount) {
+            if (_ghlSyncPollTimer) { clearInterval(_ghlSyncPollTimer); _ghlSyncPollTimer = null; }
+            var sb = window._supabase;
+            if (!sb) return;
+            var started = Date.now();
+            var MAX_DURATION = 2 * 60 * 1000;
+            // 10-second look-back catches items we just inserted even if DB clock skews slightly
+            var batchStartIso = new Date(Date.now() - 10000).toISOString();
+
+            _ghlSyncPollTimer = setInterval(async function () {
+                try {
+                    // Three parallel count queries — PostgREST doesn't support GROUP BY
+                    // through the client SDK, so we run distinct head-count queries.
+                    var [pendingQ, dispatchedQ, failedQ] = await Promise.all([
+                        sb.from('crm_sync_queue').select('id', { count: 'exact', head: true })
+                            .gte('created_at', batchStartIso).eq('status', 'pending'),
+                        sb.from('crm_sync_queue').select('id', { count: 'exact', head: true })
+                            .gte('created_at', batchStartIso).eq('status', 'dispatched'),
+                        sb.from('crm_sync_queue').select('id', { count: 'exact', head: true })
+                            .gte('created_at', batchStartIso).eq('status', 'failed')
+                    ]);
+
+                    var pending = pendingQ.count || 0;
+                    var dispatched = dispatchedQ.count || 0;
+                    var failed = failedQ.count || 0;
+                    var total = pending + dispatched + failed;
+                    var done = dispatched + failed;
+
+                    if (total > 0 && pending > 0) {
+                        showToast('GHL sync: ' + done + '/' + total + ' done' + (failed ? ' (' + failed + ' failed)' : ''), failed ? 'warning' : 'info', 1500);
+                    }
+
+                    // Finish conditions: nothing pending, or timed out
+                    if (pending === 0 || Date.now() - started > MAX_DURATION) {
+                        clearInterval(_ghlSyncPollTimer);
+                        _ghlSyncPollTimer = null;
+                        if (failed > 0) {
+                            showToast('GHL sync complete — ' + dispatched + ' pushed, ' + failed + ' failed. Open "View Sync Logs" for details.', 'warning', 9000);
+                        } else if (dispatched > 0) {
+                            showToast('✓ GHL sync complete — ' + dispatched + ' leads pushed.', 'success', 5000);
+                        } else if (pending === 0 && total === 0) {
+                            // Nothing matched our filter — already shown "All N are GHL-sourced" earlier
+                        } else {
+                            showToast('GHL sync ended — no items processed in window.', 'info', 5000);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[ghl-sync-poll]', e);
+                    clearInterval(_ghlSyncPollTimer);
+                    _ghlSyncPollTimer = null;
+                }
+            }, 4000);
         }
         
         // Bulk pull GHL contacts → upsert into Carbon leads table via upsert_lead RPC.
@@ -21683,7 +21767,8 @@ Sent via Above All Carbon HELOC Tool`;
                 interestOnly: document.getElementById('toggle-interest-only')?.classList.contains('active') || false,
                 showVariable: document.getElementById('toggle-show-variable')?.classList.contains('active') || false,
                 showRecommendation: document.getElementById('toggle-show-recommendation')?.classList.contains('active') || false,
-                showFees: document.getElementById('toggle-show-fees')?.classList.contains('active') || false,
+                // showFees defaults ON — matches the HTML default and client-quote expectation (!== false)
+                showFees: (function(){ var el = document.getElementById('toggle-show-fees'); return el ? el.classList.contains('active') : true; })(),
                 showDisclaimer: document.getElementById('toggle-show-disclaimer')?.classList.contains('active') || false,
                 // Rec settings
                 recTier: normalizeRecTierValue(document.getElementById('rec-tier-select')?.value || '2'),
@@ -21704,7 +21789,11 @@ Sent via Above All Carbon HELOC Tool`;
         }
 
         function _applyTemplateState(state) {
-            // Restore toggles
+            // Restore toggles. IMPORTANT: if a key is undefined in the saved state
+            // (e.g. older templates didn't persist showFees), leave the toggle AT ITS DEFAULT —
+            // don't flip it off. showFees defaults ON, so missing = on.
+            // Keys that default ON if absent:
+            var DEFAULT_ON = { 'toggle-show-fees': true, 'toggle-show-recommendation': true };
             var toggleMap = {
                 'toggle-interest-only': state.interestOnly,
                 'toggle-show-variable': state.showVariable,
@@ -21715,6 +21804,11 @@ Sent via Above All Carbon HELOC Tool`;
             Object.entries(toggleMap).forEach(function ([id, active]) {
                 var el = document.getElementById(id);
                 if (!el) return;
+                // Missing key → honor default (don't touch the toggle)
+                if (active === undefined || active === null) {
+                    if (DEFAULT_ON[id] && !el.classList.contains('active')) toggleSwitch(el);
+                    return;
+                }
                 if (active && !el.classList.contains('active')) toggleSwitch(el);
                 if (!active && el.classList.contains('active')) toggleSwitch(el);
             });
