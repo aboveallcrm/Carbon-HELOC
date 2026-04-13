@@ -7625,6 +7625,63 @@
             letter-spacing: 0.3px;
             margin-top: 6px;
         }
+        .wt-pay-compare {
+            display: flex;
+            gap: 10px;
+            margin: 16px 0;
+            overflow-x: auto;
+            padding: 4px 0;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .wt-pay-compare::-webkit-scrollbar { display: none; }
+        .wt-pay-compare-item {
+            flex: 1;
+            min-width: 90px;
+            scroll-snap-align: start;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 14px 10px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .wt-pay-compare-item.rec {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2);
+        }
+        .wt-pay-compare-tier {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 6px;
+        }
+        .wt-pay-compare-amt {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+        }
+        .wt-pay-compare-item.rec .wt-pay-compare-amt {
+            color: #34d399;
+        }
+        .wt-pay-compare-rate {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 6px;
+        }
+        .wt-pay-compare-badge {
+            font-size: 8px;
+            background: #10b981;
+            color: #0f172a;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: 700;
+            display: inline-block;
+        }
         .wt-qa-grid {
             display: flex;
             flex-direction: column;
@@ -7793,6 +7850,46 @@
                 font-size: 10px;
                 padding: 3px 10px;
                 border-radius: 12px;
+            }
+            /* Desktop: Payment comparison */
+            .wt-pay-compare {
+                gap: 16px;
+                overflow-x: visible;
+                scroll-snap-type: none;
+                max-width: 700px;
+                margin: 24px auto;
+            }
+            .wt-pay-compare-item {
+                min-width: auto;
+                scroll-snap-align: auto;
+                padding: 20px 16px;
+                border-radius: 14px;
+                cursor: pointer;
+                transition: transform 0.2s, background 0.2s;
+            }
+            .wt-pay-compare-item:hover {
+                background: rgba(255, 255, 255, 0.08);
+                transform: translateY(-2px);
+            }
+            .wt-pay-compare-item.rec:hover {
+                background: rgba(16, 185, 129, 0.15);
+            }
+            .wt-pay-compare-tier {
+                font-size: 11px;
+                margin-bottom: 8px;
+            }
+            .wt-pay-compare-amt {
+                font-size: 22px;
+                margin-bottom: 6px;
+            }
+            .wt-pay-compare-rate {
+                font-size: 13px;
+                margin-bottom: 8px;
+            }
+            .wt-pay-compare-badge {
+                font-size: 9px;
+                padding: 3px 8px;
+                border-radius: 10px;
             }
             /* Desktop: Q&A in 2-column grid */
             .wt-qa-grid {
@@ -8577,7 +8674,8 @@
             background: linear-gradient(135deg, #0a1f3d 0%, #142d52 100%);
             color: #ffffff;
             text-align: center;
-            border-bottom: 3px solid #c5a059;
+            /* Gold accent border removed — was reading as a stripe across the title in PDF
+               output where the navy banner is tightened. Clean navy header now. */
         }
         #template-original .orig-proposal-title {
             font-family: var(--font-heading, 'Playfair Display', serif);
@@ -8742,7 +8840,7 @@
         body.pdf-capture-mode #template-original .orig-proposal-header {
             margin: -12px -24px 10px -24px !important;
             padding: 9px 30px 7px !important;
-            border-bottom-width: 2px !important;
+            border-bottom: 0 !important;
         }
         body.pdf-capture-mode #template-original .orig-proposal-title { font-size: 14px !important; letter-spacing: 1px !important; line-height: 1.1 !important; }
         body.pdf-capture-mode #template-original .orig-proposal-tagline { margin-top: 2px !important; font-size: 8px !important; letter-spacing: 1.4px !important; line-height: 1.1 !important; }
@@ -8780,6 +8878,19 @@
         body.pdf-capture-mode #template-original .orig-matrix-card { padding: 8px 10px !important; }
         body.pdf-capture-mode #template-original .orig-matrix-card th,
         body.pdf-capture-mode #template-original .orig-matrix-card td { padding: 3px 6px !important; font-size: 10px !important; }
+        /* AI-Generated borrower strategy (#sec-borrower-strategy) is a sales-pitch block
+           pulled in for the Enhanced preset only. It must NEVER appear on:
+           - The Original preset (clean PDF-style doc — no AI bloat)
+           - The Compare preset (3-tier card view — no extra noise)
+           - The Walkthrough preset (mobile flow — has its own Q&A)
+           - Any PDF capture (html2canvas snapshots show the live DOM, not @media print) */
+        body.theme-original #sec-borrower-strategy,
+        body.theme-compare #sec-borrower-strategy,
+        body.theme-walkthrough #sec-borrower-strategy,
+        body.pdf-capture-mode #sec-borrower-strategy {
+            display: none !important;
+        }
+
         body.pdf-capture-mode .orig-pdf-btn,
         body.pdf-capture-mode #floating-bar,
         body.pdf-capture-mode #preview-floating-bar,
@@ -8801,11 +8912,11 @@
                 margin: 0 !important;
                 font-size: 11px;
             }
-            /* Hero — aggressive shrink of the tall navy banner */
+            /* Hero — aggressive shrink of the tall navy banner. No gold underline. */
             #template-original .orig-proposal-header {
                 margin: -12px -24px 10px -24px !important;
                 padding: 9px 30px 7px !important;
-                border-bottom-width: 2px !important;
+                border-bottom: 0 !important;
             }
             #template-original .orig-proposal-title { font-size: 14px !important; letter-spacing: 1px !important; line-height: 1.1 !important; }
             #template-original .orig-proposal-tagline { margin-top: 2px !important; font-size: 8px !important; letter-spacing: 1.4px !important; line-height: 1.1 !important; }
@@ -11718,8 +11829,8 @@
                         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
                 }
 
-                // ===== WALKTHROUGH RENDERER (Enterprise only) =====
-                // Mobile-first 5-step swipeable card experience for the borrower.
+                // ===== WALKTHROUGH RENDERER (Enterprise) =====
+                // Responsive 5-step interactive experience for both mobile and desktop.
                 function renderWalkthrough(data, opts) {
                     var container = document.getElementById('template-walkthrough');
                     if (!container) return;
@@ -11775,6 +11886,7 @@
                     // State for walkthrough navigation
                     window._wtStep = 1;
                     var TOTAL = 5;
+                    var isDesktop = window.matchMedia && window.matchMedia('(min-width: 780px)').matches;
 
                     // Brand header (always visible)
                     var brandHtml =
@@ -11792,12 +11904,35 @@
                         return '<div class="wt-progress">' + dots + '</div>';
                     }
 
+                    // Desktop step indicator with numbers and labels
+                    function renderStepIndicator() {
+                        if (!isDesktop) return '';
+                        var steps = [
+                            { label: 'Quote' },
+                            { label: 'Rates' },
+                            { label: 'Payment' },
+                            { label: 'FAQ' },
+                            { label: 'Apply' }
+                        ];
+                        var html = '<div class="wt-step-indicator">';
+                        steps.forEach(function(s, i) {
+                            var num = i + 1;
+                            var cls = num === window._wtStep ? 'active' : (num < window._wtStep ? 'completed' : '');
+                            html += '<div class="wt-step-indicator-item ' + cls + '">' +
+                                '<div class="wt-step-indicator-num">' + (num < window._wtStep ? '✓' : num) + '</div>' +
+                                '<div class="wt-step-indicator-label">' + s.label + '</div>' +
+                            '</div>';
+                        });
+                        html += '</div>';
+                        return html;
+                    }
+
                     // Step renderers
                     function step1() {
                         return '<div class="wt-step-wrap">' +
                             '<div class="wt-step-num">Step 1 of ' + TOTAL + '</div>' +
                             '<h2 class="wt-headline">👋 Hi ' + _esc(firstName) + ', here\'s your HELOC quote.</h2>' +
-                            '<p class="wt-subtle">Prepared by ' + _esc(loName) + ' at ' + _esc(loCompany) + '. Tap through to see your rate options, payment, and next steps.</p>' +
+                            '<p class="wt-subtle">Prepared by ' + _esc(loName) + ' at ' + _esc(loCompany) + '. Walk through to see your rate options, payment, and next steps.</p>' +
                             '<div class="wt-bignum">$' + Math.round(netCash).toLocaleString() + '</div>' +
                             '<p class="wt-subtle">Your requested HELOC amount.</p>' +
                             '<div class="wt-nav">' +
@@ -11819,10 +11954,11 @@
                                 (isRec ? '<div class="wt-tier-rec-badge">✓ Recommended for you</div>' : '') +
                             '</div>';
                         }).join('');
+                        var scrollHint = isDesktop ? '' : '<p class="wt-subtle">Swipe left to see all three tiers. We picked one we think works best for you.</p>';
                         return '<div class="wt-step-wrap">' +
                             '<div class="wt-step-num">Step 2 of ' + TOTAL + '</div>' +
                             '<h2 class="wt-headline">💰 Your rate options.</h2>' +
-                            '<p class="wt-subtle">Swipe left to see all three tiers. We picked one we think works best for you.</p>' +
+                            scrollHint +
                             '<div class="wt-tier-scroll">' + cards + '</div>' +
                             '<div class="wt-nav">' +
                                 '<button class="wt-nav-btn" onclick="_wtGo(1)">← Back</button>' +
@@ -11832,11 +11968,26 @@
                     }
 
                     function step3() {
+                        // Build payment comparison for all tiers
+                        var paymentCompare = threeTiers.map(function(tier) {
+                            var num = parseInt(tier.tier) || 0;
+                            var isRec = num === recTierNum;
+                            var td = pickTermData(tier);
+                            return '<div class="wt-pay-compare-item' + (isRec ? ' rec' : '') + '">' +
+                                '<div class="wt-pay-compare-tier">Tier ' + num + '</div>' +
+                                '<div class="wt-pay-compare-amt">' + fmtPay(td.payment) + '</div>' +
+                                '<div class="wt-pay-compare-rate">' + fmtRate(td.rate) + '</div>' +
+                                (isRec ? '<div class="wt-pay-compare-badge">Recommended</div>' : '') +
+                            '</div>';
+                        }).join('');
+                        
                         return '<div class="wt-step-wrap">' +
                             '<div class="wt-step-num">Step 3 of ' + TOTAL + '</div>' +
                             '<h2 class="wt-headline">📅 Your monthly payment.</h2>' +
                             '<div class="wt-bignum">' + fmtPay(recTd.payment) + '</div>' +
                             '<p class="wt-subtle">At ' + fmtRate(recTd.rate) + ' fixed. That\'s the payment on our recommended tier for you — fully amortized over ' + (recTermKey.replace('yr', '') || '20') + ' years.</p>' +
+                            '<div class="wt-pay-compare">' + paymentCompare + '</div>' +
+                            '<p class="wt-subtle" style="font-size:12px;margin-top:8px;">Compare payments across all tiers to find what works best for your budget.</p>' +
                             '<div class="wt-nav">' +
                                 '<button class="wt-nav-btn" onclick="_wtGo(2)">← Back</button>' +
                                 '<button class="wt-nav-btn primary" onclick="_wtGo(4)">I have questions →</button>' +
@@ -11858,7 +12009,7 @@
                         return '<div class="wt-step-wrap">' +
                             '<div class="wt-step-num">Step 4 of ' + TOTAL + '</div>' +
                             '<h2 class="wt-headline">❓ Got questions?</h2>' +
-                            '<p class="wt-subtle">Tap any question for a quick answer. Want to chat with a real person? Hit Apply Now or schedule a call on the last step.</p>' +
+                            '<p class="wt-subtle">Click any question for a quick answer. Want to chat with a real person? Hit Apply Now or schedule a call on the last step.</p>' +
                             '<div class="wt-qa-grid">' + qaHtml + '</div>' +
                             '<div class="wt-nav">' +
                                 '<button class="wt-nav-btn" onclick="_wtGo(3)">← Back</button>' +
@@ -11876,11 +12027,13 @@
                             (loPhone ? '<a class="wt-cta-secondary" href="tel:' + _esc(String(loPhone).replace(/\D/g, '')) + '">📞 Call ' + _esc(loName) + '</a>' : '');
                         var emailLink = loEmail ?
                             '<a class="wt-cta-secondary" href="mailto:' + _esc(loEmail) + '?subject=' + encodeURIComponent('My HELOC quote — $' + Math.round(netCash).toLocaleString()) + '">✉️ Email ' + _esc(loName) + '</a>' : '';
+                        var ctas = applyBtn + scheduleBtn + emailLink;
+                        var wrappedCtas = isDesktop ? '<div class="wt-cta-wrap">' + ctas + '</div>' : ctas;
                         return '<div class="wt-step-wrap">' +
                             '<div class="wt-step-num">Step 5 of ' + TOTAL + '</div>' +
                             '<h2 class="wt-headline">🚀 Ready to move forward?</h2>' +
                             '<p class="wt-subtle">Three ways to take the next step, ' + _esc(firstName) + '. Pick whichever works best for you.</p>' +
-                            applyBtn + scheduleBtn + emailLink +
+                            wrappedCtas +
                             '<div class="wt-nav" style="margin-top:20px;">' +
                                 '<button class="wt-nav-btn" onclick="_wtGo(4)">← Back</button>' +
                             '</div>' +
@@ -11894,7 +12047,7 @@
                                        step === 3 ? step3() :
                                        step === 4 ? step4() :
                                        step5();
-                        container.innerHTML = brandHtml + renderProgress() + stepHtml;
+                        container.innerHTML = brandHtml + renderProgress() + renderStepIndicator() + stepHtml;
                     }
 
                     // Expose navigators globally so onclick attrs can reach them
@@ -11911,6 +12064,20 @@
                         var el = document.getElementById('wt-qa-' + i);
                         if (el) el.classList.toggle('open');
                     };
+
+                    // Desktop keyboard navigation
+                    if (isDesktop && !window._wtKeyBound) {
+                        window._wtKeyBound = true;
+                        document.addEventListener('keydown', function(e) {
+                            if (e.key === 'ArrowRight' && window._wtStep < TOTAL) {
+                                e.preventDefault();
+                                window._wtGo(window._wtStep + 1);
+                            } else if (e.key === 'ArrowLeft' && window._wtStep > 1) {
+                                e.preventDefault();
+                                window._wtGo(window._wtStep - 1);
+                            }
+                        });
+                    }
 
                     paint();
                 }
