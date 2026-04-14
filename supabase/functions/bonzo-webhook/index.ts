@@ -156,28 +156,36 @@ serve(async (req: Request) => {
             email: pick('email', 'emailAddress', 'email_address', 'email1', 'primary_email', 'primaryEmail', 'contact_email', 'contactEmail'),
             phone: pick('phone', 'phoneNumber', 'phone_number', 'mobile', 'homephone', 'mobilephone', 'primary_phone', 'primaryPhone', 'contact_phone', 'contactPhone', 'cell', 'cellphone', 'phone1'),
             sourceId: payload.id || payload.contactId || payload.contact_id || nested.id || nested.contactId || nested.contact_id || null,
-            // Property & financial fields — check top-level, mortgage nested object, and custom fields
-            creditScore: payload.credit_score || payload.creditScore || mortgage.credit_score
+            // Property & financial fields — check top-level + nested wrappers via pick(),
+            // then fall back to Bonzo's mortgage/custom-array conventions.
+            creditScore: pick('credit_score', 'creditScore', 'credit_rating', 'creditRating', 'fico', 'ficoScore')
+                || mortgage.credit_score
                 || customMap['credit_score'] || customMap['heloc_credit_score'] || customMap['Credit Score']
-                || payload.credit_rating || customMap['credit_rating'] || payload.field_041 || '',
-            propertyAddress: payload.property_address || payload.propertyAddress || mortgage.property_address
-                || payload.address || payload.address1 || payload.mail_address
-                || (payload.street ? [payload.street, payload.city, payload.state, payload.zip].filter(Boolean).join(', ') : '') || '',
-            homeValue: payload.home_value || payload.homeValue || payload.property_value || mortgage.property_value
+                || customMap['credit_rating'] || payload.field_041 || '',
+            propertyAddress: pick('property_address', 'propertyAddress', 'address', 'address1', 'mail_address', 'street_address', 'streetAddress')
+                || mortgage.property_address
+                || (payload.street ? [payload.street, payload.city, payload.state, payload.zip].filter(Boolean).join(', ') : '')
+                || (nested.street ? [nested.street, nested.city, nested.state, nested.zip].filter(Boolean).join(', ') : '')
+                || '',
+            homeValue: pick('home_value', 'homeValue', 'property_value', 'propertyValue', 'estimated_value', 'estimatedValue')
+                || mortgage.property_value
                 || customMap['property_value'] || customMap['heloc_home_value']
                 || payload.field_006 || payload.field_007 || '',
-            mortgageBalance: payload.mortgage_balance || payload.mortgageBalance || mortgage.loan_amount
-                || payload.current_balance || payload.balance || payload.current_loan_amount
+            mortgageBalance: pick('mortgage_balance', 'mortgageBalance', 'current_balance', 'currentBalance', 'balance', 'current_loan_amount', 'currentLoanAmount', 'loan_balance', 'loanBalance')
+                || mortgage.loan_amount
                 || customMap['mortgage_balance'] || customMap['heloc_mortgage_balance'] || customMap['Mortgage Balance']
                 || payload.field_044 || '',
-            cashOut: payload.cash_out_amount || payload.cashOut || payload.cash_out || mortgage.cash_out_amount
+            cashOut: pick('cash_out_amount', 'cashOutAmount', 'cashOut', 'cash_out', 'cash_needed', 'cashNeeded', 'requested_amount', 'requestedAmount')
+                || mortgage.cash_out_amount
                 || customMap['cash_out_amount'] || customMap['heloc_cash_back']
-                || payload.cash_needed || payload.field_036 || payload.field_039 || '',
-            loanType: payload.loan_type || payload.loanType || mortgage.loan_type
+                || payload.field_036 || payload.field_039 || '',
+            loanType: pick('loan_type', 'loanType')
+                || mortgage.loan_type
                 || customMap['loan_type'] || customMap['heloc_loan_type'] || customMap['Loan Type'] || '',
-            propertyType: payload.property_type || payload.propertyType || mortgage.property_type
+            propertyType: pick('property_type', 'propertyType', 'occupancy', 'propertyOccupancy')
+                || mortgage.property_type
                 || customMap['property_type'] || customMap['heloc_property_type'] || customMap['Property Type']
-                || payload.occupancy || '',
+                || '',
         }
 
         // Reject leads with no identifiable info (no name, no email, no phone)
