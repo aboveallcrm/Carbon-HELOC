@@ -117,35 +117,75 @@ serve(async (req: Request) => {
             if (cf && cf.key) customMap[cf.key] = cf.value || ''
         }
 
+        // Some n8n / HubSpot / Salesforce / generic CRM nodes nest contact fields under a wrapper.
+        // Treat `payload` as primary and fall back to common nested shapes for each field lookup.
+        // IMPORTANT: top-level keys always win over nested keys so existing Bonzo/GHL shapes are unaffected.
+        const nested = (payload.contact && typeof payload.contact === 'object') ? payload.contact
+            : (payload.properties && typeof payload.properties === 'object') ? payload.properties
+            : (payload.lead && typeof payload.lead === 'object') ? payload.lead
+            : (payload.data && typeof payload.data === 'object') ? payload.data
+            : (payload.body && typeof payload.body === 'object') ? payload.body
+            : {}
+        const pick = (...keys: string[]): string => {
+            for (const k of keys) {
+                const v = payload[k]
+                if (v !== undefined && v !== null && v !== '') return String(v)
+            }
+            for (const k of keys) {
+                const v = nested[k]
+                if (v !== undefined && v !== null && v !== '') return String(v)
+            }
+            return ''
+        }
+
+        // If only a combined name was provided, split it so downstream name rendering works.
+        // First token → firstName, remainder → lastName. "Madonna" stays firstName-only.
+        const combinedName = pick('name', 'full_name', 'fullName', 'contact_name', 'contactName', 'display_name', 'displayName')
+        let combinedFirst = ''
+        let combinedLast = ''
+        if (combinedName) {
+            const parts = combinedName.trim().split(/\s+/)
+            combinedFirst = parts.shift() || ''
+            combinedLast = parts.join(' ')
+        }
+
         // Normalize lead data from various CRM formats (GHL, Bonzo, LeadMailbox, Zapier, n8n)
         const leadData = {
-            firstName: payload.firstName || payload.first_name || payload.fname || payload.firstname || '',
-            lastName: payload.lastName || payload.last_name || payload.lname || payload.lastname || '',
-            email: payload.email || payload.emailAddress || payload.email_address || '',
-            phone: payload.phone || payload.phoneNumber || payload.mobile || payload.homephone || payload.mobilephone || '',
-            sourceId: payload.id || payload.contactId || payload.contact_id || null,
-            // Property & financial fields — check top-level, mortgage nested object, and custom fields
-            creditScore: payload.credit_score || payload.creditScore || mortgage.credit_score
+            firstName: pick('firstName', 'first_name', 'fname', 'firstname', 'given_name', 'givenName', 'forename') || combinedFirst,
+            lastName: pick('lastName', 'last_name', 'lname', 'lastname', 'family_name', 'familyName', 'surname') || combinedLast,
+            email: pick('email', 'emailAddress', 'email_address', 'email1', 'primary_email', 'primaryEmail', 'contact_email', 'contactEmail'),
+            phone: pick('phone', 'phoneNumber', 'phone_number', 'mobile', 'homephone', 'mobilephone', 'primary_phone', 'primaryPhone', 'contact_phone', 'contactPhone', 'cell', 'cellphone', 'phone1'),
+            sourceId: payload.id || payload.contactId || payload.contact_id || nested.id || nested.contactId || nested.contact_id || null,
+            // Property & financial fields — check top-level + nested wrappers via pick(),
+            // then fall back to Bonzo's mortgage/custom-array conventions.
+            creditScore: pick('credit_score', 'creditScore', 'credit_rating', 'creditRating', 'fico', 'ficoScore')
+                || mortgage.credit_score
                 || customMap['credit_score'] || customMap['heloc_credit_score'] || customMap['Credit Score']
-                || payload.credit_rating || customMap['credit_rating'] || payload.field_041 || '',
-            propertyAddress: payload.property_address || payload.propertyAddress || mortgage.property_address
-                || payload.address || payload.address1 || payload.mail_address
-                || (payload.street ? [payload.street, payload.city, payload.state, payload.zip].filter(Boolean).join(', ') : '') || '',
-            homeValue: payload.home_value || payload.homeValue || payload.property_value || mortgage.property_value
+                || customMap['credit_rating'] || payload.field_041 || '',
+            propertyAddress: pick('property_address', 'propertyAddress', 'address', 'address1', 'mail_address', 'street_address', 'streetAddress')
+                || mortgage.property_address
+                || (payload.street ? [payload.street, payload.city, payload.state, payload.zip].filter(Boolean).join(', ') : '')
+                || (nested.street ? [nested.street, nested.city, nested.state, nested.zip].filter(Boolean).join(', ') : '')
+                || '',
+            homeValue: pick('home_value', 'homeValue', 'property_value', 'propertyValue', 'estimated_value', 'estimatedValue')
+                || mortgage.property_value
                 || customMap['property_value'] || customMap['heloc_home_value']
                 || payload.field_006 || payload.field_007 || '',
-            mortgageBalance: payload.mortgage_balance || payload.mortgageBalance || mortgage.loan_amount
-                || payload.current_balance || payload.balance || payload.current_loan_amount
+            mortgageBalance: pick('mortgage_balance', 'mortgageBalance', 'current_balance', 'currentBalance', 'balance', 'current_loan_amount', 'currentLoanAmount', 'loan_balance', 'loanBalance')
+                || mortgage.loan_amount
                 || customMap['mortgage_balance'] || customMap['heloc_mortgage_balance'] || customMap['Mortgage Balance']
                 || payload.field_044 || '',
-            cashOut: payload.cash_out_amount || payload.cashOut || payload.cash_out || mortgage.cash_out_amount
+            cashOut: pick('cash_out_amount', 'cashOutAmount', 'cashOut', 'cash_out', 'cash_needed', 'cashNeeded', 'requested_amount', 'requestedAmount')
+                || mortgage.cash_out_amount
                 || customMap['cash_out_amount'] || customMap['heloc_cash_back']
-                || payload.cash_needed || payload.field_036 || payload.field_039 || '',
-            loanType: payload.loan_type || payload.loanType || mortgage.loan_type
+                || payload.field_036 || payload.field_039 || '',
+            loanType: pick('loan_type', 'loanType')
+                || mortgage.loan_type
                 || customMap['loan_type'] || customMap['heloc_loan_type'] || customMap['Loan Type'] || '',
-            propertyType: payload.property_type || payload.propertyType || mortgage.property_type
+            propertyType: pick('property_type', 'propertyType', 'occupancy', 'propertyOccupancy')
+                || mortgage.property_type
                 || customMap['property_type'] || customMap['heloc_property_type'] || customMap['Property Type']
-                || payload.occupancy || '',
+                || '',
         }
 
         // Reject leads with no identifiable info (no name, no email, no phone)
@@ -154,6 +194,49 @@ serve(async (req: Request) => {
                 JSON.stringify({ ok: true, skipped: true, reason: 'No contact data (name, email, or phone) found in payload' }),
                 { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             )
+        }
+
+        // Breadcrumb: log the payload shape when a lead arrives without any name so we can spot
+        // further field aliases we still don't handle (shows up in Supabase function logs).
+        if (!leadData.firstName && !leadData.lastName) {
+            try {
+                console.warn(
+                    '[bonzo-webhook] nameless lead from source=' + source +
+                    ' top_keys=' + JSON.stringify(Object.keys(payload || {})) +
+                    ' nested_keys=' + JSON.stringify(Object.keys(nested || {}))
+                )
+            } catch (_) { /* non-fatal */ }
+        }
+
+        // Display-name fallback: if both first and last are empty, derive something usable from
+        // email local-part or phone digits so the leads UI, notification email, and any
+        // downstream n8n payloads stop showing the literal word "Unknown". Local-only —
+        // we do NOT push this back to Bonzo or GHL.
+        const deriveDisplayName = (email: string, phone: string): string => {
+            if (email) {
+                const local = email.split('@')[0] || ''
+                const cleaned = local.replace(/[._-]+/g, ' ').replace(/\d+$/, '').trim()
+                if (cleaned) {
+                    return cleaned
+                        .split(/\s+/)
+                        .map(p => p ? p[0].toUpperCase() + p.slice(1) : '')
+                        .join(' ')
+                        .trim()
+                }
+            }
+            if (phone) {
+                const digits = phone.replace(/\D/g, '')
+                if (digits.length >= 10) {
+                    const d = digits.slice(-10)
+                    return `Lead (${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`
+                }
+                if (digits) return 'Lead ' + digits
+            }
+            return ''
+        }
+        if (!leadData.firstName && !leadData.lastName) {
+            const fallback = deriveDisplayName(leadData.email, leadData.phone)
+            if (fallback) leadData.firstName = fallback
         }
 
         // Map Bonzo tags/event to pipeline status
