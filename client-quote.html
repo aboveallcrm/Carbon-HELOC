@@ -9096,6 +9096,9 @@
         <button onclick="openApplyModal()" id="btn-apply"><span data-i18n="ctaMain">&#10003; Let's Move Forward</span></button>
         <button class="secondary" id="btn-ask" onclick="askQuestion()"><span data-i18n="ctaAsk">&#128161; Ask Ezra</span></button>
         <button class="secondary fb-extra" id="btn-schedule" onclick="scheduleCall()" style="display:none;"><span data-i18n="ctaSchedule">&#128197; Schedule Call</span></button>
+        <button class="secondary fb-extra" id="btn-call-lo" onclick="callLoanOfficer()" style="display:none;"><span>&#128222; Call Loan Officer</span></button>
+        <button class="secondary fb-extra" id="btn-text-lo" onclick="textLoanOfficer()" style="display:none;"><span>&#128172; Text Loan Officer</span></button>
+        <button class="secondary fb-extra" id="btn-share-with" onclick="shareWithSomeone()"><span>&#128228; Share with Someone</span></button>
         <button class="secondary fb-extra" id="btn-review" onclick="leaveReview()" style="display:none;"><span data-i18n="ctaReview">&#11088; Leave a Review</span></button>
         <button class="secondary fb-extra" id="btn-save-contact" onclick="saveContactVCF()" style="display:none;"><span data-i18n="ctaSaveContact">&#128222; Save Contact</span></button>
         <button class="secondary fb-extra" onclick="downloadPDF()"><span data-i18n="ctaPdf">&#128196; Save PDF</span></button>
@@ -10236,14 +10239,15 @@
                             <span class="faq-icon">&#9660;</span>
                         </button>
                         <div class="faq-answer">
-                            <p>This depends on your loan type:</p>
+                            <p>This depends on which option you chose at application:</p>
                             <ul>
-                                <li><strong>Variable Rate HELOC:</strong> Your rate adjusts with the market (typically based on Prime Rate). Your payment may go up or down.</li>
-                                <li><strong>Fixed Rate Option:</strong> Some lenders let you convert portions to a fixed rate. Ask your loan officer if this is available.</li>
+                                <li><strong>Variable Rate HELOC:</strong> Your rate adjusts with the market (typically tied to the Prime Rate). Your payment may go up or down over time.</li>
+                                <li><strong>Fixed Rate HELOC:</strong> Your rate is locked for the life of the loan. Regardless of what the market does, your payment stays the same.</li>
                             </ul>
+                            <p><strong>You pick one upfront, and that's your rate until payoff</strong>, whether that's through scheduled payments, early payoff, or a future refinance. There's no mid-loan conversion.</p>
                             <p><strong>&#128640; Secure Your Rate Today</strong></p>
                             <p>Rates can change daily. The sooner you apply, the sooner you lock in your quoted rate. Don't let rising rates cost you thousands over the life of your loan. <strong>Apply now to secure your offer!</strong></p>
-                            <p style="margin-top: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border-left: 3px solid var(--green); border-radius: 0 6px 6px 0;"><strong>Refinance Anytime:</strong> If rates drop in the future, you can always refinance with <span id="faq-lo-name">your loan officer</span> for a lower rate — no need to shop around. No prepayment penalty means you're never locked in.</p>
+                            <p style="margin-top: 12px; padding: 12px; background: rgba(16, 185, 129, 0.1); border-left: 3px solid var(--green); border-radius: 0 6px 6px 0;"><strong>Refinance Anytime:</strong> If rates drop down the road, you've got options. You can refinance this HELOC into a lower rate, roll the balance into a cash-out refi of your first mortgage, or pay it off entirely. <strong>No prepayment penalty, ever</strong>, so you're never locked in.</p>
                         </div>
                     </div>
                     
@@ -12605,8 +12609,15 @@
                     return '<div class="rec-item' + (r.final ? ' final' : '') + '"><div class="rec-label">' + esc(r.label) + '</div><div class="rec-value">' + esc(r.value) + '</div></div>';
                 }).join('');
 
-                // Borrower Strategy (personalized message)
-                if (data.borrowerStrategy) {
+                // Borrower Strategy (AI-generated personalized message).
+                // Gated behind linkOptions.showAiStrategy === true. Default hidden,
+                // because (a) clients are wary of "AI-generated" copy on financial
+                // decisions, and (b) the LO-side preview was showing this block when
+                // the LO screenshotted the quote to share, which is off-brand.
+                // LO explicitly opts in per quote from the Quote Builder when they
+                // want the AI strategy to appear on the client view.
+                var _loOpts = (data && data.linkOptions) || {};
+                if (data.borrowerStrategy && _loOpts.showAiStrategy === true) {
                     var strategyEl = document.getElementById('borrower-strategy-text');
                     var strategySection = document.getElementById('sec-borrower-strategy');
                     if (strategyEl && strategySection) {
@@ -12831,9 +12842,36 @@
                     btnSaveContact.style.display = '';
                 }
 
-                // Show Review section — always show with inline review cards; link to review page if available
+                // Show Call / Text LO buttons if phone is set, and personalize button
+                // labels with LO first name (e.g. "Call Eddie" / "Text Eddie").
+                var btnCallLo = document.getElementById('btn-call-lo');
+                var btnTextLo = document.getElementById('btn-text-lo');
+                if (lo.phone) {
+                    var loFirstName = (lo.name || '').split(' ')[0] || 'Loan Officer';
+                    if (btnCallLo) {
+                        btnCallLo.style.display = '';
+                        var callSpan = btnCallLo.querySelector('span');
+                        if (callSpan) callSpan.innerHTML = '&#128222; Call ' + esc(loFirstName);
+                    }
+                    if (btnTextLo) {
+                        btnTextLo.style.display = '';
+                        var textSpan = btnTextLo.querySelector('span');
+                        if (textSpan) textSpan.innerHTML = '&#128172; Text ' + esc(loFirstName);
+                    }
+                }
+
+                // Show Review section only when the LO has real reviews or a real
+                // reviewLink. Previously this section rendered a hardcoded default
+                // set of testimonials ("Sarah M.", "David R.", "Jennifer L.") any
+                // time the LO hadn't seeded real ones — which looked like fake
+                // social proof. Now we hide the whole block when there's nothing
+                // authentic to show.
                 var secReviews = document.getElementById('sec-reviews');
-                if (secReviews) {
+                var _hasRealReviews = lo && Array.isArray(lo.reviews) && lo.reviews.length > 0;
+                var _hasReviewLink = lo && lo.reviewLink;
+                if (secReviews && !_hasRealReviews && !_hasReviewLink) {
+                    secReviews.style.display = 'none';
+                } else if (secReviews) {
                     secReviews.style.display = '';
                     var reviewLinkBtn = document.getElementById('review-link-btn');
                     if (reviewLinkBtn) {
@@ -12859,15 +12897,18 @@
                         for (var ei = 0; ei < Math.max(0, 5 - fullCount - (hasHalf ? 1 : 0)); ei++) starsStr += '<span style="color:#e5e7eb;">&#9733;</span>';
                         reviewStarsEl.innerHTML = starsStr;
                     }
-                    // Inline review cards
-                    var defaultReviews = [
-                        { name: 'Sarah M.', text: 'The process was incredibly smooth. Had my HELOC funded in just 5 days!', rating: 5 },
-                        { name: 'David R.', text: 'Best rates I found anywhere. The team made everything simple and transparent.', rating: 5 },
-                        { name: 'Jennifer L.', text: 'I was nervous about tapping my equity, but they explained everything clearly. No hidden fees.', rating: 5 }
-                    ];
-                    var reviews = (lo.reviews && lo.reviews.length) ? lo.reviews : defaultReviews;
+                    // Inline review cards — only render when the LO has seeded real
+                    // reviews. Hardcoded placeholders ("Sarah M.", "David R.",
+                    // "Jennifer L.") read as fake social proof, so we skip card
+                    // rendering when lo.reviews is empty. The "See more reviews"
+                    // CTA above still shows (when lo.reviewLink is set) so clients
+                    // can visit the LO's real review page if they want.
+                    var reviews = _hasRealReviews ? lo.reviews : [];
                     var reviewGrid = document.getElementById('review-cards-grid');
-                    if (reviewGrid) {
+                    if (reviewGrid && !_hasRealReviews) {
+                        reviewGrid.style.display = 'none';
+                    }
+                    if (reviewGrid && _hasRealReviews) {
                         var rHtml = '';
                         reviews.slice(0, 3).forEach(function(r) {
                             var stars = '';
@@ -13329,6 +13370,43 @@
                 showToast('Message sent! Your loan officer will respond shortly.');
             };
             window.shareQuote = function () { openShareModal(); };
+
+            // Direct call to the LO (opens native dialer on mobile, phone app on desktop)
+            window.callLoanOfficer = function () {
+                var lo = window._loInfo || {};
+                var phone = (lo.phone || '').replace(/\D/g, '');
+                if (!phone) return;
+                trackEvent('lo_call_tapped', { code: code });
+                window.location.href = 'tel:' + phone;
+            };
+
+            // Text the LO with a pre-filled opener referencing this quote
+            window.textLoanOfficer = function () {
+                var lo = window._loInfo || {};
+                var phone = (lo.phone || '').replace(/\D/g, '');
+                if (!phone) return;
+                var firstName = (lo.name || '').split(' ')[0] || '';
+                var greeting = firstName ? 'Hi ' + firstName + ', ' : 'Hi, ';
+                var body = greeting + 'I had a question about my HELOC quote.';
+                trackEvent('lo_text_tapped', { code: code });
+                window.location.href = 'sms:' + phone + '?body=' + encodeURIComponent(body);
+            };
+
+            // Share this quote via SMS without specifying a recipient — the client
+            // picks who (spouse, partner, financial advisor, etc.) in their native
+            // SMS composer. Body is pre-filled with context + the quote URL.
+            window.shareWithSomeone = function () {
+                var lo = window._loInfo || {};
+                var company = lo.company || lo.lenderName || '';
+                var loName = lo.name || '';
+                var url = window.location.href;
+                var parts = ['Take a look at this HELOC quote'];
+                if (loName) parts.push('from ' + loName);
+                if (company) parts.push('at ' + company);
+                var body = parts.join(' ') + ': ' + url;
+                trackEvent('share_with_someone_tapped', { code: code });
+                window.location.href = 'sms:?body=' + encodeURIComponent(body);
+            };
 
             // Email quote link to yourself — one-tap save-and-return
             window.emailQuoteToSelf = function () {
