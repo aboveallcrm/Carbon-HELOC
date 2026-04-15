@@ -13052,7 +13052,7 @@
                     }
 
                     // Initialize Psychology Video Funnel
-                    initPsychVideoFunnel(data, lo);
+                    initPsychVideoFunnel(data, lo, opts);
                 } else {
                     // Video off — hide the section entirely
                     if (videoSection) videoSection.style.display = 'none';
@@ -13254,12 +13254,13 @@
             var _videoCompleted = false;
 
             // Initialize Psychology Video Funnel
-            window.initPsychVideoFunnel = function (data, lo) {
+            window.initPsychVideoFunnel = function (data, lo, opts) {
+                opts = opts || {};
                 // Show urgency bar
                 var urgencyBar = document.getElementById('pvf-urgency-bar');
                 if (urgencyBar) urgencyBar.style.display = 'inline-flex';
 
-                // Start countdown
+                // Start countdown (reads real link.expires_at from window._quoteExpiry)
                 startCountdown();
 
                 // Update LO info
@@ -13269,18 +13270,39 @@
                 var captionText = document.getElementById('pvf-caption-text');
 
                 if (loNameEl) loNameEl.textContent = loName;
-                if (loAvatar && lo.name) {
-                    var initials = lo.name.split(' ').map(function (n) { return n.charAt(0).toUpperCase(); }).join('').substring(0, 2);
-                    loAvatar.textContent = initials;
+                if (loAvatar) {
+                    // If the LO has a real headshot, swap the emoji/initials div for an <img>.
+                    // Fall back to initials (if we have a name) or the existing 👤 emoji.
+                    if (lo && lo.headshot) {
+                        var safeHead = String(lo.headshot).replace(/"/g, '&quot;');
+                        var altName = (lo.name || 'Your Advisor').replace(/"/g, '&quot;');
+                        loAvatar.outerHTML = '<img src="' + safeHead + '" alt="' + altName
+                            + '" id="pvf-lo-avatar" class="pvf-lo-avatar" '
+                            + 'onerror="this.outerHTML=\'<div class=&quot;pvf-lo-avatar-fallback&quot; id=&quot;pvf-lo-avatar&quot;>'
+                            + (lo.name ? lo.name.split(' ').map(function(n){return n.charAt(0).toUpperCase();}).join('').substring(0,2) : '👤')
+                            + '</div>\'">';
+                    } else if (lo && lo.name) {
+                        var initials = lo.name.split(' ').map(function (n) { return n.charAt(0).toUpperCase(); }).join('').substring(0, 2);
+                        loAvatar.textContent = initials;
+                    }
                 }
 
-                // Update caption with personalized data
+                // Update caption with personalized data — use whichever fields are present
+                // instead of requiring BOTH homeValue and cashBack (which left the template
+                // copy visible whenever either field was missing).
                 if (captionText && data) {
                     var homeValue = data.homeValue ? parseFloat(String(data.homeValue).replace(/[$,]/g, '')) : 0;
                     var cashBack = data.cashBack ? parseFloat(String(data.cashBack).replace(/[$,]/g, '')) : 0;
+                    var fmtHV = homeValue ? '$' + (homeValue / 1000000 >= 1 ? (homeValue / 1000000).toFixed(2) + 'M' : (homeValue / 1000).toFixed(0) + 'k') : '';
+                    var fmtCB = cashBack ? '$' + (cashBack / 1000).toFixed(0) + 'k' : '';
                     if (homeValue && cashBack) {
-                        captionText.innerHTML = '"Based on your <strong>$' + (homeValue / 1000000 >= 1 ? (homeValue / 1000000).toFixed(2) + 'M' : (homeValue / 1000).toFixed(0) + 'k') + '</strong> home value, I found a way to access <strong>$' + (cashBack / 1000).toFixed(0) + 'k</strong> in equity while keeping your payments manageable..."';
+                        captionText.innerHTML = '"Based on your <strong>' + fmtHV + '</strong> home value, I found a way to access <strong>' + fmtCB + '</strong> in equity while keeping your payments manageable..."';
+                    } else if (homeValue) {
+                        captionText.innerHTML = '"Based on your <strong>' + fmtHV + '</strong> home value, I\'ve mapped out a few ways to put your equity to work..."';
+                    } else if (cashBack) {
+                        captionText.innerHTML = '"I found a way for you to access <strong>' + fmtCB + '</strong> in equity while keeping your payments manageable..."';
                     }
+                    // else: leave the neutral template copy in place
                 }
 
                 // Update savings calculator
@@ -13292,14 +13314,63 @@
                 if (paymentAmount && data.payment) {
                     paymentAmount.textContent = data.payment;
                 }
+
+                // Social proof bar: bind from LO-configured opts.socialProof, else hide
+                // the block entirely. Previously the counts "247 homeowners" / "$487/month"
+                // / "1,200+ reviews" were hardcoded in the markup and looked generic/untrue.
+                var sp = (opts && opts.socialProof) || null;
+                var socialBar = document.getElementById('pvf-social-proof');
+                if (socialBar) {
+                    var countEl = document.getElementById('pvf-homeowners-count');
+                    var savingsEl = document.getElementById('pvf-savings-avg');
+                    var ratingEl = socialBar.querySelector('.pvf-rating-text');
+                    var hasAny = false;
+                    if (sp && sp.homeownersLabel && countEl) {
+                        countEl.textContent = sp.homeownersLabel;
+                        hasAny = true;
+                    }
+                    if (sp && sp.savingsAvgLabel && savingsEl) {
+                        savingsEl.textContent = sp.savingsAvgLabel;
+                        hasAny = true;
+                    }
+                    if (sp && sp.reviewsLabel && ratingEl) {
+                        ratingEl.textContent = sp.reviewsLabel;
+                        hasAny = true;
+                    }
+                    // If LO hasn't configured any real numbers, hide the social-proof strip
+                    // entirely rather than showing unverifiable placeholders to the client.
+                    if (!sp || !hasAny) {
+                        socialBar.style.display = 'none';
+                    }
+                }
+
+                // Video duration badge: bind if LO provided a real duration label
+                var durEl = document.getElementById('pvf-video-duration');
+                if (durEl) {
+                    if (opts && opts.videoDurationLabel) {
+                        durEl.textContent = opts.videoDurationLabel;
+                    } else {
+                        // Hide the badge rather than show the hardcoded "2:15"
+                        var durBadge = durEl.closest('.pvf-duration-badge');
+                        if (durBadge) durBadge.style.display = 'none';
+                    }
+                }
             };
 
             // Countdown Timer
             function startCountdown() {
-                var expiry = localStorage.getItem('quoteExpiry_' + code);
-                if (!expiry) {
-                    expiry = Date.now() + (48 * 60 * 60 * 1000);
-                    localStorage.setItem('quoteExpiry_' + code, expiry);
+                // Prefer the real quote expiry from the DB (set by the LO at send time).
+                // Previously this generated a fresh 48h window from the client's first
+                // visit via localStorage — which meant the countdown was fake (each
+                // browser got its own "47:59:59" regardless of real remaining time).
+                var expiry;
+                if (window._quoteExpiry) {
+                    expiry = new Date(window._quoteExpiry).getTime();
+                } else {
+                    // No expiry on the link row — hide the countdown rather than fake one.
+                    var urgencyBar = document.getElementById('pvf-urgency-bar');
+                    if (urgencyBar) urgencyBar.style.display = 'none';
+                    return;
                 }
 
                 function update() {
