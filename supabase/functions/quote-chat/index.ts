@@ -456,6 +456,7 @@ serve(async (req: Request) => {
       const loName = link.lo_info?.name || "your loan officer";
       const reply = `Great question! That's actually one ${loName} can answer best — they have the full picture and can give you the exact details. Want me to set up a quick callback so they can walk you through it?`;
       return json({
+        text: reply,
         reply,
         kb_only_redirect: true,
         remainingMessages: Math.max(0, RATE_LIMIT - currentCount)
