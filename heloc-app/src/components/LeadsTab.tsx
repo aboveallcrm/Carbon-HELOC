@@ -2,23 +2,38 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthProvider';
 
-interface LeadData {
-    first_name?: string;
-    last_name?: string;
-    email?: string;
-    phone?: string;
-    source_id?: string;
-    raw?: unknown;
-}
-
 interface Lead {
     id: string;
     user_id: string;
-    source: string;
-    data: LeadData;
-    status: string;
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+    phone: string | null;
+    source: string | null;
+    crm_source: string | null;
+    status: string | null;
+    loan_type: string | null;
+    property_type: string | null;
+    metadata: Record<string, unknown> | null;
+    engagement_score: number | null;
+    last_click_at: string | null;
+    quote_url: string | null;
+    quote_sent_at: string | null;
     created_at: string;
 }
+
+const statusColors: Record<string, string> = {
+    new: 'bg-blue-100 text-blue-800',
+    contacted: 'bg-yellow-100 text-yellow-800',
+    qualified: 'bg-purple-100 text-purple-800',
+    quoted: 'bg-indigo-100 text-indigo-800',
+    application_sent: 'bg-orange-100 text-orange-800',
+    in_underwriting: 'bg-amber-100 text-amber-800',
+    approved: 'bg-emerald-100 text-emerald-800',
+    funded: 'bg-green-100 text-green-800',
+    lost: 'bg-red-100 text-red-800',
+    on_hold: 'bg-gray-100 text-gray-600',
+};
 
 export const LeadsTab: React.FC = () => {
     const { user } = useAuth();
@@ -35,6 +50,7 @@ export const LeadsTab: React.FC = () => {
                 .from('leads')
                 .select('*')
                 .eq('user_id', user.id)
+                .is('deleted_at', null)
                 .order('created_at', { ascending: false })
                 .limit(50);
 
@@ -98,25 +114,25 @@ export const LeadsTab: React.FC = () => {
                                         {new Date(lead.created_at).toLocaleString()}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {lead.data?.first_name} {lead.data?.last_name}
+                                        {[lead.first_name, lead.last_name].filter(Boolean).join(' ') || '—'}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <div>{lead.data?.email || '—'}</div>
-                                        <div className="text-xs text-gray-400">{lead.data?.phone || '—'}</div>
+                                        <div>{lead.email || '—'}</div>
+                                        <div className="text-xs text-gray-400">{lead.phone || '—'}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">
-                                            {lead.source}
+                                            {lead.source || lead.crm_source || '—'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            {lead.status || 'New'}
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[lead.status || ''] || 'bg-green-100 text-green-800'}`}>
+                                            {(lead.status || 'new').replace(/_/g, ' ')}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <button className="text-blue-600 hover:text-blue-900" onClick={() => alert(JSON.stringify(lead.data?.raw, null, 2))}>
-                                            View Payload
+                                        <button className="text-blue-600 hover:text-blue-900" onClick={() => alert(JSON.stringify(lead.metadata, null, 2))}>
+                                            View Details
                                         </button>
                                     </td>
                                 </tr>
