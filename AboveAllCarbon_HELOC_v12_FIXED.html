@@ -9578,10 +9578,10 @@ Best regards,
         function setupEventListeners() {
             document.querySelectorAll('#admin-panel input, #admin-panel select, #admin-panel textarea').forEach(el => {
                 if (el.tagName === 'SELECT') {
-                    el.addEventListener('change', () => { debouncedUpdateQuote(); debouncedAutoSave(); });
+                    el.addEventListener('change', () => { debouncedUpdateQuote(); debouncedAutoSave(); _debouncedQuoteSync(); });
                 } else {
-                    el.addEventListener('input', () => { debouncedUpdateQuote(); debouncedAutoSave(); });
-                    el.addEventListener('change', () => { debouncedUpdateQuote(); debouncedAutoSave(); });
+                    el.addEventListener('input', () => { debouncedUpdateQuote(); debouncedAutoSave(); _debouncedQuoteSync(); });
+                    el.addEventListener('change', () => { debouncedUpdateQuote(); debouncedAutoSave(); _debouncedQuoteSync(); });
                 }
             });
             document.querySelectorAll('#chk-show-debt, #chk-show-refi, #chk-show-break, #chk-show-ai').forEach(chk => {
@@ -14353,6 +14353,128 @@ Best regards,
                 console.debug('Profile synced to cloud');
             } catch (e) {
                 console.debug('Profile cloud sync failed (will retry):', e.message);
+            }
+        }
+
+        // ===== AUTO-SYNC: Keep quote_links record up-to-date as LO edits fields =====
+        var _quoteSyncTimer = null;
+        function _debouncedQuoteSync() {
+            clearTimeout(_quoteSyncTimer);
+            _quoteSyncTimer = setTimeout(_autoSyncQuoteLink, 3000);
+        }
+
+        async function _autoSyncQuoteLink() {
+            var code = window._lastGeneratedQuoteCode;
+            if (!code) return;
+            var sb = window._supabase;
+            var userId = window.currentUserId;
+            if (!sb || !userId) return;
+
+            try {
+                var g = function (id) { var el = document.getElementById(id); return el ? (el.value || el.innerText || '').trim() : ''; };
+
+                var quoteData = {
+                    clientName: g('in-client-name'),
+                    creditScore: g('in-client-credit'),
+                    propertyAddress: g('custom-address-input'),
+                    propertyType: g('in-property-type'),
+                    homeValue: g('in-home-value'),
+                    maxQualCash: parseFloat(document.getElementById('in-max-qual-cash')?.value || '0') || 0,
+                    mortgageBalance: g('in-mortgage-balance'),
+                    helocPayoff: g('in-refi-balance'),
+                    cashBack: g('in-net-cash'),
+                    cltv: g('out-cltv'),
+                    totalLoan: g('snap-total-loan'),
+                    rate: g('snap-rate'),
+                    term: getSelectedRecTerm(),
+                    payment: g('snap-payment'),
+                    origination: g('snap-orig-perc'),
+                    recType: document.getElementById('rec-type-select')?.value || 'fixed',
+                    recTier: normalizeRecTierValue(document.getElementById('rec-tier-select')?.value || ''),
+                    recTerm: document.getElementById('rec-term-select')?.value || '',
+                    rec2Enabled: document.getElementById('rec2-enabled')?.checked === true,
+                    rec2Type: document.getElementById('rec2-type-select')?.value || 'fixed',
+                    rec2Tier: normalizeRecTierValue(document.getElementById('rec2-tier-select')?.value || ''),
+                    rec2Term: document.getElementById('rec2-term-select')?.value || '',
+                    showVariable: document.getElementById('toggle-show-variable')?.classList.contains('active') || false,
+                    showIO: document.getElementById('toggle-interest-only')?.classList.contains('active') || false,
+                    date: new Date().toLocaleDateString(),
+                    linkOptions: {
+                        showLoInfo: document.getElementById('chk-link-lo-info')?.checked ?? true,
+                        showAiChat: document.getElementById('chk-link-ai-chat')?.checked ?? true,
+                        showApply: document.getElementById('chk-link-apply')?.checked ?? true,
+                        showVideo: (document.getElementById('chk-link-video')?.checked === true) || ((document.getElementById('link-video-url')?.value || '').trim().length > 0),
+                        videoUrl: document.getElementById('link-video-url')?.value?.trim() || '',
+                        videoMode: (document.getElementById('video-mode-heygen')?.checked ? 'heygen' : 'manual'),
+                        showSalesPsych: document.getElementById('chk-link-sales-psych')?.checked ?? true,
+                        preset: document.getElementById('link-style-preset')?.value || 'enhanced',
+                        voiceNoteUrl: document.getElementById('link-voice-note-url')?.value?.trim() || '',
+                        aiAssistant: (document.querySelector('input[name="link-ai-assistant"]:checked')?.value || 'default'),
+                        showFees: document.getElementById('toggle-show-fees')?.classList.contains('active') !== false,
+                        showBestOfBoth: document.getElementById('toggle-show-best-of-both')?.classList.contains('active') !== false,
+                        showVsAlternatives: document.getElementById('toggle-show-vs-alternatives')?.classList.contains('active') !== false,
+                        recTierDisplay: document.getElementById('rec-tier-display')?.value || 'all',
+                        showPrequal: document.getElementById('chk-show-prequal')?.classList.contains('active') !== false,
+                        showDocUpload: document.getElementById('chk-show-doc-upload')?.classList.contains('active') !== false,
+                        showTierCompare: document.getElementById('chk-show-tier-compare')?.classList.contains('active') !== false,
+                        showDtiCalc: document.getElementById('chk-show-dti-calc')?.classList.contains('active') !== false,
+                        showWhatIfPayoff: document.getElementById('chk-show-whatif-payoff')?.classList.contains('active') !== false,
+                        showTestimonials: document.getElementById('chk-show-testimonials')?.classList.contains('active') || false,
+                        tierCompareMode: document.getElementById('select-tier-compare-mode')?.value || 'all',
+                        tierCompareCustom: (function() {
+                            if ((document.getElementById('select-tier-compare-mode')?.value || 'all') !== 'custom') return [];
+                            var picks = [];
+                            if (document.getElementById('chk-tier-1')?.checked) picks.push(1);
+                            if (document.getElementById('chk-tier-2')?.checked) picks.push(2);
+                            if (document.getElementById('chk-tier-3')?.checked) picks.push(3);
+                            return picks;
+                        })(),
+                        testimonials: (function() {
+                            try {
+                                var json = document.getElementById('lo-testimonials-json')?.value?.trim();
+                                return json ? JSON.parse(json) : [];
+                            } catch(e) { return []; }
+                        })()
+                    },
+                    tiers: []
+                };
+
+                for (var t = 1; t <= 3; t++) {
+                    var tier = { tier: t, origPts: g('t' + t + '-orig'), rates: {}, varRates: {} };
+                    ['30', '20', '15', '10'].forEach(function (yr) {
+                        var rate = g('out-t' + t + '-' + yr + '-rate');
+                        var pay = g('out-t' + t + '-' + yr + '-pay');
+                        if (rate && rate !== '0.00') tier.rates[yr + 'yr'] = { rate: rate + '%', payment: pay };
+                        var varRate = g('out-t' + t + '-' + yr + '-var');
+                        var varPay = g('out-t' + t + '-' + yr + '-var-pay');
+                        if (varRate && varRate !== '0.00') tier.varRates[yr + 'yr'] = { rate: varRate + '%', payment: varPay };
+                    });
+                    if (Object.keys(tier.rates).length > 0 || Object.keys(tier.varRates).length > 0) quoteData.tiers.push(tier);
+                }
+
+                var loInfo = {
+                    name: g('lo-name'), title: g('lo-title'), company: g('lo-company'),
+                    nmls: g('lo-nmls'), dre: g('lo-dre'), coNmls: g('co-nmls'), coDre: g('co-dre'),
+                    phone: g('lo-phone'), email: g('lo-email'), website: g('lo-website'),
+                    address: g('lo-address'), headshot: g('lo-headshot-url'), logo: g('lo-logo-url'),
+                    applyLink: g('lo-apply-link') || g('wl-apply-link'),
+                    calendarLink: g('lo-calendar-link') || g('ghl-calendar-link'),
+                    reviewLink: g('lo-review-link'),
+                    bio: (document.getElementById('lo-bio') || {}).value || '',
+                    googleRating: '5.0', tier: window.currentUserTier || 'starter',
+                    lenderName: g('lo-company'),
+                    ghlWidgetHtml: (document.getElementById('ghl-widget-embed')?.value || '').trim(),
+                    ghlWidgetDefault: document.getElementById('ghl-widget-default')?.checked === true
+                };
+
+                await sb.from('quote_links')
+                    .update({ quote_data: quoteData, lo_info: loInfo, lo_tier: window.currentUserTier || 'starter' })
+                    .eq('code', code)
+                    .eq('user_id', userId);
+
+                console.debug('Quote link auto-synced:', code);
+            } catch (e) {
+                console.debug('Quote link auto-sync failed (will retry):', e.message);
             }
         }
 
