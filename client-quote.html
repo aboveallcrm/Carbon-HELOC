@@ -10239,7 +10239,7 @@
                             <p>This depends on your loan type:</p>
                             <ul>
                                 <li><strong>Variable Rate HELOC:</strong> Your rate adjusts with the market (typically based on Prime Rate). Your payment may go up or down.</li>
-                                <li><strong>Fixed Rate Option:</strong> Some lenders let you convert portions to a fixed rate. Ask your loan officer if this is available.</li>
+                                <li><strong>Fixed Rate Option:</strong> If you'd prefer a fixed rate, you can refinance into a fixed-rate HELOC. Your loan officer can walk you through the process when the time comes.</li>
                             </ul>
                             <p><strong>&#128640; Secure Your Rate Today</strong></p>
                             <p>Rates can change daily. The sooner you apply, the sooner you lock in your quoted rate. Don't let rising rates cost you thousands over the life of your loan. <strong>Apply now to secure your offer!</strong></p>
@@ -10912,14 +10912,6 @@
                     // ── TITANIUM+ (level >= 1): Interactive calculators ──
                     if (tierLevel >= 1) {
                         try {
-                            initInteractiveSavings(link.quote_data);
-                            initPaymentScenario(link.quote_data);
-                            initWhatIfCalculator(link.quote_data, link.quote_data.linkOptions || {});
-                            initWhatIfBorrowPayback(link.quote_data);
-                        } catch (e) {
-                            console.warn('Calculator init error:', e);
-                        }
-                        try {
                             initPrequalChecklist(link.quote_data.linkOptions || {});
                             initDTICalculator(link.quote_data.linkOptions || {});
                             initDocUpload(link.quote_data.linkOptions || {}, link.quote_data);
@@ -10939,6 +10931,12 @@
                             if (el) el.style.display = 'none';
                         });
                     }
+
+                    // Always hide generic calculators + LO-only strategy on client page
+                    ['sec-interactive-savings', 'sec-payment-scenario', 'sec-what-if-tabs', 'sec-what-if-borrow', 'sec-what-if-payback', 'sec-borrower-strategy'].forEach(function (id) {
+                        var el = document.getElementById(id);
+                        if (el) el.style.display = 'none';
+                    });
 
                     // AI assistant: Ezra (default), GHL voice widget swap (Enterprise), or none
                     if (!link.quote_data.linkOptions || link.quote_data.linkOptions.showAiChat !== false) {
@@ -12507,31 +12505,9 @@
                     return '<div class="rec-item' + (r.final ? ' final' : '') + '"><div class="rec-label">' + esc(r.label) + '</div><div class="rec-value">' + esc(r.value) + '</div></div>';
                 }).join('');
 
-                // Borrower Strategy (personalized message)
+                // Borrower Strategy — LO-only, never shown on client page
                 if (data.borrowerStrategy) {
-                    var strategyEl = document.getElementById('borrower-strategy-text');
-                    var strategySection = document.getElementById('sec-borrower-strategy');
-                    if (strategyEl && strategySection) {
-                        // Store English original for language switching
-                        window._strategyTextEn = data.borrowerStrategy;
-                        // Build Spanish equivalent from quote data
-                        var cashAmt = data.cashBack || data.totalLoan || '$0';
-                        var rateAmt = data.rate || '7.50';
-                        var cltvAmt = data.cltv || '--';
-                        var clientFirst = (lo.clientName || 'Cliente').split(' ')[0];
-                        window._strategyTextEs = 'Hola ' + esc(clientFirst) + '! He estructurado una forma de acceder a ' + esc(String(cashAmt)) + ' del valor de su hogar al ' + esc(String(rateAmt)) + '%. Por que esto funciona para usted: usted accede a ' + esc(String(cashAmt)) + ' sin tocar su primera hipoteca, su fuerte posicion de capital (' + esc(String(cltvAmt)) + '% CLTV) le califica para nuestros mejores precios. Tiene preguntas? Estoy aqui para ayudar — simplemente pregunte abajo o toque el boton de chat.';
-                        strategyEl.innerText = (currentLanguage === 'es') ? window._strategyTextEs : window._strategyTextEn;
-                        strategySection.style.display = 'block';
-
-                        // Client-facing action: only "Discuss with Ezra" (HeyGen is LO-only, lives in builder)
-                        if (!document.getElementById('strategy-action-row')) {
-                            var actionRow = document.createElement('div');
-                            actionRow.id = 'strategy-action-row';
-                            actionRow.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;';
-                            actionRow.innerHTML = '<button onclick="if(window.eqToggle){window.eqToggle();}else if(window.askQuestion){window.askQuestion();}" style="padding:10px 16px;background:linear-gradient(135deg,#06b6d4,#0891b2);color:#fff;border:none;border-radius:8px;font-family:var(--font-heading,serif);font-weight:700;font-size:11px;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 12px rgba(6,182,212,0.3);">&#128172; Discuss with Ezra</button>';
-                            strategySection.appendChild(actionRow);
-                        }
-                    }
+                    window._strategyTextEn = data.borrowerStrategy;
                 }
 
                 // Copy strategy text trimmed to HeyGen's 1500-char limit
@@ -17139,7 +17115,12 @@
                             if (data.error) {
                                 addMsg('assistant', "I apologize, but I encountered an issue. " + (data.error === 'Rate limited. Please try again later.' ? "You've reached the daily message limit." : esc(data.error)) + " Please contact " + esc(loName) + (loInfo.phone ? " at " + esc(loInfo.phone) : "") + " directly.");
                             } else {
-                                addMsg('assistant', data.text || 'I received your message but had trouble generating a response. Please try again.');
+                                var replyText = data.text || data.reply || '';
+                                if (replyText) {
+                                    addMsg('assistant', replyText);
+                                } else {
+                                    addMsg('assistant', "I'm having a moment \u2014 could you rephrase that? Or contact " + esc(loName) + (loInfo.phone ? " at " + esc(loInfo.phone) : "") + " for immediate help.");
+                                }
                                 if (data.remainingMessages !== undefined && data.remainingMessages <= 5) {
                                     addMsg('assistant', "**Note:** You have " + data.remainingMessages + " messages remaining today.");
                                 }
